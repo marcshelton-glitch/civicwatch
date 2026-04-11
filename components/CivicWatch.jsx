@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
-import Link from 'next/link'
 
 const REPS = [
   {
@@ -128,9 +127,14 @@ export default function CivicWatch() {
   const [pollVotes, setPollVotes] = useState({})
   const [filterLevel, setFilterLevel] = useState("all")
   const [filterParty, setFilterParty] = useState("all")
+  const [selectedState, setSelectedState] = useState("CA")
+  const [liveReps, setLiveReps] = useState([])
+  const [loadingReps, setLoadingReps] = useState(true)
+  const [dataSource, setDataSource] = useState("loading")
 
   const unreadCount = alerts.filter(a => !a.read).length
-  const filteredReps = REPS.filter(r => {
+  const displayReps = liveReps.length > 0 ? liveReps : REPS
+  const filteredReps = displayReps.filter(r => {
     const matchLevel = filterLevel === "all" || r.level === filterLevel
     const matchParty = filterParty === "all" || r.party.toLowerCase() === filterParty
     const matchSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase()) || r.district.toLowerCase().includes(searchTerm.toLowerCase())
@@ -138,6 +142,38 @@ export default function CivicWatch() {
   })
 
   useEffect(() => { if (selectedRep) setRepTab("overview") }, [selectedRep])
+
+  useEffect(() => {
+    const load = async () => {
+      setLoadingReps(true)
+      try {
+        const res = await fetch(`/api/congress?type=members&state=${selectedState}`)
+        const data = await res.json()
+        if (data.members && data.members.length > 0) {
+          setLiveReps(data.members.map(r => {
+            const isSen = (r.chamber||'').toLowerCase().includes('senate')
+            return {
+              id: r.bioguideId, name: r.name,
+              title: isSen ? 'U.S. Senator' : 'U.S. Representative',
+              party: r.party||'Unknown', state: r.state||'', district: r.district||'Statewide',
+              level: 'federal',
+              photo: r.depiction || `https://bioguide.congress.gov/bioguide/photo/${r.bioguideId[0]}/${r.bioguideId}.jpg`,
+              email: '', phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
+              website: r.url||'https://congress.gov', officeHours: 'Mon-Fri 9am-5pm',
+              officeLocation: isSen ? 'U.S. Senate, Washington DC' : 'U.S. House, Washington DC',
+              bio: `${r.name} represents ${r.state} in the ${r.chamber}.`,
+              peers: [], peerComparison: {}, netWorthBefore: null, netWorthCurrent: null,
+              yearsInOffice: null, trades: [], votes: [], docket: [], townHall: [],
+              communityPoll: { healthcare:0, climate:0, housing:0, education:0 }, isLive: true,
+            }
+          }))
+          setDataSource('live')
+        } else { setDataSource('mock') }
+      } catch { setDataSource('mock') }
+      finally { setLoadingReps(false) }
+    }
+    load()
+  }, [selectedState])
 
   return (
     <div style={{ fontFamily: "Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white }}>
@@ -205,6 +241,12 @@ export default function CivicWatch() {
             <div style={{ display:"flex", gap:12, marginBottom:24, flexWrap:"wrap" }}>
               <input placeholder="🔍 Search by name or district…" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                 style={{ flex:"1 1 200px", padding:"10px 14px", background:S.cardBg, border:`1px solid ${S.border}`, borderRadius:8, color:S.white, fontFamily:"inherit", fontSize:13, outline:"none" }} />
+              <select value={selectedState} onChange={e => setSelectedState(e.target.value)}
+                style={{ padding:'10px 14px', background:S.navyMid, border:`1px solid ${S.gold}`, borderRadius:8, color:S.gold, fontFamily:'inherit', fontSize:13, fontWeight:600 }}>
+                {[['CA','California'],['TX','Texas'],['FL','Florida'],['NY','New York'],['IL','Illinois'],['AZ','Arizona'],['WA','Washington'],['CO','Colorado'],['GA','Georgia'],['OH','Ohio'],['NC','North Carolina'],['PA','Pennsylvania'],['VA','Virginia'],['NV','Nevada'],['OR','Oregon']].map(([a,n]) => (
+                  <option key={a} value={a}>{n}</option>
+                ))}
+              </select>
               <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}
                 style={{ padding:"10px 14px", background:S.navyMid, border:`1px solid ${S.border}`, borderRadius:8, color:S.white, fontFamily:"inherit", fontSize:13 }}>
                 <option value="all">All Levels</option>
@@ -240,7 +282,7 @@ export default function CivicWatch() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ background:"rgba(178,34,52,0.1)", border:"1px solid rgba(178,34,52,0.3)", borderRadius:8, padding:"8px 12px", marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div style={{ background:"rgba(178,34,52,0.1)", border:"1px solid rgba(178,34,52,0.3)", borderRadius:8, padding:"8px 12px", marginBottom:12, display: rep.netWorthBefore ? "flex" : "none", justifyContent:"space-between", alignItems:"center" }}>
                       <div>
                         <div style={{ fontSize:10, color:S.gray, marginBottom:1 }}>WEALTH CHANGE IN OFFICE</div>
                         <div style={{ fontSize:12 }}>{fmt(rep.netWorthBefore)} → <span style={{ color:"#FF6B6B" }}>{fmt(rep.netWorthCurrent)}</span></div>
