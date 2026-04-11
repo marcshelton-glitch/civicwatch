@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { clerkClient } from '@clerk/nextjs/server'
+import { clerkClient, createClerkClient } from '@clerk/nextjs/server'import { clerkClient } from '@clerk/nextjs/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -22,7 +22,8 @@ export async function POST(request) {
       const clerkUserId = session.metadata?.clerkUserId
 
       if (clerkUserId) {
-        await clerkClient.users.updateUserMetadata(clerkUserId, {
+const clerk = await clerkClient()
+await clerk.users.updateUserMetadata(clerkUserId, {        await clerkClient.users.updateUserMetadata(clerkUserId, {
           publicMetadata: { isPro: true, proSince: new Date().toISOString() },
         })
         console.log(`Pro granted to ${clerkUserId}`)
