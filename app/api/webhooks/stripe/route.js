@@ -1,45 +1,36 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
+import { clerkClient } from '@clerk/nextjs/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-export async function POST() {
-  // ── 1. Auth check ──────────────────────────────────────────────────────────
-  const { userId } = await auth()
-  if (!userId) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+export async function POST(request) {
+  const sig = request.headers.get('stripe-signature')
+  const body = await request.text()
 
-  const user = await currentUser()
-
-  // ── 2. Don't let existing Pro users subscribe again ────────────────────────
-  if (user?.publicMetadata?.isPro === true) {
-    return Response.json({ error: 'Already subscribed' }, { status: 400 })
-  }
-
-  // ── 3. Create Stripe checkout session ─────────────────────────────────────
+  let event
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: process.env.STRIPE_PRO_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      // Pass Clerk userId so the webhook can find this user
-      metadata: {
-        clerkUserId: userId,
-      },
-      customer_email: user?.emailAddresses?.[0]?.emailAddress,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?upgrade=success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?upgrade=cancelled`,
-    })
-
-    return Response.json({ url: session.url })
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
   } catch (err) {
-    console.error('Stripe checkout error:', err)
-    return Response.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    console.error('Webhook signature error:', err.message)
+    return Response.json({ error: 'Invalid signature' }, { status: 400 })
+  }
+
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object
+      const clerkUserId = session.metadata?.clerkUserId
+
+      if (clerkUserId) {
+        await clerkClient.users.updateUserMetadata(clerkUserId, {
+          publicMetadata: { isPro: true, proSince: new Date().toISOString() },
+        })
+        console.log(`Pro granted to ${clerkUserId}`)
+      }
+    }
+    return Response.json({ received: true })
+  } catch (err) {
+    console.error('Webhook error:', err)
+    return Response.json({ error: 'Failed' }, { status: 500 })
   }
 }
