@@ -560,6 +560,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <div style={{ fontSize:10, letterSpacing:2, color:S.gray, textTransform:"uppercase", marginBottom:10 }}>Biography</div>
             <p style={{ fontSize:14, color:S.grayLight, lineHeight:1.8 }}>{rep.bio}</p>
             <div style={{ marginTop:10, fontSize:12, color:S.gray }}>Peers: {rep.peers.join(" · ")}</div>
+            <div style={{ marginTop:16, display:"flex", gap:10, flexWrap:"wrap" }}>
+              <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding:"7px 14px", background:"rgba(212,175,55,0.15)", border:"1px solid rgba(212,175,55,0.3)", borderRadius:8, color:"#D4AF37", textDecoration:"none", fontSize:12, fontWeight:600 }}>🌐 Official Website →</a>
+              <a href={"https://www.fec.gov/data/candidates/?q="+encodeURIComponent(rep.name)} target="_blank" rel="noreferrer" style={{ padding:"7px 14px", background:"rgba(76,175,80,0.15)", border:"1px solid rgba(76,175,80,0.3)", borderRadius:8, color:"#90EE90", textDecoration:"none", fontSize:12, fontWeight:600 }}>💰 Campaign Finance →</a>
+              <a href={"https://disclosures.house.gov/PublicDisclosure/SearchForm"} target="_blank" rel="noreferrer" style={{ padding:"7px 14px", background:"rgba(178,34,52,0.15)", border:"1px solid rgba(178,34,52,0.3)", borderRadius:8, color:"#FF6B7A", textDecoration:"none", fontSize:12, fontWeight:600 }}>📋 Financial Disclosures →</a>
+            </div>
           </div>
           <div style={{ fontSize:11, letterSpacing:2, color:S.gray, textTransform:"uppercase", marginBottom:14 }}>Issue Comparison vs. Direct Peers</div>
           {Object.entries(rep.peerComparison).map(([issue, vals]) => (
