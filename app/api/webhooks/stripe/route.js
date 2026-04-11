@@ -1,8 +1,9 @@
 import Stripe from 'stripe'
-import { clerkClient, createClerkClient } from '@clerk/nextjs/server'import { clerkClient } from '@clerk/nextjs/server'
+import { createClerkClient } from '@clerk/nextjs/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY })
 
 export async function POST(request) {
   const sig = request.headers.get('stripe-signature')
@@ -20,10 +21,11 @@ export async function POST(request) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object
       const clerkUserId = session.metadata?.clerkUserId
+      console.log('Session metadata:', session.metadata)
+      console.log('Clerk user ID:', clerkUserId)
 
       if (clerkUserId) {
-const clerk = await clerkClient()
-await clerk.users.updateUserMetadata(clerkUserId, {        await clerkClient.users.updateUserMetadata(clerkUserId, {
+        await clerk.users.updateUserMetadata(clerkUserId, {
           publicMetadata: { isPro: true, proSince: new Date().toISOString() },
         })
         console.log(`Pro granted to ${clerkUserId}`)
