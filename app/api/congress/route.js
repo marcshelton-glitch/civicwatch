@@ -24,9 +24,7 @@ export async function GET(request) {
 
     if (type === 'members') {
       // Fetch all current members for a state
-      const data = await cFetch(
-        `/member?currentMember=true&limit=50`
-      )
+      const data = await cFetch(`/member?currentMember=true&limit=250`)
      const stateAbbrevToFull = {
   'CA': 'California', 'TX': 'Texas', 'FL': 'Florida',
   'NY': 'New York', 'IL': 'Illinois', 'AZ': 'Arizona',
