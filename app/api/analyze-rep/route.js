@@ -6,13 +6,11 @@ const anthropic = new Anthropic({
 })
 
 export async function POST(request) {
-  // ── 1. Auth check ──────────────────────────────────────────────────────────
   const { userId } = await auth()
   if (!userId) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // ── 2. Parse request body ──────────────────────────────────────────────────
   const body = await request.json()
   const { mode, rep } = body
 
@@ -24,54 +22,40 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid mode' }, { status: 400 })
   }
 
-  // ── 3. Pro gate for full report ────────────────────────────────────────────
   if (mode === 'full') {
     const user = await currentUser()
     const isPro = user?.publicMetadata?.isPro === true
-
     if (!isPro) {
-      return Response.json(
-        { error: 'Pro subscription required for full report' },
-        { status: 403 }
-      )
+      return Response.json({ error: 'Pro subscription required' }, { status: 403 })
     }
   }
 
-  // ── 4. Build prompt ────────────────────────────────────────────────────────
-  const fmt = (n) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      notation: 'compact',
-      maximumFractionDigits: 1,
-    }).format(n)
+  const fmt = (n) => n ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n) : 'N/A'
 
-  const enrichPct = (
-    ((rep.netWorthCurrent - rep.netWorthBefore) / rep.netWorthBefore) *
-    100
-  ).toFixed(0)
+  const enrichPct = rep.netWorthBefore && rep.netWorthCurrent
+    ? (((rep.netWorthCurrent - rep.netWorthBefore) / rep.netWorthBefore) * 100).toFixed(0)
+    : 'unknown'
 
-  const tradeList = rep.trades
-    .map((t) => `${t.date}: ${t.type} ${t.asset} (${fmt(t.amount)}, ${t.sector})`)
-    .join('; ')
+  const tradeList = rep.trades?.length
+    ? rep.trades.map((t) => `${t.date}: ${t.type} ${t.asset} (${fmt(t.amount)}, ${t.sector})`).join('; ')
+    : 'No trades disclosed'
 
-  const voteList = rep.votes
-    .map((v) => `${v.bill} — ${v.vote} — ${v.outcome}`)
-    .join('; ')
+  const voteList = rep.votes?.length
+    ? rep.votes.map((v) => `${v.bill} — ${v.vote} — ${v.outcome}`).join('; ')
+    : 'No votes on record'
 
-  const peerData = Object.entries(rep.peerComparison)
-    .map(([issue, v]) => `${issue}: this rep ${v.self}% vs peers ${v.peers}%`)
-    .join('; ')
+  const peerData = rep.peerComparison && Object.keys(rep.peerComparison).length
+    ? Object.entries(rep.peerComparison).map(([issue, v]) => `${issue}: this rep ${v.self}% vs peers ${v.peers}%`).join('; ')
+    : 'No peer data available'
 
-  const prompt =
-    mode === 'preview'
-      ? `You are a civic accountability analyst. In 2-3 sentences only, write a sharp, factual preview summary of this elected official for a civic watchdog platform. Be specific about one notable pattern. Do NOT use markdown, headers, or bullet points. Write in plain prose.
+  const prompt = mode === 'preview'
+    ? `You are a civic accountability analyst. In 2-3 sentences only, write a sharp, factual preview summary of this elected official for a civic watchdog platform. Be specific about one notable pattern. Do NOT use markdown, headers, or bullet points. Write in plain prose.
 
 Representative: ${rep.name}, ${rep.title}, ${rep.party}, ${rep.state}
-Net worth change in office: ${fmt(rep.netWorthBefore)} → ${fmt(rep.netWorthCurrent)} (+${enrichPct}% over ${rep.yearsInOffice} years)
+Net worth change in office: ${fmt(rep.netWorthBefore)} → ${fmt(rep.netWorthCurrent)} (+${enrichPct}% over ${rep.yearsInOffice || 'unknown'} years)
 Recent trades: ${tradeList}
 Recent votes: ${voteList}`
-      : `You are a nonpartisan civic accountability analyst. Write a thorough, factual accountability report for a civic watchdog platform. Use plain prose only — no markdown headers, no bullet points, no asterisks. Write in flowing paragraphs. Be specific, factual, and objective.
+    : `You are a nonpartisan civic accountability analyst. Write a thorough, factual accountability report for a civic watchdog platform. Use plain prose only — no markdown headers, no bullet points, no asterisks. Write in flowing paragraphs. Be specific, factual, and objective.
 
 Cover these four areas in order, each as its own paragraph:
 
@@ -84,18 +68,17 @@ End with one sentence: an overall accountability rating as "Low / Medium / High 
 
 Representative: ${rep.name}, ${rep.title}, ${rep.party}, ${rep.state}
 Bio: ${rep.bio}
-Years in office: ${rep.yearsInOffice}
+Years in office: ${rep.yearsInOffice || 'unknown'}
 Net worth before office: ${fmt(rep.netWorthBefore)}
 Current net worth: ${fmt(rep.netWorthCurrent)} (+${enrichPct}%)
 Trades: ${tradeList}
 Votes: ${voteList}
 Peer comparison: ${peerData}
-Committee peers: ${rep.peers.join(', ')}`
+Committee peers: ${rep.peers?.join(', ') || 'unknown'}`
 
-  // ── 5. Call Anthropic ──────────────────────────────────────────────────────
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }],
     })
@@ -107,9 +90,6 @@ Committee peers: ${rep.peers.join(', ')}`
     return Response.json({ text })
   } catch (err) {
     console.error('Anthropic API error:', err)
-    return Response.json(
-      { error: 'AI analysis failed. Please try again.' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'AI analysis failed. Please try again.' }, { status: 500 })
   }
 }
