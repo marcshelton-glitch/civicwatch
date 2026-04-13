@@ -1,9 +1,4 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 export async function POST(request) {
   const { userId } = await auth()
@@ -77,19 +72,29 @@ Peer comparison: ${peerData}
 Committee peers: ${rep.peers?.join(', ') || 'unknown'}`
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }],
-    })
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 },
+        }),
+      }
+    )
 
-    const text = message.content
-      .map((block) => (block.type === 'text' ? block.text : ''))
-      .join('')
+    const data = await res.json()
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+
+    if (!text) {
+      console.error('Gemini empty response:', data)
+      return Response.json({ error: 'AI analysis failed. Please try again.' }, { status: 500 })
+    }
 
     return Response.json({ text })
   } catch (err) {
-    console.error('Anthropic API error:', err)
+    console.error('Gemini API error:', err)
     return Response.json({ error: 'AI analysis failed. Please try again.' }, { status: 500 })
   }
 }
