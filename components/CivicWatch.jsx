@@ -186,7 +186,11 @@ const STATE_MAP_DATA = [
 ]
 
 const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
-const enrichment = (b, c) => { const pct = ((c - b) / b * 100).toFixed(0); return { pct, delta: c - b } }
+const enrichment = (b, c) => {
+  if (!b || !c || b === 0) return { pct: null, delta: null }
+  const pct = ((c - b) / b * 100).toFixed(0)
+  return { pct, delta: c - b }
+}
 
 const S = {
   navy: "#0A1628", navyMid: "#1B2A6B", navyLight: "#243A8C",
@@ -395,13 +399,15 @@ useEffect(() => {
                         </div>
                       </div>
                     </div>
-                    <div style={{ background: "rgba(178,34,52,0.1)", border: "1px solid rgba(178,34,52,0.3)", borderRadius: 8, padding: "8px 12px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <div style={{ fontSize: 10, color: S.gray, marginBottom: 1 }}>WEALTH CHANGE IN OFFICE</div>
-                        <div style={{ fontSize: 12 }}>{fmt(rep.netWorthBefore)} → <span style={{ color: "#FF6B6B" }}>{fmt(rep.netWorthCurrent)}</span></div>
-                      </div>
-                      <div style={{ color: "#FF6B6B", fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20 }}>+{enr.pct}%</div>
-                    </div>
+                   {enr.pct !== null && (
+  <div style={{ background: "rgba(178,34,52,0.1)", border: "1px solid rgba(178,34,52,0.3)", borderRadius: 8, padding: "8px 12px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div>
+      <div style={{ fontSize: 10, color: S.gray, marginBottom: 1 }}>WEALTH CHANGE IN OFFICE</div>
+      <div style={{ fontSize: 12 }}>{fmt(rep.netWorthBefore)} → <span style={{ color: "#FF6B6B" }}>{fmt(rep.netWorthCurrent)}</span></div>
+    </div>
+    <div style={{ color: "#FF6B6B", fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20 }}>+{enr.pct}%</div>
+  </div>
+)}
                     <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                       <a href={`tel:${rep.phone}`} className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.green, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>📞 Call</a>
