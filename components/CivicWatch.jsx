@@ -519,10 +519,9 @@ useEffect(() => {
                     geography={geo}
                     onClick={() => abbr && setSelectedState(abbr)}
                     style={{
-                      default: { fill: isSelected ? S.red : 'rgba(27,42,107,0.85)', stroke: isSelected ? S.gold : 'rgba(212,175,55,0.35)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
-                      hover: { fill: S.navyLight, stroke: S.gold, strokeWidth: 1, outline: 'none', cursor: 'pointer' },
-                      pressed: { fill: S.red, stroke: S.gold, strokeWidth: 1.5, outline: 'none' },
-                    }}
+                      default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
+hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },}}
                   />
                 )
               })
