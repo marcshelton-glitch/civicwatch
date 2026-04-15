@@ -1,6 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
+import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+
 
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
 const REPS = [
@@ -226,6 +228,20 @@ const STATE_MAP_DATA = [
   { state: "AK", x: 72,  y: 330, label: "Alaska" },
   { state: "HI", x: 148, y: 330, label: "Hawaii" },
 ]
+
+const STATE_ABBR = {
+  "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA",
+  "Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA",
+  "Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA",
+  "Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD",
+  "Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO",
+  "Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ",
+  "New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH",
+  "Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC",
+  "South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT",
+  "Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY",
+  "District of Columbia":"DC",
+}
 
 const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
 const enrichment = (b, c) => {
@@ -487,49 +503,78 @@ useEffect(() => {
 
         {/* MAP */}
         {activeTab === "map" && (
-          <div className="slide-in">
-            <SectionHeader title="District Map" subtitle="Click a state to view its representatives." />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24 }}>
-              <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
-                <svg viewBox="0 0 760 420" style={{ width: "100%" }}>
-                  {STATE_MAP_DATA.map(st => {
-                    const isSelected = st.state === selectedState
-                    const hasReps = st.state === selectedState
-                    return (
-                      <g key={st.state} className="map-state" onClick={() => setSelectedState(st.state)}>
-                        <circle cx={st.x + 40} cy={st.y + 30} r={hasReps ? 34 : 28}
-                          fill={isSelected ? S.red : hasReps ? S.navyMid : "rgba(27,42,107,0.4)"}
-                          stroke={isSelected ? S.gold : hasReps ? "rgba(212,175,55,0.4)" : "rgba(255,255,255,0.1)"}
-                          strokeWidth={isSelected ? 3 : 1.5} />
-                        <text x={st.x + 40} y={st.y + 27} textAnchor="middle" fill={isSelected ? S.gold : S.white} fontSize="12" fontWeight={isSelected ? "bold" : "normal"}>{st.state}</text>
-                        <text x={st.x + 40} y={st.y + 72} textAnchor="middle" fill="rgba(136,146,164,0.7)" fontSize="10">{st.label}</text>
-                      </g>
-                    )
-                  })}
-                </svg>
+  <div className="slide-in">
+    <SectionHeader title="District Map" subtitle="Click any state to view its representatives." />
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
+      <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
+        <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto' }}>
+          <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
+            {({ geographies }) =>
+              geographies.map(geo => {
+                const abbr = STATE_ABBR[geo.properties.name] || ''
+                const isSelected = abbr === selectedState
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    onClick={() => abbr && setSelectedState(abbr)}
+                    style={{
+                      default: { fill: isSelected ? S.red : 'rgba(27,42,107,0.85)', stroke: isSelected ? S.gold : 'rgba(212,175,55,0.35)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
+                      hover: { fill: S.navyLight, stroke: S.gold, strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+                      pressed: { fill: S.red, stroke: S.gold, strokeWidth: 1.5, outline: 'none' },
+                    }}
+                  />
+                )
+              })
+            }
+          </Geographies>
+        </ComposableMap>
+        <div style={{ textAlign: 'center', fontSize: 11, color: S.gray, marginTop: 4 }}>
+          Click any state to load its representatives
+        </div>
+      </div>
+      <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
+        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
+          {STATE_MAP_DATA.find(s => s.state === selectedState)?.label || selectedState}
+        </div>
+        <div style={{ fontSize: 11, color: S.gray, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>
+          Representatives
+        </div>
+        {loadingReps ? (
+          <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+            <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+            Loading…
+          </div>
+        ) : (() => {
+          const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
+          const stateReps = displayReps.filter(r => r.state === stateLabel || r.state === selectedState)
+          if (stateReps.length === 0) {
+            return (
+              <div style={{ textAlign: 'center', padding: 24, color: S.gray }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>🏛️</div>
+                <div style={{ fontSize: 12, marginBottom: 4 }}>No data loaded for this state.</div>
+                <div style={{ fontSize: 11, color: S.gray, marginBottom: 16 }}>Click the state on the map to load members.</div>
               </div>
-              <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, marginBottom: 16 }}>
-                  {STATE_MAP_DATA.find(s => s.state === selectedState)?.label}
-                </div>
-                {displayReps.filter(r => {
-  const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
-  return r.state === stateLabel || r.state === selectedState
-}).map(r => (
-                  <div key={r.id} style={{ display: "flex", gap: 12, marginBottom: 12, padding: 12, background: "rgba(27,42,107,0.3)", border: `1px solid ${S.border}`, borderRadius: 10, cursor: "pointer" }}
-                    onClick={() => { setSelectedRep(r); setActiveTab("reps") }}>
-                    <img src={r.photo} alt={r.name} style={{ width: 40, height: 40, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover" }} />
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{r.name}</div>
-                      <div style={{ fontSize: 11, color: S.gold }}>{r.title}</div>
-                      <div style={{ fontSize: 11, color: S.gray }}>{r.district}</div>
-                    </div>
-                  </div>
-                ))}
+            )
+          }
+          return stateReps.map(r => (
+            <div key={r.id || r.bioguideId}
+              style={{ display: "flex", gap: 10, marginBottom: 10, padding: 10, background: "rgba(27,42,107,0.3)", border: `1px solid ${S.border}`, borderRadius: 10, cursor: "pointer" }}
+              onClick={() => { setSelectedRep(r); setActiveTab("reps") }}
+              className="rep-card">
+              <img src={r.photo} alt={r.name} style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} />
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
+                <div style={{ fontSize: 11, color: S.gold }}>{r.title}</div>
+                <div style={{ fontSize: 10, color: S.gray }}>{r.district}</div>
               </div>
             </div>
-          </div>
-        )}
+          ))
+        })()}
+      </div>
+    </div>
+  </div>
+)}
 
         {/* ALERTS */}
         {activeTab === "alerts" && (
