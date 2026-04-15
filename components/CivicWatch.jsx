@@ -261,7 +261,12 @@ const [loadingReps, setLoadingReps] = useState(true)
 const [dataSource, setDataSource] = useState("loading")
   const unreadCount = alerts.filter(a => !a.read).length
 
-  const displayReps = liveReps.length > 0 ? liveReps : REPS
+  const MOCK_MUNICIPAL = REPS.filter(r => r.level === 'municipal')
+const displayReps = loadingReps
+  ? []
+  : liveReps.length > 0
+    ? [...liveReps, ...MOCK_MUNICIPAL]
+    : REPS
 const filteredReps = displayReps.filter(r => {
     const matchLevel = filterLevel === "all" || r.level === filterLevel
     const matchParty = filterParty === "all" || r.party.toLowerCase() === filterParty
