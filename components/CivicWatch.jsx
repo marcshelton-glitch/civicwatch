@@ -512,7 +512,10 @@ useEffect(() => {
                 <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, marginBottom: 16 }}>
                   {STATE_MAP_DATA.find(s => s.state === selectedState)?.label}
                 </div>
-                {REPS.filter(r => r.state === STATE_MAP_DATA.find(s => s.state === selectedState)?.label).map(r => (
+                {displayReps.filter(r => {
+  const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
+  return r.state === stateLabel || r.state === selectedState
+}).map(r => (
                   <div key={r.id} style={{ display: "flex", gap: 12, marginBottom: 12, padding: 12, background: "rgba(27,42,107,0.3)", border: `1px solid ${S.border}`, borderRadius: 10, cursor: "pointer" }}
                     onClick={() => { setSelectedRep(r); setActiveTab("reps") }}>
                     <img src={r.photo} alt={r.name} style={{ width: 40, height: 40, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover" }} />
