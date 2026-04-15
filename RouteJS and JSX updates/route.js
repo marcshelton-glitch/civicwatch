@@ -1,9 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
 import { NextResponse } from 'next/server'
 
 const BASE = 'https://api.congress.gov/v3'
@@ -23,51 +17,7 @@ async function safeFetch(url, opts = {}) {
   if (!res.ok) throw new Error(`Fetch failed ${res.status}: ${url}`)
   return res.json()
 }
-async function legiScanFetch(op, params = {}) {
-  if (!LEGISCAN_KEY) throw new Error('LEGISCAN_API_KEY not configured')
 
-  const cacheKey = `legiscan:${op}:${JSON.stringify(params)}`
-
-  const { data: cached } = await supabase
-    .from('legiscan_cache')
-    .select('data, change_hash, fetched_at')
-    .eq('key', cacheKey)
-    .single()
-
-  const qs = new URLSearchParams({ key: LEGISCAN_KEY, op, ...params }).toString()
-  const url = `https://api.legiscan.com/?${qs}`
-
-  if (cached?.change_hash && (op === 'getMasterListRaw' || op === 'getSearchRaw')) {
-    const checkRes = await fetch(url, { next: { revalidate: 0 } })
-    const checkJson = await checkRes.json()
-    if (checkJson.status !== 'OK') {
-      if (cached) return cached.data
-      throw new Error(`LegiScan error: ${checkJson.alert?.message}`)
-    }
-    const payload = checkJson[Object.keys(checkJson).find(k => k !== 'status')]
-    if (payload?.hash && payload.hash === cached.change_hash) return cached.data
-  }
-
-  const res = await fetch(url, { next: { revalidate: 0 } })
-  const json = await res.json()
-
-  if (json.status !== 'OK') {
-    if (cached) return cached.data
-    throw new Error(`LegiScan error: ${json.alert?.message || 'Unknown'}`)
-  }
-
-  const payload = json[Object.keys(json).find(k => k !== 'status')] || json
-  const changeHash = payload?.hash || null
-
-  await supabase.from('legiscan_cache').upsert({
-    key: cacheKey,
-    data: payload,
-    change_hash: changeHash,
-    fetched_at: new Date().toISOString(),
-  }, { onConflict: 'key' })
-
-  return payload
-}
 // ── GET handlers ──────────────────────────────────────────────────────────────
 export async function GET(request) {
   try {
@@ -263,37 +213,21 @@ export async function GET(request) {
 
     // ── SCHEDULE / DOCKET (LegiScan — requires key, graceful fallback) ─────────
     if (type === 'schedule') {
-  if (!LEGISCAN_KEY) {
-    return NextResponse.json({
-      schedule: [],
-      source: 'unavailable',
-      message: 'LegiScan API key not configured yet.',
-    })
-  }
-
-  const stateParam = searchParams.get('state') || 'US'
-  const masterList = await legiScanFetch('getMasterListRaw', { state: stateParam })
-
-  const bills = Object.values(masterList)
-    .filter(b => typeof b === 'object' && b.bill_id)
-    .slice(0, 20)
-    .map(b => ({
-      billId: b.bill_id,
-      number: b.number,
-      title: b.title,
-      changeHash: b.change_hash,
-      lastAction: b.last_action,
-      lastActionDate: b.last_action_date,
-      status: b.status,
-      url: b.url,
-    }))
-
-  return NextResponse.json({
-    schedule: bills,
-    source: 'live',
-    attribution: 'Data provided by LegiScan LLC — CC BY 4.0',
-  })
-}
+      if (!LEGISCAN_KEY) {
+        return NextResponse.json({
+          schedule: [],
+          source: 'unavailable',
+          message: 'LegiScan API key not configured yet.'
+        })
+      }
+      const data = await safeFetch(
+        `https://api.legiscan.com/?key=${LEGISCAN_KEY}&op=getSessionList&state=US`
+      )
+      return NextResponse.json({
+        schedule: data.sessions || [],
+        source: 'live'
+      })
+    }
 
     // ── COMMITTEE ASSIGNMENTS ─────────────────────────────────────────────────
     if (type === 'committees' && bioguideId) {
