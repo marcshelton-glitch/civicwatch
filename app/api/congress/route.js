@@ -259,21 +259,23 @@ const stateMembers = (data.members || []).filter(
 
     // ── SPONSORED BILLS by member ─────────────────────────────────────────────
     if (type === 'sponsored' && bioguideId) {
-      const data = await cFetch(
-        `/member/${bioguideId}/sponsored-legislation?limit=10`
-      )
- const bills = (data.sponsoredLegislation || [])
-  .filter(b => b.title && b.type && b.number)
-  .slice(0, 10)
-  .map(b => ({
-    number: `${b.type}${b.number}`,
-    title: b.title,
-    congress: b.congress,
-    url: b.url,
-    latestAction: b.latestAction?.text,
-    latestActionDate: b.latestAction?.actionDate,
-    policyArea: b.policyArea?.name,
-  }))
+  const data = await cFetch(
+    `/member/${bioguideId}/sponsored-legislation?limit=10`
+  )
+  const bills = (data.sponsoredLegislation || [])
+    .filter(b => b.title && b.type && b.number)
+    .slice(0, 10)
+    .map(b => ({
+      number: `${b.type}${b.number}`,
+      title: b.title,
+      congress: b.congress,
+      url: b.url,
+      latestAction: b.latestAction?.text,
+      latestActionDate: b.latestAction?.actionDate,
+      policyArea: b.policyArea?.name,
+    }))
+  return NextResponse.json({ bills, source: 'live' })
+}
 
     // ── SCHEDULE / DOCKET (LegiScan — requires key, graceful fallback) ─────────
     if (type === 'schedule') {
