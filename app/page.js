@@ -612,9 +612,10 @@ export default function LandingPage() {
         </div>
 
         <h1 className="hero-headline" style={{ position: 'relative' }}>
-          See exactly how your rep<br />
-          <span className="accent">voted, traded,</span><br />
-          and got <span className="red">rich.</span>
+        See exactly how your<br />
+Elected Representatives<br />
+<span className="accent">voted, traded,</span><br />
+and got <span className="red">rich.</span>
         </h1>
 
         <p className="hero-sub" style={{ position: 'relative' }}>
