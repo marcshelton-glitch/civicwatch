@@ -1,121 +1,863 @@
 'use client'
-import { useUser } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-const S = {
-  navy: '#0A1628', navyMid: '#1B2A6B', red: '#B22234',
-  gold: '#D4AF37', white: '#F8F9FF', gray: '#8892A4',
-}
+const STATS = [
+  { value: '$174K', label: 'Average congressional salary' },
+  { value: '$1.9M', label: 'Average member net worth' },
+  { value: '3,847', label: 'STOCK Act trades in 2024' },
+  { value: '535', label: 'Members tracked' },
+]
 
-export default function HomePage() {
-  const { isSignedIn, isLoaded } = useUser()
-  const router = useRouter()
+const FEATURES = [
+  {
+    icon: '⚖️',
+    title: 'Voting Records',
+    desc: 'Every vote, every bill. See exactly where your representative stood — and how it compares to their campaign promises.',
+  },
+  {
+    icon: '💰',
+    title: 'Stock Trade Disclosures',
+    desc: 'STOCK Act filings made readable. Cross-referenced against committee assignments and legislative activity.',
+  },
+  {
+    icon: '📈',
+    title: 'Wealth Trajectory',
+    desc: 'Net worth before and after office. The numbers that the financial disclosure forms bury in fine print.',
+  },
+  {
+    icon: '🤖',
+    title: 'AI Accountability Reports',
+    desc: 'Nonpartisan AI analysis of each member\'s full record — trades, votes, wealth, and peer standing — in plain English.',
+  },
+  {
+    icon: '🔔',
+    title: 'Track My Rep™ Alerts',
+    desc: 'Get notified the moment your representative votes, discloses a trade, or schedules a town hall.',
+  },
+  {
+    icon: '🗺️',
+    title: 'District Map',
+    desc: 'Find every federal and local representative for any state. Click to explore their full profile.',
+  },
+]
+
+const TICKER_ITEMS = [
+  'Sen. Collins · NVDA BUY · $45,000',
+  'Rep. Harrington · LMT BUY · $67,000',
+  'S. 3321 Clean Energy Act · YEA',
+  'H.R. 899 Border Security · NAY',
+  'Sen. Collins · PFE SELL · $31,000',
+  'H.R. 4412 Veterans Housing · YEA',
+  'Rep. Harrington · BTC BUY · $15,000',
+  'Motion 23-0412 Housing Bonds · YEA',
+  'Sen. Collins · ETH BUY · $22,000',
+  'H.R. 1447 Inflation Reduction · NAY',
+]
+
+export default function LandingPage() {
+  const [scrollY, setScrollY] = useState(0)
+  const heroRef = useRef(null)
+  const tickerRef = useRef(null)
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) router.push('/dashboard')
-  }, [isLoaded, isSignedIn, router])
+    const handleScroll = () => setScrollY(window.scrollY)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
-    <div style={{ background: S.navy, minHeight: '100vh', fontFamily: 'Georgia, serif', color: S.white }}>
+    <div style={{
+      fontFamily: "'Source Serif 4', Georgia, serif",
+      background: '#080E1C',
+      color: '#F0F2FF',
+      overflowX: 'hidden',
+      minHeight: '100vh',
+    }}>
       <style>{`
-        .hero-btn:hover { opacity:0.88; transform:translateY(-2px); }
-        .feature-card:hover { border-color:rgba(212,175,55,0.4); }
-        .star-bg { background-image:radial-gradient(rgba(212,175,55,0.06) 1px,transparent 1px); background-size:28px 28px; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --navy: #080E1C;
+          --navy-mid: #0F1A35;
+          --navy-light: #1B2A6B;
+          --red: #B22234;
+          --red-bright: #D42B42;
+          --gold: #D4AF37;
+          --gold-dim: rgba(212,175,55,0.15);
+          --white: #F0F2FF;
+          --gray: #7A8499;
+          --border: rgba(212,175,55,0.2);
+        }
+
+        .grain {
+          position: fixed; inset: 0; pointer-events: none; z-index: 1;
+          opacity: 0.035;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        .nav { 
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          padding: 0 32px;
+          display: flex; align-items: center; justify-content: space-between;
+          height: 64px;
+          background: rgba(8,14,28,0.85);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+          font-family: 'Playfair Display', serif;
+          font-weight: 900; font-size: 20px; letter-spacing: 2px;
+          color: var(--white); text-decoration: none;
+        }
+        .nav-logo span { color: var(--gold); }
+
+        .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn-ghost {
+          padding: 8px 20px;
+          background: transparent;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          color: var(--gray);
+          font-family: inherit; font-size: 13px;
+          cursor: pointer; text-decoration: none;
+          transition: all 0.2s;
+        }
+        .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+        .btn-primary {
+          padding: 8px 20px;
+          background: linear-gradient(135deg, var(--red), #8B1A2A);
+          border: none; border-radius: 6px;
+          color: white; font-family: inherit; font-size: 13px; font-weight: 600;
+          cursor: pointer; text-decoration: none;
+          transition: all 0.2s;
+          letter-spacing: 0.3px;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(178,34,52,0.5); }
+
+        /* HERO */
+        .hero {
+          min-height: 100vh;
+          display: flex; flex-direction: column;
+          justify-content: center; align-items: center;
+          text-align: center;
+          padding: 120px 24px 80px;
+          position: relative;
+        }
+
+        .hero-bg {
+          position: absolute; inset: 0;
+          background: 
+            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(178,34,52,0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 80% 80%, rgba(27,42,107,0.3) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 50% at 20% 60%, rgba(212,175,55,0.05) 0%, transparent 50%);
+        }
+
+        .hero-stripe {
+          position: absolute; top: 0; left: 0; right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, var(--red) 33%, #F0F2FF 33%, #F0F2FF 66%, var(--navy-light) 66%);
+        }
+
+        .eyebrow {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 6px 16px;
+          background: rgba(212,175,55,0.08);
+          border: 1px solid var(--border);
+          border-radius: 30px;
+          font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+          color: var(--gold); margin-bottom: 32px;
+          animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero-headline {
+          font-family: 'Playfair Display', serif;
+          font-weight: 900;
+          font-size: clamp(42px, 7vw, 88px);
+          line-height: 1.05;
+          letter-spacing: -1px;
+          max-width: 900px;
+          margin-bottom: 12px;
+          animation: fadeUp 0.6s 0.1s ease both;
+        }
+
+        .hero-headline .accent { 
+          color: var(--gold);
+          font-style: italic;
+        }
+
+        .hero-headline .red { color: var(--red-bright); }
+
+        .hero-sub {
+          font-size: clamp(16px, 2vw, 20px);
+          color: var(--gray);
+          max-width: 560px;
+          line-height: 1.7;
+          margin-bottom: 40px;
+          font-weight: 300;
+          animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .hero-ctas {
+          display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+          margin-bottom: 64px;
+          animation: fadeUp 0.6s 0.3s ease both;
+        }
+
+        .btn-hero {
+          padding: 15px 36px;
+          background: linear-gradient(135deg, var(--red), #8B1A2A);
+          border: none; border-radius: 8px;
+          color: white; font-family: 'Playfair Display', serif;
+          font-size: 16px; font-weight: 700;
+          cursor: pointer; text-decoration: none;
+          transition: all 0.25s;
+          letter-spacing: 0.3px;
+          box-shadow: 0 4px 24px rgba(178,34,52,0.4);
+        }
+        .btn-hero:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(178,34,52,0.55); }
+
+        .btn-hero-ghost {
+          padding: 15px 36px;
+          background: transparent;
+          border: 1px solid rgba(212,175,55,0.4);
+          border-radius: 8px;
+          color: var(--gold); font-family: inherit;
+          font-size: 16px; font-weight: 400;
+          cursor: pointer; text-decoration: none;
+          transition: all 0.25s;
+        }
+        .btn-hero-ghost:hover { background: var(--gold-dim); border-color: var(--gold); }
+
+        /* TICKER */
+        .ticker-wrap {
+          width: 100%; overflow: hidden;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: rgba(15,26,53,0.8);
+          padding: 12px 0;
+          animation: fadeUp 0.6s 0.4s ease both;
+        }
+
+        .ticker-track {
+          display: flex; gap: 0;
+          animation: ticker 40s linear infinite;
+          width: max-content;
+        }
+        .ticker-track:hover { animation-play-state: paused; }
+
+        .ticker-item {
+          display: flex; align-items: center; gap: 8px;
+          padding: 0 32px;
+          font-size: 12px; letter-spacing: 0.5px;
+          color: var(--gray);
+          border-right: 1px solid var(--border);
+          white-space: nowrap;
+        }
+
+        .ticker-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* STATS */
+        .stats-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 2px;
+          position: relative;
+        }
+
+        .stat-card {
+          padding: 40px 32px;
+          background: rgba(15,26,53,0.5);
+          border: 1px solid var(--border);
+          text-align: center;
+          position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+          content: '';
+          position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, var(--red), var(--gold));
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        .stat-card:hover::before { opacity: 1; }
+
+        .stat-value {
+          font-family: 'Playfair Display', serif;
+          font-size: 48px; font-weight: 900;
+          color: var(--gold);
+          line-height: 1;
+          margin-bottom: 10px;
+        }
+
+        .stat-label {
+          font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+          color: var(--gray); line-height: 1.5;
+        }
+
+        /* SECTION LABEL */
+        .section-label {
+          text-align: center;
+          font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+          color: var(--gold); margin-bottom: 16px;
+        }
+
+        .section-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(28px, 4vw, 48px);
+          font-weight: 900; text-align: center;
+          margin-bottom: 16px; line-height: 1.1;
+        }
+
+        .section-sub {
+          text-align: center; color: var(--gray);
+          font-size: 16px; line-height: 1.7;
+          max-width: 540px; margin: 0 auto 56px;
+          font-weight: 300;
+        }
+
+        /* FEATURES */
+        .features-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 1px;
+          background: var(--border);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          overflow: hidden;
+        }
+
+        .feature-card {
+          padding: 36px 32px;
+          background: #080E1C;
+          transition: background 0.3s;
+          position: relative;
+        }
+        .feature-card:hover { background: rgba(15,26,53,0.9); }
+
+        .feature-icon {
+          font-size: 28px; margin-bottom: 16px; display: block;
+        }
+
+        .feature-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 18px; font-weight: 700;
+          margin-bottom: 10px; color: var(--white);
+        }
+
+        .feature-desc {
+          font-size: 14px; color: var(--gray);
+          line-height: 1.7; font-weight: 300;
+        }
+
+        /* MOCKUP / PREVIEW */
+        .preview-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+        }
+
+        .preview-card {
+          background: linear-gradient(145deg, rgba(27,42,107,0.4), rgba(8,14,28,0.95));
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .preview-header {
+          padding: 16px 24px;
+          background: rgba(15,26,53,0.8);
+          border-bottom: 1px solid var(--border);
+          display: flex; align-items: center; gap: 12px;
+        }
+
+        .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        .preview-body {
+          padding: 32px;
+          display: grid; grid-template-columns: 1fr 1fr 1fr;
+          gap: 16px;
+        }
+
+        .mock-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 18px;
+        }
+
+        .mock-label {
+          font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--gray); margin-bottom: 10px;
+        }
+
+        .mock-value {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px; font-weight: 700;
+        }
+
+        .mock-row {
+          display: flex; justify-content: space-between;
+          align-items: center; padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          font-size: 12px;
+        }
+        .mock-row:last-child { border-bottom: none; }
+
+        .yea { color: #4CAF50; font-weight: 700; }
+        .nay { color: var(--red-bright); font-weight: 700; }
+        .buy { color: #4CAF50; font-weight: 700; }
+        .sell { color: var(--red-bright); font-weight: 700; }
+
+        /* PRICING */
+        .pricing-section {
+          padding: 80px 24px;
+          max-width: 900px; margin: 0 auto;
+        }
+
+        .pricing-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+        }
+
+        .pricing-card {
+          border-radius: 16px;
+          padding: 40px 36px;
+          border: 1px solid var(--border);
+          background: rgba(15,26,53,0.4);
+          position: relative;
+        }
+
+        .pricing-card.featured {
+          background: linear-gradient(145deg, rgba(27,42,107,0.6), rgba(8,14,28,0.95));
+          border-color: var(--gold);
+        }
+
+        .pricing-badge {
+          position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+          background: linear-gradient(135deg, var(--gold), #B8960C);
+          color: #080E1C; font-size: 11px; font-weight: 700;
+          letter-spacing: 1.5px; text-transform: uppercase;
+          padding: 4px 16px; border-radius: 20px; white-space: nowrap;
+        }
+
+        .pricing-tier {
+          font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--gray); margin-bottom: 12px;
+        }
+
+        .pricing-price {
+          font-family: 'Playfair Display', serif;
+          font-size: 52px; font-weight: 900;
+          line-height: 1; margin-bottom: 6px;
+        }
+
+        .pricing-price span {
+          font-size: 18px; font-weight: 400; color: var(--gray);
+        }
+
+        .pricing-desc {
+          font-size: 13px; color: var(--gray);
+          margin-bottom: 28px; line-height: 1.6;
+        }
+
+        .pricing-features { list-style: none; margin-bottom: 32px; }
+        .pricing-features li {
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          font-size: 13px; color: var(--gray);
+          display: flex; align-items: center; gap: 10px;
+        }
+        .pricing-features li:last-child { border-bottom: none; }
+        .pricing-features li::before { content: '✓'; color: var(--gold); font-weight: 700; }
+
+        .btn-plan {
+          width: 100%; padding: 14px;
+          border-radius: 8px; border: none;
+          font-family: 'Playfair Display', serif;
+          font-size: 15px; font-weight: 700;
+          cursor: pointer; text-decoration: none;
+          display: block; text-align: center;
+          transition: all 0.2s;
+        }
+
+        .btn-plan.free {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: var(--gray);
+        }
+        .btn-plan.free:hover { border-color: var(--gold); color: var(--gold); }
+
+        .btn-plan.pro {
+          background: linear-gradient(135deg, var(--gold), #B8960C);
+          color: #080E1C;
+        }
+        .btn-plan.pro:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(212,175,55,0.4); }
+
+        /* CTA */
+        .cta-section {
+          padding: 100px 24px;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-bg {
+          position: absolute; inset: 0;
+          background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(178,34,52,0.1) 0%, transparent 70%);
+        }
+
+        .cta-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(32px, 5vw, 60px);
+          font-weight: 900; line-height: 1.1;
+          max-width: 700px; margin: 0 auto 20px;
+          position: relative;
+        }
+
+        .cta-sub {
+          font-size: 16px; color: var(--gray);
+          max-width: 440px; margin: 0 auto 40px;
+          line-height: 1.7; font-weight: 300;
+          position: relative;
+        }
+
+        /* FOOTER */
+        footer {
+          border-top: 1px solid var(--border);
+          padding: 40px 24px;
+          text-align: center;
+        }
+
+        .footer-logo {
+          font-family: 'Playfair Display', serif;
+          font-weight: 900; font-size: 18px; letter-spacing: 2px;
+          color: var(--gold); margin-bottom: 16px;
+        }
+
+        .footer-links {
+          display: flex; gap: 24px; justify-content: center;
+          flex-wrap: wrap; margin-bottom: 20px;
+        }
+
+        .footer-links a {
+          font-size: 12px; color: var(--gray);
+          text-decoration: none; letter-spacing: 0.5px;
+          transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--gold); }
+
+        .footer-copy {
+          font-size: 11px; color: rgba(122,132,153,0.6);
+          line-height: 1.6;
+        }
+
+        /* DIVIDER */
+        .flag-stripe {
+          height: 3px;
+          background: linear-gradient(90deg, var(--red) 33%, #F0F2FF 33%, #F0F2FF 66%, var(--navy-light) 66%);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+          .preview-body { grid-template-columns: 1fr; }
+          .pricing-grid { grid-template-columns: 1fr; }
+          .nav { padding: 0 16px; }
+          .hero { padding: 100px 16px 60px; }
+        }
       `}</style>
-      <header style={{ borderBottom:'1px solid rgba(212,175,55,0.2)', padding:'14px 24px', display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, background:'rgba(10,22,40,0.97)', backdropFilter:'blur(10px)', zIndex:100 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <span style={{ fontSize:26 }}>🦅</span>
-          <span style={{ fontWeight:900, fontSize:20, letterSpacing:2 }}>CIVIC<span style={{ color:S.gold }}>WATCH</span></span>
+
+      {/* Grain overlay */}
+      <div className="grain" />
+
+      {/* NAV */}
+      <nav className="nav">
+        <Link href="/" className="nav-logo">CIVIC<span>WATCH</span></Link>
+        <div className="nav-actions">
+          <Link href="/sign-in" className="btn-ghost">Sign In</Link>
+          <Link href="/sign-up" className="btn-primary">Start Free →</Link>
         </div>
-        <div style={{ display:'flex', gap:12 }}>
-          <Link href="/sign-in" style={{ padding:'8px 20px', border:'1px solid rgba(212,175,55,0.4)', borderRadius:8, color:S.gold, fontSize:13, fontWeight:600 }}>Sign In</Link>
-          <Link href="/sign-up" style={{ padding:'8px 20px', background:S.red, borderRadius:8, color:'white', fontSize:13, fontWeight:600 }}>Get Started Free</Link>
+      </nav>
+
+      {/* HERO */}
+      <section className="hero" ref={heroRef}>
+        <div className="hero-bg" />
+        <div className="hero-stripe" />
+
+        <div className="eyebrow" style={{ position: 'relative' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
+          Live · Congress.gov · STOCK Act Disclosures
         </div>
-      </header>
-      <div style={{ height:4, background:`linear-gradient(90deg,${S.red} 33%,white 33%,white 66%,${S.navyMid} 66%)` }} />
-      <section className="star-bg" style={{ padding:'80px 24px', textAlign:'center', maxWidth:800, margin:'0 auto' }}>
-        <div style={{ display:'inline-block', padding:'6px 16px', background:'rgba(178,34,52,0.15)', border:'1px solid rgba(178,34,52,0.4)', borderRadius:20, fontSize:12, color:'#FF6B7A', letterSpacing:1.5, textTransform:'uppercase', marginBottom:24 }}>
-          Government Accountability Platform
-        </div>
-        <h1 style={{ fontWeight:900, fontSize:'clamp(32px,6vw,56px)', lineHeight:1.15, marginBottom:20 }}>
-          Your Representatives.<br />
-          <span style={{ color:S.gold }}>Fully Accountable.</span>
+
+        <h1 className="hero-headline" style={{ position: 'relative' }}>
+          See exactly how your rep<br />
+          <span className="accent">voted, traded,</span><br />
+          and got <span className="red">rich.</span>
         </h1>
-        <p style={{ fontSize:16, color:S.gray, lineHeight:1.8, maxWidth:580, margin:'0 auto 36px' }}>
-          Track every vote, trade disclosure, net worth change, and town hall event for every elected official — from your city council to the U.S. Senate.
+
+        <p className="hero-sub" style={{ position: 'relative' }}>
+          CivicWatch pulls live voting records, STOCK Act trade disclosures,
+          and financial filings — then puts them in plain English.
+          No spin. No party line. Just the record.
         </p>
-        <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
-          <Link href="/sign-up" className="hero-btn" style={{ padding:'14px 32px', background:`linear-gradient(135deg,${S.red},${S.navyMid})`, borderRadius:10, color:'white', fontSize:15, fontWeight:700, transition:'all 0.2s', display:'inline-block' }}>
-            Start Tracking Free →
+
+        <div className="hero-ctas" style={{ position: 'relative' }}>
+          <Link href="/sign-up" className="btn-hero">
+            Track Your Representatives →
           </Link>
-          <Link href="/sign-in" className="hero-btn" style={{ padding:'14px 32px', border:'1px solid rgba(212,175,55,0.4)', borderRadius:10, color:S.gold, fontSize:15, fontWeight:600, transition:'all 0.2s', display:'inline-block' }}>
+          <Link href="/sign-in" className="btn-hero-ghost">
             Sign In
           </Link>
         </div>
-        <p style={{ marginTop:16, fontSize:12, color:S.gray }}>Free plan available · Pro at $9.99/month · Cancel anytime</p>
+
+        {/* TICKER */}
+        <div className="ticker-wrap" style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
+          <div className="ticker-track">
+            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => {
+              const isBuy = item.includes('BUY')
+              const isSell = item.includes('SELL')
+              const isYea = item.includes('YEA')
+              const isNay = item.includes('NAY')
+              const dotColor = isBuy || isYea ? '#4CAF50' : isSell || isNay ? '#D42B42' : '#D4AF37'
+              return (
+                <div key={i} className="ticker-item">
+                  <span className="ticker-dot" style={{ background: dotColor }} />
+                  <span style={{ color: isBuy || isYea ? '#4CAF50' : isSell || isNay ? '#D42B42' : '#CDD2E0' }}>
+                    {item}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </section>
-      <section style={{ padding:'50px 24px', maxWidth:1100, margin:'0 auto' }}>
-        <h2 style={{ textAlign:'center', fontWeight:700, fontSize:28, marginBottom:32 }}>Everything You Need to Hold Power Accountable</h2>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:18 }}>
-          {[
-            ['⚖️','Voting Records','Every vote cast with bill outcome and a direct link to the full bill text.'],
-            ['💰','Wealth & Trades','Net worth before and after office. All STOCK Act disclosures in one timeline.'],
-            ['🔔','Track My Rep™ Alerts','Get notified the moment your rep votes, trades, or appears on a new docket.'],
-            ['🗺️','District Map','Interactive map from municipal to federal for any location.'],
-            ['📋',"Today's Docket","Live view of each rep's legislative schedule for the current day."],
-            ['📜','U.S. Constitution','All articles and amendments in original text and plain English.'],
-            ['🏛️','Town Halls','Upcoming public events and community priority polls per rep.'],
-            ['📊','Peer Comparison','Compare your rep to direct peers on key issues side by side.'],
-          ].map(([icon, title, desc]) => (
-            <div key={title} className="feature-card" style={{ padding:22, background:'rgba(27,42,107,0.25)', border:'1px solid rgba(212,175,55,0.15)', borderRadius:14, transition:'all 0.25s' }}>
-              <div style={{ fontSize:26, marginBottom:10 }}>{icon}</div>
-              <div style={{ fontWeight:700, fontSize:15, marginBottom:6, color:S.gold }}>{title}</div>
-              <div style={{ fontSize:13, color:S.gray, lineHeight:1.7 }}>{desc}</div>
+
+      {/* STATS */}
+      <section style={{ background: 'rgba(15,26,53,0.3)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="stats-section">
+          {STATS.map((s, i) => (
+            <div key={i} className="stat-card">
+              <div className="stat-value">{s.value}</div>
+              <div className="stat-label">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
-      <section style={{ padding:'50px 24px', maxWidth:760, margin:'0 auto', textAlign:'center' }}>
-        <h2 style={{ fontWeight:700, fontSize:28, marginBottom:32 }}>Simple, Transparent Pricing</h2>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
-          <div style={{ padding:26, background:'rgba(27,42,107,0.3)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16 }}>
-            <div style={{ fontWeight:700, fontSize:20, marginBottom:6 }}>Free</div>
-            <div style={{ fontSize:34, fontWeight:700, color:S.gold, marginBottom:18 }}>$0</div>
-            {['Federal representatives','Basic voting records','Constitution reference','District map'].map(f => (
-              <div key={f} style={{ display:'flex', gap:10, marginBottom:8, fontSize:13, color:S.gray, textAlign:'left' }}>
-                <span style={{ color:'#4CAF50' }}>✓</span>{f}
-              </div>
-            ))}
-            <Link href="/sign-up" style={{ display:'block', marginTop:18, padding:'10px 0', border:'1px solid rgba(212,175,55,0.4)', borderRadius:8, color:S.gold, fontSize:13, fontWeight:600 }}>
-              Get Started
-            </Link>
-          </div>
-          <div style={{ padding:26, background:'linear-gradient(145deg,rgba(178,34,52,0.15),rgba(27,42,107,0.5))', border:`2px solid ${S.gold}`, borderRadius:16, position:'relative' }}>
-            <div style={{ position:'absolute', top:-12, left:'50%', transform:'translateX(-50%)', background:S.gold, color:S.navy, padding:'3px 14px', borderRadius:20, fontSize:11, fontWeight:700, whiteSpace:'nowrap' }}>
-              MOST POPULAR
+
+      {/* FEATURES */}
+      <section className="features-section">
+        <div className="section-label">What CivicWatch Tracks</div>
+        <h2 className="section-title">
+          Everything they'd rather<br />you didn't know
+        </h2>
+        <p className="section-sub">
+          Six layers of accountability data, aggregated from official government sources
+          and made searchable in seconds.
+        </p>
+        <div className="features-grid">
+          {FEATURES.map((f, i) => (
+            <div key={i} className="feature-card">
+              <span className="feature-icon">{f.icon}</span>
+              <div className="feature-title">{f.title}</div>
+              <div className="feature-desc">{f.desc}</div>
             </div>
-            <div style={{ fontWeight:700, fontSize:20, marginBottom:6 }}>Pro</div>
-            <div style={{ fontSize:34, fontWeight:700, color:S.gold, marginBottom:4 }}>$9.99<span style={{ fontSize:13, color:S.gray }}>/mo</span></div>
-            <div style={{ fontSize:12, color:S.gray, marginBottom:14 }}>Cancel anytime · 7-day free trial</div>
-            {['Everything in Free','All government levels','Track My Rep™ alerts','Trade & wealth history','Town Hall notifications','Peer comparisons','Data export'].map(f => (
-              <div key={f} style={{ display:'flex', gap:10, marginBottom:8, fontSize:13, color:'#CDD2E0', textAlign:'left' }}>
-                <span style={{ color:S.gold }}>★</span>{f}
+          ))}
+        </div>
+      </section>
+
+      <div className="flag-stripe" style={{ maxWidth: 1100, margin: '0 auto' }} />
+
+      {/* APP PREVIEW */}
+      <section className="preview-section">
+        <div className="section-label">Live Data Preview</div>
+        <h2 className="section-title" style={{ marginBottom: 40 }}>
+          The record, unfiltered
+        </h2>
+        <div className="preview-card">
+          <div className="preview-header">
+            <div className="preview-dot" style={{ background: '#FF5F57' }} />
+            <div className="preview-dot" style={{ background: '#FFBD2E' }} />
+            <div className="preview-dot" style={{ background: '#28CA41' }} />
+            <span style={{ fontSize: 12, color: 'var(--gray)', marginLeft: 8 }}>CivicWatch — Representative Profile</span>
+          </div>
+          <div className="preview-body">
+            {/* Wealth card */}
+            <div className="mock-card">
+              <div className="mock-label">Wealth Change in Office</div>
+              <div className="mock-value" style={{ color: '#FF6B6B', marginBottom: 8 }}>+625%</div>
+              <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: 12 }}>$1.2M → $8.7M · 15 years</div>
+              <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: '85%', background: 'linear-gradient(90deg, #D4AF37, #B22234)', borderRadius: 2 }} />
               </div>
-            ))}
-            <Link href="/sign-up" style={{ display:'block', marginTop:18, padding:'12px 0', background:`linear-gradient(135deg,${S.red},${S.navyMid})`, borderRadius:8, color:'white', fontSize:14, fontWeight:700 }}>
-              Start Free Trial →
+            </div>
+            {/* Votes card */}
+            <div className="mock-card">
+              <div className="mock-label">Recent Votes</div>
+              {[
+                { bill: 'Inflation Reduction Act', vote: 'YEA' },
+                { bill: 'Healthcare Expansion', vote: 'YEA' },
+                { bill: 'Border Security Act', vote: 'NAY' },
+                { bill: 'Defense Appropriations', vote: 'YEA' },
+              ].map((v, i) => (
+                <div key={i} className="mock-row">
+                  <span style={{ color: 'var(--gray)', fontSize: 11 }}>{v.bill}</span>
+                  <span className={v.vote === 'YEA' ? 'yea' : 'nay'}>{v.vote}</span>
+                </div>
+              ))}
+            </div>
+            {/* Trades card */}
+            <div className="mock-card">
+              <div className="mock-label">STOCK Act Disclosures</div>
+              {[
+                { asset: 'NVDA', type: 'BUY', amount: '$45K' },
+                { asset: 'ETH', type: 'BUY', amount: '$22K' },
+                { asset: 'PFE', type: 'SELL', amount: '$31K' },
+                { asset: 'TSLA', type: 'BUY', amount: '$18K' },
+              ].map((t, i) => (
+                <div key={i} className="mock-row">
+                  <span style={{ fontWeight: 600, fontSize: 12 }}>{t.asset}</span>
+                  <span className={t.type === 'BUY' ? 'buy' : 'sell'}>{t.type}</span>
+                  <span style={{ color: 'var(--gray)', fontSize: 11 }}>{t.amount}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Blur overlay teasing Pro */}
+          <div style={{
+            margin: '0 32px 32px',
+            padding: 20,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid var(--border)',
+            borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 16, flexWrap: 'wrap',
+          }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: 'var(--gold)', textTransform: 'uppercase', marginBottom: 4 }}>🤖 AI Accountability Report</div>
+              <div style={{ fontSize: 13, color: 'var(--gray)', filter: 'blur(4px)', userSelect: 'none' }}>
+                This member's trading activity shows a notable pattern of purchasing technology stocks within weeks of serving on the Senate Commerce Committee...
+              </div>
+            </div>
+            <Link href="/sign-up" style={{
+              padding: '10px 22px', background: 'linear-gradient(135deg, var(--gold), #B8960C)',
+              borderRadius: 8, color: '#080E1C', fontSize: 12, fontWeight: 700,
+              textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+            }}>
+              Unlock Full Report →
             </Link>
           </div>
         </div>
       </section>
-      <footer style={{ borderTop:'1px solid rgba(212,175,55,0.15)', padding:'24px', textAlign:'center', marginTop:40 }}>
-        <div style={{ color:S.gold, fontSize:13, marginBottom:6 }}>CivicWatch™ · Democracy Accountability Platform</div>
-        <div style={{ fontSize:11, color:S.gray, marginBottom:10 }}>Data sourced from Congress.gov, OpenSecrets, SEC EDGAR, and official government records.</div>
-        <div style={{ display:'flex', gap:20, justifyContent:'center', fontSize:12 }}>
-          <Link href="/privacy" style={{ color:S.gray }}>Privacy Policy</Link>
-          <Link href="/terms" style={{ color:S.gray }}>Terms of Service</Link>
+
+      {/* PRICING */}
+      <section className="pricing-section">
+        <div className="section-label">Pricing</div>
+        <h2 className="section-title">
+          Accountability shouldn't<br />cost a fortune
+        </h2>
+        <p className="section-sub">
+          Start free. Upgrade when you want the full picture.
+        </p>
+        <div className="pricing-grid">
+          {/* Free */}
+          <div className="pricing-card">
+            <div className="pricing-tier">Free</div>
+            <div className="pricing-price">$0</div>
+            <div className="pricing-desc">Everything you need to start holding your representatives accountable.</div>
+            <ul className="pricing-features">
+              <li>Browse all 535 representatives</li>
+              <li>Full voting records</li>
+              <li>STOCK Act trade disclosures</li>
+              <li>District map</li>
+              <li>Constitution reference</li>
+              <li>AI analysis preview</li>
+            </ul>
+            <Link href="/sign-up" className="btn-plan free">Get Started Free</Link>
+          </div>
+          {/* Pro */}
+          <div className="pricing-card featured">
+            <div className="pricing-badge">★ Most Popular</div>
+            <div className="pricing-tier" style={{ color: 'var(--gold)' }}>Pro</div>
+            <div className="pricing-price" style={{ color: 'var(--gold)' }}>
+              $9.<span style={{ fontSize: 28, color: 'var(--gold)' }}>99</span>
+              <span style={{ fontSize: 14 }}>/mo</span>
+            </div>
+            <div className="pricing-desc">The full accountability picture, powered by AI.</div>
+            <ul className="pricing-features">
+              <li>Everything in Free</li>
+              <li>Full AI accountability reports</li>
+              <li>Trade conflict analysis</li>
+              <li>Wealth trajectory deep-dive</li>
+              <li>Peer standing breakdown</li>
+              <li>Track My Rep™ alerts</li>
+              <li>Priority support</li>
+            </ul>
+            <Link href="/sign-up" className="btn-plan pro">Start Pro — $9.99/mo</Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="flag-stripe" />
+
+      {/* CTA */}
+      <section className="cta-section">
+        <div className="cta-bg" />
+        <div className="eyebrow" style={{ position: 'relative', display: 'inline-flex' }}>
+          🏛️ Free to start · No credit card required
+        </div>
+        <h2 className="cta-title" style={{ position: 'relative' }}>
+          Your representatives work<br />
+          for <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>you.</span><br />
+          Start holding them to it.
+        </h2>
+        <p className="cta-sub" style={{ position: 'relative' }}>
+          Join thousands of Americans who use CivicWatch to stay informed
+          and hold power accountable — at every level of government.
+        </p>
+        <div style={{ position: 'relative' }}>
+          <Link href="/sign-up" className="btn-hero">
+            Track Your Representatives →
+          </Link>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer>
+        <div className="flag-stripe" style={{ marginBottom: 40 }} />
+        <div className="footer-logo">CIVIC<span style={{ color: '#D4AF37' }}>WATCH</span>™</div>
+        <div className="footer-links">
+          <Link href="/sign-up" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign Up</Link>
+          <Link href="/sign-in" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign In</Link>
+          <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms</Link>
+          <a href="https://congress.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Congress.gov</a>
+          <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>House Disclosures</a>
+        </div>
+        <div className="footer-copy">
+          Data sourced from Congress.gov, House Clerk STOCK Act Disclosures, Senate Financial Disclosures, and LegiScan LLC (CC BY 4.0).<br />
+          CivicWatch is an independent accountability platform. Not affiliated with any government agency or political party.<br />
+          © {new Date().getFullYear()} CivicWatch. All rights reserved.
         </div>
       </footer>
     </div>
