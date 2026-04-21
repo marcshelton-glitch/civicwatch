@@ -77,7 +77,14 @@ export async function GET(request) {
     // Step 2: Fetch state legislators from OpenStates
     const data = await getStateReps(lat, lng)
 
-    const officials = (data.results || []).map(person => {
+    // Filter out federal officials (US Congress) — already covered by Congress.gov tab.
+    // State legislators have a jurisdiction ID containing '/state:', federal ones don't.
+    const stateOnly = (data.results || []).filter(person => {
+      const jid = person.jurisdiction?.id || person.current_role?.jurisdiction_id || ''
+      return jid.includes('/state:')
+    })
+
+    const officials = stateOnly.map(person => {
       const isSenator = (person.current_role?.title || '').toLowerCase().includes('senator')
       const office = (person.offices || [])[0]
       const link = (person.links || [])[0]?.url || ''
