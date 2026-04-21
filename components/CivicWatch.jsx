@@ -247,6 +247,18 @@ const fmt = (n) => {
   if (n == null || !isFinite(n)) return 'N/A'
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
 }
+const timeAgo = (dateStr) => {
+  if (!dateStr) return 'Recently'
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  const days = Math.floor((Date.now() - date) / 86400000)
+  if (days === 0) return 'Today'
+  if (days === 1) return '1 day ago'
+  if (days < 7) return `${days} days ago`
+  if (days < 30) return `${Math.floor(days / 7)}w ago`
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`
+  return `${Math.floor(days / 365)}y ago`
+}
 const enrichment = (b, c) => {
   if (!b || !c || b === 0) return { pct: null, delta: null }
   const pct = ((c - b) / b * 100).toFixed(0)
@@ -268,6 +280,8 @@ export default function CivicWatch() {
   const [repTab, setRepTab] = useState("overview")
   const [tracked, setTracked] = useState([1])
   const [alerts, setAlerts] = useState(ALERT_LOG)
+  const [liveAlerts, setLiveAlerts] = useState([])
+  const [loadingAlerts, setLoadingAlerts] = useState(false)
   const [constitMode, setConstitMode] = useState("plain")
   const [constitSection, setConstitSection] = useState("articles")
   const [selectedState, setSelectedState] = useState("CA")
@@ -279,7 +293,7 @@ const [liveReps, setLiveReps] = useState([])
 const [loadingReps, setLoadingReps] = useState(true)
 const [dataSource, setDataSource] = useState("loading")
   const [mounted, setMounted] = useState(false)
-  const unreadCount = alerts.filter(a => !a.read).length
+  const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
 
   useEffect(() => setMounted(true), [])
 
@@ -296,7 +310,10 @@ const filteredReps = displayReps.filter(r => {
     return matchLevel && matchParty && matchSearch
   })
 
-  const markAllRead = () => setAlerts(alerts.map(a => ({ ...a, read: true })))
+  const markAllRead = () => {
+    setAlerts(alerts.map(a => ({ ...a, read: true })))
+    setLiveAlerts(liveAlerts.map(a => ({ ...a, read: true })))
+  }
   const toggleTrack = (id) => setTracked(t => t.includes(id) ? t.filter(x => x !== id) : [...t, id])
   const handlePollVote = (repId, issue) => setPollVotes(prev => ({ ...prev, [`${repId}-${issue}`]: true }))
 
@@ -340,6 +357,46 @@ useEffect(() => {
   }
   load()
 }, [selectedState])
+  useEffect(() => {
+    if (activeTab !== 'alerts') return
+    const trackedLive = displayReps.filter(r => r.isLive && tracked.includes(r.id))
+    if (trackedLive.length === 0) { setLiveAlerts([]); return }
+    setLoadingAlerts(true)
+    const fetches = trackedLive.flatMap(rep => [
+      fetch(`/api/congress?type=votes&bioguideId=${rep.id}`)
+        .then(r => r.json())
+        .then(d => (d.votes || []).slice(0, 3).map((v, i) => ({
+          id: `${rep.id}-vote-${i}`,
+          repId: rep.id,
+          photo: rep.photo,
+          type: 'vote',
+          message: `${rep.name} voted ${v.vote} on ${v.bill}`,
+          time: v.date || '',
+          read: false,
+        })))
+        .catch(() => []),
+      fetch(`/api/congress?type=trades&bioguideId=${rep.id}`)
+        .then(r => r.json())
+        .then(d => (d.trades || []).slice(0, 2).map((t, i) => ({
+          id: `${rep.id}-trade-${i}`,
+          repId: rep.id,
+          photo: rep.photo,
+          type: 'trade',
+          message: `${rep.name} disclosed: ${t.asset} ${t.type} ${typeof t.amount === 'number' ? fmt(t.amount) : t.amount}`,
+          time: t.date || '',
+          read: false,
+        })))
+        .catch(() => []),
+    ])
+    Promise.all(fetches).then(results => {
+      const all = results.flat()
+        .filter(a => a.time)
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+      setLiveAlerts(all)
+      setLoadingAlerts(false)
+    })
+  }, [activeTab, tracked])
+
   const handleSubscribe = async () => {
     try {
       const res = await fetch('/api/subscribe', { method: 'POST' })
@@ -627,24 +684,42 @@ useEffect(() => {
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {alerts.map(alert => {
-                const rep = REPS.find(r => r.id === alert.repId)
-                const typeIcon = { vote: "⚖️", trade: "💰", docket: "📋", townhall: "🏛️" }[alert.type]
-                const typeColor = { vote: S.gold, trade: "#FF6B6B", docket: "#5B9CFF", townhall: "#90EE90" }[alert.type]
-                return (
-                  <div key={alert.id} className={alert.read ? "" : "alert-unread"}
-                    style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
-                    <span style={{ fontSize: 20 }}>{typeIcon}</span>
-                    <img src={rep?.photo} alt="" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover" }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, marginBottom: 2 }}>{alert.message}</div>
-                      <div style={{ fontSize: 11, color: S.gray }}>{alert.time}</div>
-                    </div>
-                    <span className="badge" style={{ background: `rgba(212,175,55,0.12)`, color: typeColor, textTransform: "uppercase" }}>{alert.type}</span>
-                    {!alert.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: S.gold, flexShrink: 0 }} />}
+              {loadingAlerts && (
+                <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+                  <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+                  Loading latest activity for tracked representatives…
+                </div>
+              )}
+              {!loadingAlerts && (() => {
+                const mockTrackedAlerts = alerts.filter(a => tracked.includes(a.repId))
+                const allAlerts = [...liveAlerts, ...mockTrackedAlerts]
+                if (allAlerts.length === 0) return (
+                  <div style={{ textAlign: 'center', padding: 48 }}>
+                    <div style={{ fontSize: 32, marginBottom: 12 }}>🔔</div>
+                    <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No activity yet for your tracked representatives.</div>
+                    <div style={{ fontSize: 12, color: S.gray }}>Track a representative using the ☆ button on their profile to see their votes and trades here.</div>
                   </div>
                 )
-              })}
+                return allAlerts.map(alert => {
+                  const photo = alert.photo || displayReps.find(r => r.id === alert.repId)?.photo || REPS.find(r => r.id === alert.repId)?.photo
+                  const typeIcon = { vote: "⚖️", trade: "💰", docket: "📋", townhall: "🏛️" }[alert.type]
+                  const typeColor = { vote: S.gold, trade: "#FF6B6B", docket: "#5B9CFF", townhall: "#90EE90" }[alert.type]
+                  const displayTime = alert.time && alert.time.match(/^\d{4}-\d{2}-\d{2}/) ? timeAgo(alert.time) : alert.time
+                  return (
+                    <div key={alert.id} className={alert.read ? "" : "alert-unread"}
+                      style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
+                      <span style={{ fontSize: 20 }}>{typeIcon}</span>
+                      {photo && <img src={photo} alt="" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.message}</div>
+                        <div style={{ fontSize: 11, color: S.gray }}>{displayTime}</div>
+                      </div>
+                      <span className="badge" style={{ background: `rgba(212,175,55,0.12)`, color: typeColor, textTransform: "uppercase", flexShrink: 0 }}>{alert.type}</span>
+                      {!alert.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: S.gold, flexShrink: 0 }} />}
+                    </div>
+                  )
+                })
+              })()}
             </div>
           </div>
         )}
