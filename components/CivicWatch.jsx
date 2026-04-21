@@ -797,7 +797,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if (repTab === 'docket' && isLive && !liveDocket && !loadingDocket) {
+    if ((repTab === 'docket' || repTab === 'overview') && isLive && !liveDocket && !loadingDocket) {
       setLoadingDocket(true)
       const state = rep.state || 'US'
       fetch(`/api/congress?type=schedule&state=${state}&bioguideId=${rep.id}`)
@@ -866,8 +866,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {/* ── OVERVIEW ── */}
       {repTab === "overview" && (
         <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+
+          {/* Wealth Change */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Wealth Change</div>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Wealth & Trades</div>
             {rep.netWorthBefore ? (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
@@ -876,40 +878,112 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 </div>
                 <div style={{ padding: "6px 10px", background: "rgba(178,34,52,0.1)", borderRadius: 6, textAlign: "center", fontSize: 13, color: "#FF6B6B", fontWeight: 700 }}>+{enr.pct}% · {fmt(enr.delta)} gained</div>
               </>
+            ) : loadingTrades ? (
+              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
+            ) : trades.length > 0 ? (
+              <>
+                {trades.slice(0, 3).map((t, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 12, alignItems: 'center' }}>
+                    <span style={{ color: t.type === "BUY" ? "#4CAF50" : "#f87171", fontWeight: 700, minWidth: 36 }}>{t.type}</span>
+                    <span style={{ color: S.grayLight, flex: 1, marginRight: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.ticker || t.asset}</span>
+                    <span style={{ color: S.gray, fontSize: 11 }}>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</span>
+                  </div>
+                ))}
+                {tradesMeta && (
+                  <div style={{ marginTop: 8, fontSize: 11, color: S.gray }}>
+                    {tradesMeta.buys} buys · {tradesMeta.sells} sells · STOCK Act
+                  </div>
+                )}
+              </>
+            ) : rep.source === 'openstates' ? (
+              <div style={{ fontSize: 12, color: S.gray }}>State legislators file disclosures at the state level.{' '}
+                <a href="https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/" target="_blank" rel="noreferrer" style={{ color: S.gold }}>FollowTheMoney →</a>
+              </div>
             ) : (
-              <div style={{ fontSize: 12, color: S.gray }}>Net worth data not available for this member.</div>
+              <div style={{ fontSize: 12, color: S.gray }}>No STOCK Act trade disclosures on record.{' '}
+                <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold }}>View filings →</a>
+              </div>
             )}
           </div>
+
+          {/* Recent Votes */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Recent Votes</div>
-            {votes.slice(0, 3).map((v, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12 }}>
-                <span style={{ color: S.grayLight, flex: 1, marginRight: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.bill.split(" – ")[1] || v.bill.split(" - ")[1] || v.bill}</span>
-                <span className={v.vote === "YEA" ? "vote-yea" : "vote-nay"} style={{ fontWeight: 700 }}>{v.vote}</span>
+            {loadingVotes ? (
+              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
+            ) : votes.length > 0 ? (
+              votes.slice(0, 3).map((v, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: 8, gap: 8 }}>
+                  <span style={{ color: S.grayLight, flex: 1, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {v.bill.split(" – ")[1] || v.bill.split(" - ")[1] || v.bill}
+                  </span>
+                  <span style={{ fontWeight: 700, fontSize: 12, color: v.vote === "YEA" ? "#4ade80" : v.vote === "NAY" ? "#f87171" : S.gray, flexShrink: 0 }}>{v.vote}</span>
+                </div>
+              ))
+            ) : (
+              <div style={{ fontSize: 12, color: S.gray }}>
+                {rep.source === 'openstates'
+                  ? <>State voting records via <a href={rep.website} target="_blank" rel="noreferrer" style={{ color: S.gold }}>OpenStates →</a></>
+                  : <>No votes found. <a href={`https://www.govtrack.us/congress/members/${rep.id}`} target="_blank" rel="noreferrer" style={{ color: S.gold }}>GovTrack →</a></>
+                }
               </div>
-            ))}
-            {votes.length === 0 && <div style={{ fontSize: 12, color: S.gray }}>{isLive && loadingVotes ? 'Loading votes…' : 'No votes on record.'}</div>}
+            )}
           </div>
+
+          {/* Today's Schedule */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Today's Schedule</div>
-            {rep.docket.length > 0 ? rep.docket.slice(0, 3).map((d, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 11, color: S.gold, minWidth: 58 }}>{d.time}</span>
-                <span style={{ fontSize: 12, color: S.grayLight }}>{d.item}</span>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Active Legislation</div>
+            {loadingDocket ? (
+              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
+            ) : (liveDocket || []).length > 0 ? (
+              (liveDocket || []).slice(0, 3).map((d, i) => (
+                <div key={i} style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, color: S.grayLight, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</div>
+                  <div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>
+                    {d.number && <span style={{ color: S.gold, marginRight: 6 }}>{d.number}</span>}
+                    {d.lastActionDate || d.role || ''}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ fontSize: 12, color: S.gray }}>
+                {rep.source === 'openstates'
+                  ? <>State bills via <a href={rep.website} target="_blank" rel="noreferrer" style={{ color: S.gold }}>OpenStates →</a></>
+                  : <>View on <a href={rep.website} target="_blank" rel="noreferrer" style={{ color: S.gold }}>Congress.gov →</a></>
+                }
               </div>
-            )) : <div style={{ fontSize: 12, color: S.gray }}>Schedule data coming soon via LegiScan.</div>}
+            )}
           </div>
+
+          {/* Contact / Office */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Latest Trades</div>
-            {trades.slice(0, 3).map((t, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12 }}>
-                <span style={{ color: t.type === "BUY" ? "#4CAF50" : S.red, fontWeight: 700 }}>{t.type}</span>
-                <span style={{ color: S.grayLight }}>{t.asset}</span>
-                <span>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</span>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Contact & Office</div>
+            {rep.phone && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 10, color: S.gray, marginBottom: 2 }}>Phone</div>
+                <a href={`tel:${rep.phone}`} style={{ fontSize: 13, color: S.grayLight, textDecoration: 'none' }}>{rep.phone}</a>
               </div>
-            ))}
-            {trades.length === 0 && <div style={{ fontSize: 12, color: S.gray }}>{isLive && loadingTrades ? 'Loading trades…' : 'No STOCK Act disclosures found.'}</div>}
+            )}
+            {rep.officeLocation && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 10, color: S.gray, marginBottom: 2 }}>Office</div>
+                <div style={{ fontSize: 12, color: S.grayLight }}>{rep.officeLocation}</div>
+              </div>
+            )}
+            {rep.officeHours && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 10, color: S.gray, marginBottom: 2 }}>Hours</div>
+                <div style={{ fontSize: 12, color: S.grayLight }}>{rep.officeHours}</div>
+              </div>
+            )}
+            {rep.website && (
+              <a href={rep.website} target="_blank" rel="noreferrer"
+                style={{ display: 'inline-block', marginTop: 4, fontSize: 12, color: S.gold, textDecoration: 'none' }}>
+                Official website →
+              </a>
+            )}
           </div>
+
         </div>
       )}
 
