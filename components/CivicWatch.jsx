@@ -173,7 +173,7 @@ export default function CivicWatch() {
 
   useEffect(() => setMounted(true), [])
 
-  const displayReps = filterLevel === 'municipal'
+  const displayReps = filterLevel === 'state'
     ? municipalReps
     : filterLevel === 'all'
       ? [...liveReps, ...municipalReps]
@@ -399,7 +399,7 @@ useEffect(() => {
                 style={{ padding: "10px 14px", background: S.navyMid, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13 }}>
                 <option value="all">All Levels</option>
                 <option value="federal">Federal</option>
-                <option value="municipal">Municipal</option>
+                <option value="state">State</option>
               </select>
               <select value={filterParty} onChange={e => setFilterParty(e.target.value)}
                 style={{ padding: "10px 14px", background: S.navyMid, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13 }}>
@@ -414,11 +414,11 @@ useEffect(() => {
                 <div style={{ fontSize: 16 }}>Loading your representatives…</div>
               </div>
             )}
-            {(filterLevel === 'municipal' || filterLevel === 'all') && !civicAddress && (
+            {(filterLevel === 'state' || filterLevel === 'all') && !civicAddress && (
               <div style={{ background: `rgba(212,175,55,0.06)`, border: `1px solid ${S.border}`, borderRadius: 12, padding: "20px 24px", marginBottom: 20, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ flex: "1 1 260px" }}>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Find Your Local Representatives</div>
-                  <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.5 }}>Enter your address or ZIP code to load your mayor, city council, school board, and other local officials.</div>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Find Your State Representatives</div>
+                  <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.5 }}>Enter your address or ZIP code to find your state senators and state house representatives.</div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flex: "1 1 300px" }}>
                   <input
@@ -436,9 +436,9 @@ useEffect(() => {
                 </div>
               </div>
             )}
-            {(filterLevel === 'municipal' || filterLevel === 'all') && civicAddress && (
+            {(filterLevel === 'state' || filterLevel === 'all') && civicAddress && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-                <div style={{ fontSize: 12, color: S.gray }}>Showing local officials for: <span style={{ color: S.gold }}>{civicAddress}</span></div>
+                <div style={{ fontSize: 12, color: S.gray }}>Showing state legislators for: <span style={{ color: S.gold }}>{civicAddress}</span></div>
                 <button onClick={() => { setCivicAddress(""); setCivicAddressInput(""); setMunicipalReps([]) }}
                   style={{ fontSize: 12, background: "none", border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray, cursor: "pointer", padding: "4px 12px", fontFamily: "inherit" }}>
                   Change Address
@@ -448,15 +448,15 @@ useEffect(() => {
             {loadingMunicipal && (
               <div style={{ textAlign: "center", padding: "40px 0", color: S.gray }}>
                 <div className="pulse" style={{ fontSize: 32, marginBottom: 12 }}>🏛️</div>
-                <div style={{ fontSize: 14 }}>Loading local officials…</div>
+                <div style={{ fontSize: 14 }}>Loading state legislators…</div>
               </div>
             )}
             {municipalError && (
               <div style={{ padding: "14px 18px", background: "rgba(178,34,52,0.1)", border: `1px solid rgba(178,34,52,0.3)`, borderRadius: 10, color: "#FF6B6B", fontSize: 13, marginBottom: 16 }}>
-                Could not load municipal officials: {municipalError}
+                Could not load state legislators: {municipalError}
               </div>
             )}
-            {!loadingReps && !loadingMunicipal && filteredReps.length === 0 && filterLevel !== 'municipal' && (
+            {!loadingReps && !loadingMunicipal && filteredReps.length === 0 && filterLevel !== 'state' && (
               <div style={{ textAlign: "center", padding: "60px 0", color: S.gray, border: `1px dashed ${S.border}`, borderRadius: 16 }}>
                 <PlaceholderAvatar size={80} style={{ margin: "0 auto 20px" }} />
                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: S.white, marginBottom: 8 }}>No Representatives Found</div>
