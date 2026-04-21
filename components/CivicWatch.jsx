@@ -746,6 +746,7 @@ useEffect(() => {
 function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, S }) {
   const [liveVotes, setLiveVotes] = useState(null)
   const [liveTrades, setLiveTrades] = useState(null)
+  const [tradesMeta, setTradesMeta] = useState(null)
   const [liveBio, setLiveBio] = useState(null)
   const [liveSponsored, setLiveSponsored] = useState(null)
   const [liveDocket, setLiveDocket] = useState(null)
@@ -772,7 +773,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       setLoadingTrades(true)
       fetch(`/api/congress?type=trades&bioguideId=${rep.id}`)
         .then(r => r.json())
-        .then(d => { setLiveTrades(d.trades || []); setLoadingTrades(false) })
+        .then(d => {
+          setLiveTrades(d.trades || [])
+          setTradesMeta({ buys: d.buys || 0, sells: d.sells || 0, topTickers: d.topTickers || [], disclosureUrl: d.disclosureUrl || null, source: d.source })
+          setLoadingTrades(false)
+        })
         .catch(() => { setLiveTrades([]); setLoadingTrades(false) })
     }
   }, [repTab, rep.id])
@@ -998,6 +1003,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {/* ── WEALTH & TRADES ── */}
       {repTab === "wealth" && (
         <div className="slide-in">
+          {/* Net Worth — show if available, else link to official filings */}
           {rep.netWorthBefore ? (
             <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
               <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
@@ -1011,51 +1017,154 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               </div>
             </div>
           ) : (
-            <div style={{ padding: 18, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, marginBottom: 20, fontSize: 13, color: S.gray, textAlign: 'center' }}>
-              Net worth data not available. Financial disclosures are self-reported annually.{' '}
-              <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold }}>View official filings →</a>
-            </div>
-          )}
-
-          {loadingTrades && (
-            <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
-              <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
-              Loading STOCK Act disclosures…
-            </div>
-          )}
-          {!loadingTrades && trades.length === 0 && isLive && (
-            <div style={{ textAlign: 'center', padding: 32 }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>💼</div>
-              <div style={{ fontSize: 13, color: S.gray, marginBottom: 12 }}>No trade disclosures found in House or Senate STOCK Act records.</div>
-              <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer"
-                style={{ padding: '7px 18px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
-                Search House Disclosures →
+            <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+              <a href={tradesMeta?.disclosureUrl || (rep.source === 'openstates'
+                ? `https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/`
+                : `https://disclosures-clerk.house.gov/FinancialDisclosure`)}
+                target="_blank" rel="noreferrer"
+                style={{ flex: 1, padding: 16, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 24 }}>📄</span>
+                <div>
+                  <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 2 }}>Annual Financial Disclosures</div>
+                  <div style={{ fontSize: 11, color: S.gold }}>View official filings →</div>
+                </div>
+              </a>
+              <a href={`https://www.opensecrets.org/personal-finances/`}
+                target="_blank" rel="noreferrer"
+                style={{ flex: 1, padding: 16, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 24 }}>💰</span>
+                <div>
+                  <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 2 }}>Net Worth & Assets</div>
+                  <div style={{ fontSize: 11, color: S.gold }}>Search OpenSecrets →</div>
+                </div>
               </a>
             </div>
           )}
-          {!loadingTrades && trades.length > 0 && (
-            <>
-              <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${S.border}` }}>
-                <div style={{ display: "grid", gridTemplateColumns: "110px 70px 1fr 80px 100px", padding: "10px 16px", background: S.navyMid, fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: "uppercase" }}>
-                  <span>Date</span><span>Type</span><span>Asset</span><span>Sector</span><span style={{ textAlign: "right" }}>Amount</span>
-                </div>
-                {trades.map((t, i) => (
-                  <div key={i} className="trade-row" style={{ display: "grid", gridTemplateColumns: "110px 70px 1fr 80px 100px", padding: "12px 16px", borderTop: `1px solid ${S.border}`, fontSize: 13 }}>
-                    <span style={{ color: S.gray }}>{t.date}</span>
-                    <span style={{ color: t.type === "BUY" ? "#4CAF50" : S.red, fontWeight: 700 }}>{t.type}</span>
-                    <span style={{ fontWeight: 600 }}>{t.asset}{t.ticker ? ` (${t.ticker})` : ''}</span>
-                    <span style={{ color: S.gray }}>{t.sector}</span>
-                    <span style={{ textAlign: "right" }}>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</span>
-                  </div>
-                ))}
+
+          {/* State rep — no federal STOCK Act trades */}
+          {rep.source === 'openstates' && (
+            <div style={{ padding: 24, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🏛️</div>
+              <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>State legislators are not subject to the federal STOCK Act</div>
+              <div style={{ fontSize: 12, color: S.gray, marginBottom: 18 }}>Financial disclosures are filed at the state level and vary by state.</div>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <a href="https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/" target="_blank" rel="noreferrer"
+                  style={{ padding: '8px 16px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
+                  FollowTheMoney.org →
+                </a>
+                <a href={rep.website || `https://openstates.org/people/${rep.id.replace('os-', '')}/`} target="_blank" rel="noreferrer"
+                  style={{ padding: '8px 16px', background: `rgba(91,156,255,0.1)`, border: `1px solid ${S.border}`, borderRadius: 8, color: '#5B9CFF', textDecoration: 'none', fontSize: 12 }}>
+                  OpenStates Profile →
+                </a>
               </div>
-              <div style={{ marginTop: 10, fontSize: 11, color: S.gray }}>
-                * Official STOCK Act disclosures. Source: {trades[0]?.source || 'House Clerk / Senate.gov'}
-              </div>
-            </>
+            </div>
           )}
-          {!loadingTrades && trades.length > 0 && !isLive && (
-            <div style={{ marginTop: 10, fontSize: 11, color: S.gray }}>* Required STOCK Act disclosures. Source: SEC EDGAR / efts.sec.gov</div>
+
+          {/* Federal rep — STOCK Act trades */}
+          {rep.source !== 'openstates' && (
+            <>
+              {loadingTrades && (
+                <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+                  <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+                  Searching STOCK Act disclosures…
+                </div>
+              )}
+
+              {/* Trade summary stats */}
+              {!loadingTrades && trades.length > 0 && tradesMeta && (
+                <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 16 }}>
+                  <div style={{ padding: 14, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: S.grayLight }}>{trades.length}</div>
+                    <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Total Trades</div>
+                  </div>
+                  <div style={{ padding: 14, background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: 10, textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#4CAF50" }}>{tradesMeta.buys}</div>
+                    <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Purchases</div>
+                  </div>
+                  <div style={{ padding: 14, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 10, textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#f87171" }}>{tradesMeta.sells}</div>
+                    <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Sales</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Top tickers */}
+              {!loadingTrades && tradesMeta?.topTickers?.length > 0 && (
+                <div style={{ marginBottom: 14, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 11, color: S.gray, letterSpacing: 1 }}>TOP TRADED:</span>
+                  {tradesMeta.topTickers.map(t => (
+                    <span key={t} style={{ fontSize: 12, fontWeight: 700, color: S.gold, background: "rgba(212,175,55,0.12)", borderRadius: 4, padding: "2px 8px" }}>{t}</span>
+                  ))}
+                </div>
+              )}
+
+              {/* Buy/sell bar */}
+              {!loadingTrades && trades.length > 0 && tradesMeta && (tradesMeta.buys + tradesMeta.sells) > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 8 }}>
+                    <div style={{ background: "#4CAF50", width: `${Math.round(tradesMeta.buys / (tradesMeta.buys + tradesMeta.sells) * 100)}%`, transition: 'width 0.5s' }} />
+                    <div style={{ background: "#f87171", flex: 1 }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: S.gray }}>
+                    <span style={{ color: '#4CAF50' }}>{Math.round(tradesMeta.buys / (tradesMeta.buys + tradesMeta.sells) * 100)}% Buy</span>
+                    <span style={{ color: '#f87171' }}>{Math.round(tradesMeta.sells / (tradesMeta.buys + tradesMeta.sells) * 100)}% Sell</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Trade list */}
+              {!loadingTrades && trades.length > 0 && (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {trades.map((t, i) => (
+                      <div key={i} style={{ padding: "12px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                        <div style={{ minWidth: 48, fontWeight: 700, fontSize: 13, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray }}>{t.type}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {t.asset}{t.ticker && t.ticker !== t.asset ? ` (${t.ticker})` : ''}
+                          </div>
+                          <div style={{ fontSize: 11, color: S.gray }}>{t.date} · {t.sector}</div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</div>
+                          {t.docUrl
+                            ? <a href={t.docUrl} target="_blank" rel="noreferrer" style={{ fontSize: 10, color: S.gold }}>Doc →</a>
+                            : <span style={{ fontSize: 10, color: S.gray }}>{(t.source || '').split('—')[0].trim()}</span>
+                          }
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 11, color: S.gray }}>Official STOCK Act disclosures · {trades[0]?.source}</div>
+                    {tradesMeta?.disclosureUrl && (
+                      <a href={tradesMeta.disclosureUrl} target="_blank" rel="noreferrer"
+                        style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: '4px 12px', borderRadius: 6, textDecoration: 'none' }}>
+                        All Filings →
+                      </a>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {!loadingTrades && trades.length === 0 && (
+                <div style={{ textAlign: 'center', padding: 40 }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
+                  <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>No STOCK Act trade disclosures found</div>
+                  <div style={{ fontSize: 12, color: S.gray, marginBottom: 20 }}>This member may not have filed any periodic transaction reports, or data may not yet be available.</div>
+                  <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer"
+                      style={{ padding: '8px 16px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
+                      House Disclosures →
+                    </a>
+                    <a href="https://efts.senate.gov/LATEST/search-index?q=&df=senator_name&fq=report_types:ptr" target="_blank" rel="noreferrer"
+                      style={{ padding: '8px 16px', background: `rgba(91,156,255,0.1)`, border: `1px solid ${S.border}`, borderRadius: 8, color: '#5B9CFF', textDecoration: 'none', fontSize: 12 }}>
+                      Senate Disclosures →
+                    </a>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

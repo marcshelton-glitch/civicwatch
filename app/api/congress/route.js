@@ -158,6 +158,10 @@ export async function GET(request) {
 
     const bioguideTypes = ['member', 'votes', 'trades', 'sponsored', 'committees']
     if (bioguideTypes.includes(type) && !BIOGUIDE_RE.test(bioguideId)) {
+      // State reps don't file federal STOCK Act disclosures
+      if (type === 'trades') {
+        return NextResponse.json({ trades: [], source: 'state', message: 'State legislators file disclosures at the state level, not via the federal STOCK Act.' })
+      }
       return NextResponse.json({ error: 'Invalid bioguideId' }, { status: 400 })
     }
 
@@ -284,73 +288,106 @@ export async function GET(request) {
 
     // ── trades ────────────────────────────────────────────────────────────
     if (type === 'trades') {
+      // Fetch member name + chamber from Congress.gov
+      let lastName = '', firstName = '', isSenator = false, fullName = ''
+      try {
+        const memberData = await cFetch(`/member/${bioguideId}`)
+        const m = memberData.member
+        fullName = m?.directOrderName || m?.invertedOrderName || ''
+        // directOrderName is "Last, First" format
+        const nameParts = fullName.split(',')
+        lastName = nameParts[0]?.trim().toLowerCase().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || ''
+        firstName = nameParts[1]?.trim().split(/\s+/)[0]?.toLowerCase() || ''
+        const latestTerm = (m?.terms?.item || []).slice(-1)[0]
+        isSenator = latestTerm?.chamber?.toLowerCase().includes('senate') || false
+      } catch { /* skip */ }
+
+      // House PTR trades (Periodic Transaction Reports)
+      let houseTrades = []
       const year = new Date().getFullYear()
-      let houseData = []
       for (const y of [year, year - 1]) {
         try {
           const res = await fetch(
             `https://disclosures-clerk.house.gov/api/tradingData?year=${y}`,
-            { next: { revalidate: 86400 } }
+            { next: { revalidate: 86400 }, headers: { 'User-Agent': 'CivicWatch/1.0' } }
           )
           if (res.ok) {
             const json = await res.json()
-            houseData = json.data || []
-            if (houseData.length > 0) break
+            const raw = json.data || json || []
+            if (Array.isArray(raw) && raw.length > 0) {
+              houseTrades = raw.filter(t => {
+                if (t.bioguide_id) return t.bioguide_id.toUpperCase() === bioguideId
+                if (!lastName) return false
+                const tLast = (t.last_name || t.lastName || '').toLowerCase().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '')
+                const tFirst = (t.first_name || t.firstName || '').toLowerCase()
+                return tLast === lastName && (!firstName || !tFirst || tFirst.startsWith(firstName[0]))
+              })
+              if (houseTrades.length > 0) break
+            }
           }
         } catch { /* try next year */ }
       }
 
-      let lastName = ''
-      try {
-        const memberData = await cFetch(`/member/${bioguideId}`)
-        const fullName = memberData.member?.directOrderName || ''
-        lastName = fullName.split(',')[0]?.trim().toLowerCase() || ''
-      } catch { /* skip */ }
+      const normalizedHouse = houseTrades.slice(0, 25).map(t => ({
+        date: t.transaction_date || t.transactionDate || t.disclosure_date || '',
+        asset: t.asset_description || t.assetDescription || t.ticker || 'Unknown Asset',
+        ticker: t.ticker || null,
+        type: /purchase/i.test(t.type || '') ? 'BUY'
+          : /sale/i.test(t.type || '') ? 'SELL'
+          : (t.type || 'Unknown').toUpperCase(),
+        amount: t.amount || 'Undisclosed',
+        sector: t.asset_type || t.assetType || 'Stock/Security',
+        docUrl: t.pdf_url || t.pdfUrl || null,
+        source: 'House Clerk — STOCK Act PTR',
+      }))
 
-      const memberTrades = houseData
-        .filter(t => {
-          if (t.bioguide_id) return t.bioguide_id === bioguideId
-          return lastName && t.last_name?.toLowerCase() === lastName
-        })
-        .slice(0, 20)
-        .map(t => ({
-          date: t.transaction_date || t.disclosure_date,
-          asset: t.asset_description || t.ticker || 'Unknown',
-          ticker: t.ticker || null,
-          type: (t.type || '').toUpperCase().includes('PURCHASE') ? 'BUY'
-            : (t.type || '').toUpperCase().includes('SALE') ? 'SELL' : t.type,
-          amount: t.amount || 'Undisclosed',
-          sector: t.asset_type || 'Stock',
-          source: 'House Clerk STOCK Act Disclosure',
-        }))
-
+      // Senate EFTS trades
       let senateTrades = []
       if (lastName && /^[a-z\s\-']+$/.test(lastName)) {
         try {
           const senRes = await fetch(
-            `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name&fq=report_types:ptr`,
+            `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name&fq=report_types:ptr&dateFrom=2020-01-01`,
             { next: { revalidate: 86400 } }
           )
           if (senRes.ok) {
             const senJson = await senRes.json()
-            senateTrades = (senJson.hits?.hits || []).slice(0, 10).map(h => ({
-              date: h._source?.transaction_date,
-              asset: h._source?.asset_name || 'Unknown',
-              ticker: h._source?.ticker || null,
-              type: h._source?.transaction_type?.includes('Purchase') ? 'BUY' : 'SELL',
-              amount: h._source?.amount || 'Undisclosed',
-              sector: 'Stock',
-              source: 'Senate STOCK Act Disclosure',
-            }))
+            senateTrades = (senJson.hits?.hits || [])
+              .filter(h => {
+                const sName = (h._source?.senator_name || '').toLowerCase()
+                return sName.includes(lastName)
+              })
+              .slice(0, 20)
+              .map(h => ({
+                date: h._source?.transaction_date || h._source?.date_received || '',
+                asset: h._source?.asset_name || 'Unknown Asset',
+                ticker: h._source?.ticker || null,
+                type: /purchase/i.test(h._source?.transaction_type || '') ? 'BUY' : 'SELL',
+                amount: h._source?.amount || 'Undisclosed',
+                sector: h._source?.asset_type || 'Stock/Security',
+                docUrl: h._source?.link || null,
+                source: 'Senate.gov — STOCK Act PTR',
+              }))
           }
         } catch { /* optional */ }
       }
 
-      const allTrades = [...memberTrades, ...senateTrades]
+      const allTrades = [...normalizedHouse, ...senateTrades]
+        .filter(t => t.date)
         .sort((a, b) => new Date(b.date) - new Date(a.date))
+
+      const buys = allTrades.filter(t => t.type === 'BUY').length
+      const sells = allTrades.filter(t => t.type === 'SELL').length
+      const topTickers = [...new Set(allTrades.map(t => t.ticker).filter(Boolean))].slice(0, 5)
+
+      const disclosureUrl = isSenator
+        ? `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name`
+        : `https://disclosures-clerk.house.gov/FinancialDisclosure#Search`
 
       return NextResponse.json({
         trades: allTrades,
+        buys, sells, topTickers,
+        isSenator,
+        disclosureUrl,
         source: allTrades.length > 0 ? 'live' : 'none',
       })
     }
