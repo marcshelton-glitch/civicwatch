@@ -390,7 +390,30 @@ useEffect(() => {
                 <div style={{ fontSize: 16 }}>Loading your representatives…</div>
               </div>
             )}
-            {!loadingReps && filteredReps.length === 0 && (
+            {!loadingReps && filterLevel === 'municipal' && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20, marginBottom: 20 }}>
+                {[
+                  { title: "Mayor", district: "City of " + selectedState },
+                  { title: "City Council Member", district: "District Council" },
+                  { title: "School Board Member", district: "Local School District" },
+                ].map((placeholder, i) => (
+                  <div key={i} style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.4), rgba(10,14,30,0.7))`, border: `1px dashed ${S.border}`, borderRadius: 16, padding: 20, opacity: 0.7 }}>
+                    <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
+                      <PlaceholderAvatar size={68} style={{ border: `3px solid rgba(212,175,55,0.3)` }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 4, color: S.gray }}>— {placeholder.title} —</div>
+                        <div style={{ fontSize: 11, color: S.gold, marginBottom: 6 }}>{placeholder.district}</div>
+                        <span style={{ fontSize: 11, background: "rgba(255,255,255,0.05)", border: `1px solid ${S.border}`, borderRadius: 20, padding: "2px 10px", color: S.gray }}>municipal</span>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6, borderTop: `1px solid ${S.border}`, paddingTop: 12 }}>
+                      Municipal representative data would appear here — name, contact info, voting record, and financial disclosures — once a local government data source is connected.
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!loadingReps && filterLevel !== 'municipal' && filteredReps.length === 0 && (
               <div style={{ textAlign: "center", padding: "60px 0", color: S.gray, border: `1px dashed ${S.border}`, borderRadius: 16 }}>
                 <PlaceholderAvatar size={80} style={{ margin: "0 auto 20px" }} />
                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: S.white, marginBottom: 8 }}>No Representatives Found</div>
