@@ -164,9 +164,18 @@ export async function GET(request) {
 
     // ── members ───────────────────────────────────────────────────────────
     if (type === 'members') {
-      const data = await cFetch(`/member?currentMember=true&limit=250`)
       const stateFull = STATE_ABBR_TO_FULL[state] || state
-      const stateMembers = (data.members || []).filter(m => m.state === stateFull).slice(0, 30)
+      const [p1, p2, p3] = await Promise.all([
+        cFetch('/member?currentMember=true&limit=250&offset=0'),
+        cFetch('/member?currentMember=true&limit=250&offset=250'),
+        cFetch('/member?currentMember=true&limit=250&offset=500'),
+      ])
+      const allMembers = [
+        ...(p1.members || []),
+        ...(p2.members || []),
+        ...(p3.members || []),
+      ]
+      const stateMembers = allMembers.filter(m => m.state === stateFull).slice(0, 30)
       const members = stateMembers.map(m => {
         const termItems = m.terms?.item || []
         const latestTerm = termItems[termItems.length - 1] || {}

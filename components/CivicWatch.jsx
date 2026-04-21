@@ -243,7 +243,10 @@ const STATE_ABBR = {
   "District of Columbia":"DC",
 }
 
-const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
+const fmt = (n) => {
+  if (n == null || !isFinite(n)) return 'N/A'
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
+}
 const enrichment = (b, c) => {
   if (!b || !c || b === 0) return { pct: null, delta: null }
   const pct = ((c - b) / b * 100).toFixed(0)
@@ -275,11 +278,14 @@ const [filterParty, setFilterParty] = useState("all")
 const [liveReps, setLiveReps] = useState([])
 const [loadingReps, setLoadingReps] = useState(true)
 const [dataSource, setDataSource] = useState("loading")
+  const [mounted, setMounted] = useState(false)
   const unreadCount = alerts.filter(a => !a.read).length
+
+  useEffect(() => setMounted(true), [])
 
   const MOCK_MUNICIPAL = REPS.filter(r => r.level === 'municipal')
 const displayReps = loadingReps
-  ? []
+  ? MOCK_MUNICIPAL
   : liveReps.length > 0
     ? [...liveReps, ...MOCK_MUNICIPAL]
     : REPS
@@ -296,14 +302,21 @@ const filteredReps = displayReps.filter(r => {
 
   useEffect(() => { if (selectedRep) setRepTab("overview") }, [selectedRep])
 useEffect(() => {
+  setLiveReps([])
+  setLoadingReps(true)
   const load = async () => {
-    setLoadingReps(true)
     try {
       const res = await fetch(`/api/congress?type=members&state=${selectedState}`)
       const data = await res.json()
       if (data.members && data.members.length > 0) {
         setLiveReps(data.members.map(r => {
           const isSen = (r.chamber||'').toLowerCase().includes('senate')
+          const nameParts = (r.name || '').split(', ')
+          const displayName = nameParts.length >= 2
+            ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
+            : r.name || ''
+          const nameSlug = displayName.toLowerCase()
+            .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
           return {
             id: r.bioguideId, name: r.name,
             title: isSen ? 'U.S. Senator' : 'U.S. Representative',
@@ -311,7 +324,8 @@ useEffect(() => {
             level: 'federal',
             photo: r.depiction || `https://bioguide.congress.gov/bioguide/photo/${r.bioguideId[0]}/${r.bioguideId}.jpg`,
             email: '', phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
-            website: r.url||'https://congress.gov', officeHours: 'Mon-Fri 9am-5pm',
+            website: `https://www.congress.gov/member/${nameSlug}/${r.bioguideId}`,
+            officeHours: 'Mon-Fri 9am-5pm',
             officeLocation: isSen ? 'U.S. Senate, Washington DC' : 'U.S. House, Washington DC',
             bio: `${r.name} represents ${r.state} in the ${r.chamber}.`,
             peers: [], peerComparison: {}, netWorthBefore: null, netWorthCurrent: null,
@@ -320,8 +334,8 @@ useEffect(() => {
           }
         }))
         setDataSource('live')
-      } else { setDataSource('mock') }
-    } catch { setDataSource('mock') }
+      } else { setLiveReps([]); setDataSource('mock') }
+    } catch { setLiveReps([]); setDataSource('mock') }
     finally { setLoadingReps(false) }
   }
   load()
@@ -372,6 +386,13 @@ useEffect(() => {
         .ai-line { animation: typewriter 0.4s ease forwards; opacity: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
         ::-webkit-scrollbar { width:6px } ::-webkit-scrollbar-track { background:${S.navy} } ::-webkit-scrollbar-thumb { background:${S.navyMid}; border-radius:3px }
+        @media (max-width: 768px) {
+          .mobile-stack { grid-template-columns: 1fr !important; }
+          .mobile-col { flex-direction: column !important; }
+          .mobile-scroll { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
+          .mobile-hide { display: none !important; }
+          .map-layout { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* HEADER */}
@@ -474,8 +495,8 @@ useEffect(() => {
                     <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                       <a href={`tel:${rep.phone}`} className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.green, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>📞 Call</a>
-                      <a href={`mailto:${rep.email}`} className="btn-contact" onClick={e => e.stopPropagation()}
-                        style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ Email</a>
+                      <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
+                        style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
                       <a href={rep.website} target="_blank" rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: `rgba(212,175,55,0.15)`, borderRadius: 8, fontSize: 12, color: S.gold, textDecoration: "none", border: `1px solid ${S.border}`, transition: "all 0.2s", fontWeight: 600 }}>🌐 Web</a>
                     </div>
@@ -505,29 +526,36 @@ useEffect(() => {
         {activeTab === "map" && (
   <div className="slide-in">
     <SectionHeader title="District Map" subtitle="Click any state to view its representatives." />
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
+    <div className="map-layout" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
       <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
-        <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto' }}>
-          <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
-            {({ geographies }) =>
-              geographies.map(geo => {
-                const abbr = STATE_ABBR[geo.properties.name] || ''
-                const isSelected = abbr === selectedState
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    onClick={() => abbr && setSelectedState(abbr)}
-                    style={{
-                      default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
-hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
-pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },}}
-                  />
-                )
-              })
-            }
-          </Geographies>
-        </ComposableMap>
+        {mounted ? (
+          <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto' }}>
+            <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
+              {({ geographies }) =>
+                geographies.map(geo => {
+                  const abbr = STATE_ABBR[geo.properties.name] || ''
+                  const isSelected = abbr === selectedState
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      onClick={() => abbr && setSelectedState(abbr)}
+                      style={{
+                        default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
+                        hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+                        pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
+                      }}
+                    />
+                  )
+                })
+              }
+            </Geographies>
+          </ComposableMap>
+        ) : (
+          <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
+            Loading map…
+          </div>
+        )}
         <div style={{ textAlign: 'center', fontSize: 11, color: S.gray, marginTop: 4 }}>
           Click any state to load its representatives
         </div>
@@ -588,7 +616,7 @@ pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Currently Tracking</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {REPS.map(r => (
+                {displayReps.map(r => (
                   <div key={r.id} onClick={() => toggleTrack(r.id)}
                     style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", background: tracked.includes(r.id) ? `rgba(212,175,55,0.12)` : S.cardBg, border: `1px solid ${tracked.includes(r.id) ? S.gold : S.border}`, borderRadius: 30, cursor: "pointer" }}>
                     <img src={r.photo} alt={r.name} style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }} />
@@ -699,7 +727,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const isLive = rep.isLive
 
   useEffect(() => {
-    if (repTab === 'votes' && isLive && !liveVotes && !loadingVotes) {
+    if ((repTab === 'votes' || repTab === 'overview') && isLive && !liveVotes && !loadingVotes) {
       setLoadingVotes(true)
       fetch(`/api/congress?type=votes&bioguideId=${rep.id}`)
         .then(r => r.json())
@@ -709,7 +737,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if (repTab === 'wealth' && isLive && !liveTrades && !loadingTrades) {
+    if ((repTab === 'wealth' || repTab === 'overview') && isLive && !liveTrades && !loadingTrades) {
       setLoadingTrades(true)
       fetch(`/api/congress?type=trades&bioguideId=${rep.id}`)
         .then(r => r.json())
@@ -766,7 +794,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               <span>🕐 {rep.officeHours}</span>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="mobile-col" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a href={`tel:${rep.phone}`} style={{ padding: "9px 16px", background: S.green, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 {rep.phone}</a>
             <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
             <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>🌐 Website</a>
@@ -790,7 +818,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── OVERVIEW ── */}
       {repTab === "overview" && (
-        <div className="slide-in" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Wealth Change</div>
             {rep.netWorthBefore ? (
@@ -807,13 +835,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Recent Votes</div>
-            {rep.votes.slice(0, 3).map((v, i) => (
+            {votes.slice(0, 3).map((v, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12 }}>
                 <span style={{ color: S.grayLight, flex: 1, marginRight: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.bill.split(" – ")[1] || v.bill.split(" - ")[1] || v.bill}</span>
                 <span className={v.vote === "YEA" ? "vote-yea" : "vote-nay"} style={{ fontWeight: 700 }}>{v.vote}</span>
               </div>
             ))}
-            {rep.votes.length === 0 && <div style={{ fontSize: 12, color: S.gray }}>No votes loaded yet — click the Votes tab.</div>}
+            {votes.length === 0 && <div style={{ fontSize: 12, color: S.gray }}>{isLive && loadingVotes ? 'Loading votes…' : 'No votes on record.'}</div>}
           </div>
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Today's Schedule</div>
@@ -826,14 +854,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Latest Trades</div>
-            {rep.trades.slice(0, 3).map((t, i) => (
+            {trades.slice(0, 3).map((t, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 12 }}>
                 <span style={{ color: t.type === "BUY" ? "#4CAF50" : S.red, fontWeight: 700 }}>{t.type}</span>
                 <span style={{ color: S.grayLight }}>{t.asset}</span>
                 <span>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</span>
               </div>
             ))}
-            {rep.trades.length === 0 && <div style={{ fontSize: 12, color: S.gray }}>No trades loaded yet — click Wealth & Trades tab.</div>}
+            {trades.length === 0 && <div style={{ fontSize: 12, color: S.gray }}>{isLive && loadingTrades ? 'Loading trades…' : 'No STOCK Act disclosures found.'}</div>}
           </div>
         </div>
       )}
@@ -923,7 +951,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "wealth" && (
         <div className="slide-in">
           {rep.netWorthBefore ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+            <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
               <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
                 <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 8 }}>Net Worth Before Office</div>
                 <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 26, color: "#90EE90" }}>{fmt(rep.netWorthBefore)}</div>
@@ -1035,6 +1063,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 </div>
               )}
 
+              {Object.keys(rep.peerComparison || {}).length === 0 && isLive && (
+                <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center', color: S.gray, fontSize: 13 }}>
+                  Peer comparison data is manually curated and not yet available for all members.
+                  <div style={{ marginTop: 8, fontSize: 12 }}>
+                    <a href={`https://www.congress.gov/member/${rep.id}`} target="_blank" rel="noreferrer" style={{ color: S.gold, textDecoration: 'none' }}>View voting record on Congress.gov →</a>
+                  </div>
+                </div>
+              )}
               {Object.keys(rep.peerComparison || {}).length > 0 && (
                 <>
                   <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 14 }}>Issue Comparison vs. Direct Peers</div>
@@ -1064,7 +1100,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {/* ── TOWN HALL ── */}
       {repTab === "townhall" && (
         <div className="slide-in">
-          {isLive && rep.townHall.length === 0 ? (
+          {(isLive || !rep.townHall.length) && rep.townHall.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 48 }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>🏛️</div>
               <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>Town hall data not available via API.</div>
@@ -1075,7 +1111,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               </a>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
               <div>
                 <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 14 }}>Upcoming Events</div>
                 {rep.townHall.map((ev, i) => (
