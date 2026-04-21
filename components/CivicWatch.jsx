@@ -748,9 +748,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [liveTrades, setLiveTrades] = useState(null)
   const [liveBio, setLiveBio] = useState(null)
   const [liveSponsored, setLiveSponsored] = useState(null)
+  const [liveDocket, setLiveDocket] = useState(null)
   const [loadingVotes, setLoadingVotes] = useState(false)
   const [loadingTrades, setLoadingTrades] = useState(false)
   const [loadingBio, setLoadingBio] = useState(false)
+  const [loadingDocket, setLoadingDocket] = useState(false)
 
   const isLive = rep.isLive
 
@@ -785,6 +787,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         setLiveSponsored(sponsoredData.bills || [])
         setLoadingBio(false)
       }).catch(() => { setLoadingBio(false) })
+    }
+  }, [repTab, rep.id])
+
+  useEffect(() => {
+    if (repTab === 'docket' && isLive && !liveDocket && !loadingDocket) {
+      setLoadingDocket(true)
+      const state = rep.state || 'US'
+      fetch(`/api/congress?type=schedule&state=${state}&bioguideId=${rep.id}`)
+        .then(r => r.json())
+        .then(d => { setLiveDocket(d.schedule || []); setLoadingDocket(false) })
+        .catch(() => { setLiveDocket([]); setLoadingDocket(false) })
     }
   }, [repTab, rep.id])
 
@@ -930,42 +943,47 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {/* ── DOCKET ── */}
       {repTab === "docket" && (
         <div className="slide-in">
-          {isLive && rep.docket.length === 0 ? (
+          {loadingDocket && (
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
+              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
+              Loading legislative schedule from LegiScan…
+            </div>
+          )}
+          {!loadingDocket && (isLive ? (liveDocket || []) : rep.docket).length === 0 ? (
             <div style={{ textAlign: 'center', padding: 48 }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
-              <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>Real-time floor schedule coming soon.</div>
-              <div style={{ fontSize: 12, color: S.gray, marginBottom: 16 }}>Legislative docket data requires the LegiScan API, currently pending approval.</div>
+              <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No active bills found for this session.</div>
+              <div style={{ fontSize: 12, color: S.gray, marginBottom: 16 }}>Legislative data provided by LegiScan LLC — CC BY 4.0</div>
               <a href={rep.website} target="_blank" rel="noreferrer"
                 style={{ padding: '8px 20px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
                 View on Congress.gov →
               </a>
             </div>
-          ) : (
+          ) : !loadingDocket && (
             <>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
-                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase" }}>Today's Legislative Docket</div>
-                <div style={{ fontSize: 11, color: S.gold }}>🔄 Synced with Congress.gov</div>
+                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase" }}>Active Legislative Docket</div>
+                <div style={{ fontSize: 11, color: S.gold }}>🔄 LegiScan LLC — CC BY 4.0</div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
-                <div style={{ position: "absolute", left: 90, top: 20, bottom: 20, width: 2, background: `linear-gradient(to bottom, ${S.gold}, transparent)` }} />
-                {rep.docket.map((d, i) => {
-                  const typeStyle = {
-                    hearing: { bg: "rgba(91,156,255,0.1)", border: "rgba(91,156,255,0.3)", icon: "🎤", color: "#5B9CFF" },
-                    vote: { bg: "rgba(212,175,55,0.1)", border: S.border, icon: "⚖️", color: S.gold },
-                    meeting: { bg: "rgba(144,238,144,0.08)", border: "rgba(144,238,144,0.2)", icon: "🤝", color: "#90EE90" },
-                    press: { bg: "rgba(255,107,107,0.08)", border: "rgba(255,107,107,0.2)", icon: "📰", color: "#FF6B6B" },
-                  }[d.type]
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {(isLive ? (liveDocket || []) : rep.docket).map((d, i) => {
+                  const statusColors = { 1: S.gray, 2: "#5B9CFF", 3: S.gold, 4: "#4CAF50" }
+                  const statusLabels = { 1: "Introduced", 2: "Engrossed", 3: "Enrolled", 4: "Passed" }
+                  const statusColor = statusColors[d.status] || S.gray
+                  const isLiveItem = !!d.billId
                   return (
-                    <div key={i} style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                      <div style={{ minWidth: 80, textAlign: "right", fontSize: 12, color: S.gold, fontWeight: 600 }}>{d.time}</div>
-                      <div style={{ width: 14, height: 14, borderRadius: "50%", background: typeStyle.color, border: `2px solid ${S.navy}`, zIndex: 1, flexShrink: 0 }} />
-                      <div style={{ flex: 1, padding: "12px 14px", background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, borderRadius: 10, display: "flex", gap: 10, alignItems: "center" }}>
-                        <span style={{ fontSize: 16 }}>{typeStyle.icon}</span>
-                        <div>
-                          <div style={{ fontSize: 13 }}>{d.item}</div>
-                          <div style={{ fontSize: 11, color: typeStyle.color, textTransform: "uppercase", letterSpacing: 1 }}>{d.type}</div>
+                    <div key={i} style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          {isLiveItem && <span style={{ fontSize: 11, fontWeight: 700, color: S.gold, background: "rgba(212,175,55,0.12)", borderRadius: 4, padding: "2px 8px" }}>{d.number}</span>}
+                          {isLiveItem && <span style={{ fontSize: 11, color: statusColor, background: `rgba(${statusColor === S.gold ? '212,175,55' : '91,156,255'},0.1)`, borderRadius: 4, padding: "2px 8px" }}>{statusLabels[d.status] || 'Active'}</span>}
+                          {!isLiveItem && <span style={{ fontSize: 11, color: S.gold }}>{d.time}</span>}
                         </div>
+                        {isLiveItem && d.url && <a href={d.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "2px 10px", borderRadius: 6, whiteSpace: "nowrap", textDecoration: "none" }}>View →</a>}
                       </div>
+                      <div style={{ fontSize: 13, marginBottom: 4 }}>{isLiveItem ? d.title : d.item}</div>
+                      {isLiveItem && d.lastAction && <div style={{ fontSize: 11, color: S.gray }}>Last action: {d.lastAction} · {d.lastActionDate}</div>}
+                      {!isLiveItem && <div style={{ fontSize: 11, color: S.gray, textTransform: "uppercase", letterSpacing: 1 }}>{d.type}</div>}
                     </div>
                   )
                 })}
