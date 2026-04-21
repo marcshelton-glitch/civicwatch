@@ -25,7 +25,7 @@ export async function GET(request) {
     }
 
     const members = (data.members || [])
-      .filter(m => m.state === state)
+      .filter(m => m.state === (stateMap[state] || state))
       .slice(0, 10)
       .map(m => ({
         bioguideId: m.bioguideId,

@@ -1,10 +1,5 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 
-// ── Body size limit ───────────────────────────────────────────────────────────
-export const config = {
-  api: { bodyParser: { sizeLimit: '64kb' } },
-}
-
 // ── Per-user rate limiting with automatic cleanup ─────────────────────────────
 const rateMap = new Map()
 const PREVIEW_LIMIT = 3

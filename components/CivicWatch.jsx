@@ -498,7 +498,7 @@ useEffect(() => {
 
         {/* REP DETAIL */}
         {activeTab === "reps" && selectedRep && (
-          <RepDetail rep={selectedRep} onBack={() => setSelectedRep(null)} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} S={S} />
+          <RepDetail rep={selectedRep} onBack={() => setSelectedRep(null)} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} S={S} />
         )}
 
         {/* MAP */}
@@ -687,15 +687,7 @@ pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
   )
 }
 
-// ─── REPLACE ENTIRE RepDetail FUNCTION ───────────────────────────────────────
-// In CivicWatch.jsx, find:
-//   function RepDetail({ rep, onBack, tracked, ...
-// and delete everything from that line all the way down to (but NOT including):
-//   function AIAnalysisTab({ rep, S }) {
-// Then paste this entire block in its place.
-// ─────────────────────────────────────────────────────────────────────────────
-
-function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, S }) {
+function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, S }) {
   const [liveVotes, setLiveVotes] = useState(null)
   const [liveTrades, setLiveTrades] = useState(null)
   const [liveBio, setLiveBio] = useState(null)
@@ -1129,14 +1121,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── AI ANALYSIS ── */}
       {repTab === "ai" && (
-        <AIAnalysisTab rep={rep} S={S} />
+        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} />
       )}
     </div>
   )
 }
 
 
-function AIAnalysisTab({ rep, S }) {
+function AIAnalysisTab({ rep, S, handleSubscribe }) {
   const { user } = useUser()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
   const [preview, setPreview] = useState('')
@@ -1266,7 +1258,7 @@ function AIAnalysisTab({ rep, S }) {
         <div style={{ padding: 20, background: `linear-gradient(145deg, rgba(27,42,107,0.5), rgba(10,14,30,0.8))`, border: `1px solid ${S.border}`, borderRadius: 12 }}>
           <div style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'center' }}>
             <span style={{ fontSize: 16 }}>🤖</span>
-            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 600 }}>Claude AI · Nonpartisan Analysis</span>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 600 }}>Gemini AI · Nonpartisan Analysis</span>
           </div>
           <p style={{ fontSize: 14, color: S.offWhite, lineHeight: 1.85, margin: 0 }}>{preview}</p>
         </div>
@@ -1278,7 +1270,10 @@ function AIAnalysisTab({ rep, S }) {
               Regarding stock trades, {rep.name.split(' ').pop()} disclosed {rep.trades.length} transactions totaling significant activity in sectors directly related to their committee assignments. The timing of several purchases raises questions about information asymmetry that warrant closer examination by oversight bodies.
             </p>
             <p style={{ fontSize: 14, color: S.offWhite, lineHeight: 1.85, margin: '12px 0 0' }}>
-              On wealth accumulation, a {(((rep.netWorthCurrent - rep.netWorthBefore) / rep.netWorthBefore) * 100).toFixed(0)}% increase over {rep.yearsInOffice} years in office significantly outpaces typical congressional wealth growth. Peer comparison data reveals their issue positioning as notably divergent in key areas.
+              {rep.netWorthBefore && rep.netWorthCurrent
+                ? `On wealth accumulation, a ${(((rep.netWorthCurrent - rep.netWorthBefore) / rep.netWorthBefore) * 100).toFixed(0)}% increase over ${rep.yearsInOffice} years in office significantly outpaces typical congressional wealth growth.`
+                : 'Wealth trajectory analysis covers net worth growth relative to years in office and peer norms.'}
+              {' '}Peer comparison data reveals their issue positioning as notably divergent in key areas.
             </p>
           </div>
           {/* Lock overlay */}
@@ -1296,7 +1291,7 @@ function AIAnalysisTab({ rep, S }) {
               </button>
             ) : (
               <button
-                onClick={() => (window.location.href = '/api/subscribe')}
+                onClick={handleSubscribe}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5 }}>
                 ★ Upgrade to Pro · $9.99/mo
               </button>
@@ -1304,7 +1299,7 @@ function AIAnalysisTab({ rep, S }) {
           </div>
         </div>
         <div style={{ fontSize: 11, color: S.gray, textAlign: 'center' }}>
-          Analysis powered by Claude AI · For informational purposes only · Not legal or financial advice
+          Analysis powered by Gemini AI · For informational purposes only · Not legal or financial advice
         </div>
       </div>
     )
@@ -1349,7 +1344,7 @@ function AIAnalysisTab({ rep, S }) {
         ))}
         <div style={{ padding: '10px 16px', background: 'rgba(27,42,107,0.3)', border: `1px solid ${S.border}`, borderRadius: 8, display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <div style={{ fontSize: 11, color: S.gray }}>
-            🤖 Powered by Claude AI · Nonpartisan · For informational purposes only
+            🤖 Powered by Gemini AI · Nonpartisan · For informational purposes only
           </div>
           <button onClick={() => setStatus('idle')} style={{ padding: '6px 14px', background: 'none', border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11 }}>
             Regenerate
