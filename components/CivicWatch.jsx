@@ -749,6 +749,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [liveBio, setLiveBio] = useState(null)
   const [liveSponsored, setLiveSponsored] = useState(null)
   const [liveDocket, setLiveDocket] = useState(null)
+  const [liveDocketSource, setLiveDocketSource] = useState(null)
   const [loadingVotes, setLoadingVotes] = useState(false)
   const [loadingTrades, setLoadingTrades] = useState(false)
   const [loadingBio, setLoadingBio] = useState(false)
@@ -796,7 +797,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       const state = rep.state || 'US'
       fetch(`/api/congress?type=schedule&state=${state}&bioguideId=${rep.id}`)
         .then(r => r.json())
-        .then(d => { setLiveDocket(d.schedule || []); setLoadingDocket(false) })
+        .then(d => { setLiveDocket(d.schedule || []); setLiveDocketSource(d.source || null); setLoadingDocket(false) })
         .catch(() => { setLiveDocket([]); setLoadingDocket(false) })
     }
   }, [repTab, rep.id])
@@ -961,29 +962,30 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             </div>
           ) : !loadingDocket && (
             <>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                 <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase" }}>Active Legislative Docket</div>
-                <div style={{ fontSize: 11, color: S.gold }}>🔄 LegiScan LLC — CC BY 4.0</div>
+                <div style={{ fontSize: 11, color: S.gold }}>
+                  {liveDocketSource === 'congress' ? '🔄 Congress.gov' : '🔄 LegiScan LLC — CC BY 4.0'}
+                </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {(isLive ? (liveDocket || []) : rep.docket).map((d, i) => {
                   const statusColors = { 1: S.gray, 2: "#5B9CFF", 3: S.gold, 4: "#4CAF50" }
                   const statusLabels = { 1: "Introduced", 2: "Engrossed", 3: "Enrolled", 4: "Passed" }
                   const statusColor = statusColors[d.status] || S.gray
-                  const isLiveItem = !!d.billId
                   return (
                     <div key={i} style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          {isLiveItem && <span style={{ fontSize: 11, fontWeight: 700, color: S.gold, background: "rgba(212,175,55,0.12)", borderRadius: 4, padding: "2px 8px" }}>{d.number}</span>}
-                          {isLiveItem && <span style={{ fontSize: 11, color: statusColor, background: `rgba(${statusColor === S.gold ? '212,175,55' : '91,156,255'},0.1)`, borderRadius: 4, padding: "2px 8px" }}>{statusLabels[d.status] || 'Active'}</span>}
-                          {!isLiveItem && <span style={{ fontSize: 11, color: S.gold }}>{d.time}</span>}
+                          {d.number && <span style={{ fontSize: 11, fontWeight: 700, color: S.gold, background: "rgba(212,175,55,0.12)", borderRadius: 4, padding: "2px 8px" }}>{d.number}</span>}
+                          {d.status && <span style={{ fontSize: 11, color: statusColor, background: `rgba(${statusColor === S.gold ? '212,175,55' : statusColor === '#4CAF50' ? '76,175,80' : '91,156,255'},0.12)`, borderRadius: 4, padding: "2px 8px" }}>{statusLabels[d.status] || 'Active'}</span>}
+                          {d.role && <span style={{ fontSize: 11, color: d.role === 'Sponsor' ? '#5B9CFF' : S.gray, background: 'rgba(91,156,255,0.1)', borderRadius: 4, padding: "2px 8px" }}>{d.role}</span>}
+                          {d.policyArea && <span style={{ fontSize: 11, color: S.gray }}>{d.policyArea}</span>}
                         </div>
-                        {isLiveItem && d.url && <a href={d.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "2px 10px", borderRadius: 6, whiteSpace: "nowrap", textDecoration: "none" }}>View →</a>}
+                        {d.url && <a href={d.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "2px 10px", borderRadius: 6, whiteSpace: "nowrap", textDecoration: "none" }}>View →</a>}
                       </div>
-                      <div style={{ fontSize: 13, marginBottom: 4 }}>{isLiveItem ? d.title : d.item}</div>
-                      {isLiveItem && d.lastAction && <div style={{ fontSize: 11, color: S.gray }}>Last action: {d.lastAction} · {d.lastActionDate}</div>}
-                      {!isLiveItem && <div style={{ fontSize: 11, color: S.gray, textTransform: "uppercase", letterSpacing: 1 }}>{d.type}</div>}
+                      <div style={{ fontSize: 13, marginBottom: 4 }}>{d.title}</div>
+                      {d.lastAction && <div style={{ fontSize: 11, color: S.gray }}>Last action: {d.lastAction}{d.lastActionDate ? ` · ${d.lastActionDate}` : ''}</div>}
                     </div>
                   )
                 })}

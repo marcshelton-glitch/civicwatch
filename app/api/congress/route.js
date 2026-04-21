@@ -148,7 +148,11 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 })
     }
 
-    if ((type === 'members' || type === 'schedule') && !VALID_STATES.has(state)) {
+    if (type === 'members' && !VALID_STATES.has(state)) {
+      return NextResponse.json({ error: 'Invalid state parameter' }, { status: 400 })
+    }
+    // schedule: state required only for state reps (no valid bioguideId)
+    if (type === 'schedule' && !BIOGUIDE_RE.test(bioguideId) && !VALID_STATES.has(state)) {
       return NextResponse.json({ error: 'Invalid state parameter' }, { status: 400 })
     }
 
@@ -386,14 +390,54 @@ export async function GET(request) {
 
     // ── schedule ──────────────────────────────────────────────────────────
     if (type === 'schedule') {
+      // Federal rep: use Congress.gov sponsored legislation as their active docket
+      if (BIOGUIDE_RE.test(bioguideId)) {
+        const [sponsoredData, cosponsoredData] = await Promise.all([
+          cFetch(`/member/${bioguideId}/sponsored-legislation?limit=20`).catch(() => ({ sponsoredLegislation: [] })),
+          cFetch(`/member/${bioguideId}/cosponsored-legislation?limit=10`).catch(() => ({ cosponsoredLegislation: [] })),
+        ])
+
+        const mapBill = (b, role) => ({
+          billId: `${b.congress}-${b.type}-${b.number}`,
+          number: `${b.type}${b.number}`,
+          title: b.title,
+          lastAction: b.latestAction?.text || '',
+          lastActionDate: b.latestAction?.actionDate || '',
+          status: b.latestAction?.actionDate
+            ? (b.latestAction.text?.toLowerCase().includes('passed') ? 4
+              : b.latestAction.text?.toLowerCase().includes('engrossed') ? 2
+              : b.latestAction.text?.toLowerCase().includes('enrolled') ? 3
+              : 1)
+            : 1,
+          url: b.url || `https://www.congress.gov/bill/${b.congress}th-congress/${b.type?.toLowerCase().replace('hconres','house-concurrent-resolution').replace('hjres','house-joint-resolution').replace('hr','house-bill').replace('s','senate-bill').replace('sconres','senate-concurrent-resolution').replace('sjres','senate-joint-resolution')}/${b.number}`,
+          role,
+          policyArea: b.policyArea?.name || '',
+        })
+
+        const sponsored = (sponsoredData.sponsoredLegislation || [])
+          .filter(b => b.title && b.type && b.number)
+          .slice(0, 15)
+          .map(b => mapBill(b, 'Sponsor'))
+
+        const cosponsored = (cosponsoredData.cosponsoredLegislation || [])
+          .filter(b => b.title && b.type && b.number)
+          .slice(0, 5)
+          .map(b => mapBill(b, 'Cosponsor'))
+
+        const schedule = [...sponsored, ...cosponsored]
+          .sort((a, b) => new Date(b.lastActionDate) - new Date(a.lastActionDate))
+
+        return NextResponse.json({ schedule, source: 'congress', attribution: 'Congress.gov' })
+      }
+
+      // State rep: use LegiScan master list for their state
       if (!LEGISCAN_KEY) {
         return NextResponse.json({
           schedule: [], source: 'unavailable',
           message: 'LegiScan API key not configured yet.',
         })
       }
-      const stateParam = VALID_STATES.has(state) ? state : 'US'
-      const masterList = await legiScanFetch('getMasterListRaw', { state: stateParam })
+      const masterList = await legiScanFetch('getMasterListRaw', { state })
       const bills = Object.values(masterList)
         .filter(b => typeof b === 'object' && b.bill_id)
         .slice(0, 20)
@@ -401,15 +445,14 @@ export async function GET(request) {
           billId: b.bill_id,
           number: b.number,
           title: b.title,
-          changeHash: b.change_hash,
           lastAction: b.last_action,
           lastActionDate: b.last_action_date,
           status: b.status,
           url: b.url,
         }))
       return NextResponse.json({
-        schedule: bills, source: 'live',
-        attribution: 'Data provided by LegiScan LLC — CC BY 4.0',
+        schedule: bills, source: 'legiscan',
+        attribution: 'LegiScan LLC — CC BY 4.0',
       })
     }
 
