@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 
 const STATS = [
   { value: '$174K', label: 'Average congressional salary' },
@@ -56,9 +58,15 @@ const TICKER_ITEMS = [
 ]
 
 export default function LandingPage() {
+  const { isSignedIn, isLoaded } = useUser()
+  const router = useRouter()
   const [scrollY, setScrollY] = useState(0)
   const heroRef = useRef(null)
   const tickerRef = useRef(null)
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) router.replace('/dashboard')
+  }, [isLoaded, isSignedIn, router])
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -596,8 +604,14 @@ export default function LandingPage() {
       <nav className="nav">
         <Link href="/" className="nav-logo">CIVIC<span>WATCH</span></Link>
         <div className="nav-actions">
-          <Link href="/sign-in" className="btn-ghost">Sign In</Link>
-          <Link href="/sign-up" className="btn-primary">Start Free →</Link>
+          {isSignedIn ? (
+            <Link href="/dashboard" className="btn-primary">Go to Dashboard →</Link>
+          ) : (
+            <>
+              <Link href="/sign-in" className="btn-ghost">Sign In</Link>
+              <Link href="/sign-up" className="btn-primary">Start Free →</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -625,12 +639,14 @@ and got <span className="red">rich.</span>
         </p>
 
         <div className="hero-ctas" style={{ position: 'relative' }}>
-          <Link href="/sign-up" className="btn-hero">
-            Track Your Representatives →
+          <Link href={isSignedIn ? "/dashboard" : "/sign-up"} className="btn-hero">
+            {isSignedIn ? "Go to Dashboard →" : "Track Your Representatives →"}
           </Link>
-          <Link href="/sign-in" className="btn-hero-ghost">
-            Sign In
-          </Link>
+          {!isSignedIn && (
+            <Link href="/sign-in" className="btn-hero-ghost">
+              Sign In
+            </Link>
+          )}
         </div>
 
         {/* TICKER */}
