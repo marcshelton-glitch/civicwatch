@@ -913,7 +913,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {loadingVotes && (
             <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
               <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
-              Loading votes from Congress.gov…
+              Loading voting record…
             </div>
           )}
           {!loadingVotes && votes.length === 0 && (
@@ -928,13 +928,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           )}
           {!loadingVotes && votes.map((v, i) => (
             <div key={i} style={{ padding: "14px 18px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 14, alignItems: "center", marginBottom: 10 }}>
-              <div className={v.vote === "YEA" ? "vote-yea" : "vote-nay"} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, minWidth: 54 }}>{v.vote}</div>
+              <div className={v.vote === "YEA" ? "vote-yea" : v.vote === "NAY" ? "vote-nay" : undefined} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 18, minWidth: 60, color: v.vote === "YEA" ? "#4ade80" : v.vote === "NAY" ? "#f87171" : S.gray }}>{v.vote}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, marginBottom: 3 }}>{v.bill}</div>
-                <div style={{ fontSize: 11, color: S.gray }}>{v.date}</div>
+                <div style={{ fontSize: 11, color: S.gray }}>{v.date}{v.source ? ` · ${v.source}` : ''}</div>
               </div>
               <span className={v.outcome === "PASSED" ? "outcome-passed" : "outcome-failed"}>{v.outcome || v.result}</span>
-              <a href={v.url || v.link} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "4px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>Bill →</a>
+              <a href={v.url || v.link} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "4px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>View →</a>
             </div>
           ))}
         </div>

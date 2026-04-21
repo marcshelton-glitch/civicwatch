@@ -20,7 +20,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
               "worker-src 'self' blob:",
-              "connect-src 'self' https://*.supabase.co https://api.clerk.dev https://clerk.civicwatch.app https://*.clerk.com https://vercel.live https://cdn.jsdelivr.net",
+              "connect-src 'self' https://*.supabase.co https://api.clerk.dev https://clerk.civicwatch.app https://*.clerk.com https://vercel.live https://cdn.jsdelivr.net https://www.govtrack.us",
               "frame-src https://js.stripe.com https://hooks.stripe.com https://vercel.live https://challenges.cloudflare.com",
               "object-src 'none'",
               "base-uri 'self'",

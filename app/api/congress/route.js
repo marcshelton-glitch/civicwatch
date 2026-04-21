@@ -218,6 +218,53 @@ export async function GET(request) {
 
     // ── votes ─────────────────────────────────────────────────────────────
     if (type === 'votes') {
+      // Try GovTrack first — free, detailed, includes bill links
+      try {
+        const gtPerson = await fetch(
+          `https://www.govtrack.us/api/v2/person?bioguideid=${encodeURIComponent(bioguideId)}&limit=1`,
+          { next: { revalidate: 86400 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
+        )
+        if (gtPerson.ok) {
+          const personJson = await gtPerson.json()
+          const gtId = personJson.objects?.[0]?.id
+          if (gtId) {
+            const gtVotes = await fetch(
+              `https://www.govtrack.us/api/v2/vote_voter?person=${gtId}&limit=20&order_by=-created`,
+              { next: { revalidate: 3600 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
+            )
+            if (gtVotes.ok) {
+              const votesJson = await gtVotes.json()
+              const votes = (votesJson.objects || []).map(v => {
+                const rawVal = v.option?.value || ''
+                const voteLabel = rawVal === '+' ? 'YEA'
+                  : rawVal === '-' ? 'NAY'
+                  : rawVal === 'P' ? 'PRESENT'
+                  : (v.option?.key || rawVal || '—').toUpperCase()
+                const passed = (v.vote?.result || '').toLowerCase().includes('pass')
+                const billTitle = v.vote?.related_bill?.title || v.vote?.question || v.vote?.description || 'Unknown Bill'
+                const billPath = v.vote?.related_bill?.link || v.vote?.link || ''
+                const billUrl = billPath
+                  ? `https://www.govtrack.us${billPath}`
+                  : `https://www.govtrack.us/congress/votes`
+                return {
+                  bill: billTitle,
+                  vote: voteLabel,
+                  date: v.vote?.created ? v.vote.created.split('T')[0] : '',
+                  result: v.vote?.result || '',
+                  outcome: passed ? 'PASSED' : 'FAILED',
+                  url: billUrl,
+                  source: 'GovTrack',
+                }
+              })
+              if (votes.length > 0) {
+                return NextResponse.json({ votes, source: 'govtrack' })
+              }
+            }
+          }
+        }
+      } catch { /* fall through to Congress.gov */ }
+
+      // Fallback: Congress.gov
       const data = await cFetch(`/member/${bioguideId}/votes?limit=20`)
       const votes = (data.votes || []).map(v => ({
         bill: v.description || v.question || 'Unknown Bill',
@@ -226,6 +273,7 @@ export async function GET(request) {
         result: v.result,
         outcome: v.result?.toLowerCase().includes('pass') ? 'PASSED' : 'FAILED',
         url: v.url || 'https://congress.gov',
+        source: 'Congress.gov',
       }))
       return NextResponse.json({ votes, source: 'live' })
     }
