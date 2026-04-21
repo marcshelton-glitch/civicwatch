@@ -13,18 +13,42 @@ function normalizeParty(raw = '') {
   return raw || 'Unknown'
 }
 
-async function geocodeAddress(address) {
+async function geocodeWithCensus(address) {
   const url = `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&format=json`
   const res = await fetch(url, { next: { revalidate: 86400 } })
-  if (!res.ok) throw new Error('Geocoding failed')
+  if (!res.ok) return null
   const data = await res.json()
   const match = data?.result?.addressMatches?.[0]
-  if (!match) throw new Error('Address not found — try including a city and state or ZIP code')
+  if (!match) return null
+  return { lat: match.coordinates.y, lng: match.coordinates.x, normalized: match.matchedAddress }
+}
+
+async function geocodeWithNominatim(address) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&countrycodes=us&format=json&limit=1`
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' },
+    next: { revalidate: 86400 },
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  if (!data?.[0]) return null
   return {
-    lat: match.coordinates.y,
-    lng: match.coordinates.x,
-    normalized: match.matchedAddress,
+    lat: parseFloat(data[0].lat),
+    lng: parseFloat(data[0].lon),
+    normalized: data[0].display_name,
   }
+}
+
+async function geocodeAddress(address) {
+  // Try Census first (most accurate for full street addresses)
+  const census = await geocodeWithCensus(address).catch(() => null)
+  if (census) return census
+
+  // Fall back to Nominatim (handles ZIP codes, city names, partial addresses)
+  const nominatim = await geocodeWithNominatim(address).catch(() => null)
+  if (nominatim) return nominatim
+
+  throw new Error('Address not found — try a full address, city + state, or ZIP code')
 }
 
 async function getStateReps(lat, lng) {

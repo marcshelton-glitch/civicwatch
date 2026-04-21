@@ -477,9 +477,11 @@ useEffect(() => {
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#5B9CFF" : S.red }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
-                        <img src={rep.photo} alt={rep.name} style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
-                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'block') }} />
-                        <PlaceholderAvatar size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
+                        {rep.photo
+                          ? <img src={rep.photo} alt={rep.name} style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
+                              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                          : null}
+                        <PlaceholderAvatar size={68} style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${S.gold}` }} />
                         {isTracked && <div style={{ position: "absolute", bottom: 0, right: -2, background: S.gold, borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>✓</div>}
                       </div>
                       <div style={{ flex: 1 }}>
