@@ -18,7 +18,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://clerk.civicwatch.app https://vercel.live https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://bioguide.congress.gov https://www.congress.gov https://i.pravatar.cc https://cdn.jsdelivr.net https://img.clerk.com https://data.openstates.org https://*.openstates.org",
+              "img-src 'self' data: blob: https:",
               "worker-src 'self' blob:",
               "connect-src 'self' https://*.supabase.co https://api.clerk.dev https://clerk.civicwatch.app https://*.clerk.com https://vercel.live https://cdn.jsdelivr.net",
               "frame-src https://js.stripe.com https://hooks.stripe.com https://vercel.live https://challenges.cloudflare.com",
