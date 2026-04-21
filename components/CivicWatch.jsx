@@ -4,147 +4,25 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
-const REPS = [
-  {
-    id: 1,
-    name: "Sen. Margaret A. Collins",
-    title: "U.S. Senator",
-    party: "Democrat",
-    state: "California",
-    district: "Statewide",
-    level: "federal",
-    photo: "https://i.pravatar.cc/150?img=47",
-    email: "senator.collins@senate.gov",
-    phone: "(202) 224-3553",
-    website: "https://collins.senate.gov",
-    officeHours: "Mon–Fri 9am–5pm",
-    officeLocation: "Hart Senate Office Building, Rm 702, Washington DC",
-    bio: "Sen. Collins has served since 2010. Former state AG, Stanford Law graduate. Focuses on healthcare, climate legislation, and tech regulation. Sits on the Senate Judiciary and Finance committees.",
-    peers: ["Sen. R. Thompson (R-TX)", "Sen. D. Martinez (D-FL)"],
-    peerComparison: {
-      healthcare: { self: 92, peers: 44 },
-      climate: { self: 88, peers: 31 },
-      defense: { self: 55, peers: 79 },
-      economy: { self: 67, peers: 71 },
-    },
-    netWorthBefore: 1200000,
-    netWorthCurrent: 8700000,
-    yearsInOffice: 15,
-    trades: [
-      { date: "2024-11-12", asset: "NVDA", type: "BUY", amount: 45000, sector: "Tech" },
-      { date: "2024-09-03", asset: "ETH", type: "BUY", amount: 22000, sector: "Crypto" },
-      { date: "2024-07-19", asset: "PFE", type: "SELL", amount: 31000, sector: "Pharma" },
-      { date: "2024-05-01", asset: "TSLA", type: "BUY", amount: 18000, sector: "EV" },
-    ],
-    votes: [
-      { bill: "H.R. 1447 - Inflation Reduction Act", vote: "YEA", outcome: "PASSED", link: "https://congress.gov", date: "2024-08-12" },
-      { bill: "S. 2134 - Healthcare Expansion Act", vote: "YEA", outcome: "PASSED", link: "https://congress.gov", date: "2024-06-05" },
-      { bill: "H.R. 899 - Border Security Act", vote: "NAY", outcome: "FAILED", link: "https://congress.gov", date: "2024-04-22" },
-      { bill: "S. 501 - Defense Appropriations", vote: "YEA", outcome: "PASSED", link: "https://congress.gov", date: "2024-02-14" },
-    ],
-    docket: [
-      { time: "9:00 AM", item: "Senate Judiciary Hearing: AI Regulation", type: "hearing" },
-      { time: "11:30 AM", item: "Floor Vote: S. 3321 – Clean Energy Act", type: "vote" },
-      { time: "2:00 PM", item: "Constituent Meeting: CA Tech Alliance", type: "meeting" },
-      { time: "4:00 PM", item: "Press Conference: Climate Policy", type: "press" },
-    ],
-    townHall: [
-      { date: "2025-04-10", event: "Open Town Hall – San Francisco City Hall", location: "SF, CA", rsvpLink: "#" },
-      { date: "2025-04-24", event: "Virtual Town Hall – Q&A Session", location: "Online", rsvpLink: "#" },
-    ],
-    communityPoll: { healthcare: 412, climate: 289, housing: 341, education: 198 },
-  },
-  {
-    id: 2,
-    name: "Rep. James T. Harrington",
-    title: "U.S. Representative",
-    party: "Republican",
-    state: "California",
-    district: "CA-33",
-    level: "federal",
-    photo: "https://i.pravatar.cc/150?img=52",
-    email: "rep.harrington@house.gov",
-    phone: "(202) 225-4576",
-    website: "https://harrington.house.gov",
-    officeHours: "Mon–Thu 9am–4pm",
-    officeLocation: "Cannon HOB, Rm 210, Washington DC",
-    bio: "Rep. Harrington has served since 2016. Retired Army Colonel. Focuses on border security, veterans affairs, and deregulation. Member of the House Armed Services Committee.",
-    peers: ["Rep. S. Wallace (D-CA)", "Rep. T. Nguyen (R-TX)"],
-    peerComparison: {
-      healthcare: { self: 38, peers: 61 },
-      climate: { self: 22, peers: 44 },
-      defense: { self: 91, peers: 55 },
-      economy: { self: 85, peers: 66 },
-    },
-    netWorthBefore: 2100000,
-    netWorthCurrent: 5400000,
-    yearsInOffice: 9,
-    trades: [
-      { date: "2024-12-01", asset: "LMT", type: "BUY", amount: 67000, sector: "Defense" },
-      { date: "2024-10-15", asset: "BTC", type: "BUY", amount: 15000, sector: "Crypto" },
-      { date: "2024-08-08", asset: "XOM", type: "BUY", amount: 41000, sector: "Energy" },
-    ],
-    votes: [
-      { bill: "H.R. 1447 - Inflation Reduction Act", vote: "NAY", outcome: "PASSED", link: "https://congress.gov", date: "2024-08-12" },
-      { bill: "H.R. 3301 - Veterans Benefits Act", vote: "YEA", outcome: "PASSED", link: "https://congress.gov", date: "2024-07-18" },
-      { bill: "H.R. 899 - Border Security Act", vote: "YEA", outcome: "FAILED", link: "https://congress.gov", date: "2024-04-22" },
-    ],
-    docket: [
-      { time: "10:00 AM", item: "Armed Services Subcommittee Briefing", type: "hearing" },
-      { time: "1:00 PM", item: "Floor Vote: H.R. 4412 – Veterans Housing", type: "vote" },
-      { time: "3:30 PM", item: "Meeting: Defense Contractors Caucus", type: "meeting" },
-    ],
-    townHall: [
-      { date: "2025-04-15", event: "Town Hall – Pasadena Convention Center", location: "Pasadena, CA", rsvpLink: "#" },
-    ],
-    communityPoll: { veterans: 378, border: 312, economy: 289, education: 145 },
-  },
-  {
-    id: 3,
-    name: "Councilwoman Diana M. Rivera",
-    title: "City Council Member",
-    party: "Democrat",
-    state: "California",
-    district: "District 8 – Los Angeles",
-    level: "municipal",
-    photo: "https://i.pravatar.cc/150?img=48",
-    email: "diana.rivera@lacity.org",
-    phone: "(213) 485-3378",
-    website: "https://councilmember.lacity.org/district8",
-    officeHours: "Tue–Fri 9am–3pm",
-    officeLocation: "200 N Spring St, Los Angeles, CA 90012",
-    bio: "Councilwoman Rivera has served District 8 since 2018. Former public school teacher and community organizer. Focuses on affordable housing, transit access, and public safety reform.",
-    peers: ["CM J. Lee (R-D4)", "CM P. Okafor (D-D6)"],
-    peerComparison: {
-      housing: { self: 95, peers: 62 },
-      transit: { self: 87, peers: 55 },
-      publicsafety: { self: 61, peers: 78 },
-      budget: { self: 72, peers: 65 },
-    },
-    netWorthBefore: 145000,
-    netWorthCurrent: 890000,
-    yearsInOffice: 7,
-    trades: [
-      { date: "2024-11-05", asset: "REIT Index", type: "BUY", amount: 12000, sector: "Real Estate" },
-      { date: "2024-07-14", asset: "MSFT", type: "BUY", amount: 8000, sector: "Tech" },
-    ],
-    votes: [
-      { bill: "Motion 23-0412 – Affordable Housing Bonds", vote: "YEA", outcome: "PASSED", link: "#", date: "2024-09-10" },
-      { bill: "Motion 24-0102 – Metro Expansion Fund", vote: "YEA", outcome: "PASSED", link: "#", date: "2024-03-05" },
-      { bill: "Motion 23-0891 – Police Dept Budget Increase", vote: "NAY", outcome: "PASSED", link: "#", date: "2024-01-22" },
-    ],
-    docket: [
-      { time: "9:30 AM", item: "Council Session: Housing Zoning Amendments", type: "hearing" },
-      { time: "12:00 PM", item: "Vote: Metro Line Extension Budget", type: "vote" },
-      { time: "2:30 PM", item: "Community Briefing: District 8 Safety Plan", type: "meeting" },
-    ],
-    townHall: [
-      { date: "2025-04-08", event: "Community Forum – Lincoln Park Rec Center", location: "Los Angeles, CA", rsvpLink: "#" },
-    ],
-    communityPoll: { housing: 501, transit: 423, parks: 201, safety: 344 },
-  },
-]
+// ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
+function PlaceholderAvatar({ size = 68, style = {} }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 68 68" style={{ borderRadius: '50%', flexShrink: 0, ...style }}>
+      <circle cx="34" cy="34" r="34" fill="rgba(27,42,107,0.7)" />
+      <circle cx="34" cy="27" r="11" fill="rgba(212,175,55,0.35)" />
+      <ellipse cx="34" cy="54" rx="18" ry="12" fill="rgba(212,175,55,0.35)" />
+    </svg>
+  )
+}
+
+// ─── REMOVED: mock REPS data. Live data comes from Congress API. ──────────────
+const REPS = []
+
+// ─── REMOVED: mock ALERT_LOG. Alerts are fetched live from Congress API. ─────
+const ALERT_LOG = []
+
+// ─── CONSTITUTION (real data) ─────────────────────────────────────────────────
+const PLACEHOLDER_REP_NOTE = "This card would show the representative's name, photo, party, district, contact info, voting record, and stock trades once data is available."
 
 const CONSTITUTION_ARTICLES = [
   { id: "art1", title: "Article I – The Legislative Branch", original: "All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives...", plain: "Congress (Senate + House of Representatives) holds all law-making power. The House has members based on population; senators serve 6-year terms, two per state. Congress can tax, borrow money, regulate commerce, declare war, and make all laws necessary to carry out these powers." },
@@ -167,13 +45,6 @@ const AMENDMENTS = [
   { num: 14, title: "Equal Protection and Due Process", original: "All persons born or naturalized in the United States and subject to the jurisdiction thereof, are citizens of the United States...", plain: "Everyone born in the US is a citizen. No state can deny citizens equal protection of the laws or due process." },
   { num: 19, title: "Women's Right to Vote", original: "The right of citizens of the United States to vote shall not be denied or abridged on account of sex.", plain: "Women have the right to vote." },
   { num: 26, title: "Voting Age Lowered to 18", original: "The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged on account of age.", plain: "Citizens 18 and older have the right to vote." },
-]
-
-const ALERT_LOG = [
-  { id: 1, repId: 1, type: "vote", message: "Sen. Collins voted YEA on S. 3321 – Clean Energy Act", time: "2h ago", read: false },
-  { id: 2, repId: 1, type: "trade", message: "Sen. Collins disclosed new trade: NVDA BUY $45,000", time: "1d ago", read: false },
-  { id: 3, repId: 2, type: "docket", message: "Rep. Harrington added to Armed Services hearing docket", time: "3h ago", read: true },
-  { id: 4, repId: 3, type: "townhall", message: "Councilwoman Rivera scheduled Town Hall – April 8", time: "5h ago", read: false },
 ]
 
 const STATE_MAP_DATA = [
@@ -278,7 +149,7 @@ export default function CivicWatch() {
   const [activeTab, setActiveTab] = useState("reps")
   const [selectedRep, setSelectedRep] = useState(null)
   const [repTab, setRepTab] = useState("overview")
-  const [tracked, setTracked] = useState([1])
+  const [tracked, setTracked] = useState([])
   const [alerts, setAlerts] = useState(ALERT_LOG)
   const [liveAlerts, setLiveAlerts] = useState([])
   const [loadingAlerts, setLoadingAlerts] = useState(false)
@@ -297,12 +168,7 @@ const [dataSource, setDataSource] = useState("loading")
 
   useEffect(() => setMounted(true), [])
 
-  const MOCK_MUNICIPAL = REPS.filter(r => r.level === 'municipal')
-const displayReps = loadingReps
-  ? MOCK_MUNICIPAL
-  : liveReps.length > 0
-    ? [...liveReps, ...MOCK_MUNICIPAL]
-    : REPS
+  const displayReps = liveReps
 const filteredReps = displayReps.filter(r => {
     const matchLevel = filterLevel === "all" || r.level === filterLevel
     const matchParty = filterParty === "all" || r.party.toLowerCase() === filterParty
@@ -518,6 +384,23 @@ useEffect(() => {
                 <option value="republican">Republican</option>
               </select>
             </div>
+            {loadingReps && (
+              <div style={{ textAlign: "center", padding: "60px 0", color: S.gray }}>
+                <div className="pulse" style={{ fontSize: 40, marginBottom: 16 }}>🏛️</div>
+                <div style={{ fontSize: 16 }}>Loading your representatives…</div>
+              </div>
+            )}
+            {!loadingReps && filteredReps.length === 0 && (
+              <div style={{ textAlign: "center", padding: "60px 0", color: S.gray, border: `1px dashed ${S.border}`, borderRadius: 16 }}>
+                <PlaceholderAvatar size={80} style={{ margin: "0 auto 20px" }} />
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: S.white, marginBottom: 8 }}>No Representatives Found</div>
+                <div style={{ fontSize: 14, maxWidth: 400, margin: "0 auto", lineHeight: 1.6 }}>
+                  {liveReps.length === 0
+                    ? `Representative data for ${selectedState} could not be loaded from the Congress API. Select a state on the map or try again.`
+                    : "No representatives match your current search or filter. Try adjusting your filters."}
+                </div>
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
               {filteredReps.map(rep => {
                 const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
@@ -528,7 +411,9 @@ useEffect(() => {
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#5B9CFF" : S.red }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
-                        <img src={rep.photo} alt={rep.name} style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }} />
+                        <img src={rep.photo} alt={rep.name} style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
+                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'block') }} />
+                        <PlaceholderAvatar size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
                         {isTracked && <div style={{ position: "absolute", bottom: 0, right: -2, background: S.gold, borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>✓</div>}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -701,7 +586,7 @@ useEffect(() => {
                   </div>
                 )
                 return allAlerts.map(alert => {
-                  const photo = alert.photo || displayReps.find(r => r.id === alert.repId)?.photo || REPS.find(r => r.id === alert.repId)?.photo
+                  const photo = alert.photo || displayReps.find(r => r.id === alert.repId)?.photo
                   const typeIcon = { vote: "⚖️", trade: "💰", docket: "📋", townhall: "🏛️" }[alert.type]
                   const typeColor = { vote: S.gold, trade: "#FF6B6B", docket: "#5B9CFF", townhall: "#90EE90" }[alert.type]
                   const displayTime = alert.time && alert.time.match(/^\d{4}-\d{2}-\d{2}/) ? timeAgo(alert.time) : alert.time
