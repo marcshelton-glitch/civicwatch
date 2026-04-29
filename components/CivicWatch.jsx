@@ -993,6 +993,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [loadingBio, setLoadingBio] = useState(false)
   const [loadingDocket, setLoadingDocket] = useState(false)
   const [loadingTownHall, setLoadingTownHall] = useState(false)
+  const [liveNonprofits, setLiveNonprofits] = useState(null)
+  const [loadingNonprofits, setLoadingNonprofits] = useState(false)
 
   // Reset all live data when the rep changes so stale data from the
   // previous rep never briefly flashes for the newly selected rep
@@ -1001,8 +1003,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLiveBio(null); setLiveSponsored(null)
     setLiveDocket(null); setLiveDocketSource(null)
     setLiveTownHall(null); setLiveTownHallMeta(null)
+    setLiveNonprofits(null)
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
-    setLoadingDocket(false); setLoadingTownHall(false)
+    setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
   }, [rep.id])
 
   const isLive = rep.isLive
@@ -1071,6 +1074,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     }
   }, [repTab, rep.id])
 
+  useEffect(() => {
+    if (repTab === 'nonprofits' && !liveNonprofits && !loadingNonprofits) {
+      setLoadingNonprofits(true)
+      const stateParam = rep.state ? `&state=${encodeURIComponent(rep.state)}` : ''
+      fetch(`/api/nonprofits?name=${encodeURIComponent(rep.name)}${stateParam}`)
+        .then(r => r.json())
+        .then(d => { setLiveNonprofits(d.organizations || []); setLoadingNonprofits(false) })
+        .catch(() => { setLiveNonprofits([]); setLoadingNonprofits(false) })
+    }
+  }, [repTab, rep.id])
+
   const votes = isLive ? (liveVotes || rep.votes) : rep.votes
   const trades = isLive ? (liveTrades || rep.trades) : rep.trades
   const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
@@ -1083,6 +1097,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     { id: "wealth", label: "Wealth & Trades" },
     { id: "bio", label: "Bio & Compare" },
     { id: "townhall", label: "Town Hall" },
+    { id: "nonprofits", label: "🏦 Nonprofits" },
     { id: "ai", label: "🤖 AI Analysis" },
   ]
 
@@ -1738,6 +1753,85 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       )}
 
       {/* ── AI ANALYSIS ── */}
+      {/* ── NONPROFITS ── */}
+      {repTab === "nonprofits" && (
+        <div className="slide-in">
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.7 }}>
+              Nonprofit organizations matching <span style={{ color: S.gold }}>{rep.name.split(',')[0]}</span> in the IRS 990 database,
+              sourced from <a href="https://projects.propublica.org/nonprofits/" target="_blank" rel="noreferrer" style={{ color: S.gold }}>ProPublica Nonprofit Explorer</a>.
+              Results include personal foundations, affiliated organizations, and nonprofits registered in {rep.state || 'this state'}.
+            </div>
+          </div>
+
+          {loadingNonprofits ? (
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray, fontSize: 13 }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🏦</div>
+              Searching IRS 990 filings…
+            </div>
+          ) : (liveNonprofits || []).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 48 }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🏦</div>
+              <div style={{ fontSize: 14, color: S.gray, marginBottom: 8 }}>No matching nonprofits found.</div>
+              <a href={`https://projects.propublica.org/nonprofits/search?q=${encodeURIComponent(rep.name.split(',')[0])}`}
+                target="_blank" rel="noreferrer"
+                style={{ padding: '8px 20px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
+                Search ProPublica Directly →
+              </a>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14, marginBottom: 24 }}>
+                {(liveNonprofits || []).map(org => (
+                  <a key={org.ein} href={org.profileUrl} target="_blank" rel="noreferrer"
+                    style={{ display: 'block', padding: 18, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 14, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = S.gold}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = S.border}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                      <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 14, color: S.white, lineHeight: 1.3, flex: 1 }}>
+                        {org.name}
+                      </div>
+                      {org.revenueLabel && (
+                        <div style={{ fontSize: 12, color: '#4CAF50', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          {org.revenueLabel}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                      {org.category && (
+                        <span style={{ fontSize: 10, padding: '2px 8px', background: `rgba(212,175,55,0.1)`, border: `1px solid ${S.border}`, borderRadius: 6, color: S.gold }}>
+                          {org.category}
+                        </span>
+                      )}
+                      {org.subsection && (
+                        <span style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray }}>
+                          {org.subsection}
+                        </span>
+                      )}
+                      {(org.city || org.state) && (
+                        <span style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray }}>
+                          📍 {[org.city, org.state].filter(Boolean).join(', ')}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 11, color: S.gray }}>
+                      EIN: {org.ein} · View 990 filings →
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: S.gray, textAlign: 'center', padding: '12px 0', borderTop: `1px solid ${S.border}` }}>
+                Data sourced from IRS 990 filings via{' '}
+                <a href="https://projects.propublica.org/nonprofits/" target="_blank" rel="noreferrer" style={{ color: S.gold }}>
+                  ProPublica Nonprofit Explorer
+                </a>
+                . Revenue figures from most recent available filing. Results match the representative's name — verify connections via the full filing.
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {repTab === "ai" && (
         <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
       )}
