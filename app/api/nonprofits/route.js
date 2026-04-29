@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 
-// ProPublica Nonprofit Explorer API — free, no key required
 const PP_BASE = 'https://projects.propublica.org/nonprofits/api/v2'
 
-// NTEE major group codes → human-readable category
 const NTEE_LABELS = {
   A: 'Arts & Culture', B: 'Education', C: 'Environment', D: 'Animal-Related',
   E: 'Health', F: 'Mental Health', G: 'Disease & Disorders', H: 'Medical Research',
@@ -17,8 +15,7 @@ const NTEE_LABELS = {
 
 function nteeLabel(code) {
   if (!code) return null
-  const major = code.charAt(0).toUpperCase()
-  return NTEE_LABELS[major] || null
+  return NTEE_LABELS[code.charAt(0).toUpperCase()] || null
 }
 
 function formatRevenue(n) {
@@ -27,6 +24,33 @@ function formatRevenue(n) {
   if (n >= 1_000_000)     return `$${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000)         return `$${(n / 1_000).toFixed(0)}K`
   return `$${n}`
+}
+
+async function ppSearch(q, state) {
+  const url = state
+    ? `${PP_BASE}/search.json?q=${encodeURIComponent(q)}&state[id]=${state}&per_page=25`
+    : `${PP_BASE}/search.json?q=${encodeURIComponent(q)}&per_page=25`
+  const res = await fetch(url, {
+    next: { revalidate: 3600 },
+    headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' },
+  })
+  if (!res.ok) return []
+  const data = await res.json()
+  return data.organizations || []
+}
+
+async function ppRevenue(ein) {
+  try {
+    const res = await fetch(`${PP_BASE}/organizations/${ein}.json`, {
+      next: { revalidate: 86400 },
+      headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' },
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    // Most recent filing's totrevenue field
+    const filing = data.filings_with_data?.[0] || data.filings_without_data?.[0]
+    return filing?.totrevenue || filing?.totfuncexpns || null
+  } catch { return null }
 }
 
 export async function GET(request) {
@@ -39,8 +63,7 @@ export async function GET(request) {
 
   if (!name) return NextResponse.json({ error: 'name is required' }, { status: 400 })
 
-  // Extract last name for the most targeted search
-  // Name formats seen: "Last, First" (Congress.gov) or "First Last"
+  // Parse name — Congress.gov uses "Last, First" format
   const nameParts = name.includes(',')
     ? name.split(',').map(s => s.trim())
     : name.trim().split(/\s+/)
@@ -49,64 +72,56 @@ export async function GET(request) {
   const firstName = (name.includes(',') ? nameParts[1]?.split(/\s+/)[0] : nameParts[0]) || ''
 
   try {
-    // Run two searches in parallel:
-    // 1. Rep's full name — finds personal foundations, eponymous orgs
-    // 2. Last name + state — finds orgs associated with their name in their jurisdiction
-    const queries = [
-      `${firstName} ${lastName}`.trim(),
-      lastName,
-    ]
+    // Two searches in parallel: full name (personal foundations) + last name in state
+    const [fullResults, lastResults] = await Promise.all([
+      ppSearch(`${firstName} ${lastName}`.trim(), state).catch(() => []),
+      ppSearch(lastName, state).catch(() => []),
+    ])
 
-    const results = await Promise.all(
-      queries.map(q => {
-        const url = state
-          ? `${PP_BASE}/organizations.json?q=${encodeURIComponent(q)}&state[id]=${state}&per_page=25`
-          : `${PP_BASE}/organizations.json?q=${encodeURIComponent(q)}&per_page=25`
-        return fetch(url, {
-          next: { revalidate: 3600 },
-          headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' },
-        })
-          .then(r => r.ok ? r.json() : { organizations: [] })
-          .catch(() => ({ organizations: [] }))
-      })
-    )
-
-    // Merge, deduplicate by EIN, sort by revenue descending
-    const seen = new Set()
-    const orgs = []
-    for (const result of results) {
-      for (const org of (result.organizations || [])) {
-        if (!seen.has(org.ein)) {
-          seen.add(org.ein)
-          orgs.push(org)
-        }
+    // Merge and deduplicate by EIN, preserving highest relevance score
+    const seen = new Map()
+    for (const org of [...fullResults, ...lastResults]) {
+      const key = String(org.ein)
+      if (!seen.has(key) || (org.score || 0) > (seen.get(key).score || 0)) {
+        seen.set(key, org)
       }
     }
 
-    orgs.sort((a, b) => (b.revenue_amount || 0) - (a.revenue_amount || 0))
+    // Sort by score desc, take top 20
+    const deduped = [...seen.values()]
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .slice(0, 20)
 
-    const organizations = orgs.slice(0, 20).map(org => ({
-      ein:          org.ein,
-      name:         org.name,
-      city:         org.city || null,
-      state:        org.state || null,
-      nteeCode:     org.ntee_code || null,
-      category:     nteeLabel(org.ntee_code),
-      revenue:      org.revenue_amount || null,
-      revenueLabel: formatRevenue(org.revenue_amount),
-      // Subsection: 501(c)(3), 501(c)(4), etc.
-      subsection:   org.subsection_code ? `501(c)(${org.subsection_code})` : null,
-      taxExempt:    org.tax_exempt !== false,
-      profileUrl:   `https://projects.propublica.org/nonprofits/organizations/${org.ein}`,
-      filingYear:   org.data_source || null,
-    }))
+    // Fetch revenue for top 8 in parallel (separate org endpoint)
+    const top8 = deduped.slice(0, 8)
+    const revenues = await Promise.all(top8.map(org => ppRevenue(org.ein)))
+    const revenueMap = Object.fromEntries(
+      top8.map((org, i) => [String(org.ein), revenues[i]])
+    )
+
+    const organizations = deduped.map(org => {
+      const revenue = revenueMap[String(org.ein)] ?? null
+      return {
+        ein:          String(org.ein),
+        strein:       org.strein || null,
+        name:         org.name,
+        city:         org.city || null,
+        state:        org.state || null,
+        nteeCode:     org.ntee_code || null,
+        category:     nteeLabel(org.ntee_code),
+        revenue,
+        revenueLabel: formatRevenue(revenue),
+        subsection:   org.subseccd ? `501(c)(${org.subseccd})` : null,
+        profileUrl:   `https://projects.propublica.org/nonprofits/organizations/${org.ein}`,
+        score:        org.score || 0,
+      }
+    })
 
     return NextResponse.json({
       organizations,
       total: organizations.length,
       query: { name, lastName, state },
-      source: 'ProPublica Nonprofit Explorer',
-      attribution: 'Data from IRS 990 filings via ProPublica Nonprofit Explorer',
+      attribution: 'IRS 990 filings via ProPublica Nonprofit Explorer',
     })
   } catch (e) {
     console.error('Nonprofits API error:', e.message)
