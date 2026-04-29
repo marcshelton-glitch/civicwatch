@@ -15,6 +15,32 @@ function PlaceholderAvatar({ size = 68, style = {} }) {
   )
 }
 
+// ─── INITIALS AVATAR (shown for state reps without a photo) ──────────────────
+function InitialsAvatar({ name = '', party = '', size = 68, style = {} }) {
+  // Build 2-letter initials from "Last, First" or "First Last"
+  const parts = name.replace(',', '').trim().split(/\s+/).filter(Boolean)
+  const initials = parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : (parts[0] || 'R').slice(0, 2).toUpperCase()
+  const bg = party === 'Democrat'    ? '#0d2a4a'
+           : party === 'Republican'  ? '#4a0d0d'
+           : party === 'Independent' ? '#2a3a1a'
+           : '#1b2a6b'
+  const fontSize = Math.round(size * 0.33)
+  const mid = size / 2
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+      style={{ borderRadius: '50%', flexShrink: 0, ...style }}>
+      <circle cx={mid} cy={mid} r={mid} fill={bg} />
+      <text x={mid} y={mid + fontSize * 0.36}
+        textAnchor="middle" fill="#D4AF37"
+        fontSize={fontSize} fontFamily="Georgia, serif" fontWeight="bold">
+        {initials}
+      </text>
+    </svg>
+  )
+}
+
 // ─── REMOVED: mock REPS data. Live data comes from Congress API. ──────────────
 const REPS = []
 
@@ -146,6 +172,7 @@ const S = {
 
 export default function CivicWatch() {
   const { user } = useUser()
+  const isPro = user?.publicMetadata?.isPro === true
   const [activeTab, setActiveTab] = useState("reps")
   const [selectedRep, setSelectedRep] = useState(null)
   const [repTab, setRepTab] = useState("overview")
@@ -164,14 +191,22 @@ export default function CivicWatch() {
   const [loadingReps, setLoadingReps] = useState(true)
   const [dataSource, setDataSource] = useState("loading")
   const [mounted, setMounted] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [civicAddress, setCivicAddress] = useState("")
   const [civicAddressInput, setCivicAddressInput] = useState("")
   const [municipalReps, setMunicipalReps] = useState([])
   const [loadingMunicipal, setLoadingMunicipal] = useState(false)
   const [municipalError, setMunicipalError] = useState("")
+  const [municipalityInfo, setMunicipalityInfo] = useState(null)   // { city, county, schoolDistrict, state }
+  const [hasCiceroData, setHasCiceroData] = useState(false)
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    setMounted(true)
+    if (typeof window !== 'undefined' && !localStorage.getItem('cw_onboarded')) {
+      setShowOnboarding(true)
+    }
+  }, [])
 
   const displayReps = filterLevel === 'state'
     ? municipalReps
@@ -241,7 +276,19 @@ useEffect(() => {
       .then(r => r.json())
       .then(data => {
         if (data.error) { setMunicipalError(data.error); setMunicipalReps([]) }
-        else setMunicipalReps(data.officials || [])
+        else {
+          const officials = data.officials || []
+          setMunicipalReps(officials)
+          setMunicipalityInfo(data.municipality || null)
+          setHasCiceroData(data.hasCiceroData || false)
+          // Sync the federal-rep state selector so liveReps loads the right Congress members
+          const stateFromResults = officials.find(o => o.state)?.state
+          if (stateFromResults && stateFromResults !== selectedState) {
+            setSelectedState(stateFromResults)
+          }
+          // Switch filter to "all" so federal + state + local all appear
+          setFilterLevel('all')
+        }
       })
       .catch(e => setMunicipalError(e.message))
       .finally(() => setLoadingMunicipal(false))
@@ -249,7 +296,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (activeTab !== 'alerts') return
-    const trackedLive = displayReps.filter(r => r.isLive && tracked.includes(r.id))
+    const trackedLive = displayReps.filter(r => r.isLive && tracked.includes(r.id) && r.level === 'federal')
     if (trackedLive.length === 0) { setLiveAlerts([]); return }
     setLoadingAlerts(true)
     const fetches = trackedLive.flatMap(rep => [
@@ -297,10 +344,21 @@ useEffect(() => {
     }
   }
 
+  const handleBillingPortal = async () => {
+    try {
+      const res = await fetch('/api/billing-portal', { method: 'POST' })
+      const { url } = await res.json()
+      if (url) window.location.href = url
+    } catch (e) {
+      console.error('Billing portal error:', e)
+    }
+  }
+
   return (
-    <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white }}>
+    <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white, overflowX: "hidden", width: "100%" }}>
       <style>{`
-        * { box-sizing: border-box; }
+        html, body { overflow-x: hidden; max-width: 100%; }
+        * { box-sizing: border-box; min-width: 0; }
         .rep-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(178,34,52,0.3); }
         .nav-btn.active { border-bottom: 2px solid ${S.gold}; color: ${S.gold}; }
         .rep-tab.active { background: ${S.red}; color: white; }
@@ -345,13 +403,15 @@ useEffect(() => {
       {/* HEADER */}
       <header style={{ background: `linear-gradient(135deg, #0A0E1E, ${S.navyMid})`, borderBottom: `2px solid ${S.gold}`, position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0" }}>
+          <button
+            onClick={() => { setActiveTab("reps"); setSelectedRep(null) }}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
             <span style={{ fontSize: 26 }}>🏛️</span>
             <div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, letterSpacing: 2 }}>CIVIC<span style={{ color: S.gold }}>WATCH</span></div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, letterSpacing: 2, color: S.white }}>CIVIC<span style={{ color: S.gold }}>WATCH</span></div>
               <div style={{ fontSize: 9, letterSpacing: 3, color: S.gray, textTransform: "uppercase" }}>Your Representatives. Accountable.</div>
             </div>
-          </div>
+          </button>
           <nav style={{ display: "flex", gap: 2 }}>
             {[
               { id: "reps", label: "My Reps" },
@@ -373,10 +433,18 @@ useEffect(() => {
                 {unreadCount}
               </div>
             )}
-            <button onClick={handleSubscribe}
-              style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
-              ★ Go Pro $9.99/mo
-            </button>
+            {isPro ? (
+              <button onClick={handleBillingPortal}
+                title="Manage your Pro subscription"
+                style={{ padding: "7px 14px", background: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08))`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5 }}>
+                ★ Pro Member
+              </button>
+            ) : (
+              <button onClick={handleSubscribe}
+                style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
+                ★ Go Pro $9.99/mo
+              </button>
+            )}
             <div style={{ fontSize: 12, color: S.gray }}>
               {user?.firstName || ""}
             </div>
@@ -438,7 +506,10 @@ useEffect(() => {
             )}
             {(filterLevel === 'state' || filterLevel === 'all') && civicAddress && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-                <div style={{ fontSize: 12, color: S.gray }}>Showing state legislators for: <span style={{ color: S.gold }}>{civicAddress}</span></div>
+                <div style={{ fontSize: 12, color: S.gray }}>
+                  Showing all representatives for: <span style={{ color: S.gold }}>{civicAddress}</span>
+                  {municipalReps.length > 0 && <span style={{ color: S.gray }}> · {municipalReps.length} state + federal</span>}
+                </div>
                 <button onClick={() => { setCivicAddress(""); setCivicAddressInput(""); setMunicipalReps([]) }}
                   style={{ fontSize: 12, background: "none", border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray, cursor: "pointer", padding: "4px 12px", fontFamily: "inherit" }}>
                   Change Address
@@ -481,7 +552,10 @@ useEffect(() => {
                           ? <img src={rep.photo} alt={rep.name} style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
                               onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
                           : null}
-                        <PlaceholderAvatar size={68} style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${S.gold}` }} />
+                        {rep.photo
+                          ? <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
+                          : <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ border: `3px solid ${S.gold}` }} />
+                        }
                         {isTracked && <div style={{ position: "absolute", bottom: 0, right: -2, background: S.gold, borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>✓</div>}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -524,12 +598,132 @@ useEffect(() => {
                 )
               })}
             </div>
+
+            {/* ── LOCAL GOVERNMENT SECTION ── */}
+            {civicAddress && (
+              <div style={{ marginTop: 32 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16 }}>
+                    🏙️ Local Government
+                  </div>
+                  {hasCiceroData && (
+                    <span style={{ fontSize: 10, color: S.gray, padding: '2px 8px', border: `1px solid ${S.border}`, borderRadius: 6 }}>
+                      via Cicero
+                    </span>
+                  )}
+                </div>
+
+                {/* Cicero officials — mayor, council, supervisors, school board */}
+                {hasCiceroData ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20, marginBottom: 20 }}>
+                    {municipalReps.filter(r => ['local','county','school','district'].includes(r.level)).map(rep => {
+                      const isTracked = tracked.includes(rep.id)
+                      const levelColor = rep.level === 'county' ? '#C8A84B'
+                        : rep.level === 'school' ? '#5B9CFF'
+                        : rep.level === 'district' ? '#90EE90'
+                        : S.gold
+                      return (
+                        <div key={rep.id} className="rep-card"
+                          style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
+                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? S.red : levelColor }} />
+                          <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
+                            <div style={{ position: 'relative' }}>
+                              {rep.photo
+                                ? <img src={rep.photo} alt={rep.name} style={{ width: 68, height: 68, borderRadius: '50%', border: `3px solid ${levelColor}`, objectFit: 'cover' }}
+                                    onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block' }} />
+                                : null}
+                              <InitialsAvatar name={rep.name} party={rep.party} size={68}
+                                style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${levelColor}` }} />
+                              {isTracked && <div style={{ position: 'absolute', bottom: 0, right: -2, background: S.gold, borderRadius: '50%', width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>✓</div>}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{rep.name}</div>
+                              <div style={{ fontSize: 12, color: levelColor, marginBottom: 6 }}>{rep.title}{rep.district ? ` · ${rep.district}` : ''}</div>
+                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                <span className="badge" style={{ background: rep.party === 'Democrat' ? 'rgba(91,156,255,0.15)' : rep.party === 'Republican' ? 'rgba(178,34,52,0.2)' : 'rgba(255,255,255,0.08)', color: rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? '#FF6B6B' : S.gray, fontSize: 10, padding: '2px 8px', borderRadius: 6 }}>{rep.party}</span>
+                                <span className="badge" style={{ background: `rgba(212,175,55,0.1)`, color: levelColor, fontSize: 10, padding: '2px 8px', borderRadius: 6, textTransform: 'capitalize' }}>{rep.level}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                            {rep.phone && (
+                              <a href={`tel:${rep.phone}`} className="btn-contact" onClick={e => e.stopPropagation()}
+                                style={{ flex: 1, textAlign: 'center', padding: '7px 0', background: 'rgba(34,197,94,0.15)', borderRadius: 8, fontSize: 12, color: '#22C55E', textDecoration: 'none', border: '1px solid rgba(34,197,94,0.3)', fontWeight: 600 }}>
+                                📞 Call
+                              </a>
+                            )}
+                            {rep.website && (
+                              <a href={rep.website} target="_blank" rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
+                                style={{ flex: 1, textAlign: 'center', padding: '7px 0', background: `rgba(212,175,55,0.15)`, borderRadius: 8, fontSize: 12, color: S.gold, textDecoration: 'none', border: `1px solid ${S.border}`, fontWeight: 600 }}>
+                                🌐 Web
+                              </a>
+                            )}
+                            <button onClick={() => toggleTrack(rep.id)}
+                              style={{ padding: '7px 12px', background: isTracked ? `rgba(212,175,55,0.2)` : 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 8, color: isTracked ? S.gold : S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12 }}>
+                              {isTracked ? '★' : '☆'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  /* Fallback: Census-derived link cards */
+                  municipalityInfo && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                      {municipalityInfo.city && (
+                        <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.city + ' city council members officials')}`}
+                          target="_blank" rel="noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}>
+                          <span style={{ fontSize: 28 }}>🏙️</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{municipalityInfo.city} City Council</div>
+                            <div style={{ fontSize: 11, color: S.gray }}>Mayor · City Council Members</div>
+                          </div>
+                          <span style={{ marginLeft: 'auto', color: S.gray }}>→</span>
+                        </a>
+                      )}
+                      {municipalityInfo.county && (
+                        <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.county + ' board of supervisors members')}`}
+                          target="_blank" rel="noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}>
+                          <span style={{ fontSize: 28 }}>🏛️</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{municipalityInfo.county}</div>
+                            <div style={{ fontSize: 11, color: S.gray }}>Board of Supervisors · County Officials</div>
+                          </div>
+                          <span style={{ marginLeft: 'auto', color: S.gray }}>→</span>
+                        </a>
+                      )}
+                      {municipalityInfo.schoolDistrict && (
+                        <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.schoolDistrict + ' school board members trustees')}`}
+                          target="_blank" rel="noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}>
+                          <span style={{ fontSize: 28 }}>🏫</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{municipalityInfo.schoolDistrict}</div>
+                            <div style={{ fontSize: 11, color: S.gray }}>School Board · Trustees</div>
+                          </div>
+                          <span style={{ marginLeft: 'auto', color: S.gray }}>→</span>
+                        </a>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: `rgba(212,175,55,0.05)`, border: `1px dashed ${S.border}`, borderRadius: 12 }}>
+                        <span style={{ fontSize: 24 }}>💡</span>
+                        <div style={{ fontSize: 11, color: S.gray, lineHeight: 1.5 }}>
+                          Full local official data available with a <a href="https://cicerodata.com" target="_blank" rel="noreferrer" style={{ color: S.gold }}>Cicero API key</a> (free tier).
+                        </div>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
           </div>
         )}
 
         {/* REP DETAIL */}
         {activeTab === "reps" && selectedRep && (
-          <RepDetail rep={selectedRep} onBack={() => setSelectedRep(null)} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} S={S} />
+          <RepDetail rep={selectedRep} onBack={() => setSelectedRep(null)} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} S={S} />
         )}
 
         {/* MAP */}
@@ -599,7 +793,7 @@ useEffect(() => {
               style={{ display: "flex", gap: 10, marginBottom: 10, padding: 10, background: "rgba(27,42,107,0.3)", border: `1px solid ${S.border}`, borderRadius: 10, cursor: "pointer" }}
               onClick={() => { setSelectedRep(r); setActiveTab("reps") }}
               className="rep-card">
-              <img src={r.photo} alt={r.name} style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} />
+              <img src={r.photo} alt={r.name} style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
               <div style={{ overflow: 'hidden' }}>
                 <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
                 <div style={{ fontSize: 11, color: S.gold }}>{r.title}</div>
@@ -629,7 +823,7 @@ useEffect(() => {
                 {displayReps.map(r => (
                   <div key={r.id} onClick={() => toggleTrack(r.id)}
                     style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", background: tracked.includes(r.id) ? `rgba(212,175,55,0.12)` : S.cardBg, border: `1px solid ${tracked.includes(r.id) ? S.gold : S.border}`, borderRadius: 30, cursor: "pointer" }}>
-                    <img src={r.photo} alt={r.name} style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }} />
+                    <img src={r.photo} alt={r.name} style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }} onError={e => { e.target.style.display = 'none' }} />
                     <span style={{ fontSize: 12, color: tracked.includes(r.id) ? S.gold : S.gray }}>{r.name.split(" ").slice(-1)[0]}</span>
                     {tracked.includes(r.id) && <span style={{ color: S.gold, fontSize: 11 }}>✓</span>}
                   </div>
@@ -732,6 +926,47 @@ useEffect(() => {
         )}
       </main>
 
+      {/* ── ONBOARDING MODAL ── */}
+      {showOnboarding && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,14,30,0.85)', backdropFilter: 'blur(6px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ maxWidth: 520, width: '100%', background: `linear-gradient(145deg, ${S.navyMid}, ${S.navy})`, border: `1px solid ${S.border}`, borderRadius: 20, padding: '40px 36px', position: 'relative' }}>
+            <div className="star-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.3, borderRadius: 20 }} />
+            <div style={{ position: 'relative' }}>
+              <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🏛️</div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 22, marginBottom: 6 }}>
+                  Welcome to CIVIC<span style={{ color: S.gold }}>WATCH</span>
+                </div>
+                <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.6 }}>
+                  {user?.firstName ? `Hi ${user.firstName}! Here's` : "Here's"} a quick look at what you can do.
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+                {[
+                  { icon: '📍', title: 'Find Your Reps', desc: 'Enter your address to see every official — federal, state, and local — who represents you.' },
+                  { icon: '⚖️', title: 'Track Votes & Trades', desc: 'See every vote cast and every STOCK Act disclosure filed by your representatives.' },
+                  { icon: '🔔', title: 'Set Up Alerts', desc: 'Click "Track" on any representative to get notified of new votes and trades.' },
+                  { icon: '🤖', title: 'AI Analysis', desc: 'Pro members get AI-powered conflict scoring, wealth analysis, and peer comparisons.' },
+                ].map(f => (
+                  <div key={f.icon} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', padding: '12px 14px', background: 'rgba(27,42,107,0.4)', borderRadius: 10, border: `1px solid ${S.border}` }}>
+                    <span style={{ fontSize: 22, flexShrink: 0 }}>{f.icon}</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{f.title}</div>
+                      <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.5 }}>{f.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => { localStorage.setItem('cw_onboarded', '1'); setShowOnboarding(false) }}
+                style={{ width: '100%', padding: '13px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 12, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
+                Get Started →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer style={{ marginTop: 48, borderTop: `1px solid ${S.border}`, padding: "20px 16px", textAlign: "center" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ height: 3, background: `linear-gradient(90deg, ${S.red} 33%, white 33%, white 66%, ${S.navyMid} 66%)`, marginBottom: 14, borderRadius: 2 }} />
@@ -743,7 +978,7 @@ useEffect(() => {
   )
 }
 
-function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, S }) {
+function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, handleBillingPortal, isPro: isProProp, S }) {
   const [liveVotes, setLiveVotes] = useState(null)
   const [liveTrades, setLiveTrades] = useState(null)
   const [tradesMeta, setTradesMeta] = useState(null)
@@ -751,10 +986,24 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [liveSponsored, setLiveSponsored] = useState(null)
   const [liveDocket, setLiveDocket] = useState(null)
   const [liveDocketSource, setLiveDocketSource] = useState(null)
+  const [liveTownHall, setLiveTownHall] = useState(null)
+  const [liveTownHallMeta, setLiveTownHallMeta] = useState(null)
   const [loadingVotes, setLoadingVotes] = useState(false)
   const [loadingTrades, setLoadingTrades] = useState(false)
   const [loadingBio, setLoadingBio] = useState(false)
   const [loadingDocket, setLoadingDocket] = useState(false)
+  const [loadingTownHall, setLoadingTownHall] = useState(false)
+
+  // Reset all live data when the rep changes so stale data from the
+  // previous rep never briefly flashes for the newly selected rep
+  useEffect(() => {
+    setLiveVotes(null); setLiveTrades(null); setTradesMeta(null)
+    setLiveBio(null); setLiveSponsored(null)
+    setLiveDocket(null); setLiveDocketSource(null)
+    setLiveTownHall(null); setLiveTownHallMeta(null)
+    setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
+    setLoadingDocket(false); setLoadingTownHall(false)
+  }, [rep.id])
 
   const isLive = rep.isLive
 
@@ -807,6 +1056,21 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     }
   }, [repTab, rep.id])
 
+  useEffect(() => {
+    if (repTab === 'townhall' && isLive && !liveTownHall && !loadingTownHall) {
+      setLoadingTownHall(true)
+      const stateAbbr = rep.stateAbbr || rep.state?.substring(0, 2).toUpperCase() || 'US'
+      fetch(`/api/congress?type=townhall&bioguideId=${rep.id}&state=${stateAbbr}`)
+        .then(r => r.json())
+        .then(d => {
+          setLiveTownHall(d.events || [])
+          setLiveTownHallMeta({ officialEventsUrl: d.officialEventsUrl, googleSearchUrl: d.googleSearchUrl, source: d.source, isSenator: d.isSenator })
+          setLoadingTownHall(false)
+        })
+        .catch(() => { setLiveTownHall([]); setLoadingTownHall(false) })
+    }
+  }, [repTab, rep.id])
+
   const votes = isLive ? (liveVotes || rep.votes) : rep.votes
   const trades = isLive ? (liveTrades || rep.trades) : rep.trades
   const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
@@ -832,7 +1096,12 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       <div style={{ background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, border: `1px solid ${S.border}`, borderRadius: 20, padding: 24, marginBottom: 20, position: "relative", overflow: "hidden" }}>
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
-          <img src={rep.photo} alt={rep.name} style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }} />
+          {rep.photo
+            ? <img src={rep.photo} alt={rep.name} style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+                onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+            : null}
+          <InitialsAvatar name={rep.name} party={rep.party} size={90}
+            style={{ display: rep.photo ? 'none' : 'block', border: `4px solid ${S.gold}` }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 4 }}>{rep.name}</div>
             <div style={{ fontSize: 13, color: S.gold, marginBottom: 8 }}>{rep.title} · {rep.state} · {rep.district}</div>
@@ -865,7 +1134,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── OVERVIEW ── */}
       {repTab === "overview" && (
-        <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minWidth: 0 }}>
 
           {/* Wealth Change */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
@@ -937,8 +1206,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
             ) : (liveDocket || []).length > 0 ? (
               (liveDocket || []).slice(0, 3).map((d, i) => (
-                <div key={i} style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, color: S.grayLight, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</div>
+                <div key={i} style={{ marginBottom: 8, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, color: S.grayLight, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>{d.title}</div>
                   <div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>
                     {d.number && <span style={{ color: S.gold, marginRight: 6 }}>{d.number}</span>}
                     {d.lastActionDate || d.role || ''}
@@ -1063,7 +1332,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         </div>
                         {d.url && <a href={d.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "2px 10px", borderRadius: 6, whiteSpace: "nowrap", textDecoration: "none" }}>View →</a>}
                       </div>
-                      <div style={{ fontSize: 13, marginBottom: 4 }}>{d.title}</div>
+                      <div style={{ fontSize: 13, marginBottom: 4, wordBreak: "break-word", overflowWrap: "anywhere" }}>{d.title}</div>
                       {d.lastAction && <div style={{ fontSize: 11, color: S.gray }}>Last action: {d.lastAction}{d.lastActionDate ? ` · ${d.lastActionDate}` : ''}</div>}
                     </div>
                   )
@@ -1331,78 +1600,161 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {/* ── TOWN HALL ── */}
       {repTab === "townhall" && (
         <div className="slide-in">
-          {(isLive || !rep.townHall.length) && rep.townHall.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 48 }}>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>🏛️</div>
-              <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>Town hall data not available via API.</div>
-              <div style={{ fontSize: 12, color: S.gray, marginBottom: 16 }}>Check the member's official website for upcoming events.</div>
-              <a href={rep.website} target="_blank" rel="noreferrer"
-                style={{ padding: '8px 20px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
-                Visit Official Website →
-              </a>
+          {loadingTownHall ? (
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray, fontSize: 13 }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🏛️</div>
+              Searching for upcoming events…
             </div>
-          ) : (
-            <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          ) : (() => {
+            const events = liveTownHall || []
+            const meta = liveTownHallMeta || {}
+            const hasEvents = events.length > 0
+
+            return (
               <div>
-                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 14 }}>Upcoming Events</div>
-                {rep.townHall.map((ev, i) => (
-                  <div key={i} style={{ marginBottom: 14, padding: 16, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{ev.event}</div>
-                    <div style={{ fontSize: 12, color: S.gray, marginBottom: 10 }}>📅 {ev.date} · 📍 {ev.location}</div>
-                    <a href={ev.rsvpLink} style={{ display: "inline-block", padding: "7px 16px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, borderRadius: 8, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>RSVP →</a>
+                {/* ── Events list ── */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>
+                    Upcoming Events {hasEvents && <span style={{ color: S.gold }}>({events.length})</span>}
                   </div>
-                ))}
-              </div>
-              <div>
-                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 14 }}>Community Priority Poll</div>
-                <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-                  <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 16 }}>What should {rep.name.split(" ").pop()} prioritize?</div>
-                  {Object.entries(rep.communityPoll).map(([issue, count]) => {
-                    const hasVoted = pollVotes[`${rep.id}-${issue}`]
-                    const total = Object.values(rep.communityPoll).reduce((a, b) => a + b, 0)
-                    const pct = Math.round((count / total) * 100)
-                    return (
-                      <div key={issue} style={{ marginBottom: 14, opacity: hasVoted ? 0.7 : 1 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                          <span style={{ textTransform: "capitalize", fontSize: 13 }}>{issue}</span>
-                          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                            <span style={{ fontSize: 12, color: S.gray }}>{count} · {pct}%</span>
-                            {!hasVoted && (
-                              <button onClick={() => handlePollVote(rep.id, issue)}
-                                style={{ padding: "3px 10px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 6, color: S.gold, cursor: "pointer", fontFamily: "inherit", fontSize: 11 }}>
-                                Vote
-                              </button>
-                            )}
-                          </div>
+                  {hasEvents && (
+                    <span style={{ fontSize: 10, color: S.gray }}>
+                      via Mobilize America
+                    </span>
+                  )}
+                </div>
+
+                {hasEvents ? (
+                  <div style={{ display: 'grid', gap: 12, marginBottom: 24 }}>
+                    {events.map((ev, i) => (
+                      <div key={ev.id || i} style={{ padding: 16, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, flex: 1, paddingRight: 12 }}>{ev.title}</div>
+                          {ev.isVirtual && (
+                            <span style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(91,156,255,0.15)', border: '1px solid rgba(91,156,255,0.4)', borderRadius: 6, color: '#5B9CFF', whiteSpace: 'nowrap' }}>
+                              Virtual
+                            </span>
+                          )}
                         </div>
-                        <div className="progress-bar"><div className="progress-fill bar-fill" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${S.gold}, ${S.red})` }} /></div>
+                        <div style={{ fontSize: 12, color: S.gray, marginBottom: 4 }}>
+                          📅 {ev.date}{ev.time ? ` · ${ev.time}` : ''}
+                        </div>
+                        <div style={{ fontSize: 12, color: S.gray, marginBottom: ev.description ? 8 : 12 }}>
+                          📍 {ev.location || 'Location TBD'}
+                        </div>
+                        {ev.description && (
+                          <div style={{ fontSize: 12, color: S.grayLight, marginBottom: 12, lineHeight: 1.5 }}>
+                            {ev.description}
+                          </div>
+                        )}
+                        {ev.rsvpUrl && (
+                          <a href={ev.rsvpUrl} target="_blank" rel="noreferrer"
+                            style={{ display: 'inline-block', padding: '7px 16px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, borderRadius: 8, color: 'white', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
+                            RSVP →
+                          </a>
+                        )}
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: '20px 0 24px', color: S.gray, fontSize: 13 }}>
+                    No upcoming town halls found in our live feed for {rep.name.split(',')[0]}.
+                  </div>
+                )}
+
+                {/* ── Resource links ── */}
+                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>
+                  Find More Events
+                </div>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {meta.officialEventsUrl && (
+                    <a href={meta.officialEventsUrl} target="_blank" rel="noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                      <span style={{ fontSize: 20 }}>🏛️</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Official Events Page</div>
+                        <div style={{ fontSize: 11, color: S.gray }}>
+                          {meta.isSenator ? `${rep.name.split(',')[0].toLowerCase()}.senate.gov` : `${rep.name.split(',')[0].toLowerCase()}.house.gov`} — Scheduled events &amp; appearances
+                        </div>
+                      </div>
+                      <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
+                    </a>
+                  )}
+                  {meta.googleSearchUrl && (
+                    <a href={meta.googleSearchUrl} target="_blank" rel="noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                      <span style={{ fontSize: 20 }}>🔍</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Search for Town Halls</div>
+                        <div style={{ fontSize: 11, color: S.gray }}>Google News — Recent announcements &amp; upcoming events</div>
+                      </div>
+                      <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
+                    </a>
+                  )}
+                  <a href={`https://www.mobilize.us/events/?event_types=TOWN_HALL`} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                    <span style={{ fontSize: 20 }}>📣</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Mobilize America</div>
+                      <div style={{ fontSize: 11, color: S.gray }}>Browse all upcoming town halls nationwide</div>
+                    </div>
+                    <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
+                  </a>
+                </div>
+
+                {/* ── Community Poll ── */}
+                <div style={{ marginTop: 28 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Community Priority Poll</div>
+                  <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+                    <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 16 }}>What should {rep.name.split(' ').pop()} prioritize?</div>
+                    {Object.entries(rep.communityPoll).map(([issue, count]) => {
+                      const hasVoted = pollVotes[`${rep.id}-${issue}`]
+                      const total = Object.values(rep.communityPoll).reduce((a, b) => a + b, 0)
+                      const pct = total > 0 ? Math.round((count / total) * 100) : 0
+                      return (
+                        <div key={issue} style={{ marginBottom: 14, opacity: hasVoted ? 0.7 : 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                            <span style={{ textTransform: 'capitalize', fontSize: 13 }}>{issue}</span>
+                            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                              <span style={{ fontSize: 12, color: S.gray }}>{count} · {pct}%</span>
+                              {!hasVoted && (
+                                <button onClick={() => handlePollVote(rep.id, issue)}
+                                  style={{ padding: '3px 10px', background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 6, color: S.gold, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11 }}>
+                                  Vote
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="progress-bar"><div className="progress-fill bar-fill" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${S.gold}, ${S.red})` }} /></div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
         </div>
       )}
 
       {/* ── AI ANALYSIS ── */}
       {repTab === "ai" && (
-        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} />
+        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
       )}
     </div>
   )
 }
 
 
-function AIAnalysisTab({ rep, S, handleSubscribe }) {
+function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp }) {
   const { user } = useUser()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
   const [preview, setPreview] = useState('')
   const [fullReport, setFullReport] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
-  const isPro = user?.publicMetadata?.isPro === true
+  // Prefer prop (from parent) so both stay in sync; fall back to local user read
+  const isPro = isProProp ?? (user?.publicMetadata?.isPro === true)
 
   const runAnalysis = async (mode) => {
     setStatus('loading')
@@ -1555,6 +1907,12 @@ function AIAnalysisTab({ rep, S, handleSubscribe }) {
                 onClick={() => runAnalysis('full')}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 Generate Full Report →
+              </button>
+            ) : isPro ? (
+              <button
+                onClick={handleBillingPortal}
+                style={{ padding: '11px 28px', background: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08))`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5 }}>
+                ★ Manage Pro Subscription
               </button>
             ) : (
               <button

@@ -240,10 +240,10 @@ export default function TermsPage() {
             Terms of <span style={{ color: S.gold }}>Service</span>
           </h1>
           <p style={{ fontSize: 13, color: S.gray, marginBottom: 8 }}>
-            Last Updated: April 7, 2025
+            Last Updated: April 24, 2026
           </p>
           <p style={{ fontSize: 13, color: S.gray }}>
-            Effective Date: April 7, 2025
+            Effective Date: April 24, 2026
           </p>
           <div style={{ marginTop: 20, height: 2, background: `linear-gradient(90deg, transparent, ${S.red}, transparent)`, borderRadius: 2 }} />
         </div>

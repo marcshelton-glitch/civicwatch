@@ -21,7 +21,7 @@ const VALID_STATES = new Set([
 ])
 
 const VALID_TYPES = new Set([
-  'members','member','votes','trades','bills','sponsored','schedule','committees'
+  'members','member','votes','trades','bills','sponsored','schedule','committees','townhall'
 ])
 
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
@@ -156,11 +156,13 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid state parameter' }, { status: 400 })
     }
 
-    const bioguideTypes = ['member', 'votes', 'trades', 'sponsored', 'committees']
+    const bioguideTypes = ['member', 'votes', 'trades', 'sponsored', 'committees', 'townhall']
     if (bioguideTypes.includes(type) && !BIOGUIDE_RE.test(bioguideId)) {
-      // State reps don't file federal STOCK Act disclosures
       if (type === 'trades') {
         return NextResponse.json({ trades: [], source: 'state', message: 'State legislators file disclosures at the state level, not via the federal STOCK Act.' })
+      }
+      if (type === 'townhall') {
+        return NextResponse.json({ events: [], officialEventsUrl: null, googleSearchUrl: null, source: 'state' })
       }
       return NextResponse.json({ error: 'Invalid bioguideId' }, { status: 400 })
     }
@@ -227,14 +229,26 @@ export async function GET(request) {
     // ── votes ─────────────────────────────────────────────────────────────
     if (type === 'votes') {
       // Try GovTrack first — free, detailed, includes bill links
+      // GovTrack no longer supports ?bioguideid= — use ?q=lastName instead
       try {
+        // Get last name from Congress.gov to build the GovTrack search query
+        let searchName = bioguideId
+        try {
+          const mData = await cFetch(`/member/${bioguideId}`)
+          const rawName = mData.member?.directOrderName || ''
+          searchName = rawName.split(',')[0].trim().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || bioguideId
+        } catch { /* use bioguideId as fallback query */ }
+
         const gtPerson = await fetch(
-          `https://www.govtrack.us/api/v2/person?bioguideid=${encodeURIComponent(bioguideId)}&limit=1`,
+          `https://www.govtrack.us/api/v2/person?q=${encodeURIComponent(searchName)}&limit=5`,
           { next: { revalidate: 86400 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
         )
         if (gtPerson.ok) {
           const personJson = await gtPerson.json()
-          const gtId = personJson.objects?.[0]?.id
+          // Match by bioguide ID when GovTrack has it, else take first result
+          const match = personJson.objects?.find(p => p.bioguideid === bioguideId)
+            || personJson.objects?.[0]
+          const gtId = match?.id
           if (gtId) {
             const gtVotes = await fetch(
               `https://www.govtrack.us/api/v2/vote_voter?person=${gtId}&limit=20&order_by=-created`,
@@ -288,13 +302,14 @@ export async function GET(request) {
 
     // ── trades ────────────────────────────────────────────────────────────
     if (type === 'trades') {
+      const supabase = getSupabase()
+
       // Fetch member name + chamber from Congress.gov
       let lastName = '', firstName = '', isSenator = false, fullName = ''
       try {
         const memberData = await cFetch(`/member/${bioguideId}`)
         const m = memberData.member
         fullName = m?.directOrderName || m?.invertedOrderName || ''
-        // directOrderName is "Last, First" format
         const nameParts = fullName.split(',')
         lastName = nameParts[0]?.trim().toLowerCase().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || ''
         firstName = nameParts[1]?.trim().split(/\s+/)[0]?.toLowerCase() || ''
@@ -302,7 +317,55 @@ export async function GET(request) {
         isSenator = latestTerm?.chamber?.toLowerCase().includes('senate') || false
       } catch { /* skip */ }
 
-      // House PTR trades (Periodic Transaction Reports)
+      const disclosureUrl = isSenator
+        ? `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name`
+        : `https://disclosures-clerk.house.gov/FinancialDisclosure#Search`
+
+      // ── Primary: query fd_trades from Supabase (House PTR data, 2008–present) ──
+      if (!isSenator && lastName) {
+        const { data: dbTrades } = await supabase
+          .from('fd_trades')
+          .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
+          .ilike('last_name', lastName)
+          .order('transaction_date', { ascending: false })
+          .limit(50)
+
+        if (dbTrades && dbTrades.length > 0) {
+          // Backfill bioguide_id in fd_filings for faster future lookups
+          supabase
+            .from('fd_filings')
+            .update({ bioguide_id: bioguideId })
+            .ilike('last_name', lastName)
+            .is('bioguide_id', null)
+            .then(() => {})
+
+          const allTrades = dbTrades.map(t => ({
+            date: t.transaction_date || '',
+            asset: t.asset_name || 'Unknown Asset',
+            ticker: t.ticker || null,
+            type: t.transaction_type === 'Purchase' ? 'BUY'
+              : t.transaction_type === 'Sale' ? 'SELL'
+              : t.transaction_type?.toUpperCase() || 'OTHER',
+            amount: t.amount_str || 'Undisclosed',
+            amountMin: t.amount_min,
+            amountMax: t.amount_max,
+            sector: 'Stock/Security',
+            docUrl: `https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/${t.year}/${t.doc_id}.pdf`,
+            source: 'House Clerk — STOCK Act PTR (CivicWatch DB)',
+          }))
+
+          const buys = allTrades.filter(t => t.type === 'BUY').length
+          const sells = allTrades.filter(t => t.type === 'SELL').length
+          const topTickers = [...new Set(allTrades.map(t => t.ticker).filter(Boolean))].slice(0, 5)
+
+          return NextResponse.json({
+            trades: allTrades, buys, sells, topTickers,
+            isSenator, disclosureUrl, source: 'db',
+          })
+        }
+      }
+
+      // ── Fallback: live House Clerk endpoint ────────────────────────────────
       let houseTrades = []
       const year = new Date().getFullYear()
       for (const y of [year, year - 1]) {
@@ -341,9 +404,9 @@ export async function GET(request) {
         source: 'House Clerk — STOCK Act PTR',
       }))
 
-      // Senate EFTS trades
+      // ── Senate EFTS trades ─────────────────────────────────────────────────
       let senateTrades = []
-      if (lastName && /^[a-z\s\-']+$/.test(lastName)) {
+      if (isSenator && lastName && /^[a-z\s\-']+$/.test(lastName)) {
         try {
           const senRes = await fetch(
             `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name&fq=report_types:ptr&dateFrom=2020-01-01`,
@@ -352,10 +415,7 @@ export async function GET(request) {
           if (senRes.ok) {
             const senJson = await senRes.json()
             senateTrades = (senJson.hits?.hits || [])
-              .filter(h => {
-                const sName = (h._source?.senator_name || '').toLowerCase()
-                return sName.includes(lastName)
-              })
+              .filter(h => (h._source?.senator_name || '').toLowerCase().includes(lastName))
               .slice(0, 20)
               .map(h => ({
                 date: h._source?.transaction_date || h._source?.date_received || '',
@@ -379,15 +439,9 @@ export async function GET(request) {
       const sells = allTrades.filter(t => t.type === 'SELL').length
       const topTickers = [...new Set(allTrades.map(t => t.ticker).filter(Boolean))].slice(0, 5)
 
-      const disclosureUrl = isSenator
-        ? `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name`
-        : `https://disclosures-clerk.house.gov/FinancialDisclosure#Search`
-
       return NextResponse.json({
-        trades: allTrades,
-        buys, sells, topTickers,
-        isSenator,
-        disclosureUrl,
+        trades: allTrades, buys, sells, topTickers,
+        isSenator, disclosureUrl,
         source: allTrades.length > 0 ? 'live' : 'none',
       })
     }
@@ -490,6 +544,96 @@ export async function GET(request) {
       return NextResponse.json({
         schedule: bills, source: 'legiscan',
         attribution: 'LegiScan LLC — CC BY 4.0',
+      })
+    }
+
+    // ── townhall ──────────────────────────────────────────────────────────
+    if (type === 'townhall') {
+      // Derive official website slug — House: {lastname}.house.gov, Senate: {lastname}.senate.gov
+      let lastName = '', isSenator = false
+      try {
+        const memberData = await cFetch(`/member/${bioguideId}`)
+        const m = memberData.member
+        const nameParts = (m?.directOrderName || '').split(',')
+        lastName = nameParts[0]?.trim().toLowerCase()
+          .replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '')
+          .replace(/[^a-z\-]/g, '') || ''
+        const latestTerm = (m?.terms?.item || []).slice(-1)[0]
+        isSenator = latestTerm?.chamber?.toLowerCase().includes('senate') || false
+      } catch { /* skip */ }
+
+      const officialEventsUrl = lastName
+        ? isSenator
+          ? `https://www.${lastName}.senate.gov/public/index.cfm/news/type/e`
+          : `https://${lastName}.house.gov/news/events`
+        : null
+
+      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
+        (lastName || bioguideId) + ' town hall ' + new Date().getFullYear()
+      )}`
+
+      // Fetch upcoming TOWN_HALL events from Mobilize America (public, no key needed)
+      let events = []
+      try {
+        const now = Math.floor(Date.now() / 1000)
+        // Fetch up to 200 upcoming town halls, then filter to this rep's state
+        const mobRes = await fetch(
+          `https://api.mobilize.us/v1/events?event_types=TOWN_HALL&per_page=200&timeslot_start=now`,
+          { next: { revalidate: 3600 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
+        )
+        if (mobRes.ok) {
+          const mobJson = await mobRes.json()
+          const stateAbbr = state  // already validated/uppercased above
+          const lastNameLower = lastName.toLowerCase()
+
+          events = (mobJson.data || [])
+            .filter(ev => {
+              // Match by state (sponsor.state) and optionally rep name in title
+              const evState = (ev.sponsor?.state || ev.location?.region || '').toUpperCase()
+              const titleLower = (ev.title || '').toLowerCase()
+              const descLower = (ev.description || ev.summary || '').toLowerCase()
+              const stateMatch = evState === stateAbbr
+              const nameMatch = lastNameLower && (titleLower.includes(lastNameLower) || descLower.includes(lastNameLower))
+              return stateMatch || nameMatch
+            })
+            .slice(0, 10)
+            .map(ev => {
+              const slot = ev.timeslots?.[0]
+              const startTs = slot?.start_date
+              const startDate = startTs ? new Date(startTs * 1000).toISOString().split('T')[0] : null
+              const startTime = startTs ? new Date(startTs * 1000).toLocaleTimeString('en-US', {
+                hour: 'numeric', minute: '2-digit', timeZone: ev.timezone || 'America/New_York'
+              }) : null
+              const loc = ev.location
+              const locationStr = ev.is_virtual
+                ? 'Virtual Event'
+                : [loc?.venue, loc?.locality, loc?.region].filter(Boolean).join(', ')
+
+              return {
+                id: ev.id,
+                title: ev.title,
+                date: startDate,
+                time: startTime,
+                timezone: ev.timezone,
+                location: locationStr,
+                isVirtual: ev.is_virtual || false,
+                description: ev.summary || ev.description?.slice(0, 200) || '',
+                rsvpUrl: ev.browser_url || null,
+                sponsor: ev.sponsor?.name || null,
+              }
+            })
+            .filter(ev => ev.date)  // drop events without a parseable date
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+        }
+      } catch { /* Mobilize unavailable — fallback only */ }
+
+      return NextResponse.json({
+        events,
+        officialEventsUrl,
+        googleSearchUrl,
+        isSenator,
+        source: events.length > 0 ? 'mobilize' : 'none',
+        attribution: events.length > 0 ? 'Mobilize America' : null,
       })
     }
 

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ingest:index": "node --env-file=.env.local scripts/ingest-disclosures.js --phase=index",
+    "ingest:trades": "node --env-file=.env.local scripts/ingest-disclosures.js --phase=trades",
+    "ingest:networth": "node --env-file=.env.local scripts/ingest-disclosures.js --phase=networth"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
@@ -21,7 +24,12 @@
     "stripe": "^21.0.1"
   },
   "devDependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "adm-zip": "^0.5.17",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2"
+    "eslint-config-next": "16.2.2",
+    "fast-xml-parser": "^5.7.1",
+    "pdf-parse": "^2.4.5"
   }
 }

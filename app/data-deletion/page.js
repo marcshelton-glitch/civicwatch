@@ -6,8 +6,8 @@ export const metadata = {
     "How to delete your CivicWatch account and request removal of your personal data.",
 };
 
-const LAST_UPDATED = "April 18, 2026";
-const CONTACT_EMAIL = "kangaite@hotmail.com";
+const LAST_UPDATED = "April 24, 2026";
+const CONTACT_EMAIL = "support@civicwatch.app";
 
 export default function DataDeletionPage() {
   return (
