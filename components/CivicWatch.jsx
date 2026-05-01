@@ -996,6 +996,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [liveNonprofits, setLiveNonprofits] = useState(null)
   const [loadingNonprofits, setLoadingNonprofits] = useState(false)
   const [netWorthHistory, setNetWorthHistory] = useState(null)
+  const [disclosures, setDisclosures] = useState(null)
+  const [loadingDisclosures, setLoadingDisclosures] = useState(false)
+  const [ptrResults, setPtrResults] = useState({})   // docId → { trades, loading, error }
+  const [expandedPtr, setExpandedPtr] = useState(null)
 
   // Reset all live data when the rep changes so stale data from the
   // previous rep never briefly flashes for the newly selected rep
@@ -1005,8 +1009,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLiveDocket(null); setLiveDocketSource(null)
     setLiveTownHall(null); setLiveTownHallMeta(null)
     setLiveNonprofits(null); setNetWorthHistory(null)
+    setDisclosures(null); setPtrResults({}); setExpandedPtr(null)
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
+    setLoadingDisclosures(false)
   }, [rep.id])
 
   const isLive = rep.isLive
@@ -1033,6 +1039,20 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           setLoadingTrades(false)
         })
         .catch(() => { setLiveTrades([]); setLoadingTrades(false) })
+    }
+  }, [repTab, rep.id])
+
+  // Fetch House Clerk filing index for federal House members
+  useEffect(() => {
+    if (repTab === 'wealth' && isLive && rep.source !== 'openstates' && !disclosures && !loadingDisclosures) {
+      const lastName = (rep.name || '').split(',')[0].trim().split(' ').pop()
+      const stateDst = (rep.state || '') + (rep.district ? String(rep.district).padStart(2, '0') : '')
+      if (!lastName) return
+      setLoadingDisclosures(true)
+      fetch(`/api/disclosures?lastName=${encodeURIComponent(lastName)}&stateDst=${encodeURIComponent(stateDst)}`)
+        .then(r => r.json())
+        .then(d => { setDisclosures(d); setLoadingDisclosures(false) })
+        .catch(() => { setDisclosures({ filings: [], ptrCount: 0, annualCount: 0 }); setLoadingDisclosures(false) })
     }
   }, [repTab, rep.id])
 
@@ -1091,6 +1111,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const trades = isLive ? (liveTrades || rep.trades) : rep.trades
   const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
   const isTracked = tracked.includes(rep.id)
+
+  const loadPtr = (docId, year) => {
+    if (ptrResults[docId]) { setExpandedPtr(expandedPtr === docId ? null : docId); return }
+    setPtrResults(prev => ({ ...prev, [docId]: { loading: true } }))
+    setExpandedPtr(docId)
+    fetch(`/api/ptr-trades?docId=${docId}&year=${year}`)
+      .then(r => r.json())
+      .then(d => setPtrResults(prev => ({ ...prev, [docId]: { trades: d.trades || [], pdfUrl: d.pdfUrl, error: d.error } })))
+      .catch(() => setPtrResults(prev => ({ ...prev, [docId]: { trades: [], error: 'Failed to load' } })))
+  }
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -1400,224 +1430,248 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {/* ── WEALTH & TRADES ── */}
       {repTab === "wealth" && (
         <div className="slide-in">
-          {/* Net Worth — show if available, else link to official filings */}
-          {rep.netWorthBefore ? (
-            <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-              <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-                <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 8 }}>Net Worth Before Office</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 26, color: "#90EE90" }}>{fmt(rep.netWorthBefore)}</div>
-              </div>
-              <div style={{ padding: 20, background: "rgba(178,34,52,0.1)", border: "1px solid rgba(178,34,52,0.3)", borderRadius: 12 }}>
-                <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 8 }}>Current Net Worth</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 26, color: "#FF6B6B" }}>{fmt(rep.netWorthCurrent)}</div>
-                <div style={{ fontSize: 12, color: "#FF6B6B", marginTop: 4 }}>+{enr.pct}% in {rep.yearsInOffice} years</div>
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-              <a href={tradesMeta?.disclosureUrl || (rep.source === 'openstates'
-                ? `https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/`
-                : `https://disclosures-clerk.house.gov/FinancialDisclosure`)}
-                target="_blank" rel="noreferrer"
-                style={{ flex: 1, padding: 16, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 24 }}>📄</span>
-                <div>
-                  <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 2 }}>Annual Financial Disclosures</div>
-                  <div style={{ fontSize: 11, color: S.gold }}>View official filings →</div>
-                </div>
-              </a>
-              <a href={`https://www.opensecrets.org/personal-finances/`}
-                target="_blank" rel="noreferrer"
-                style={{ flex: 1, padding: 16, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 24 }}>💰</span>
-                <div>
-                  <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 2 }}>Net Worth & Assets</div>
-                  <div style={{ fontSize: 11, color: S.gold }}>Search OpenSecrets →</div>
-                </div>
-              </a>
-            </div>
-          )}
 
-          {/* State rep — no federal STOCK Act trades */}
+          {/* ── State rep ── */}
           {rep.source === 'openstates' && (
-            <div style={{ padding: 24, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🏛️</div>
-              <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>State legislators are not subject to the federal STOCK Act</div>
-              <div style={{ fontSize: 12, color: S.gray, marginBottom: 18 }}>Financial disclosures are filed at the state level and vary by state.</div>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a href="https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/" target="_blank" rel="noreferrer"
-                  style={{ padding: '8px 16px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
-                  FollowTheMoney.org →
-                </a>
-                <a href={rep.website || `https://openstates.org/people/${rep.id.replace('os-', '')}/`} target="_blank" rel="noreferrer"
-                  style={{ padding: '8px 16px', background: `rgba(91,156,255,0.1)`, border: `1px solid ${S.border}`, borderRadius: 8, color: '#5B9CFF', textDecoration: 'none', fontSize: 12 }}>
-                  OpenStates Profile →
-                </a>
-              </div>
+            <div style={{ padding: 28, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: 28, marginBottom: 10 }}>🏛️</div>
+              <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>State legislators file financial disclosures at the state level</div>
+              <div style={{ fontSize: 12, color: S.gray }}>The federal STOCK Act and House Clerk disclosures apply only to U.S. Congress members.</div>
             </div>
           )}
 
-          {/* Federal rep — STOCK Act trades */}
-          {rep.source !== 'openstates' && (
-            <>
-              {loadingTrades && (
-                <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
-                  <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
-                  Searching STOCK Act disclosures…
-                </div>
-              )}
+          {/* ── Federal rep ── */}
+          {rep.source !== 'openstates' && (() => {
+            const TYPE_COLOR = { P: '#4CAF50', D: '#4CAF50', A: '#5B9CFF', O: '#5B9CFF', G: '#5B9CFF', X: S.gray, W: '#f87171' }
+            const TYPE_ICON  = { P: '📊', D: '📝', A: '📋', O: '📋', G: '📋', X: '⏳', W: '✗' }
 
-              {/* Trade summary stats */}
-              {!loadingTrades && trades.length > 0 && tradesMeta && (
-                <div className="mobile-stack" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 16 }}>
-                  <div style={{ padding: 14, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, textAlign: 'center' }}>
-                    <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: S.grayLight }}>{trades.length}</div>
-                    <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Total Trades</div>
+            return (
+              <>
+                {/* Loading spinner while both sources are fetching */}
+                {(loadingTrades || loadingDisclosures) && (
+                  <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+                    <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+                    Loading financial disclosure records…
                   </div>
-                  <div style={{ padding: 14, background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: 10, textAlign: 'center' }}>
-                    <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#4CAF50" }}>{tradesMeta.buys}</div>
-                    <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Purchases</div>
-                  </div>
-                  <div style={{ padding: 14, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 10, textAlign: 'center' }}>
-                    <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#f87171" }}>{tradesMeta.sells}</div>
-                    <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Sales</div>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Top tickers */}
-              {!loadingTrades && tradesMeta?.topTickers?.length > 0 && (
-                <div style={{ marginBottom: 14, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, color: S.gray, letterSpacing: 1 }}>TOP TRADED:</span>
-                  {tradesMeta.topTickers.map(t => (
-                    <span key={t} style={{ fontSize: 12, fontWeight: 700, color: S.gold, background: "rgba(212,175,55,0.12)", borderRadius: 4, padding: "2px 8px" }}>{t}</span>
-                  ))}
-                </div>
-              )}
+                {!loadingTrades && !loadingDisclosures && (
+                  <>
+                    {/* ── STOCK Act trades from DB / Senate EFTS ── */}
+                    {trades.length > 0 && (
+                      <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>STOCK Act Periodic Transaction Reports</div>
 
-              {/* Buy/sell bar */}
-              {!loadingTrades && trades.length > 0 && tradesMeta && (tradesMeta.buys + tradesMeta.sells) > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 8 }}>
-                    <div style={{ background: "#4CAF50", width: `${Math.round(tradesMeta.buys / (tradesMeta.buys + tradesMeta.sells) * 100)}%`, transition: 'width 0.5s' }} />
-                    <div style={{ background: "#f87171", flex: 1 }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: S.gray }}>
-                    <span style={{ color: '#4CAF50' }}>{Math.round(tradesMeta.buys / (tradesMeta.buys + tradesMeta.sells) * 100)}% Buy</span>
-                    <span style={{ color: '#f87171' }}>{Math.round(tradesMeta.sells / (tradesMeta.buys + tradesMeta.sells) * 100)}% Sell</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Trade list */}
-              {!loadingTrades && trades.length > 0 && (
-                <>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {trades.map((t, i) => (
-                      <div key={i} style={{ padding: "12px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
-                        <div style={{ minWidth: 48, fontWeight: 700, fontSize: 13, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray }}>{t.type}</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {t.asset}{t.ticker && t.ticker !== t.asset ? ` (${t.ticker})` : ''}
+                        {/* Stats row */}
+                        <div className="mobile-stack" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                          <div style={{ padding: 14, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, textAlign: 'center' }}>
+                            <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: S.grayLight }}>{trades.length}</div>
+                            <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Trades</div>
                           </div>
-                          <div style={{ fontSize: 11, color: S.gray }}>{t.date} · {t.sector}</div>
+                          <div style={{ padding: 14, background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.25)', borderRadius: 10, textAlign: 'center' }}>
+                            <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#4CAF50' }}>{tradesMeta?.buys ?? 0}</div>
+                            <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Purchases</div>
+                          </div>
+                          <div style={{ padding: 14, background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 10, textAlign: 'center' }}>
+                            <div style={{ fontSize: 22, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#f87171' }}>{tradesMeta?.sells ?? 0}</div>
+                            <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginTop: 4 }}>Sales</div>
+                          </div>
                         </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600 }}>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</div>
-                          {t.docUrl
-                            ? <a href={t.docUrl} target="_blank" rel="noreferrer" style={{ fontSize: 10, color: S.gold }}>Doc →</a>
-                            : <span style={{ fontSize: 10, color: S.gray }}>{(t.source || '').split('—')[0].trim()}</span>
-                          }
+
+                        {/* Top tickers */}
+                        {tradesMeta?.topTickers?.length > 0 && (
+                          <div style={{ marginBottom: 12, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, color: S.gray, letterSpacing: 1 }}>TOP TRADED:</span>
+                            {tradesMeta.topTickers.map(t => (
+                              <span key={t} style={{ fontSize: 12, fontWeight: 700, color: S.gold, background: 'rgba(212,175,55,0.12)', borderRadius: 4, padding: '2px 8px' }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Buy/sell bar */}
+                        {(tradesMeta?.buys + tradesMeta?.sells) > 0 && (
+                          <div style={{ marginBottom: 14 }}>
+                            <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 6 }}>
+                              <div style={{ background: '#4CAF50', width: `${Math.round(tradesMeta.buys / (tradesMeta.buys + tradesMeta.sells) * 100)}%` }} />
+                              <div style={{ background: '#f87171', flex: 1 }} />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: S.gray }}>
+                              <span style={{ color: '#4CAF50' }}>{Math.round(tradesMeta.buys / (tradesMeta.buys + tradesMeta.sells) * 100)}% Buy</span>
+                              <span style={{ color: '#f87171' }}>{Math.round(tradesMeta.sells / (tradesMeta.buys + tradesMeta.sells) * 100)}% Sell</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Individual trades */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {trades.map((t, i) => (
+                            <div key={i} style={{ padding: '12px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                              <div style={{ minWidth: 50, fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray }}>{t.type}</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {t.asset}{t.ticker ? ` (${t.ticker})` : ''}
+                                </div>
+                                <div style={{ fontSize: 11, color: S.gray }}>{t.date}{t.owner && t.owner !== 'Self' ? ` · ${t.owner}` : ''}</div>
+                              </div>
+                              <div style={{ textAlign: 'right', flexShrink: 0, fontSize: 13, fontWeight: 600 }}>
+                                {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 11, color: S.gray }}>Official STOCK Act disclosures · {trades[0]?.source}</div>
-                    {tradesMeta?.disclosureUrl && (
-                      <a href={tradesMeta.disclosureUrl} target="_blank" rel="noreferrer"
-                        style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: '4px 12px', borderRadius: 6, textDecoration: 'none' }}>
-                        All Filings →
-                      </a>
                     )}
-                  </div>
-                </>
-              )}
 
-              {!loadingTrades && trades.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 40 }}>
-                  <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
-                  <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>No STOCK Act trade disclosures found</div>
-                  <div style={{ fontSize: 12, color: S.gray, marginBottom: 20 }}>This member may not have filed any periodic transaction reports, or data may not yet be available.</div>
-                  <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer"
-                      style={{ padding: '8px 16px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
-                      House Disclosures →
-                    </a>
-                    <a href="https://efts.senate.gov/LATEST/search-index?q=&df=senator_name&fq=report_types:ptr" target="_blank" rel="noreferrer"
-                      style={{ padding: '8px 16px', background: `rgba(91,156,255,0.1)`, border: `1px solid ${S.border}`, borderRadius: 8, color: '#5B9CFF', textDecoration: 'none', fontSize: 12 }}>
-                      Senate Disclosures →
-                    </a>
-                  </div>
-                </div>
-              )}
+                    {/* ── House Clerk Filing History (from XML index) ── */}
+                    {disclosures?.filings?.length > 0 && (
+                      <div style={{ marginBottom: 24 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>
+                            House Clerk Filing History — {disclosures.filings.length} records
+                          </div>
+                          <div style={{ display: 'flex', gap: 10, fontSize: 11 }}>
+                            {disclosures.ptrCount > 0 && <span style={{ color: '#4CAF50' }}>📊 {disclosures.ptrCount} trade report{disclosures.ptrCount !== 1 ? 's' : ''}</span>}
+                            {disclosures.annualCount > 0 && <span style={{ color: '#5B9CFF' }}>📋 {disclosures.annualCount} annual filing{disclosures.annualCount !== 1 ? 's' : ''}</span>}
+                          </div>
+                        </div>
 
-              {/* ── Net Worth History ── */}
-              {!loadingTrades && netWorthHistory && netWorthHistory.length > 0 && (
-                <div style={{ marginTop: 24 }}>
-                  <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth History — Annual Financial Disclosures</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {netWorthHistory.map((n, i) => {
-                      const nwMid = n.netWorthMin != null
-                        ? Math.round((n.netWorthMin + (n.netWorthMax ?? n.netWorthMin)) / 2)
-                        : null
-                      const assetsMid = n.assetsMin != null
-                        ? Math.round((n.assetsMin + (n.assetsMax ?? n.assetsMin)) / 2)
-                        : null
-                      const prevNw = netWorthHistory[i + 1]?.netWorthMin != null
-                        ? Math.round((netWorthHistory[i + 1].netWorthMin + (netWorthHistory[i + 1].netWorthMax ?? netWorthHistory[i + 1].netWorthMin)) / 2)
-                        : null
-                      const delta = nwMid != null && prevNw != null ? nwMid - prevNw : null
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {disclosures.filings.map(f => {
+                            const ptResult = ptrResults[f.docId]
+                            const isOpen = expandedPtr === f.docId
+                            return (
+                              <div key={f.docId} style={{ background: S.cardBg, border: `1px solid ${isOpen ? S.gold : S.border}`, borderRadius: 10, overflow: 'hidden' }}>
+                                {/* Filing row */}
+                                <div style={{ padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
+                                  <span style={{ fontSize: 18 }}>{TYPE_ICON[f.type] || '📄'}</span>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>{f.typeLabel}</div>
+                                    <div style={{ fontSize: 11, color: S.gray }}>
+                                      Filed {f.filingDate} · Year {f.year} · {f.stateDst}
+                                    </div>
+                                  </div>
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: TYPE_COLOR[f.type] || S.gray, background: `${TYPE_COLOR[f.type] || S.gray}18`, borderRadius: 4, padding: '2px 8px', whiteSpace: 'nowrap' }}>
+                                    {f.type}
+                                  </span>
+                                  {f.isPtr && (
+                                    <button
+                                      onClick={() => loadPtr(f.docId, f.year)}
+                                      style={{ fontSize: 11, color: isOpen ? S.gold : S.grayLight, background: isOpen ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isOpen ? S.gold : S.border}`, borderRadius: 6, padding: '4px 12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                      {ptResult?.loading ? '…' : isOpen ? 'Hide' : 'Load Trades'}
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Expanded PTR trade detail */}
+                                {f.isPtr && isOpen && (
+                                  <div style={{ borderTop: `1px solid ${S.border}`, padding: '12px 16px' }}>
+                                    {ptResult?.loading && (
+                                      <div style={{ textAlign: 'center', padding: 16, color: S.gray }}>
+                                        <div style={{ width: 20, height: 20, border: `2px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 8px' }} />
+                                        Parsing disclosure PDF…
+                                      </div>
+                                    )}
+                                    {ptResult && !ptResult.loading && ptResult.trades?.length > 0 && (
+                                      <>
+                                        <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>
+                                          {ptResult.trades.length} transaction{ptResult.trades.length !== 1 ? 's' : ''} from this report
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                          {ptResult.trades.map((t, ti) => (
+                                            <div key={ti} style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${S.border}`, borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
+                                              <span style={{ fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray, minWidth: 50 }}>{t.type}</span>
+                                              <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                  {t.asset}{t.ticker ? ` (${t.ticker})` : ''}
+                                                </div>
+                                                <div style={{ fontSize: 10, color: S.gray }}>{t.date}{t.owner && t.owner !== 'Self' ? ` · ${t.owner}` : ''}</div>
+                                              </div>
+                                              <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{t.amount}</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </>
+                                    )}
+                                    {ptResult && !ptResult.loading && ptResult.trades?.length === 0 && (
+                                      <div style={{ fontSize: 12, color: S.gray, textAlign: 'center', padding: '8px 0' }}>
+                                        No transactions parsed — this may be a scanned or non-machine-readable PDF.
+                                      </div>
+                                    )}
+                                    {ptResult?.error && (
+                                      <div style={{ fontSize: 12, color: '#f87171', textAlign: 'center', padding: '8px 0' }}>
+                                        Could not load trades. PDF may be unavailable.
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* No trades, no filing history */}
+                    {trades.length === 0 && (!disclosures || disclosures.filings?.length === 0) && (
+                      <div style={{ padding: 28, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
+                        <div style={{ fontSize: 28, marginBottom: 10 }}>📋</div>
+                        <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>No financial disclosure records found</div>
+                        <div style={{ fontSize: 12, color: S.gray }}>This member may not have any filed disclosure records on record with the House Clerk.</div>
+                      </div>
+                    )}
+
+                    {/* No PTR trades but has annual filings — explain clearly */}
+                    {trades.length === 0 && disclosures?.ptrCount === 0 && disclosures?.annualCount > 0 && (
+                      <div style={{ padding: 14, background: 'rgba(91,156,255,0.06)', border: '1px solid rgba(91,156,255,0.2)', borderRadius: 10, marginBottom: 16, fontSize: 12, color: S.gray }}>
+                        ℹ️ This member has not filed any Periodic Transaction Reports (PTRs). Under the STOCK Act, PTRs are only required when a transaction occurs — members who do not actively trade stocks will have no PTR filings.
+                      </div>
+                    )}
+
+                    {/* ── Net Worth History (from Supabase, when DB is seeded) ── */}
+                    {netWorthHistory?.length > 0 && (() => {
                       const fmtRange = (min, max) => {
                         if (min == null) return '—'
-                        const fmtN = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v/1e3).toFixed(0)}K` : `$${v}`
+                        const fmtN = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${v}`
                         return max && max !== min ? `${fmtN(min)} – ${fmtN(max)}` : fmtN(min)
                       }
                       return (
-                        <div key={n.year} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
-                          <div style={{ minWidth: 44, fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.gold }}>{n.year}</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            {n.netWorthMin != null ? (
-                              <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
-                                Net Worth: {fmtRange(n.netWorthMin, n.netWorthMax)}
-                              </div>
-                            ) : (
-                              <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
-                                Assets: {fmtRange(n.assetsMin, n.assetsMax)}
-                              </div>
-                            )}
-                            <div style={{ fontSize: 11, color: S.gray }}>
-                              Assets: {fmtRange(n.assetsMin, n.assetsMax)}
-                              {n.liabilitiesMin != null && <> &nbsp;·&nbsp; Liabilities: {fmtRange(n.liabilitiesMin, n.liabilitiesMax)}</>}
-                            </div>
+                        <div>
+                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth — Annual Financial Disclosures</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {netWorthHistory.map((n, i) => {
+                              const mid = v => v != null ? Math.round((v + (netWorthHistory[i]?.netWorthMax ?? v)) / 2) : null
+                              const nwMid = n.netWorthMin != null ? Math.round((n.netWorthMin + (n.netWorthMax ?? n.netWorthMin)) / 2) : null
+                              const prevMid = netWorthHistory[i+1]?.netWorthMin != null ? Math.round((netWorthHistory[i+1].netWorthMin + (netWorthHistory[i+1].netWorthMax ?? netWorthHistory[i+1].netWorthMin)) / 2) : null
+                              const delta = nwMid != null && prevMid != null ? nwMid - prevMid : null
+                              return (
+                                <div key={n.year} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                                  <div style={{ minWidth: 44, fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.gold }}>{n.year}</div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
+                                      {n.netWorthMin != null ? `Net Worth: ${fmtRange(n.netWorthMin, n.netWorthMax)}` : `Assets: ${fmtRange(n.assetsMin, n.assetsMax)}`}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: S.gray }}>
+                                      Assets: {fmtRange(n.assetsMin, n.assetsMax)}
+                                      {n.liabilitiesMin != null && <> · Liabilities: {fmtRange(n.liabilitiesMin, n.liabilitiesMax)}</>}
+                                    </div>
+                                  </div>
+                                  {delta != null && (
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: delta >= 0 ? '#4CAF50' : '#f87171', whiteSpace: 'nowrap' }}>
+                                      {delta >= 0 ? '▲ +' : '▼ '}{Math.abs(delta) >= 1e6 ? `$${(Math.abs(delta)/1e6).toFixed(1)}M` : `$${Math.round(Math.abs(delta)/1e3)}K`}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
-                          {delta != null && (
-                            <div style={{ fontSize: 12, fontWeight: 600, color: delta >= 0 ? '#4CAF50' : '#f87171', whiteSpace: 'nowrap' }}>
-                              {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{delta >= 1e6 ? `$${(delta/1e6).toFixed(1)}M` : delta >= 1e3 ? `$${(delta/1e3).toFixed(0)}K` : `$${delta}`}
-                            </div>
-                          )}
-                          <a href={n.pdfUrl} target="_blank" rel="noreferrer"
-                            style={{ fontSize: 11, color: S.gold, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                            PDF →
-                          </a>
                         </div>
                       )
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+                    })()}
+                  </>
+                )}
+              </>
+            )
+          })()}
         </div>
       )}
 

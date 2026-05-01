@@ -15,8 +15,11 @@
     "@anthropic-ai/sdk": "^0.88.0",
     "@clerk/nextjs": "^7.0.8",
     "@supabase/supabase-js": "^2.101.1",
+    "adm-zip": "^0.5.17",
+    "fast-xml-parser": "^5.7.1",
     "lucide-react": "^1.7.0",
     "next": "16.2.2",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-simple-maps": "^3.0.0",
@@ -25,11 +28,8 @@
   },
   "devDependencies": {
     "@google/generative-ai": "^0.24.1",
-    "adm-zip": "^0.5.17",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
-    "fast-xml-parser": "^5.7.1",
-    "pdf-parse": "^2.4.5"
+    "eslint-config-next": "16.2.2"
   }
 }
