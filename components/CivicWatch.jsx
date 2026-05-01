@@ -1309,8 +1309,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         {v.category && <span style={{ fontSize: 11, color: S.gray, background: 'rgba(255,255,255,0.05)', borderRadius: 4, padding: '2px 8px' }}>{v.category}</span>}
                         <span style={{ marginLeft: 'auto', fontSize: 11, color: S.gray, whiteSpace: 'nowrap' }}>{v.date}</span>
                       </div>
-                      {/* Row 2: bill/question title */}
-                      <div style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.5, marginBottom: v.totalYea != null ? 8 : 0, wordBreak: 'break-word' }}>{v.bill}</div>
+                      {/* Row 2: bill/question title — links to Congress.gov bill or GovTrack vote */}
+                      {v.billUrl ? (
+                        <a href={v.billUrl} target="_blank" rel="noreferrer"
+                          style={{ display: 'block', fontSize: 13, color: S.grayLight, lineHeight: 1.5, marginBottom: v.totalYea != null ? 8 : 0, wordBreak: 'break-word', textDecoration: 'none', borderBottom: `1px solid ${S.border}`, paddingBottom: v.totalYea != null ? 8 : 0 }}
+                          onMouseEnter={e => e.currentTarget.style.color = S.gold}
+                          onMouseLeave={e => e.currentTarget.style.color = S.grayLight}>
+                          {v.bill}
+                        </a>
+                      ) : (
+                        <div style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.5, marginBottom: v.totalYea != null ? 8 : 0, wordBreak: 'break-word' }}>{v.bill}</div>
+                      )}
                       {/* Row 3: chamber vote totals */}
                       {v.totalYea != null && (
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>

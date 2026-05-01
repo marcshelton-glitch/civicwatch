@@ -260,6 +260,25 @@ export async function GET(request) {
         if (!gtVotes.ok) throw new Error('GovTrack vote_voter failed')
         const votesJson = await gtVotes.json()
 
+        const BILL_TYPES = [
+          [/\bH\.R\.\s*(\d+)/i,        'house-bill'],
+          [/\bH\.J\.Res\.\s*(\d+)/i,   'house-joint-resolution'],
+          [/\bH\.Con\.Res\.\s*(\d+)/i, 'house-concurrent-resolution'],
+          [/\bH\.Res\.\s*(\d+)/i,      'house-resolution'],
+          [/\bS\.J\.Res\.\s*(\d+)/i,   'senate-joint-resolution'],
+          [/\bS\.Con\.Res\.\s*(\d+)/i, 'senate-concurrent-resolution'],
+          [/\bS\.Res\.\s*(\d+)/i,      'senate-resolution'],
+          [/\bS\.\s*(\d+)\b/i,         'senate-bill'],
+        ]
+        function billUrl(question, congress) {
+          if (!question || !congress) return null
+          for (const [re, type] of BILL_TYPES) {
+            const m = question.match(re)
+            if (m) return `https://www.congress.gov/bill/${congress}th-congress/${type}/${m[1]}`
+          }
+          return null
+        }
+
         const votes = (votesJson.objects || []).map(v => {
           const optVal = v.option?.value || v.option?.key || ''
           const voteLabel = optVal === '+' || /^yea$/i.test(optVal) ? 'YEA'
@@ -267,9 +286,12 @@ export async function GET(request) {
             : /present/i.test(optVal) ? 'PRESENT'
             : /not voting/i.test(optVal) ? 'NOT VOTING'
             : optVal.toUpperCase() || '—'
+          const question = v.vote?.question || v.vote?.description || 'Unknown Bill'
+          const congress = v.vote?.congress || null
 
           return {
-            bill: v.vote?.question || v.vote?.description || 'Unknown Bill',
+            bill: question,
+            billUrl: billUrl(question, congress) || v.vote?.link || null,
             category: v.vote?.category_label || null,
             vote: voteLabel,
             date: v.vote?.created ? v.vote.created.split('T')[0] : '',
@@ -279,8 +301,7 @@ export async function GET(request) {
             totalNay: v.vote?.total_minus ?? null,
             totalOther: v.vote?.total_other ?? null,
             chamber: v.vote?.chamber_label || null,
-            congress: v.vote?.congress || null,
-            url: v.vote?.link || null,
+            congress,
           }
         })
 
