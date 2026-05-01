@@ -228,76 +228,72 @@ export async function GET(request) {
 
     // ── votes ─────────────────────────────────────────────────────────────
     if (type === 'votes') {
-      // Try GovTrack first — free, detailed, includes bill links
-      // GovTrack no longer supports ?bioguideid= — use ?q=lastName instead
+      // GovTrack — free, no key, rich vote detail including chamber totals
+      // person.id field does not exist in GovTrack API; extract numeric ID from person.link
+      let searchName = bioguideId
       try {
-        // Get last name from Congress.gov to build the GovTrack search query
-        let searchName = bioguideId
-        try {
-          const mData = await cFetch(`/member/${bioguideId}`)
-          const rawName = mData.member?.directOrderName || ''
-          searchName = rawName.split(',')[0].trim().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || bioguideId
-        } catch { /* use bioguideId as fallback query */ }
+        const mData = await cFetch(`/member/${bioguideId}`)
+        const rawName = mData.member?.directOrderName || ''
+        searchName = rawName.split(',')[0].trim().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || bioguideId
+      } catch { /* keep bioguideId as query */ }
 
+      try {
         const gtPerson = await fetch(
-          `https://www.govtrack.us/api/v2/person?q=${encodeURIComponent(searchName)}&limit=5`,
+          `https://www.govtrack.us/api/v2/person?q=${encodeURIComponent(searchName)}&limit=10`,
           { next: { revalidate: 86400 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
         )
-        if (gtPerson.ok) {
-          const personJson = await gtPerson.json()
-          // Match by bioguide ID when GovTrack has it, else take first result
-          const match = personJson.objects?.find(p => p.bioguideid === bioguideId)
-            || personJson.objects?.[0]
-          const gtId = match?.id
-          if (gtId) {
-            const gtVotes = await fetch(
-              `https://www.govtrack.us/api/v2/vote_voter?person=${gtId}&limit=20&order_by=-created`,
-              { next: { revalidate: 3600 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
-            )
-            if (gtVotes.ok) {
-              const votesJson = await gtVotes.json()
-              const votes = (votesJson.objects || []).map(v => {
-                const rawVal = v.option?.value || ''
-                const voteLabel = rawVal === '+' ? 'YEA'
-                  : rawVal === '-' ? 'NAY'
-                  : rawVal === 'P' ? 'PRESENT'
-                  : (v.option?.key || rawVal || '—').toUpperCase()
-                const passed = (v.vote?.result || '').toLowerCase().includes('pass')
-                const billTitle = v.vote?.related_bill?.title || v.vote?.question || v.vote?.description || 'Unknown Bill'
-                const billPath = v.vote?.related_bill?.link || v.vote?.link || ''
-                const billUrl = billPath
-                  ? `https://www.govtrack.us${billPath}`
-                  : `https://www.govtrack.us/congress/votes`
-                return {
-                  bill: billTitle,
-                  vote: voteLabel,
-                  date: v.vote?.created ? v.vote.created.split('T')[0] : '',
-                  result: v.vote?.result || '',
-                  outcome: passed ? 'PASSED' : 'FAILED',
-                  url: billUrl,
-                  source: 'GovTrack',
-                }
-              })
-              if (votes.length > 0) {
-                return NextResponse.json({ votes, source: 'govtrack' })
-              }
-            }
-          }
-        }
-      } catch { /* fall through to Congress.gov */ }
+        if (!gtPerson.ok) throw new Error('GovTrack person lookup failed')
+        const personJson = await gtPerson.json()
 
-      // Fallback: Congress.gov
-      const data = await cFetch(`/member/${bioguideId}/votes?limit=20`)
-      const votes = (data.votes || []).map(v => ({
-        bill: v.description || v.question || 'Unknown Bill',
-        vote: v.memberVoted || v.votePosition || '—',
-        date: v.date,
-        result: v.result,
-        outcome: v.result?.toLowerCase().includes('pass') ? 'PASSED' : 'FAILED',
-        url: v.url || 'https://congress.gov',
-        source: 'Congress.gov',
-      }))
-      return NextResponse.json({ votes, source: 'live' })
+        // Prefer bioguide match, fall back to first result
+        const match = personJson.objects?.find(p => p.bioguideid === bioguideId)
+          ?? personJson.objects?.[0]
+
+        // GovTrack person.id is absent — extract from link: /congress/members/name/12345
+        const gtId = match?.link ? parseInt(match.link.split('/').pop(), 10) : null
+        if (!gtId) throw new Error('Could not extract GovTrack person ID')
+
+        const gtVotes = await fetch(
+          `https://www.govtrack.us/api/v2/vote_voter?person=${gtId}&limit=30&order_by=-created`,
+          { next: { revalidate: 3600 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
+        )
+        if (!gtVotes.ok) throw new Error('GovTrack vote_voter failed')
+        const votesJson = await gtVotes.json()
+
+        const votes = (votesJson.objects || []).map(v => {
+          const optVal = v.option?.value || v.option?.key || ''
+          const voteLabel = optVal === '+' || /^yea$/i.test(optVal) ? 'YEA'
+            : optVal === '-' || /^nay$/i.test(optVal) ? 'NAY'
+            : /present/i.test(optVal) ? 'PRESENT'
+            : /not voting/i.test(optVal) ? 'NOT VOTING'
+            : optVal.toUpperCase() || '—'
+
+          return {
+            bill: v.vote?.question || v.vote?.description || 'Unknown Bill',
+            category: v.vote?.category_label || null,
+            vote: voteLabel,
+            date: v.vote?.created ? v.vote.created.split('T')[0] : '',
+            result: v.vote?.result || '',
+            outcome: v.vote?.passed ? 'PASSED' : 'FAILED',
+            totalYea: v.vote?.total_plus ?? null,
+            totalNay: v.vote?.total_minus ?? null,
+            totalOther: v.vote?.total_other ?? null,
+            chamber: v.vote?.chamber_label || null,
+            congress: v.vote?.congress || null,
+            url: v.vote?.link || null,
+          }
+        })
+
+        if (votes.length > 0) {
+          return NextResponse.json({ votes, source: 'govtrack', memberName: match?.name || searchName })
+        }
+      } catch (e) {
+        console.error('GovTrack votes error:', e.message)
+      }
+
+      // Fallback: Congress.gov member sponsored-legislation as proxy for activity
+      // (Congress.gov has no per-member vote history endpoint)
+      return NextResponse.json({ votes: [], source: 'none' })
     }
 
     // ── trades ────────────────────────────────────────────────────────────

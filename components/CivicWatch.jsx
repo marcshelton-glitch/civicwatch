@@ -1285,24 +1285,52 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {!loadingVotes && votes.length === 0 && (
             <div style={{ textAlign: 'center', padding: 48 }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>⚖️</div>
-              <div style={{ fontSize: 14, color: S.gray, marginBottom: 16 }}>No vote records available yet for this member.</div>
-              <a href={`https://www.congress.gov/member/${rep.id}`} target="_blank" rel="noreferrer"
-                style={{ padding: '8px 20px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
-                View on Congress.gov →
-              </a>
+              <div style={{ fontSize: 14, color: S.gray, marginBottom: 8 }}>No vote records found for this member.</div>
+              <div style={{ fontSize: 12, color: S.gray }}>This member may be a state legislator or vote data is not yet available.</div>
             </div>
           )}
-          {!loadingVotes && votes.map((v, i) => (
-            <div key={i} style={{ padding: "14px 18px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 14, alignItems: "center", marginBottom: 10 }}>
-              <div className={v.vote === "YEA" ? "vote-yea" : v.vote === "NAY" ? "vote-nay" : undefined} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 18, minWidth: 60, color: v.vote === "YEA" ? "#4ade80" : v.vote === "NAY" ? "#f87171" : S.gray }}>{v.vote}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, marginBottom: 3 }}>{v.bill}</div>
-                <div style={{ fontSize: 11, color: S.gray }}>{v.date}{v.source ? ` · ${v.source}` : ''}</div>
+          {!loadingVotes && votes.length > 0 && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Recent Votes — {votes.length} records</div>
+                <div style={{ fontSize: 11, color: S.gray }}>via GovTrack</div>
               </div>
-              <span className={v.outcome === "PASSED" ? "outcome-passed" : "outcome-failed"}>{v.outcome || v.result}</span>
-              <a href={v.url || v.link} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: "4px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>View →</a>
-            </div>
-          ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {votes.map((v, i) => {
+                  const voteColor = v.vote === 'YEA' ? '#4ade80' : v.vote === 'NAY' ? '#f87171' : v.vote === 'PRESENT' ? S.gold : S.gray
+                  const totalVotes = (v.totalYea ?? 0) + (v.totalNay ?? 0) + (v.totalOther ?? 0)
+                  const yeaPct = totalVotes > 0 ? Math.round((v.totalYea ?? 0) / totalVotes * 100) : null
+                  return (
+                    <div key={i} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10 }}>
+                      {/* Row 1: vote badge, outcome, date */}
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: voteColor, background: `${voteColor}18`, borderRadius: 6, padding: '3px 10px', letterSpacing: 1 }}>{v.vote}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: v.outcome === 'PASSED' ? '#4ade80' : '#f87171', background: v.outcome === 'PASSED' ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)', borderRadius: 4, padding: '2px 8px' }}>{v.outcome}</span>
+                        {v.category && <span style={{ fontSize: 11, color: S.gray, background: 'rgba(255,255,255,0.05)', borderRadius: 4, padding: '2px 8px' }}>{v.category}</span>}
+                        <span style={{ marginLeft: 'auto', fontSize: 11, color: S.gray, whiteSpace: 'nowrap' }}>{v.date}</span>
+                      </div>
+                      {/* Row 2: bill/question title */}
+                      <div style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.5, marginBottom: v.totalYea != null ? 8 : 0, wordBreak: 'break-word' }}>{v.bill}</div>
+                      {/* Row 3: chamber vote totals */}
+                      {v.totalYea != null && (
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                          {yeaPct != null && (
+                            <div style={{ flex: 1, minWidth: 120, height: 4, borderRadius: 2, overflow: 'hidden', background: 'rgba(248,113,113,0.3)' }}>
+                              <div style={{ height: '100%', width: `${yeaPct}%`, background: '#4ade80', borderRadius: 2 }} />
+                            </div>
+                          )}
+                          <span style={{ fontSize: 11, color: '#4ade80', whiteSpace: 'nowrap' }}>✓ {v.totalYea} Yea</span>
+                          <span style={{ fontSize: 11, color: '#f87171', whiteSpace: 'nowrap' }}>✗ {v.totalNay} Nay</span>
+                          {(v.totalOther ?? 0) > 0 && <span style={{ fontSize: 11, color: S.gray, whiteSpace: 'nowrap' }}>{v.totalOther} Other</span>}
+                          {v.chamber && <span style={{ fontSize: 11, color: S.gray, marginLeft: 'auto' }}>{v.chamber}{v.congress ? ` · ${v.congress}th Congress` : ''}</span>}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
 
