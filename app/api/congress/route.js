@@ -321,14 +321,33 @@ export async function GET(request) {
         ? `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name`
         : `https://disclosures-clerk.house.gov/FinancialDisclosure#Search`
 
-      // ── Primary: query fd_trades from Supabase (House PTR data, 2008–present) ──
+      // ── Primary: query fd_trades + fd_net_worth from Supabase in parallel ──
       if (!isSenator && lastName) {
-        const { data: dbTrades } = await supabase
-          .from('fd_trades')
-          .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
-          .ilike('last_name', lastName)
-          .order('transaction_date', { ascending: false })
-          .limit(50)
+        const [{ data: dbTrades }, { data: dbNetWorth }] = await Promise.all([
+          supabase
+            .from('fd_trades')
+            .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
+            .ilike('last_name', lastName)
+            .order('transaction_date', { ascending: false })
+            .limit(50),
+          supabase
+            .from('fd_net_worth')
+            .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
+            .ilike('last_name', lastName)
+            .order('report_year', { ascending: false })
+            .limit(20),
+        ])
+
+        const netWorthHistory = (dbNetWorth || []).map(n => ({
+          year: n.report_year,
+          assetsMin: n.assets_min,
+          assetsMax: n.assets_max,
+          liabilitiesMin: n.liabilities_min,
+          liabilitiesMax: n.liabilities_max,
+          netWorthMin: n.net_worth_min,
+          netWorthMax: n.net_worth_max,
+          pdfUrl: `https://disclosures-clerk.house.gov/public_disc/financial-pdfs/${n.report_year}/${n.doc_id}.pdf`,
+        }))
 
         if (dbTrades && dbTrades.length > 0) {
           // Backfill bioguide_id in fd_filings for faster future lookups
@@ -360,7 +379,15 @@ export async function GET(request) {
 
           return NextResponse.json({
             trades: allTrades, buys, sells, topTickers,
-            isSenator, disclosureUrl, source: 'db',
+            isSenator, disclosureUrl, source: 'db', netWorthHistory,
+          })
+        }
+
+        // No trades in DB but may have net worth data
+        if (netWorthHistory.length > 0) {
+          return NextResponse.json({
+            trades: [], buys: 0, sells: 0, topTickers: [],
+            isSenator, disclosureUrl, source: 'db', netWorthHistory,
           })
         }
       }
@@ -404,6 +431,27 @@ export async function GET(request) {
         source: 'House Clerk — STOCK Act PTR',
       }))
 
+      // ── Net worth from Supabase (fallback path — no trades in DB) ────────────
+      let liveNetWorthHistory = []
+      if (lastName) {
+        const { data: nwData } = await supabase
+          .from('fd_net_worth')
+          .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
+          .ilike('last_name', lastName)
+          .order('report_year', { ascending: false })
+          .limit(20)
+        liveNetWorthHistory = (nwData || []).map(n => ({
+          year: n.report_year,
+          assetsMin: n.assets_min,
+          assetsMax: n.assets_max,
+          liabilitiesMin: n.liabilities_min,
+          liabilitiesMax: n.liabilities_max,
+          netWorthMin: n.net_worth_min,
+          netWorthMax: n.net_worth_max,
+          pdfUrl: `https://disclosures-clerk.house.gov/public_disc/financial-pdfs/${n.report_year}/${n.doc_id}.pdf`,
+        }))
+      }
+
       // ── Senate EFTS trades ─────────────────────────────────────────────────
       let senateTrades = []
       if (isSenator && lastName && /^[a-z\s\-']+$/.test(lastName)) {
@@ -443,6 +491,7 @@ export async function GET(request) {
         trades: allTrades, buys, sells, topTickers,
         isSenator, disclosureUrl,
         source: allTrades.length > 0 ? 'live' : 'none',
+        netWorthHistory: liveNetWorthHistory,
       })
     }
 

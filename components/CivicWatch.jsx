@@ -995,6 +995,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [loadingTownHall, setLoadingTownHall] = useState(false)
   const [liveNonprofits, setLiveNonprofits] = useState(null)
   const [loadingNonprofits, setLoadingNonprofits] = useState(false)
+  const [netWorthHistory, setNetWorthHistory] = useState(null)
 
   // Reset all live data when the rep changes so stale data from the
   // previous rep never briefly flashes for the newly selected rep
@@ -1003,7 +1004,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLiveBio(null); setLiveSponsored(null)
     setLiveDocket(null); setLiveDocketSource(null)
     setLiveTownHall(null); setLiveTownHallMeta(null)
-    setLiveNonprofits(null)
+    setLiveNonprofits(null); setNetWorthHistory(null)
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
   }, [rep.id])
@@ -1028,6 +1029,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         .then(d => {
           setLiveTrades(d.trades || [])
           setTradesMeta({ buys: d.buys || 0, sells: d.sells || 0, topTickers: d.topTickers || [], disclosureUrl: d.disclosureUrl || null, source: d.source })
+          if (d.netWorthHistory?.length > 0) setNetWorthHistory(d.netWorthHistory)
           setLoadingTrades(false)
         })
         .catch(() => { setLiveTrades([]); setLoadingTrades(false) })
@@ -1519,6 +1521,61 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       style={{ padding: '8px 16px', background: `rgba(91,156,255,0.1)`, border: `1px solid ${S.border}`, borderRadius: 8, color: '#5B9CFF', textDecoration: 'none', fontSize: 12 }}>
                       Senate Disclosures →
                     </a>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Net Worth History ── */}
+              {!loadingTrades && netWorthHistory && netWorthHistory.length > 0 && (
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth History — Annual Financial Disclosures</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {netWorthHistory.map((n, i) => {
+                      const nwMid = n.netWorthMin != null
+                        ? Math.round((n.netWorthMin + (n.netWorthMax ?? n.netWorthMin)) / 2)
+                        : null
+                      const assetsMid = n.assetsMin != null
+                        ? Math.round((n.assetsMin + (n.assetsMax ?? n.assetsMin)) / 2)
+                        : null
+                      const prevNw = netWorthHistory[i + 1]?.netWorthMin != null
+                        ? Math.round((netWorthHistory[i + 1].netWorthMin + (netWorthHistory[i + 1].netWorthMax ?? netWorthHistory[i + 1].netWorthMin)) / 2)
+                        : null
+                      const delta = nwMid != null && prevNw != null ? nwMid - prevNw : null
+                      const fmtRange = (min, max) => {
+                        if (min == null) return '—'
+                        const fmtN = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v/1e3).toFixed(0)}K` : `$${v}`
+                        return max && max !== min ? `${fmtN(min)} – ${fmtN(max)}` : fmtN(min)
+                      }
+                      return (
+                        <div key={n.year} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                          <div style={{ minWidth: 44, fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.gold }}>{n.year}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            {n.netWorthMin != null ? (
+                              <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
+                                Net Worth: {fmtRange(n.netWorthMin, n.netWorthMax)}
+                              </div>
+                            ) : (
+                              <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
+                                Assets: {fmtRange(n.assetsMin, n.assetsMax)}
+                              </div>
+                            )}
+                            <div style={{ fontSize: 11, color: S.gray }}>
+                              Assets: {fmtRange(n.assetsMin, n.assetsMax)}
+                              {n.liabilitiesMin != null && <> &nbsp;·&nbsp; Liabilities: {fmtRange(n.liabilitiesMin, n.liabilitiesMax)}</>}
+                            </div>
+                          </div>
+                          {delta != null && (
+                            <div style={{ fontSize: 12, fontWeight: 600, color: delta >= 0 ? '#4CAF50' : '#f87171', whiteSpace: 'nowrap' }}>
+                              {delta >= 0 ? '▲' : '▼'} {delta >= 0 ? '+' : ''}{delta >= 1e6 ? `$${(delta/1e6).toFixed(1)}M` : delta >= 1e3 ? `$${(delta/1e3).toFixed(0)}K` : `$${delta}`}
+                            </div>
+                          )}
+                          <a href={n.pdfUrl} target="_blank" rel="noreferrer"
+                            style={{ fontSize: 11, color: S.gold, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                            PDF →
+                          </a>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
