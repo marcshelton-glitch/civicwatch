@@ -335,8 +335,62 @@ export async function GET(request) {
       } catch { /* skip */ }
 
       const disclosureUrl = isSenator
-        ? `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name`
+        ? `https://efdsearch.senate.gov/search/?submitted=1&report_types=ptr&first_name=&last_name=${encodeURIComponent(lastName)}`
         : `https://disclosures-clerk.house.gov/FinancialDisclosure#Search`
+
+      // ── Senators: query senate_trades from Supabase ───────────────────────
+      if (isSenator && lastName) {
+        const [{ data: senTrades }, { data: dbNetWorth }] = await Promise.all([
+          supabase
+            .from('senate_trades')
+            .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, filing_id, year, ptr_url')
+            .ilike('last_name', lastName)
+            .order('transaction_date', { ascending: false })
+            .limit(50),
+          supabase
+            .from('fd_net_worth')
+            .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
+            .ilike('last_name', lastName)
+            .order('report_year', { ascending: false })
+            .limit(20),
+        ])
+
+        const senateNetWorthHistory = (dbNetWorth || []).map(n => ({
+          year: n.report_year,
+          assetsMin: n.assets_min,
+          assetsMax: n.assets_max,
+          liabilitiesMin: n.liabilities_min,
+          liabilitiesMax: n.liabilities_max,
+          netWorthMin: n.net_worth_min,
+          netWorthMax: n.net_worth_max,
+          pdfUrl: `https://disclosures-clerk.house.gov/public_disc/financial-pdfs/${n.report_year}/${n.doc_id}.pdf`,
+        }))
+
+        const allSenTrades = (senTrades || []).map(t => ({
+          date: t.transaction_date || '',
+          asset: t.asset_name || 'Unknown Asset',
+          ticker: t.ticker || null,
+          type: t.transaction_type === 'Purchase' ? 'BUY'
+            : t.transaction_type === 'Sale' ? 'SELL'
+            : t.transaction_type?.toUpperCase() || 'OTHER',
+          amount: t.amount_str || 'Undisclosed',
+          amountMin: t.amount_min,
+          amountMax: t.amount_max,
+          chamber: 'senate',
+          docUrl: t.ptr_url || null,
+          source: 'Senate.gov — STOCK Act PTR (CivicWatch DB)',
+        }))
+
+        const buys = allSenTrades.filter(t => t.type === 'BUY').length
+        const sells = allSenTrades.filter(t => t.type === 'SELL').length
+        const topTickers = [...new Set(allSenTrades.map(t => t.ticker).filter(Boolean))].slice(0, 5)
+
+        return NextResponse.json({
+          trades: allSenTrades, buys, sells, topTickers,
+          isSenator, disclosureUrl, source: allSenTrades.length > 0 ? 'db' : 'none',
+          netWorthHistory: senateNetWorthHistory,
+        })
+      }
 
       // ── Primary: query fd_trades + fd_net_worth from Supabase in parallel ──
       if (!isSenator && lastName) {
@@ -385,6 +439,7 @@ export async function GET(request) {
             amount: t.amount_str || 'Undisclosed',
             amountMin: t.amount_min,
             amountMax: t.amount_max,
+            chamber: 'house',
             sector: 'Stock/Security',
             docUrl: `https://disclosures-clerk.house.gov/public_disc/ptr-pdfs/${t.year}/${t.doc_id}.pdf`,
             source: 'House Clerk — STOCK Act PTR (CivicWatch DB)',
@@ -443,6 +498,7 @@ export async function GET(request) {
           : /sale/i.test(t.type || '') ? 'SELL'
           : (t.type || 'Unknown').toUpperCase(),
         amount: t.amount || 'Undisclosed',
+        chamber: 'house',
         sector: t.asset_type || t.assetType || 'Stock/Security',
         docUrl: t.pdf_url || t.pdfUrl || null,
         source: 'House Clerk — STOCK Act PTR',
@@ -469,34 +525,7 @@ export async function GET(request) {
         }))
       }
 
-      // ── Senate EFTS trades ─────────────────────────────────────────────────
-      let senateTrades = []
-      if (isSenator && lastName && /^[a-z\s\-']+$/.test(lastName)) {
-        try {
-          const senRes = await fetch(
-            `https://efts.senate.gov/LATEST/search-index?q=%22${encodeURIComponent(lastName)}%22&df=senator_name&fq=report_types:ptr&dateFrom=2020-01-01`,
-            { next: { revalidate: 86400 } }
-          )
-          if (senRes.ok) {
-            const senJson = await senRes.json()
-            senateTrades = (senJson.hits?.hits || [])
-              .filter(h => (h._source?.senator_name || '').toLowerCase().includes(lastName))
-              .slice(0, 20)
-              .map(h => ({
-                date: h._source?.transaction_date || h._source?.date_received || '',
-                asset: h._source?.asset_name || 'Unknown Asset',
-                ticker: h._source?.ticker || null,
-                type: /purchase/i.test(h._source?.transaction_type || '') ? 'BUY' : 'SELL',
-                amount: h._source?.amount || 'Undisclosed',
-                sector: h._source?.asset_type || 'Stock/Security',
-                docUrl: h._source?.link || null,
-                source: 'Senate.gov — STOCK Act PTR',
-              }))
-          }
-        } catch { /* optional */ }
-      }
-
-      const allTrades = [...normalizedHouse, ...senateTrades]
+      const allTrades = [...normalizedHouse]
         .filter(t => t.date)
         .sort((a, b) => new Date(b.date) - new Date(a.date))
 

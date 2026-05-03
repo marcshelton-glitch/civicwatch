@@ -1511,7 +1511,19 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                   {t.asset}{t.ticker ? ` (${t.ticker})` : ''}
                                 </div>
-                                <div style={{ fontSize: 11, color: S.gray }}>{t.date}{t.owner && t.owner !== 'Self' ? ` · ${t.owner}` : ''}</div>
+                                <div style={{ fontSize: 11, color: S.gray, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                  {t.date}{t.owner && t.owner !== 'Self' ? ` · ${t.owner}` : ''}
+                                  {t.chamber && (
+                                    <span style={{
+                                      fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase',
+                                      padding: '1px 5px', borderRadius: 4,
+                                      background: t.chamber === 'senate' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)',
+                                      color: t.chamber === 'senate' ? '#a78bfa' : '#60a5fa',
+                                    }}>
+                                      {t.chamber === 'senate' ? 'Senate' : 'House'}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <div style={{ textAlign: 'right', flexShrink: 0, fontSize: 13, fontWeight: 600 }}>
                                 {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}

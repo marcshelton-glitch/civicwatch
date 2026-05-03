@@ -88,17 +88,24 @@ function parseAmountRange(str) {
   for (const [label, min, max] of AMOUNT_MAP) {
     if (s.includes(label.replace(/\s+/g, ' '))) return { min, max }
   }
-  const nums = s.replace(/,/g, '').match(/\d+/g)?.map(Number) || []
+  // Exact dollar amount like "$314,950.00" — treat as min=max
+  const exact = s.match(/^\$?([\d,]+)(?:\.\d+)?$/)
+  if (exact) { const v = parseInt(exact[1].replace(/,/g, ''), 10); return { min: v, max: v } }
+  // Fallback for ranges not in AMOUNT_MAP
+  const nums = s.replace(/[$,]/g, '').match(/\d+/g)?.map(Number) || []
   return { min: nums[0] ?? null, max: nums[1] ?? null }
 }
 
 // Strip the repeated column header line that appears at the top of each transaction block
 const HEADER_RE = /ID\s+Owner\s+Asset\s+Transaction[\s\S]*?Cap\.?\s*Gains\s*>?\s*\$?200\??/i
 
-// Remove lone surrogates and other invalid Unicode that break JSON serialization
+// Remove null bytes, lone surrogates, and other chars that break JSON serialization.
+// Annual FD PDFs embed null bytes inside heading text (e.g. "S\0\0\0 A:") due to
+// font encoding — stripping them makes all downstream section regex work correctly.
 function sanitize(str) {
   if (!str) return str
   return str
+    .replace(/\x00/g, '')               // null bytes from PDF font encoding
     .replace(/[\uD800-\uDFFF]/g, '')   // lone surrogates
     .replace(/\uFFFD/g, '')             // replacement chars
     .replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD]/g, '') // non-XML-safe chars
@@ -175,37 +182,59 @@ function parsePTRTransactions(text) {
 }
 
 // ── Annual FD net worth parser ────────────────────────────────────────────────
-function parseNetWorthText(text) {
-  // Look for summary totals — forms vary by year but totals lines are consistent
-  const lines = text.split(/\n/)
+// House Clerk Annual FDs are itemized lists — there are no "Total Assets" summary
+// lines. We sum individual asset values (identified by asset-type codes like [MF],
+// [ST], [RP]) and individual liability amounts from Schedule D.
+function parseNetWorthText(rawText) {
+  // Strip null bytes first — Annual FD PDFs embed \x00 in section headings
+  const text = rawText.replace(/\x00/g, '')
+  // Normalize ranges broken across lines (e.g. "$50,001 -\n$100,000")
+  const normalized = text.replace(/(\$[\d,]+)\s*[-–]\s*\n\s*(\$[\d,]+)/g, '$1 - $2')
 
-  let assetsMin = null, assetsMax = null, liabMin = null, liabMax = null
+  // Isolate Schedule A (Assets) and Schedule D (Liabilities) by their abbreviated headers
+  const schedA = normalized.match(/S\s+A:[\s\S]*?(?=S\s+[B-Z]:|$)/i)?.[0] ?? ''
+  const schedD = normalized.match(/S\s+D:[\s\S]*?(?=S\s+[E-Z]:|$)/i)?.[0] ?? ''
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    // "Total Value of Assets" or similar
-    if (/total.*assets|assets.*total/i.test(line)) {
-      const amtLine = lines.slice(i, i + 4).join(' ')
-      const match = amtLine.match(/\$[\d,]+\s*-\s*\$[\d,]+|Over \$[\d,]+/)
-      if (match) {
-        const { min, max } = parseAmountRange(match[0])
-        assetsMin = min; assetsMax = max
-      }
+  const AMT_RE = /\$[\d,]+(?:\.\d+)?\s*[-–]\s*\$[\d,]+(?:\.\d+)?|Over \$[\d,]+|\$[\d,]+(?:\.\d+)?/
+
+  // Each asset entry in Schedule A is tagged with an asset-type code like [MF], [ST], [RP].
+  // The value immediately follows — either on the same line (tab-separated) or the next line.
+  // Single regex handles both cases: [^\S\n]* = non-newline whitespace, \n? = optional newline.
+  let assetsMin = 0, assetsMax = 0, hasAssets = false
+  if (schedA && !/None disclosed/i.test(schedA)) {
+    const assetRe = /\[[A-Z]{2,3}\][^\S\n]*\n?[^\S\n]*(\$[\d,]+(?:\.\d+)?\s*[-–]\s*\$[\d,]+(?:\.\d+)?|Over \$[\d,]+|\$[\d,]+(?:\.\d+)?)/g
+    let m
+    while ((m = assetRe.exec(schedA)) !== null) {
+      const { min, max } = parseAmountRange(m[1])
+      if (min !== null) { assetsMin += min; assetsMax += (max ?? min); hasAssets = true }
     }
-    if (/total.*liabilit|liabilit.*total/i.test(line)) {
-      const amtLine = lines.slice(i, i + 4).join(' ')
-      const match = amtLine.match(/\$[\d,]+\s*-\s*\$[\d,]+|Over \$[\d,]+/)
-      if (match) {
-        const { min, max } = parseAmountRange(match[0])
-        liabMin = min; liabMax = max
+  }
+
+  // Each liability in Schedule D is one creditor row; the last dollar amount on the
+  // row (after date and liability type) is the amount owed.
+  let liabMin = 0, liabMax = 0, hasLiab = false
+  if (schedD && !/None disclosed/i.test(schedD)) {
+    const skipRe = /^(Owner|Creditor|Filing ID|S\s|None|https?)/i
+    for (const line of schedD.split('\n')) {
+      if (skipRe.test(line.trim())) continue
+      const amounts = [...line.matchAll(new RegExp(AMT_RE.source, 'g'))].map(m => m[0])
+      if (amounts.length > 0) {
+        const { min, max } = parseAmountRange(amounts[amounts.length - 1])
+        if (min !== null) { liabMin += min; liabMax += (max ?? min); hasLiab = true }
       }
     }
   }
 
-  const nwMin = (assetsMin !== null && liabMax !== null) ? assetsMin - liabMax : null
-  const nwMax = (assetsMax !== null && liabMin !== null) ? assetsMax - liabMin : null
+  if (!hasAssets && !hasLiab) return { assetsMin: null, assetsMax: null, liabMin: null, liabMax: null, nwMin: null, nwMax: null }
 
-  return { assetsMin, assetsMax, liabMin, liabMax, nwMin, nwMax }
+  return {
+    assetsMin:  hasAssets ? assetsMin : null,
+    assetsMax:  hasAssets ? assetsMax : null,
+    liabMin:    hasLiab   ? liabMin   : null,
+    liabMax:    hasLiab   ? liabMax   : null,
+    nwMin:      hasAssets ? assetsMin - (hasLiab ? liabMax : 0) : null,
+    nwMax:      hasAssets ? assetsMax - (hasLiab ? liabMin : 0) : null,
+  }
 }
 
 // ── Phase 1: Download XML indices ────────────────────────────────────────────
@@ -309,6 +338,7 @@ async function runTradesPhase() {
     } catch (e) {
       console.log(`FAILED — ${e.message}`)
       failed++
+      await supabase.from('fd_filings').update({ processed: true }).eq('doc_id', filing.doc_id)
     }
     // Be polite to the House Clerk server
     await new Promise(r => setTimeout(r, 400))
@@ -367,6 +397,7 @@ async function runNetWorthPhase() {
     } catch (e) {
       console.log(`FAILED — ${e.message}`)
       failed++
+      await supabase.from('fd_filings').update({ processed: true }).eq('doc_id', filing.doc_id)
     }
     await new Promise(r => setTimeout(r, 400))
   }
