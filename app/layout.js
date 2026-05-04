@@ -5,7 +5,11 @@ export const metadata = {
   title: 'CivicWatch — Your Representatives. Accountable.',
   description: 'Track your elected representatives at every level of government. View voting records, stock trades, wealth disclosures, and town halls — all in one place.',
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>",
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
   },
   openGraph: {
     title: 'CivicWatch — Your Representatives. Accountable.',
