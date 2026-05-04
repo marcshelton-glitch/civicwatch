@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import AdmZip from 'adm-zip'
 import { XMLParser } from 'fast-xml-parser'
 
@@ -35,9 +34,6 @@ async function fetchFDIndex(year) {
 }
 
 export async function GET(request) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const { searchParams } = new URL(request.url)
   const lastName = (searchParams.get('lastName') || '').trim().toLowerCase()
   const stateDst  = (searchParams.get('stateDst')  || '').trim().toUpperCase()

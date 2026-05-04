@@ -126,11 +126,12 @@ const STATE_ABBR_TO_FULL = {
 // ── Route handler ─────────────────────────────────────────────────────────────
 export async function GET(request) {
   const { userId } = await auth()
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const rateLimitKey = userId
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'anonymous'
 
-  if (isRateLimited(userId)) {
+  if (isRateLimited(rateLimitKey)) {
     return NextResponse.json(
       { error: 'Too many requests. Please slow down.' },
       { status: 429, headers: { 'Retry-After': '60' } }

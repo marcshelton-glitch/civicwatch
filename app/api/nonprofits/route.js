@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 
 const PP_BASE = 'https://projects.propublica.org/nonprofits/api/v2'
 
@@ -54,8 +53,6 @@ async function ppRevenue(ein) {
 }
 
 export async function GET(request) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const name  = (searchParams.get('name')  || '').trim()

@@ -170,8 +170,9 @@ const S = {
   cardBg: "rgba(255,255,255,0.04)", border: "rgba(212,175,55,0.25)",
 }
 
-export default function CivicWatch() {
-  const { user } = useUser()
+export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA' }) {
+  const { user, isSignedIn } = useUser()
+  const { openSignIn } = useClerk()
   const isPro = user?.publicMetadata?.isPro === true
   const [activeTab, setActiveTab] = useState("reps")
   const [selectedRep, setSelectedRep] = useState(null)
@@ -182,7 +183,7 @@ export default function CivicWatch() {
   const [loadingAlerts, setLoadingAlerts] = useState(false)
   const [constitMode, setConstitMode] = useState("plain")
   const [constitSection, setConstitSection] = useState("articles")
-  const [selectedState, setSelectedState] = useState("CA")
+  const [selectedState, setSelectedState] = useState(defaultState)
   const [searchTerm, setSearchTerm] = useState("")
   const [pollVotes, setPollVotes] = useState({})
   const [filterLevel, setFilterLevel] = useState("all")
@@ -224,10 +225,21 @@ const filteredReps = displayReps.filter(r => {
     setAlerts(alerts.map(a => ({ ...a, read: true })))
     setLiveAlerts(liveAlerts.map(a => ({ ...a, read: true })))
   }
-  const toggleTrack = (id) => setTracked(t => t.includes(id) ? t.filter(x => x !== id) : [...t, id])
+  const toggleTrack = (id) => {
+    if (!isSignedIn) { openSignIn(); return }
+    setTracked(t => t.includes(id) ? t.filter(x => x !== id) : [...t, id])
+  }
   const handlePollVote = (repId, issue) => setPollVotes(prev => ({ ...prev, [`${repId}-${issue}`]: true }))
 
   useEffect(() => { if (selectedRep) setRepTab("overview") }, [selectedRep])
+
+  // Auto-select the default rep once members load (public preview mode)
+  useEffect(() => {
+    if (!defaultBioguideId || selectedRep || liveReps.length === 0) return
+    const def = liveReps.find(r => r.id === defaultBioguideId)
+    if (def) setSelectedRep(def)
+  }, [liveReps, defaultBioguideId])
+
 useEffect(() => {
   setLiveReps([])
   setLoadingReps(true)
@@ -439,10 +451,15 @@ useEffect(() => {
                 style={{ padding: "7px 14px", background: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08))`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5 }}>
                 ★ Pro Member
               </button>
-            ) : (
+            ) : isSignedIn ? (
               <button onClick={handleSubscribe}
                 style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
                 ★ Go Pro $9.99/mo
+              </button>
+            ) : (
+              <button onClick={() => openSignIn()}
+                style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
+                Sign In / Sign Up →
               </button>
             )}
             <div style={{ fontSize: 12, color: S.gray }}>
@@ -488,20 +505,27 @@ useEffect(() => {
                   <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Find Your State Representatives</div>
                   <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.5 }}>Enter your address or ZIP code to find your state senators and state house representatives.</div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flex: "1 1 300px" }}>
-                  <input
-                    placeholder="123 Main St, City, State or ZIP"
-                    value={civicAddressInput}
-                    onChange={e => setCivicAddressInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && civicAddressInput.trim() && setCivicAddress(civicAddressInput.trim())}
-                    style={{ flex: 1, padding: "10px 14px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13, outline: "none" }}
-                  />
-                  <button
-                    onClick={() => civicAddressInput.trim() && setCivicAddress(civicAddressInput.trim())}
-                    style={{ padding: "10px 18px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", cursor: "pointer", fontFamily: "inherit", fontWeight: 600, fontSize: 13, whiteSpace: "nowrap" }}>
-                    Find Reps
+                {isSignedIn ? (
+                  <div style={{ display: "flex", gap: 8, flex: "1 1 300px" }}>
+                    <input
+                      placeholder="123 Main St, City, State or ZIP"
+                      value={civicAddressInput}
+                      onChange={e => setCivicAddressInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && civicAddressInput.trim() && setCivicAddress(civicAddressInput.trim())}
+                      style={{ flex: 1, padding: "10px 14px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13, outline: "none" }}
+                    />
+                    <button
+                      onClick={() => civicAddressInput.trim() && setCivicAddress(civicAddressInput.trim())}
+                      style={{ padding: "10px 18px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", cursor: "pointer", fontFamily: "inherit", fontWeight: 600, fontSize: 13, whiteSpace: "nowrap" }}>
+                      Find Reps
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => openSignIn()}
+                    style={{ padding: "10px 22px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", cursor: "pointer", fontFamily: "inherit", fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", flexShrink: 0 }}>
+                    Sign In to Look Up Your Address →
                   </button>
-                </div>
+                )}
               </div>
             )}
             {(filterLevel === 'state' || filterLevel === 'all') && civicAddress && (

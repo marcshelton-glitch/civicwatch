@@ -44,18 +44,24 @@ const FEATURES = [
   },
 ]
 
-const TICKER_ITEMS = [
-  'Sen. Collins · NVDA BUY · $45,000',
-  'Rep. Harrington · LMT BUY · $67,000',
-  'S. 3321 Clean Energy Act · YEA',
-  'H.R. 899 Border Security · NAY',
-  'Sen. Collins · PFE SELL · $31,000',
-  'H.R. 4412 Veterans Housing · YEA',
-  'Rep. Harrington · BTC BUY · $15,000',
-  'Motion 23-0412 Housing Bonds · YEA',
-  'Sen. Collins · ETH BUY · $22,000',
-  'H.R. 1447 Inflation Reduction · NAY',
+const FALLBACK_TICKER = [
+  'Sen. Warren · NVDA BUY · $15,001–$50,000',
+  'Rep. Pelosi · AAPL BUY · $500,001–$1M',
+  'Sen. Tuberville · TSLA SELL · $50,001–$100,000',
+  'Rep. McCaul · MSFT BUY · $100,001–$250,000',
+  'Sen. Manchin · JPM SELL · $15,001–$50,000',
 ]
+
+function fmtTrade(t) {
+  const type = (t.type || '').toUpperCase()
+  const isBuy = type.includes('PURCHASE') || type.includes('BUY')
+  const isSell = type.includes('SALE') || type.includes('SELL')
+  const label = isBuy ? 'BUY' : isSell ? 'SELL' : type || 'TRADE'
+  const name = t.name || 'Member'
+  const ticker = t.ticker ? ` · ${t.ticker}` : ''
+  const amount = t.amount ? ` · ${t.amount}` : ''
+  return { text: `${name}${ticker} ${label}${amount}`, isBuy, isSell }
+}
 
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = useUser()
@@ -63,10 +69,22 @@ export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0)
   const heroRef = useRef(null)
   const tickerRef = useRef(null)
+  const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER.map(t => ({ text: t, isBuy: t.includes('BUY'), isSell: t.includes('SELL') })))
 
   useEffect(() => {
     if (isLoaded && isSignedIn) router.replace('/dashboard')
   }, [isLoaded, isSignedIn, router])
+
+  useEffect(() => {
+    fetch('/api/public-feed')
+      .then(r => r.json())
+      .then(data => {
+        if (data.trades && data.trades.length >= 4) {
+          setTickerItems(data.trades.map(fmtTrade))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
@@ -609,7 +627,7 @@ export default function LandingPage() {
           ) : (
             <>
               <Link href="/sign-in" className="btn-ghost">Sign In</Link>
-              <Link href="/sign-up" className="btn-primary">Start Free →</Link>
+              <Link href="/dashboard" className="btn-primary">Explore Free →</Link>
             </>
           )}
         </div>
@@ -639,8 +657,8 @@ and got <span className="red">rich.</span>
         </p>
 
         <div className="hero-ctas" style={{ position: 'relative' }}>
-          <Link href={isSignedIn ? "/dashboard" : "/sign-up"} className="btn-hero">
-            {isSignedIn ? "Go to Dashboard →" : "Track Your Representatives →"}
+          <Link href="/dashboard" className="btn-hero">
+            {isSignedIn ? "Go to Dashboard →" : "Explore Live Data — No Login Required →"}
           </Link>
           {!isSignedIn && (
             <Link href="/sign-in" className="btn-hero-ghost">
@@ -649,20 +667,16 @@ and got <span className="red">rich.</span>
           )}
         </div>
 
-        {/* TICKER */}
+        {/* TICKER — live congressional trade feed */}
         <div className="ticker-wrap" style={{ position: 'relative', width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}>
           <div className="ticker-track">
-            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => {
-              const isBuy = item.includes('BUY')
-              const isSell = item.includes('SELL')
-              const isYea = item.includes('YEA')
-              const isNay = item.includes('NAY')
-              const dotColor = isBuy || isYea ? '#4CAF50' : isSell || isNay ? '#D42B42' : '#D4AF37'
+            {[...tickerItems, ...tickerItems].map((item, i) => {
+              const dotColor = item.isBuy ? '#4CAF50' : item.isSell ? '#D42B42' : '#D4AF37'
               return (
                 <div key={i} className="ticker-item">
                   <span className="ticker-dot" style={{ background: dotColor }} />
-                  <span style={{ color: isBuy || isYea ? '#4CAF50' : isSell || isNay ? '#D42B42' : '#CDD2E0' }}>
-                    {item}
+                  <span style={{ color: item.isBuy ? '#4CAF50' : item.isSell ? '#D42B42' : '#CDD2E0' }}>
+                    {item.text}
                   </span>
                 </div>
               )
@@ -811,7 +825,7 @@ and got <span className="red">rich.</span>
               <li>Constitution reference</li>
               <li>AI analysis preview</li>
             </ul>
-            <Link href="/sign-up" className="btn-plan free">Get Started Free</Link>
+            <Link href="/dashboard" className="btn-plan free">Explore Free — No Login Needed</Link>
           </div>
           {/* Pro */}
           <div className="pricing-card featured">
@@ -853,10 +867,15 @@ and got <span className="red">rich.</span>
           Join thousands of Americans who use CivicWatch to stay informed
           and hold power accountable — at every level of government.
         </p>
-        <div style={{ position: 'relative' }}>
-          <Link href="/sign-up" className="btn-hero">
-            Track Your Representatives →
+        <div style={{ position: 'relative', display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link href="/dashboard" className="btn-hero">
+            Explore Live Data — No Login →
           </Link>
+          {!isSignedIn && (
+            <Link href="/sign-up" className="btn-hero-ghost">
+              Create Free Account
+            </Link>
+          )}
         </div>
       </section>
 

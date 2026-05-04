@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { PDFParse } from 'pdf-parse'
 
 const HOUSE_CLERK = 'https://disclosures-clerk.house.gov/public_disc'
@@ -107,8 +106,6 @@ function parsePTR(text) {
 }
 
 export async function GET(request) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const docId = (searchParams.get('docId') || '').trim()
