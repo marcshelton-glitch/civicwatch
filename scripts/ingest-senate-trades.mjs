@@ -4,10 +4,12 @@
  *
  * The Senate EFD search uses a CSRF-protected Django POST endpoint.
  * Flow:
- *   1. GET /search/ to obtain csrftoken cookie
- *   2. POST /search/report/ptr/search/ with senator name + CSRF headers
- *   3. For each filing UUID, GET /search/report/ptr/{uuid}/data.json
- *   4. Upsert rows into senate_trades
+ *   1. GET /search/home/ to obtain csrftoken cookie + CSRF token in form
+ *   2. POST /search/home/ with prohibition_agreement=1 to accept terms → sessionid
+ *   3. GET /search/ to obtain a fresh CSRF token for the search form
+ *   4. POST /search/report/data/ with filer_type=1 (Senator), report_type=11 (PTR)
+ *   5. For each filing UUID, GET /search/report/ptr/{uuid}/data.json
+ *   6. Upsert rows into senate_trades
  *
  * Usage:
  *   node --env-file=../.env.local scripts/ingest-senate-trades.mjs [--senator=<lastName>] [--limit=50] [--year=2024]
@@ -63,38 +65,89 @@ function parseAmount(str) {
   return { min: null, max: null, str: s || null }
 }
 
-// ── HTTP helpers ─────────────────────────────────────────────────────────────
-async function getCsrf() {
-  const res = await fetch(`${BASE}/search/`, {
-    headers: { 'User-Agent': 'CivicWatch/1.0 (research tool)' },
-  })
-  if (!res.ok) throw new Error(`CSRF fetch failed: ${res.status}`)
-  const cookie = res.headers.get('set-cookie') || ''
-  const m = cookie.match(/csrftoken=([^;]+)/)
-  if (!m) throw new Error('No csrftoken in Set-Cookie')
-  return { csrftoken: m[1], cookie: cookie.split(';')[0] }
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+
+function extractCsrf(html) {
+  return html.match(/csrfmiddlewaretoken[^>]+value="([^"]+)"/)?.[1] ?? null
 }
 
-async function searchPTRs({ csrftoken, cookie, firstName = '', lastName = '', start = 0 }) {
+function parseCookies(headers) {
+  const jar = {}
+  const raw = headers.getSetCookie ? headers.getSetCookie() : [headers.get('set-cookie') || '']
+  for (const line of raw) {
+    const m = line.match(/^([^=]+)=([^;]*)/)
+    if (m) jar[m[1].trim()] = m[2].trim()
+  }
+  return jar
+}
+
+function cookieStr(jar) {
+  return Object.entries(jar).map(([k, v]) => `${k}=${v}`).join('; ')
+}
+
+// ── HTTP helpers ─────────────────────────────────────────────────────────────
+async function getSession() {
+  // Step 1: GET /search/home/ → csrftoken cookie + CSRF in form
+  const r1 = await fetch(`${BASE}/search/home/`, {
+    redirect: 'follow',
+    headers: { 'User-Agent': UA },
+  })
+  if (!r1.ok) throw new Error(`GET /search/home/ failed: ${r1.status}`)
+  const html1 = await r1.text()
+  const jar = parseCookies(r1.headers)
+  const csrf1 = extractCsrf(html1) || jar.csrftoken
+  if (!csrf1) throw new Error('No CSRF token on home page')
+
+  // Step 2: POST agreement → get sessionid + new csrftoken
+  const r2 = await fetch(`${BASE}/search/home/`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: {
+      'User-Agent': UA,
+      'Referer': `${BASE}/search/home/`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': cookieStr(jar),
+    },
+    body: `csrfmiddlewaretoken=${encodeURIComponent(csrf1)}&prohibition_agreement=1`,
+  })
+  const jar2 = { ...jar, ...parseCookies(r2.headers) }
+
+  // Step 3: GET /search/ (after agreement redirect) → fresh CSRF token
+  const r3 = await fetch(`${BASE}/search/`, {
+    redirect: 'follow',
+    headers: { 'User-Agent': UA, 'Cookie': cookieStr(jar2) },
+  })
+  if (!r3.ok) throw new Error(`GET /search/ failed: ${r3.status}`)
+  const html3 = await r3.text()
+  const jar3 = { ...jar2, ...parseCookies(r3.headers) }
+  const csrf3 = extractCsrf(html3) || jar3.csrftoken
+  if (!csrf3) throw new Error('No CSRF token on search page')
+
+  return { csrf: csrf3, cookies: jar3 }
+}
+
+async function searchPTRs({ csrf, cookies, firstName = '', lastName = '', start = 0 }) {
   const body = new URLSearchParams({
+    csrfmiddlewaretoken: csrf,
     first_name: firstName,
     last_name: lastName,
-    report_types: 'ptr',
-    filer_type: 'Senator',
+    filer_type: '1',        // Senator
+    report_type: '11',      // PTR
     submitted_start_date: YEAR ? `01/01/${YEAR}` : '',
-    submitted_end_date: YEAR ? `12/31/${YEAR}` : '',
-    start: String(start),
+    submitted_end_date:   YEAR ? `12/31/${YEAR}` : '',
+    draw:   '1',
+    start:  String(start),
     length: String(Math.min(LIMIT, 100)),
   })
 
-  const res = await fetch(`${BASE}/search/report/ptr/search/`, {
+  const res = await fetch(`${BASE}/search/report/data/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Referer': `${BASE}/search/`,
-      'X-CSRFToken': csrftoken,
-      'Cookie': `${cookie}; csrftoken=${csrftoken}`,
-      'User-Agent': 'CivicWatch/1.0 (research tool)',
+      'X-CSRFToken': csrf,
+      'Cookie': cookieStr(cookies),
+      'User-Agent': UA,
     },
     body: body.toString(),
   })
@@ -102,9 +155,9 @@ async function searchPTRs({ csrftoken, cookie, firstName = '', lastName = '', st
   return res.json()
 }
 
-async function fetchTradeData(uuid) {
+async function fetchTradeData(uuid, cookies) {
   const res = await fetch(`${BASE}/search/report/ptr/${uuid}/data.json`, {
-    headers: { 'User-Agent': 'CivicWatch/1.0 (research tool)' },
+    headers: { 'User-Agent': UA, 'Cookie': cookieStr(cookies) },
   })
   if (!res.ok) return null
   return res.json()
@@ -114,18 +167,28 @@ async function fetchTradeData(uuid) {
 async function run() {
   console.log(`Senate EFTS ingestion — senator="${SENATOR || 'all'}" year=${YEAR || 'all'} limit=${LIMIT}`)
 
-  let { csrftoken, cookie }
+  let csrf, cookies
   try {
-    ;({ csrftoken, cookie } = await getCsrf())
+    ;({ csrf, cookies } = await getSession())
+    console.log('Session established.')
   } catch (e) {
-    console.error('Could not obtain CSRF token:', e.message)
+    console.error('Could not establish session:', e.message)
     process.exit(1)
   }
 
-  const searchRes = await searchPTRs({ csrftoken, cookie, lastName: SENATOR })
-  const filings = searchRes.data || []
-  const total = searchRes.recordsTotal ?? filings.length
-  console.log(`Found ${total} PTR filings (fetching ${filings.length})`)
+  // First page to discover total count
+  const firstPage = await searchPTRs({ csrf, cookies, lastName: SENATOR, start: 0 })
+  const total = firstPage.recordsTotal ?? (firstPage.data || []).length
+  console.log(`Found ${total} PTR filings — paginating in batches of ${LIMIT}`)
+
+  // Collect all filing rows across pages
+  const filings = [...(firstPage.data || [])]
+  for (let start = LIMIT; start < total; start += LIMIT) {
+    await new Promise(r => setTimeout(r, 500))
+    const page = await searchPTRs({ csrf, cookies, lastName: SENATOR, start })
+    filings.push(...(page.data || []))
+    console.log(`  fetched ${filings.length}/${total}`)
+  }
 
   let inserted = 0, skipped = 0, failed = 0
 
@@ -147,7 +210,7 @@ async function run() {
     // fetch individual trade rows
     let tradeData
     try {
-      tradeData = await fetchTradeData(uuid)
+      tradeData = await fetchTradeData(uuid, cookies)
     } catch (e) {
       console.error(`  [${uuid}] fetch error: ${e.message}`)
       failed++
