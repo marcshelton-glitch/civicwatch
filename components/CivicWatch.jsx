@@ -409,13 +409,25 @@ useEffect(() => {
           .mobile-scroll { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
           .mobile-hide { display: none !important; }
           .map-layout { grid-template-columns: 1fr !important; }
+          /* Mobile header: nav tabs drop to their own scrollable row */
+          .header-inner { flex-wrap: wrap !important; }
+          .header-nav {
+            order: 3; width: 100%; border-top: 1px solid rgba(212,175,55,0.15);
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; padding-bottom: 2px;
+          }
+          .header-nav::-webkit-scrollbar { display: none; }
+          .header-nav .nav-btn { padding: 8px 10px !important; font-size: 11px !important; white-space: nowrap; }
+          .header-logo { order: 1; }
+          .header-actions { order: 2; }
+          .header-actions .header-username { display: none !important; }
         }
       `}</style>
 
       {/* HEADER */}
       <header style={{ background: `linear-gradient(135deg, #0A0E1E, ${S.navyMid})`, borderBottom: `2px solid ${S.gold}`, position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button
+        <div className="header-inner" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <button className="header-logo"
             onClick={() => { setActiveTab("reps"); setSelectedRep(null) }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
             <span style={{ fontSize: 26 }}>🏛️</span>
@@ -424,7 +436,7 @@ useEffect(() => {
               <div style={{ fontSize: 9, letterSpacing: 3, color: S.gray, textTransform: "uppercase" }}>Your Representatives. Accountable.</div>
             </div>
           </button>
-          <nav style={{ display: "flex", gap: 2 }}>
+          <nav className="header-nav" style={{ display: "flex", gap: 2 }}>
             {[
               { id: "reps", label: "My Reps" },
               { id: "map", label: "Map" },
@@ -438,7 +450,7 @@ useEffect(() => {
               </button>
             ))}
           </nav>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {unreadCount > 0 && (
               <div className="pulse" onClick={() => setActiveTab("alerts")}
                 style={{ background: S.red, borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
@@ -462,7 +474,7 @@ useEffect(() => {
                 Sign In / Sign Up →
               </button>
             )}
-            <div style={{ fontSize: 12, color: S.gray }}>
+            <div className="header-username" style={{ fontSize: 12, color: S.gray }}>
               {user?.firstName || ""}
             </div>
           </div>
@@ -692,50 +704,40 @@ useEffect(() => {
                     })}
                   </div>
                 ) : (
-                  /* Fallback: Census-derived link cards */
+                  /* No Cicero data — show honest "no data" state with labeled search links */
                   municipalityInfo && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
-                      {municipalityInfo.city && (
-                        <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.city + ' city council members officials')}`}
-                          target="_blank" rel="noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}>
-                          <span style={{ fontSize: 28 }}>🏙️</span>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{municipalityInfo.city} City Council</div>
-                            <div style={{ fontSize: 11, color: S.gray }}>Mayor · City Council Members</div>
-                          </div>
-                          <span style={{ marginLeft: 'auto', color: S.gray }}>→</span>
-                        </a>
-                      )}
-                      {municipalityInfo.county && (
-                        <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.county + ' board of supervisors members')}`}
-                          target="_blank" rel="noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}>
-                          <span style={{ fontSize: 28 }}>🏛️</span>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{municipalityInfo.county}</div>
-                            <div style={{ fontSize: 11, color: S.gray }}>Board of Supervisors · County Officials</div>
-                          </div>
-                          <span style={{ marginLeft: 'auto', color: S.gray }}>→</span>
-                        </a>
-                      )}
-                      {municipalityInfo.schoolDistrict && (
-                        <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.schoolDistrict + ' school board members trustees')}`}
-                          target="_blank" rel="noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit', transition: 'border-color 0.2s' }}>
-                          <span style={{ fontSize: 28 }}>🏫</span>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{municipalityInfo.schoolDistrict}</div>
-                            <div style={{ fontSize: 11, color: S.gray }}>School Board · Trustees</div>
-                          </div>
-                          <span style={{ marginLeft: 'auto', color: S.gray }}>→</span>
-                        </a>
-                      )}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: `rgba(212,175,55,0.05)`, border: `1px dashed ${S.border}`, borderRadius: 12 }}>
-                        <span style={{ fontSize: 24 }}>💡</span>
-                        <div style={{ fontSize: 11, color: S.gray, lineHeight: 1.5 }}>
-                          Full local official data available with a <a href="https://cicerodata.com" target="_blank" rel="noreferrer" style={{ color: S.gold }}>Cicero API key</a> (free tier).
-                        </div>
+                    <div style={{ padding: '20px 24px', background: S.cardBg, border: `1px dashed ${S.border}`, borderRadius: 12 }}>
+                      <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 6 }}>
+                        Local official data isn't available for{' '}
+                        <span style={{ color: S.white, fontWeight: 600 }}>
+                          {[municipalityInfo.city, municipalityInfo.county].filter(Boolean).join(', ')}
+                        </span>{' '}yet.
+                      </div>
+                      <div style={{ fontSize: 12, color: S.gray, marginBottom: 16, lineHeight: 1.5 }}>
+                        CivicWatch currently covers federal and state legislators. Local council and board data requires a Cicero API integration.
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {municipalityInfo.city && (
+                          <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.city + ' city council members')}`}
+                            target="_blank" rel="noreferrer"
+                            style={{ fontSize: 12, padding: '6px 14px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray, textDecoration: 'none' }}>
+                            Search: {municipalityInfo.city} City Council ↗
+                          </a>
+                        )}
+                        {municipalityInfo.county && (
+                          <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.county + ' board of supervisors')}`}
+                            target="_blank" rel="noreferrer"
+                            style={{ fontSize: 12, padding: '6px 14px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray, textDecoration: 'none' }}>
+                            Search: {municipalityInfo.county} Board ↗
+                          </a>
+                        )}
+                        {municipalityInfo.schoolDistrict && (
+                          <a href={`https://www.google.com/search?q=${encodeURIComponent(municipalityInfo.schoolDistrict + ' school board')}`}
+                            target="_blank" rel="noreferrer"
+                            style={{ fontSize: 12, padding: '6px 14px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 6, color: S.gray, textDecoration: 'none' }}>
+                            Search: {municipalityInfo.schoolDistrict} ↗
+                          </a>
+                        )}
                       </div>
                     </div>
                   )
