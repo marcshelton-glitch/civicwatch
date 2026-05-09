@@ -421,6 +421,14 @@ useEffect(() => {
           .header-logo { order: 1; }
           .header-actions { order: 2; }
           .header-actions .header-username { display: none !important; }
+          /* Rep detail hero: action buttons always on their own full-width row on mobile */
+          .rep-hero-actions { flex-basis: 100% !important; flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-direction: row !important; padding-bottom: 4px; }
+          .rep-hero-actions::-webkit-scrollbar { display: none; }
+          /* Rep detail tab row: single scrollable row, no wrapping */
+          .rep-tabs-row { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
+          .rep-tabs-row::-webkit-scrollbar { display: none; }
+          /* Hide office hours on mobile to save vertical space */
+          .rep-office-hours { display: none !important; }
         }
       `}</style>
 
@@ -1175,15 +1183,15 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             : null}
           <InitialsAvatar name={rep.name} party={rep.party} size={90}
             style={{ display: rep.photo ? 'none' : 'block', border: `4px solid ${S.gold}` }} />
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 4 }}>{rep.name}</div>
             <div style={{ fontSize: 13, color: S.gold, marginBottom: 8 }}>{rep.title} · {rep.state} · {rep.district}</div>
             <div style={{ display: "flex", gap: 14, fontSize: 12, color: S.grayLight, flexWrap: "wrap" }}>
               <span>🏛️ {rep.officeLocation}</span>
-              <span>🕐 {rep.officeHours}</span>
+              <span className="rep-office-hours">🕐 {rep.officeHours}</span>
             </div>
           </div>
-          <div className="mobile-col" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="rep-hero-actions" style={{ display: "flex", gap: 8 }}>
             <a href={`tel:${rep.phone}`} style={{ padding: "9px 16px", background: S.green, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 {rep.phone}</a>
             <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
             <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>🌐 Website</a>
@@ -1195,7 +1203,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       </div>
 
       {/* TABS */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+      <div className="rep-tabs-row" style={{ display: "flex", gap: 6, marginBottom: 20 }}>
         {tabs.map(t => (
           <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
             onClick={() => setRepTab(t.id)}
