@@ -427,8 +427,9 @@ useEffect(() => {
           .rep-hero-actions { flex-basis: 100% !important; flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-direction: row !important; padding-bottom: 4px; }
           .rep-hero-actions::-webkit-scrollbar { display: none; }
           /* Rep detail tab row: single scrollable row, no wrapping */
-          .rep-tabs-row { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
-          .rep-tabs-row::-webkit-scrollbar { display: none; }
+          .rep-tabs-row { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: visible !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 4px; }
+          .rep-tabs-row::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+          .rep-tabs-row > button { flex-shrink: 0 !important; white-space: nowrap !important; min-width: max-content !important; }
           /* Hide office hours on mobile to save vertical space */
           .rep-office-hours { display: none !important; }
         }
