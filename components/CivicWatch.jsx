@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 
 
@@ -173,6 +174,7 @@ const S = {
 export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA' }) {
   const { user, isSignedIn } = useUser()
   const { openSignIn } = useClerk()
+  const router = useRouter()
   const isPro = user?.publicMetadata?.isPro === true
   const [activeTab, setActiveTab] = useState("reps")
   const [selectedRep, setSelectedRep] = useState(null)
@@ -472,7 +474,7 @@ useEffect(() => {
                 ★ Pro Member
               </button>
             ) : isSignedIn ? (
-              <button onClick={handleSubscribe}
+              <button onClick={() => router.push('/pro')}
                 style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
                 ★ Go Pro $9.99/mo
               </button>
