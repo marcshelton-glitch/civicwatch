@@ -30,6 +30,7 @@ function parseAmountRange(str) {
 function sanitize(str) {
   if (!str) return str
   return str
+    .replace(/\x00/g, ' ')  // null bytes appear between letters in some PTR PDF filings
     .replace(/[\uD800-\uDFFF]/g, '')
     .replace(/�/g, '')
     .replace(/[^\x09\x0A\x0D\x20-퟿-�]/g, '')
@@ -64,7 +65,8 @@ function parsePTR(text) {
     const ownerMatch = b.match(/^(SP|JT|DC)\s+/m)
     const owner = ownerMatch ? ownerMatch[1] : 'Self'
 
-    const typeMatch = b.match(/\b([PSE])\s+(\d{2}\/\d{2}\/\d{4})/)
+    // Allow optional modifier like "(partial)" between type letter and date
+    const typeMatch = b.match(/\b([PSE])(?:\s+\([^)]*\))?\s+(\d{2}\/\d{2}\/\d{4})/)
     if (!typeMatch) continue
     const rawType = typeMatch[1]
     const txType = rawType === 'P' ? 'Purchase' : rawType === 'S' ? 'Sale' : 'Exchange'
@@ -116,7 +118,14 @@ export async function GET(request) {
   const pdfUrl = `${HOUSE_CLERK}/ptr-pdfs/${year}/${docId}.pdf`
 
   try {
-    const parser = new PDFParse({ url: pdfUrl, verbosity: 0 })
+    const pdfRes = await fetch(pdfUrl, {
+      headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' },
+    })
+    if (!pdfRes.ok) {
+      return NextResponse.json({ error: `PDF fetch failed: ${pdfRes.status}`, pdfUrl }, { status: 502 })
+    }
+    const buf    = Buffer.from(await pdfRes.arrayBuffer())
+    const parser = new PDFParse({ data: buf, verbosity: 0 })
     const result = await parser.getText()
     const text   = sanitize(result.text || '')
     const trades = parsePTR(text)
