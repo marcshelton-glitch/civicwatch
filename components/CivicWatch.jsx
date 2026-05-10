@@ -2635,6 +2635,71 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         </ul>
                       </div>
                     )}
+                    {liveBio.terms?.length > 0 && (() => {
+                      const currentYear = new Date().getFullYear()
+                      const sortedTerms = [...liveBio.terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))
+                      const currentChamber = sortedTerms[sortedTerms.length - 1]?.chamber || ''
+
+                      // Group consecutive terms in the same chamber into ranges
+                      const grouped = []
+                      for (const term of sortedTerms) {
+                        const startYr = term.startYear || congressToYear(term.congress)
+                        const endYr = term.endYear || (congressToYear(term.congress) + 2)
+                        const last = grouped[grouped.length - 1]
+                        if (last && last.chamber === term.chamber && startYr <= last.endYr + 1) {
+                          last.endYr = Math.max(last.endYr, endYr)
+                        } else {
+                          grouped.push({ chamber: term.chamber, stateCode: term.stateCode, district: term.district, startYr, endYr })
+                        }
+                      }
+
+                      const currentGroups = grouped.filter(g => g.chamber === currentChamber)
+                      const servingSince = currentGroups.length > 0 ? currentGroups[0].startYr : null
+                      const totalYears = Math.round(grouped.reduce((sum, g) => sum + (Math.min(g.endYr, currentYear) - g.startYr), 0))
+                      const displayGroups = [...grouped].reverse()
+
+                      return (
+                        <div style={{ marginTop: 18 }}>
+                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Political Service</div>
+                          <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                            {servingSince && (
+                              <div style={{ padding: '8px 14px', background: 'rgba(212,175,55,0.08)', border: `1px solid ${S.border}`, borderRadius: 8 }}>
+                                <div style={{ fontSize: 10, color: S.gray, marginBottom: 3, letterSpacing: 1 }}>SERVING SINCE</div>
+                                <div style={{ fontSize: 22, fontWeight: 700, color: S.gold, lineHeight: 1 }}>{servingSince}</div>
+                              </div>
+                            )}
+                            {totalYears > 0 && (
+                              <div style={{ padding: '8px 14px', background: 'rgba(212,175,55,0.08)', border: `1px solid ${S.border}`, borderRadius: 8 }}>
+                                <div style={{ fontSize: 10, color: S.gray, marginBottom: 3, letterSpacing: 1 }}>TOTAL SERVICE</div>
+                                <div style={{ fontSize: 22, fontWeight: 700, color: S.gold, lineHeight: 1 }}>{totalYears} yr{totalYears !== 1 ? 's' : ''}</div>
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ borderLeft: `2px solid ${S.border}`, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {displayGroups.map((g, i) => {
+                              const isCurrent = g.endYr > currentYear
+                              const chamberLabel = g.chamber?.toLowerCase().includes('senate') ? 'U.S. Senate' : 'U.S. House'
+                              const districtStr = !g.chamber?.toLowerCase().includes('senate') && g.district ? ` · District ${g.district}` : ''
+                              const yearsStr = isCurrent ? `${g.startYr}–present` : `${g.startYr}–${g.endYr}`
+                              return (
+                                <div key={i} style={{ position: 'relative' }}>
+                                  <div style={{ position: 'absolute', left: -20, top: 5, width: 8, height: 8, borderRadius: '50%', background: isCurrent ? S.gold : 'rgba(212,175,55,0.35)' }} />
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: S.offWhite }}>{chamberLabel}</span>
+                                    {isCurrent && (
+                                      <span style={{ fontSize: 10, background: 'rgba(212,175,55,0.15)', color: S.gold, border: `1px solid rgba(212,175,55,0.5)`, borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>● Current</span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: 12, color: S.gray, marginTop: 3 }}>
+                                    {g.stateCode}{districtStr} · {yearsStr}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </>
                 ) : (
                   <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, margin: 0 }}>{rep.bio}</p>
