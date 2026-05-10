@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
@@ -276,6 +276,32 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
     if (!isLoaded) return
     if (isSignedIn && user?.publicMetadata?.onboardingComplete) setShowOnboarding(false)
   }, [isLoaded, isSignedIn, user?.publicMetadata?.onboardingComplete])
+
+  const feedCacheRef = useRef({ data: null, ts: 0 })
+  const [feedData, setFeedData] = useState(null)
+  const [feedLoading, setFeedLoading] = useState(false)
+
+  const doFeedFetch = useCallback(() => {
+    setFeedLoading(true)
+    fetch('/api/public-feed')
+      .then(r => r.json())
+      .then(d => {
+        feedCacheRef.current = { data: d, ts: Date.now() }
+        setFeedData(d)
+        setFeedLoading(false)
+      })
+      .catch(() => setFeedLoading(false))
+  }, [])
+
+  useEffect(() => {
+    const check = () => {
+      if (feedCacheRef.current.data && Date.now() - feedCacheRef.current.ts < 300000) return
+      doFeedFetch()
+    }
+    check()
+    const id = setInterval(check, 300000)
+    return () => clearInterval(id)
+  }, [doFeedFetch])
 
   const displayReps = filterLevel === 'state'
     ? municipalReps
@@ -958,6 +984,80 @@ useEffect(() => {
           ))
         })()}
       </div>
+    </div>
+
+    {/* RECENT DISCLOSURES FEED */}
+    <div style={{ marginTop: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="pulse" style={{ width: 10, height: 10, background: '#f87171', borderRadius: '50%', display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20, color: S.white }}>Recent Disclosures</span>
+        </div>
+        <button
+          onClick={doFeedFetch}
+          disabled={feedLoading}
+          style={{ background: 'none', border: `1px solid ${S.border}`, borderRadius: 8, padding: '6px 14px', color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, opacity: feedLoading ? 0.5 : 1 }}
+        >↻ Refresh</button>
+      </div>
+      {feedLoading && !feedData ? (
+        <div style={{ textAlign: 'center', padding: 40, color: S.gray }}>
+          <div style={{ width: 24, height: 24, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
+          Loading disclosures…
+        </div>
+      ) : (feedData?.trades?.length || 0) === 0 ? (
+        <div style={{ textAlign: 'center', padding: 40, color: S.gray, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+          No recent disclosures — check back soon
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+          {feedData.trades.map((trade, i) => {
+            const normalize = s => (s || '').toLowerCase().replace(/[^a-z]/g, '')
+            const tn = normalize(trade.name)
+            const matchedRep = liveReps.find(r => { const rn = normalize(r.name); return rn === tn || rn.includes(tn) || tn.includes(rn) })
+            const photo = matchedRep?.photo
+            const party = matchedRep?.party
+            const partyClass = party === 'Democrat' ? 'dem-badge' : party === 'Republican' ? 'rep-badge' : null
+            const partyShort = party === 'Democrat' ? 'D' : party === 'Republican' ? 'R' : party ? 'I' : null
+            const tradeType = (trade.type || '').toUpperCase()
+            const tradeColor = tradeType === 'BUY' ? '#4CAF50' : tradeType === 'SELL' ? '#f87171' : S.gray
+            const shareText = `${trade.name} ${tradeType === 'BUY' ? 'bought' : tradeType === 'SELL' ? 'sold' : 'exchanged'} ${trade.amount || ''} of ${trade.ticker || trade.asset}${trade.date ? ` on ${trade.date}` : ''} 🏛️ civicwatch.app`
+            return (
+              <div key={i}
+                onClick={matchedRep ? () => { setSelectedRep(matchedRep); setActiveTab('reps') } : undefined}
+                className="rep-card"
+                style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, cursor: matchedRep ? 'pointer' : 'default' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
+                    <InitialsAvatar name={trade.name} party={party || ''} size={40} />
+                    {photo && <img src={photo} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${S.gold}` }} onError={e => { e.target.style.display = 'none' }} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: S.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trade.name}</div>
+                    {partyClass && partyShort && <span className={`badge ${partyClass}`} style={{ display: 'inline-block', marginTop: 3 }}>{partyShort}</span>}
+                  </div>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      if (navigator.share) navigator.share({ text: shareText, url: 'https://civicwatch.app' }).catch(() => {})
+                      else navigator.clipboard.writeText(shareText).catch(() => {})
+                    }}
+                    title="Share this trade"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', color: S.gray, fontSize: 14, opacity: 0.6, flexShrink: 0 }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                  >📤</button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ background: tradeColor + '22', color: tradeColor, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{tradeType || 'TRADE'}</span>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: S.white }}>{trade.ticker || trade.asset || '—'}</span>
+                  {trade.amount && <span style={{ fontSize: 12, color: S.gray }}>{trade.amount}</span>}
+                </div>
+                <div style={{ fontSize: 11, color: S.gray }}>{timeAgo(trade.date)}</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   </div>
 )}
