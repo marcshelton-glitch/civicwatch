@@ -1283,6 +1283,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [ptrResults, setPtrResults] = useState({})   // docId → { trades, loading, error }
   const [expandedPtr, setExpandedPtr] = useState(null)
   const [shareToast, setShareToast] = useState(null)
+  const [copiedTemplate, setCopiedTemplate] = useState(false)
 
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
@@ -2140,18 +2141,141 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             const events = liveTownHall || []
             const meta = liveTownHallMeta || {}
             const hasEvents = events.length > 0
+            const isSenator = meta.isSenator ?? (rep.title || '').toLowerCase().includes('senator')
+
+            // Derive official website base URL + contact page from events URL
+            let officialBase = null
+            if (meta.officialEventsUrl) {
+              try { officialBase = new URL(meta.officialEventsUrl).origin } catch {}
+            }
+            const contactUrl = officialBase
+              ? (isSenator ? `${officialBase}/content/contact-senator` : `${officialBase}/contact`)
+              : null
+
+            // DC office address
+            const dcAddress = isSenator
+              ? 'United States Senate · Washington, D.C. 20510'
+              : 'United States House of Representatives · Washington, D.C. 20515'
+
+            // Name parts — Congress API uses "LASTNAME, Firstname" format
+            const nameParts = (rep.name || '').split(',')
+            const rawLast = nameParts[0]?.trim() || ''
+            const rawFirst = nameParts[1]?.trim().split(' ')[0] || ''
+            const displayLast = rawLast.charAt(0).toUpperCase() + rawLast.slice(1).toLowerCase()
+            const displayFirst = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1).toLowerCase()
+            const displayName = displayFirst && displayLast ? `${displayFirst} ${displayLast}` : rep.name || ''
+            const salutation = isSenator ? `Senator ${displayLast}` : `Representative ${displayLast}`
+            const websiteDomain = officialBase
+              ? officialBase.replace(/^https?:\/\/(www\.)?/, '')
+              : null
+
+            // Write-to-them template
+            const districtSuffix = rep.district && rep.district !== 'Statewide' ? `, ${rep.district}` : ''
+            const messageTemplate = `Dear ${salutation},
+
+I am a constituent from ${rep.state}${districtSuffix}. I am writing to urge you to [YOUR MESSAGE HERE].
+
+Thank you for your time and service.
+
+Sincerely,
+[Your Name]
+[Your City, State]`
 
             return (
               <div>
-                {/* ── Events list ── */}
+                {/* ── How to Reach Them ── */}
+                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>
+                  How to Reach {displayName}
+                </div>
+                <div style={{ display: 'grid', gap: 10, marginBottom: 28 }}>
+                  {/* Call */}
+                  <a href={`tel:${rep.phone}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: 'rgba(26,122,74,0.1)', border: '1px solid rgba(26,122,74,0.35)', borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                    <span style={{ fontSize: 26 }}>📞</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#4CAF50', marginBottom: 3 }}>Call</div>
+                      <div style={{ fontSize: 15, color: S.grayLight, fontWeight: 600 }}>{rep.phone}</div>
+                      <div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>Washington, D.C. office · Calls are most effective</div>
+                    </div>
+                    <span style={{ fontSize: 18, color: '#4CAF50' }}>→</span>
+                  </a>
+
+                  {/* Contact Form */}
+                  <a href={contactUrl || rep.website} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: 'rgba(91,156,255,0.08)', border: '1px solid rgba(91,156,255,0.3)', borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                    <span style={{ fontSize: 26 }}>✉️</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#5B9CFF', marginBottom: 3 }}>Contact Form</div>
+                      <div style={{ fontSize: 13, color: S.grayLight }}>Official online contact form</div>
+                      <div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>Copy the template below to paste your message</div>
+                    </div>
+                    <span style={{ fontSize: 18, color: '#5B9CFF' }}>→</span>
+                  </a>
+
+                  {/* Visit / DC address */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: `rgba(212,175,55,0.07)`, border: `1px solid rgba(212,175,55,0.25)`, borderRadius: 12 }}>
+                    <span style={{ fontSize: 26 }}>🏛️</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: S.gold, marginBottom: 3 }}>Visit DC Office</div>
+                      <div style={{ fontSize: 13, color: S.grayLight }}>{dcAddress}</div>
+                      <div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>Mon – Fri · 9 am – 5 pm ET</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Official Website ── */}
+                {officialBase && (
+                  <div style={{ marginBottom: 28 }}>
+                    <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>
+                      Official Website
+                    </div>
+                    <a href={officialBase} target="_blank" rel="noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                      <span style={{ fontSize: 20 }}>🌐</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{websiteDomain}</div>
+                        <div style={{ fontSize: 11, color: S.gray }}>Official congressional website</div>
+                      </div>
+                      <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
+                    </a>
+                  </div>
+                )}
+
+                {/* ── Write to Them ── */}
+                <div style={{ marginBottom: 28 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>
+                    Write to Them
+                  </div>
+                  <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+                    <div style={{ fontSize: 12, color: S.gray, marginBottom: 12, lineHeight: 1.6 }}>
+                      Copy this template, then paste it into{' '}
+                      {contactUrl
+                        ? <a href={contactUrl} target="_blank" rel="noreferrer" style={{ color: S.gold }}>their contact form →</a>
+                        : 'their contact form'}
+                    </div>
+                    <pre style={{ fontFamily: 'inherit', fontSize: 12, color: S.grayLight, background: 'rgba(0,0,0,0.25)', borderRadius: 8, padding: '14px 16px', margin: '0 0 14px', whiteSpace: 'pre-wrap', lineHeight: 1.75, border: '1px solid rgba(255,255,255,0.06)' }}>
+                      {messageTemplate}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(messageTemplate).then(() => {
+                          setCopiedTemplate(true)
+                          setTimeout(() => setCopiedTemplate(false), 2500)
+                        })
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: copiedTemplate ? 'rgba(26,122,74,0.2)' : 'rgba(212,175,55,0.12)', border: `1px solid ${copiedTemplate ? 'rgba(26,122,74,0.5)' : S.gold}`, borderRadius: 8, color: copiedTemplate ? '#4CAF50' : S.gold, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, transition: 'all 0.2s' }}>
+                      {copiedTemplate ? '✓ Copied!' : '📋 Copy Template'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Upcoming Events ── */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>
                     Upcoming Events {hasEvents && <span style={{ color: S.gold }}>({events.length})</span>}
                   </div>
                   {hasEvents && (
-                    <span style={{ fontSize: 10, color: S.gray }}>
-                      via Mobilize America
-                    </span>
+                    <span style={{ fontSize: 10, color: S.gray }}>via Mobilize America</span>
                   )}
                 </div>
 
@@ -2188,16 +2312,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     ))}
                   </div>
                 ) : (
-                  <div style={{ padding: '20px 0 24px', color: S.gray, fontSize: 13 }}>
-                    No upcoming town halls found in our live feed for {rep.name.split(',')[0]}.
+                  <div style={{ padding: '16px 0 24px', color: S.gray, fontSize: 13 }}>
+                    No upcoming town halls found in our live feed for {rep.name.split(',')[0]}. Check back soon or use the links below.
                   </div>
                 )}
 
-                {/* ── Resource links ── */}
+                {/* ── Find More Events ── */}
                 <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>
                   Find More Events
                 </div>
-                <div style={{ display: 'grid', gap: 10 }}>
+                <div style={{ display: 'grid', gap: 10, marginBottom: 28 }}>
                   {meta.officialEventsUrl && (
                     <a href={meta.officialEventsUrl} target="_blank" rel="noreferrer"
                       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
@@ -2205,7 +2329,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Official Events Page</div>
                         <div style={{ fontSize: 11, color: S.gray }}>
-                          {meta.isSenator ? `${rep.name.split(',')[0].toLowerCase()}.senate.gov` : `${rep.name.split(',')[0].toLowerCase()}.house.gov`} — Scheduled events &amp; appearances
+                          {websiteDomain || (isSenator ? 'senate.gov' : 'house.gov')} — Scheduled events &amp; appearances
                         </div>
                       </div>
                       <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
@@ -2222,7 +2346,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
                     </a>
                   )}
-                  <a href={`https://www.mobilize.us/events/?event_types=TOWN_HALL`} target="_blank" rel="noreferrer"
+                  <a href="https://www.mobilize.us/events/?event_types=TOWN_HALL" target="_blank" rel="noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
                     <span style={{ fontSize: 20 }}>📣</span>
                     <div>
@@ -2231,13 +2355,22 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     </div>
                     <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
                   </a>
+                  <a href={`https://townhallproject.com`} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
+                    <span style={{ fontSize: 20 }}>🗺️</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>Town Hall Project</div>
+                      <div style={{ fontSize: 11, color: S.gray }}>Nationwide tracking of congressional town halls</div>
+                    </div>
+                    <span style={{ marginLeft: 'auto', color: S.gray, fontSize: 12 }}>→</span>
+                  </a>
                 </div>
 
                 {/* ── Community Poll ── */}
-                <div style={{ marginTop: 28 }}>
+                <div>
                   <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Community Priority Poll</div>
                   <div style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-                    <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 16 }}>What should {rep.name.split(' ').pop()} prioritize?</div>
+                    <div style={{ fontSize: 13, color: S.grayLight, marginBottom: 16 }}>What should {displayLast || rep.name.split(' ').pop()} prioritize?</div>
                     {Object.entries(rep.communityPoll).map(([issue, count]) => {
                       const hasVoted = pollVotes[`${rep.id}-${issue}`]
                       const total = Object.values(rep.communityPoll).reduce((a, b) => a + b, 0)
