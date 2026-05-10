@@ -1530,6 +1530,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [expandedPtr, setExpandedPtr] = useState(null)
   const [shareToast, setShareToast] = useState(null)
   const [copiedTemplate, setCopiedTemplate] = useState(false)
+  const [fdNetWorth, setFdNetWorth] = useState(null)
+  const [loadingFdNetWorth, setLoadingFdNetWorth] = useState(false)
+  const [nwHoverIdx, setNwHoverIdx] = useState(null)
 
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
@@ -1558,6 +1561,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
     setLoadingDisclosures(false)
+    setFdNetWorth(null); setLoadingFdNetWorth(false); setNwHoverIdx(null)
   }, [rep.id])
 
   const isLive = rep.isLive
@@ -1598,6 +1602,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         .then(r => r.json())
         .then(d => { setDisclosures(d); setLoadingDisclosures(false) })
         .catch(() => { setDisclosures({ filings: [], ptrCount: 0, annualCount: 0 }); setLoadingDisclosures(false) })
+    }
+  }, [repTab, rep.id])
+
+  useEffect(() => {
+    if (repTab === 'wealth' && isLive && rep.source !== 'openstates' && !fdNetWorth && !loadingFdNetWorth) {
+      setLoadingFdNetWorth(true)
+      fetch(`/api/networth?bioguideId=${rep.id}`)
+        .then(r => r.json())
+        .then(d => { setFdNetWorth(d.history || []); setLoadingFdNetWorth(false) })
+        .catch(() => { setFdNetWorth([]); setLoadingFdNetWorth(false) })
     }
   }, [repTab, rep.id])
 
@@ -2012,6 +2026,94 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
             return (
               <>
+                {/* ── Net Worth Over Time Chart ── */}
+                {loadingFdNetWorth && (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 12 }}>Loading net worth history…</div>
+                )}
+                {!loadingFdNetWorth && fdNetWorth !== null && (() => {
+                  const fmtY = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${v}`
+                  if (fdNetWorth.length === 0) {
+                    return (
+                      <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
+                        No net worth data on file
+                      </div>
+                    )
+                  }
+                  if (fdNetWorth.length < 2) return null
+                  const midpoints = fdNetWorth.map(d => (d.min_value + d.max_value) / 2)
+                  const allVals = [...fdNetWorth.map(d => d.min_value), ...fdNetWorth.map(d => d.max_value)]
+                  const rawMin = Math.min(...allVals)
+                  const rawMax = Math.max(...allVals)
+                  const span = rawMax - rawMin || rawMax * 0.1 || 1
+                  const yMin = rawMin - span * 0.08
+                  const yMax = rawMax + span * 0.08
+                  const W = 520, H = 160
+                  const pad = { t: 14, r: 12, b: 28, l: 60 }
+                  const cW = W - pad.l - pad.r
+                  const cH = H - pad.t - pad.b
+                  const n = fdNetWorth.length
+                  const xS = i => pad.l + (i / (n - 1)) * cW
+                  const yS = v => pad.t + cH - ((v - yMin) / (yMax - yMin)) * cH
+                  const areaTop = fdNetWorth.map((d, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(d.max_value)}`).join(' ')
+                  const areaBot = [...fdNetWorth].reverse().map((d, i) => `L${xS(n - 1 - i)},${yS(d.min_value)}`).join(' ')
+                  const areaPath = `${areaTop} ${areaBot} Z`
+                  const linePath = midpoints.map((v, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(v)}`).join(' ')
+                  const yTickVals = [0, 0.25, 0.5, 0.75, 1].map(t => yMin + t * (yMax - yMin))
+                  return (
+                    <div style={{ marginBottom: 24, padding: '16px 16px 12px', background: '#0b1220', border: `1px solid ${S.border}`, borderRadius: 12 }}>
+                      <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>Est. Net Worth Over Time</div>
+                      <div style={{ position: 'relative' }}>
+                        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                          {/* Grid lines + Y axis labels */}
+                          {yTickVals.map((v, i) => (
+                            <g key={i}>
+                              <line x1={pad.l} y1={yS(v)} x2={W - pad.r} y2={yS(v)} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
+                              <text x={pad.l - 6} y={yS(v)} textAnchor="end" dominantBaseline="middle" fill="#556070" fontSize={9}>{fmtY(v)}</text>
+                            </g>
+                          ))}
+                          {/* Shaded area between min and max */}
+                          <path d={areaPath} fill="rgba(212,175,55,0.13)" />
+                          {/* Midpoint line */}
+                          <path d={linePath} fill="none" stroke="#D4AF37" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                          {/* X axis year labels */}
+                          {fdNetWorth.map((d, i) => (
+                            <text key={i} x={xS(i)} y={H - 6} textAnchor="middle" fill="#556070" fontSize={9}>{d.year}</text>
+                          ))}
+                          {/* Invisible hit targets + visible dots */}
+                          {fdNetWorth.map((d, i) => (
+                            <g key={i}>
+                              <rect x={xS(i) - 18} y={pad.t} width={36} height={cH} fill="transparent"
+                                onMouseEnter={() => setNwHoverIdx(i)} onMouseLeave={() => setNwHoverIdx(null)} />
+                              <circle cx={xS(i)} cy={yS(midpoints[i])} r={nwHoverIdx === i ? 5 : 3}
+                                fill={nwHoverIdx === i ? '#D4AF37' : '#0b1220'} stroke="#D4AF37"
+                                strokeWidth={nwHoverIdx === i ? 2 : 1.5} style={{ pointerEvents: 'none' }} />
+                            </g>
+                          ))}
+                        </svg>
+                        {/* Hover tooltip */}
+                        {nwHoverIdx !== null && (() => {
+                          const d = fdNetWorth[nwHoverIdx]
+                          const mid = (d.min_value + d.max_value) / 2
+                          const pct = n > 1 ? nwHoverIdx / (n - 1) : 0.5
+                          const clampedLeft = Math.max(6, Math.min(94, pct * 100))
+                          return (
+                            <div style={{
+                              position: 'absolute', bottom: 32, left: `${clampedLeft}%`,
+                              transform: 'translateX(-50%)',
+                              background: '#1a2538', border: '1px solid #D4AF37', borderRadius: 8,
+                              padding: '8px 12px', pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 10,
+                            }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: '#D4AF37' }}>{d.year}</div>
+                              <div style={{ fontSize: 11, color: '#c8d0dc', marginTop: 2 }}>~{fmtY(mid)}</div>
+                              <div style={{ fontSize: 10, color: '#556070', marginTop: 1 }}>{fmtY(d.min_value)} – {fmtY(d.max_value)}</div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  )
+                })()}
+
                 {/* Loading spinner while both sources are fetching */}
                 {(loadingTrades || loadingDisclosures) && (
                   <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
