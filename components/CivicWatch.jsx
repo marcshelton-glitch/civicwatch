@@ -247,6 +247,8 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [searchResults, setSearchResults] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
+  const [stats, setStats] = useState(null)
+  const [statsDisplay, setStatsDisplay] = useState({ filings: 0, trades: 0, representatives: 0 })
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
 
   useEffect(() => {
@@ -481,6 +483,31 @@ useEffect(() => {
     })
   }, [activeTab, tracked])
 
+  useEffect(() => {
+    fetch('/api/stats').then(r => r.ok ? r.json() : null).then(data => { if (data) setStats(data) }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!stats) return
+    const keys = ['filings', 'trades', 'representatives']
+    const duration = 1000
+    const steps = 40
+    const interval = duration / steps
+    let step = 0
+    const timer = setInterval(() => {
+      step++
+      const t = step / steps
+      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+      setStatsDisplay({
+        filings: Math.round(ease * stats.filings),
+        trades: Math.round(ease * stats.trades),
+        representatives: Math.round(ease * stats.representatives),
+      })
+      if (step >= steps) clearInterval(timer)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [stats])
+
   const handleSubscribe = async () => {
     try {
       const res = await fetch('/api/subscribe', { method: 'POST' })
@@ -637,6 +664,28 @@ useEffect(() => {
       </header>
 
       <div style={{ height: 4, background: `linear-gradient(90deg, ${S.red} 33%, ${S.white} 33%, ${S.white} 66%, ${S.navyMid} 66%)` }} />
+
+      {/* STATS BANNER */}
+      <div style={{ background: `linear-gradient(135deg, #070C1A, ${S.navyMid})`, borderBottom: `1px solid rgba(212,175,55,0.2)` }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px",
+          display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}
+          className="stats-banner-grid">
+          {[
+            { value: statsDisplay.filings.toLocaleString(), label: "Filings" },
+            { value: statsDisplay.trades.toLocaleString(), label: "Trades" },
+            { value: statsDisplay.representatives.toLocaleString(), label: "Representatives" },
+            { value: "Daily", label: "Updated" },
+          ].map(({ value, label }) => (
+            <div key={label} style={{ textAlign: "center", padding: "8px 4px" }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: S.gold, lineHeight: 1.1 }}>{value}</div>
+              <div style={{ fontSize: 10, color: S.gray, textTransform: "uppercase", letterSpacing: 1, marginTop: 2 }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <style>{`
+        @media (max-width: 600px) { .stats-banner-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+      `}</style>
 
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
 
