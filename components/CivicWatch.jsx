@@ -259,6 +259,16 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
     if (isLoaded && isSignedIn) setActiveTab("reps")
   }, [isLoaded, isSignedIn])
 
+  // Load persisted tracked reps from Supabase when user signs in
+  useEffect(() => {
+    if (!isSignedIn || !user) return
+    fetch('/api/track')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data.tracked)) setTracked(data.tracked) })
+      .catch(() => {})
+  }, [isSignedIn, user?.id])
+
+
   const displayReps = filterLevel === 'state'
     ? municipalReps
     : filterLevel === 'all'
@@ -275,9 +285,26 @@ const filteredReps = displayReps.filter(r => {
     setAlerts(alerts.map(a => ({ ...a, read: true })))
     setLiveAlerts(liveAlerts.map(a => ({ ...a, read: true })))
   }
-  const toggleTrack = (id) => {
+  const BIOGUIDE_RE = /^[A-Z]\d{6}$/
+  const toggleTrack = (repOrId) => {
     if (!isSignedIn) { openSignIn(); return }
-    setTracked(t => t.includes(id) ? t.filter(x => x !== id) : [...t, id])
+    const isFull = repOrId && typeof repOrId === 'object'
+    const id = isFull ? repOrId.id : repOrId
+    const isCurrentlyTracked = tracked.includes(id)
+    setTracked(t => isCurrentlyTracked ? t.filter(x => x !== id) : [...t, id])
+    // Persist to Supabase for federal reps only (valid bioguide IDs)
+    if (isFull && BIOGUIDE_RE.test(id)) {
+      const lastName = (repOrId.name || '').split(',')[0].trim()
+      const isSenator = (repOrId.title || '').toLowerCase().includes('senator')
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bioguideId: id, repName: repOrId.name, lastName, isSenator,
+          action: isCurrentlyTracked ? 'remove' : 'add',
+        }),
+      }).catch(() => {})
+    }
   }
   const handlePollVote = (repId, issue) => setPollVotes(prev => ({ ...prev, [`${repId}-${issue}`]: true }))
 
@@ -709,7 +736,7 @@ useEffect(() => {
                         style={{ flex: 1, padding: "9px 0", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", cursor: "pointer", fontFamily: "inherit", fontWeight: 600, fontSize: 13 }}>
                         Full Profile →
                       </button>
-                      <button onClick={() => toggleTrack(rep.id)}
+                      <button onClick={() => toggleTrack(rep)}
                         style={{ padding: "9px 12px", background: isTracked ? `rgba(212,175,55,0.2)` : "rgba(255,255,255,0.05)", border: `1px solid ${S.border}`, borderRadius: 8, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
                         {isTracked ? "★" : "☆"}
                       </button>
@@ -778,7 +805,7 @@ useEffect(() => {
                                 🌐 Web
                               </a>
                             )}
-                            <button onClick={() => toggleTrack(rep.id)}
+                            <button onClick={() => toggleTrack(rep)}
                               style={{ padding: '7px 12px', background: isTracked ? `rgba(212,175,55,0.2)` : 'rgba(255,255,255,0.05)', border: `1px solid ${S.border}`, borderRadius: 8, color: isTracked ? S.gold : S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12 }}>
                               {isTracked ? '★' : '☆'}
                             </button>
@@ -1437,7 +1464,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <a href={`tel:${rep.phone}`} style={{ padding: "9px 16px", background: S.green, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 {rep.phone}</a>
             <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
             <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>🌐 Website</a>
-            <button onClick={() => toggleTrack(rep.id)} style={{ padding: "9px 16px", background: isTracked ? `rgba(212,175,55,0.15)` : "rgba(255,255,255,0.05)", border: `1px solid ${isTracked ? S.gold : S.border}`, borderRadius: 10, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
+            <button onClick={() => toggleTrack(rep)} style={{ padding: "9px 16px", background: isTracked ? `rgba(212,175,55,0.15)` : "rgba(255,255,255,0.05)", border: `1px solid ${isTracked ? S.gold : S.border}`, borderRadius: 10, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
               {isTracked ? "★ Tracking" : "☆ Track"}
             </button>
           </div>
