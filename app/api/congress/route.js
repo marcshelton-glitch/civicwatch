@@ -21,7 +21,7 @@ const VALID_STATES = new Set([
 ])
 
 const VALID_TYPES = new Set([
-  'members','member','votes','trades','bills','sponsored','schedule','committees','townhall'
+  'members','member','votes','trades','bills','sponsored','schedule','committees','townhall','search'
 ])
 
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
@@ -742,6 +742,31 @@ export async function GET(request) {
         .filter((c, i, arr) => arr.findIndex(x => x.name === c.name) === i)
         .map(c => ({ name: c.name, chamber: c.chamber }))
       return NextResponse.json({ committees, source: 'live' })
+    }
+
+    // ── search ────────────────────────────────────────────────────────────
+    if (type === 'search') {
+      const name = (searchParams.get('name') || '').trim()
+      if (name.length < 2) return NextResponse.json({ members: [], source: 'none' })
+      const data = await cFetch(`/member?name=${encodeURIComponent(name)}&currentMember=true&limit=20`)
+      const members = (data.members || []).map(m => {
+        const termItems = m.terms?.item || []
+        const latestTerm = termItems[termItems.length - 1] || {}
+        const chamber = latestTerm.chamber || ''
+        const isSen = chamber.toLowerCase().includes('senate')
+        return {
+          bioguideId: m.bioguideId,
+          name: m.name,
+          party: m.partyName || 'Unknown',
+          state: m.state,
+          district: m.district ? `District ${m.district}` : 'Statewide',
+          chamber,
+          isSenator: isSen,
+          url: m.url,
+          depiction: m.depiction?.imageUrl || null,
+        }
+      })
+      return NextResponse.json({ members, source: 'live' })
     }
 
     return NextResponse.json({ error: 'Unknown type' }, { status: 400 })

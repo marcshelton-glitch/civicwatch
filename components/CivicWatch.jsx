@@ -241,6 +241,10 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [municipalError, setMunicipalError] = useState("")
   const [municipalityInfo, setMunicipalityInfo] = useState(null)   // { city, county, schoolDistrict, state }
   const [hasCiceroData, setHasCiceroData] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState('')
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
 
   useEffect(() => {
@@ -278,6 +282,30 @@ const filteredReps = displayReps.filter(r => {
   const handlePollVote = (repId, issue) => setPollVotes(prev => ({ ...prev, [`${repId}-${issue}`]: true }))
 
   useEffect(() => { if (selectedRep) setRepTab("overview") }, [selectedRep])
+
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([])
+      setSearchError('')
+      setSearchLoading(false)
+      return
+    }
+    setSearchLoading(true)
+    setSearchError('')
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/congress?type=search&name=${encodeURIComponent(searchQuery.trim())}`)
+        const data = await res.json()
+        setSearchResults(data.members || [])
+      } catch {
+        setSearchError('Search failed. Please try again.')
+        setSearchResults([])
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Auto-select the default rep once members load (public preview mode)
   useEffect(() => {
@@ -496,6 +524,7 @@ useEffect(() => {
               { id: "reps", label: "My Reps" },
               { id: "map", label: "Map" },
               { id: "alerts", label: `Alerts${unreadCount > 0 ? ` (${unreadCount})` : ""}` },
+              { id: "search", label: "Search" },
               { id: "constitution", label: "Constitution" },
             ].map(tab => (
               <button key={tab.id} className={`nav-btn ${activeTab === tab.id ? "active" : ""}`}
@@ -984,6 +1013,116 @@ useEffect(() => {
                 })
               })()}
             </div>
+          </div>
+        )}
+
+        {/* SEARCH */}
+        {activeTab === "search" && (
+          <div className="slide-in">
+            <SectionHeader title="Search Representatives" subtitle="Find any U.S. representative or senator by name." />
+            <div style={{ position: 'relative', marginBottom: 20 }}>
+              <input
+                placeholder="Search by name (e.g. Pelosi, AOC, Ocasio…)"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                autoFocus
+                style={{ width: '100%', padding: '12px 40px 12px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, color: S.white, fontFamily: 'inherit', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => { setSearchQuery(''); setSearchResults([]); setSearchError('') }}
+                  style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: S.gray, cursor: 'pointer', fontSize: 20, padding: '0 4px', lineHeight: 1 }}>
+                  ×
+                </button>
+              )}
+            </div>
+            {searchLoading && (
+              <div style={{ textAlign: 'center', padding: '48px 0', color: S.gray }}>
+                <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
+                Searching…
+              </div>
+            )}
+            {!searchLoading && searchError && (
+              <div style={{ textAlign: 'center', padding: '48px 0', color: S.gray }}>{searchError}</div>
+            )}
+            {!searchLoading && !searchError && searchResults.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {searchResults.map(member => {
+                  const isSen = member.isSenator
+                  const nameParts = (member.name || '').split(', ')
+                  const displayName = nameParts.length >= 2
+                    ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
+                    : member.name || ''
+                  const nameSlug = displayName.toLowerCase()
+                    .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+                  const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
+                  const partyColor = member.party === 'Democrat' ? '#5B9CFF' : member.party === 'Republican' ? S.red : S.gray
+                  const rep = {
+                    id: member.bioguideId,
+                    name: member.name,
+                    title: isSen ? 'U.S. Senator' : 'U.S. Representative',
+                    party: member.party || 'Unknown',
+                    state: member.state || '',
+                    district: member.district || 'Statewide',
+                    level: 'federal',
+                    photo,
+                    email: '',
+                    phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
+                    website: `https://www.congress.gov/member/${nameSlug}/${member.bioguideId}`,
+                    officeHours: 'Mon-Fri 9am-5pm',
+                    officeLocation: `U.S. ${isSen ? 'Senate' : 'House'}, Washington DC`,
+                    bio: `${displayName} is a ${member.party} ${isSen ? 'Senator' : 'Representative'} from ${member.state}.`,
+                    peers: [], peerComparison: {},
+                    netWorthBefore: null, netWorthCurrent: null, yearsInOffice: null,
+                    trades: [], votes: [], docket: [], townHall: [],
+                    communityPoll: { healthcare: 0, climate: 0, housing: 0, education: 0 },
+                    isLive: false,
+                  }
+                  return (
+                    <div key={member.bioguideId}
+                      onClick={() => { setSelectedRep(rep); setActiveTab('reps') }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = S.gold}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
+                    >
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: partyColor }} />
+                      <div style={{ position: 'relative', flexShrink: 0, marginTop: 3 }}>
+                        <img src={photo} alt={displayName}
+                          style={{ width: 56, height: 56, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
+                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                        <InitialsAvatar name={member.name} party={member.party} size={56} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 3 }}>{displayName}</div>
+                        <div style={{ fontSize: 12, color: S.gold, marginBottom: 5 }}>
+                          {isSen ? 'U.S. Senator' : 'U.S. Representative'} · {member.state} · {member.district}
+                        </div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${partyColor}22`, color: partyColor, border: `1px solid ${partyColor}44` }}>
+                            {member.party === 'Democrat' ? 'D' : member.party === 'Republican' ? 'R' : 'I'}
+                          </span>
+                          <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: 'rgba(212,175,55,0.1)', color: S.gold, border: `1px solid ${S.border}` }}>
+                            {isSen ? 'Senate' : 'House'}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 12, color: S.gray, flexShrink: 0 }}>View Profile →</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {!searchLoading && !searchError && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '48px 0', color: S.gray }}>
+                No results found for &ldquo;{searchQuery.trim()}&rdquo;
+              </div>
+            )}
+            {!searchLoading && searchQuery.trim().length < 2 && (
+              <div style={{ textAlign: 'center', padding: '56px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 16 }}>🔍</div>
+                <div style={{ color: S.gray, fontSize: 14 }}>Type at least 2 characters to search for a representative</div>
+              </div>
+            )}
           </div>
         )}
 
