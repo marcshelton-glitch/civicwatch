@@ -633,6 +633,10 @@ useEffect(() => {
             ))}
           </nav>
           <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => router.push('/leaderboard')}
+              style={{ padding: "7px 14px", background: "transparent", border: `1px solid ${S.border}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+              🏆 Leaderboard
+            </button>
             {unreadCount > 0 && (
               <div className="pulse" onClick={() => setActiveTab("alerts")}
                 style={{ background: S.red, borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
