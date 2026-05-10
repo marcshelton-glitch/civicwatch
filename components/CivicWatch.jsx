@@ -1255,6 +1255,22 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [loadingDisclosures, setLoadingDisclosures] = useState(false)
   const [ptrResults, setPtrResults] = useState({})   // docId → { trades, loading, error }
   const [expandedPtr, setExpandedPtr] = useState(null)
+  const [shareToast, setShareToast] = useState(null)
+
+  const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
+  const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
+
+  const handleShare = (text, url) => {
+    const shareUrl = url || `https://civicwatch.app?rep=${rep.id}`
+    if (navigator.share) {
+      navigator.share({ text, url: shareUrl }).catch(() => {})
+    } else {
+      navigator.clipboard.writeText(`${text}\n${shareUrl}`).then(() => {
+        setShareToast('Copied!')
+        setTimeout(() => setShareToast(null), 2000)
+      }).catch(() => {})
+    }
+  }
 
   // Reset all live data when the rep changes so stale data from the
   // previous rep never briefly flashes for the newly selected rep
@@ -1390,6 +1406,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
   return (
     <div className="slide-in">
+      {shareToast && (
+        <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', background: S.gold, color: '#0a0e1e', fontWeight: 700, fontSize: 13, padding: '8px 20px', borderRadius: 20, zIndex: 9999, pointerEvents: 'none' }}>
+          {shareToast}
+        </div>
+      )}
       <button onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: `1px solid ${S.border}`, color: S.gray, cursor: "pointer", padding: "8px 14px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, marginBottom: 20 }}>
         ← Back
       </button>
@@ -1798,6 +1819,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               <div style={{ textAlign: 'right', flexShrink: 0, fontSize: 13, fontWeight: 600 }}>
                                 {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}
                               </div>
+                              <button
+                                onClick={() => handleShare(`${rep.name} (${partyAbbr(rep.party)}-${rep.state}) ${actionWord(t.type)} ${typeof t.amount === 'number' ? fmt(t.amount) : (t.amount || '')} of ${t.ticker || t.asset}${t.date ? ` on ${t.date}` : ''} 🏛️ civicwatch.app`)}
+                                title="Share this trade"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', color: S.gray, fontSize: 14, opacity: 0.6, flexShrink: 0, lineHeight: 1 }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                              >📤</button>
                             </div>
                           ))}
                         </div>
@@ -1842,6 +1870,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                       {ptResult?.loading ? '…' : isOpen ? 'Hide' : 'Load Trades'}
                                     </button>
                                   )}
+                                  <button
+                                    onClick={() => handleShare(`${rep.name} (${partyAbbr(rep.party)}-${rep.state}) filed a ${f.typeLabel}${f.filingDate ? ` on ${f.filingDate}` : ''} 🏛️ civicwatch.app`)}
+                                    title="Share this filing"
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', color: S.gray, fontSize: 14, opacity: 0.6, flexShrink: 0, lineHeight: 1 }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                                  >📤</button>
                                 </div>
 
                                 {/* Expanded PTR trade detail */}
@@ -1869,6 +1904,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                                 <div style={{ fontSize: 10, color: S.gray }}>{t.date}{t.owner && t.owner !== 'Self' ? ` · ${t.owner}` : ''}</div>
                                               </div>
                                               <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{t.amount}</div>
+                                              <button
+                                                onClick={() => handleShare(`${rep.name} (${partyAbbr(rep.party)}-${rep.state}) ${actionWord(t.type)} ${t.amount || ''} of ${t.ticker || t.asset}${t.date ? ` on ${t.date}` : ''} 🏛️ civicwatch.app`)}
+                                                title="Share this trade"
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px 5px', color: S.gray, fontSize: 13, opacity: 0.6, flexShrink: 0, lineHeight: 1 }}
+                                                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                                onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                                              >📤</button>
                                             </div>
                                           ))}
                                         </div>
