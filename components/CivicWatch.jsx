@@ -42,6 +42,45 @@ function InitialsAvatar({ name = '', party = '', size = 68, style = {} }) {
   )
 }
 
+// ─── LEADERSHIP ROLE FORMATTING ───────────────────────────────────────────────
+function congressToYear(n) { return 1789 + (n - 1) * 2 }
+
+function ordinal(n) {
+  const v = n % 100
+  const s = (v >= 11 && v <= 13) ? 'th' : ['th','st','nd','rd'][n % 10] || 'th'
+  return n + s
+}
+
+function formatLeadershipRoles(leadership) {
+  if (!leadership?.length) return []
+  const byRole = {}
+  for (const entry of leadership) {
+    if (!entry.congress) continue
+    if (!byRole[entry.type]) byRole[entry.type] = new Set()
+    byRole[entry.type].add(entry.congress)
+  }
+  const currentYear = new Date().getFullYear()
+  return Object.entries(byRole).map(([role, congressSet]) => {
+    const sorted = [...congressSet].sort((a, b) => a - b)
+    const ranges = []
+    let start = sorted[0], prev = sorted[0]
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] === prev + 1) { prev = sorted[i] }
+      else { ranges.push([start, prev]); start = sorted[i]; prev = sorted[i] }
+    }
+    ranges.push([start, prev])
+    const spans = ranges.map(([s, e]) => {
+      const startYear = congressToYear(s)
+      const endYear = congressToYear(e) + 2
+      const endStr = endYear > currentYear ? 'present' : String(endYear)
+      return s === e
+        ? `${ordinal(s)} Congress (${startYear}–${endStr})`
+        : `${ordinal(s)}–${ordinal(e)} Congress (${startYear}–${endStr})`
+    })
+    return { role, spans }
+  })
+}
+
 // ─── REMOVED: mock REPS data. Live data comes from Congress API. ──────────────
 const REPS = []
 
@@ -1752,16 +1791,33 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <>
               <div style={{ padding: 22, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, marginBottom: 18 }}>
                 <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Biography</div>
-                <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8 }}>
-                  {liveBio ? (
-                    <>
+                {liveBio ? (
+                  <>
+                    <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, margin: '0 0 14px' }}>
                       {rep.name} represents {rep.state} in the {rep.title === 'U.S. Senator' ? 'U.S. Senate' : 'U.S. House of Representatives'}.
                       {liveBio.birthYear ? ` Born ${liveBio.birthYear}.` : ''}
                       {liveBio.terms?.length ? ` Has served ${liveBio.terms.length} term${liveBio.terms.length > 1 ? 's' : ''} in Congress.` : ''}
-                      {liveBio.leadership?.length ? ` Leadership roles: ${liveBio.leadership.map(l => l.type).join(', ')}.` : ''}
-                    </>
-                  ) : rep.bio}
-                </p>
+                    </p>
+                    {formatLeadershipRoles(liveBio.leadership).length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 8 }}>Leadership Roles</div>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          {formatLeadershipRoles(liveBio.leadership).map(({ role, spans }) => (
+                            <li key={role} style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 6 }}>
+                              <span style={{ color: S.gold, flexShrink: 0, fontSize: 14 }}>•</span>
+                              <span style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
+                                <span style={{ color: S.offWhite, fontWeight: 600 }}>{role}</span>
+                                {' — '}{spans.join(', ')}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, margin: 0 }}>{rep.bio}</p>
+                )}
                 {liveBio?.officialWebsiteUrl && (
                   <a href={liveBio.officialWebsiteUrl} target="_blank" rel="noreferrer"
                     style={{ display: 'inline-block', marginTop: 12, padding: '7px 16px', background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12 }}>
