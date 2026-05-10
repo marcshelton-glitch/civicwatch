@@ -234,6 +234,8 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [dataSource, setDataSource] = useState("loading")
   const [mounted, setMounted] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingStep, setOnboardingStep] = useState(1)
+  const [onboardingSelectedState, setOnboardingSelectedState] = useState(defaultState)
   const [civicAddress, setCivicAddress] = useState("")
   const [civicAddressInput, setCivicAddressInput] = useState("")
   const [municipalReps, setMunicipalReps] = useState([])
@@ -249,9 +251,9 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
 
   useEffect(() => {
     setMounted(true)
-    if (typeof window !== 'undefined' && !localStorage.getItem('cw_onboarded')) {
-      setShowOnboarding(true)
-    }
+    // Show immediately if localStorage flag is absent — no Clerk dependency so it
+    // works even before auth loads or when running locally without Clerk keys.
+    if (!localStorage.getItem('cw_onboarded')) setShowOnboarding(true)
   }, [])
 
   // Switch to My Reps tab once auth confirms the user is signed in
@@ -268,6 +270,12 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
       .catch(() => {})
   }, [isSignedIn, user?.id])
 
+  // Once Clerk finishes loading: if the signed-in user already has the flag set
+  // server-side, close the modal (handles cross-device completions).
+  useEffect(() => {
+    if (!isLoaded) return
+    if (isSignedIn && user?.publicMetadata?.onboardingComplete) setShowOnboarding(false)
+  }, [isLoaded, isSignedIn, user?.publicMetadata?.onboardingComplete])
 
   const displayReps = filterLevel === 'state'
     ? municipalReps
@@ -467,6 +475,13 @@ useEffect(() => {
     }
   }
 
+  const finishOnboarding = (goToMap = false) => {
+    localStorage.setItem('cw_onboarded', '1')
+    setShowOnboarding(false)
+    if (goToMap) setActiveTab('map')
+    if (isSignedIn) fetch('/api/onboarding', { method: 'PATCH' }).catch(() => {})
+  }
+
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white, overflowX: "hidden", width: "100%" }}>
       <style>{`
@@ -531,6 +546,9 @@ useEffect(() => {
           .rep-tabs-row > button { flex-shrink: 0 !important; white-space: nowrap !important; min-width: max-content !important; }
           /* Hide office hours on mobile to save vertical space */
           .rep-office-hours { display: none !important; }
+          /* Onboarding modal: full-screen on mobile */
+          .onboarding-overlay { align-items: stretch !important; padding: 0 !important; }
+          .onboarding-card { border-radius: 0 !important; min-height: 100dvh; display: flex !important; flex-direction: column !important; justify-content: center !important; }
         }
       `}</style>
 
@@ -1210,40 +1228,115 @@ useEffect(() => {
 
       {/* ── ONBOARDING MODAL ── */}
       {showOnboarding && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,14,30,0.85)', backdropFilter: 'blur(6px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ maxWidth: 520, width: '100%', background: `linear-gradient(145deg, ${S.navyMid}, ${S.navy})`, border: `1px solid ${S.border}`, borderRadius: 20, padding: '40px 36px', position: 'relative' }}>
-            <div className="star-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.3, borderRadius: 20 }} />
+        <div className="onboarding-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(10,14,30,0.88)', backdropFilter: 'blur(8px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div className="onboarding-card slide-in" style={{ maxWidth: 460, width: '100%', background: `linear-gradient(145deg, ${S.navyMid}, #0d1a3a)`, border: `1px solid ${S.border}`, borderRadius: 20, padding: '40px 32px 28px', position: 'relative' }}>
+            <div className="star-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.25, borderRadius: 'inherit', pointerEvents: 'none' }} />
+
+            {/* × dismiss */}
+            <button
+              onClick={() => finishOnboarding(false)}
+              aria-label="Skip onboarding"
+              style={{ position: 'absolute', top: 14, right: 16, background: 'none', border: 'none', color: S.gray, fontSize: 22, lineHeight: 1, cursor: 'pointer', zIndex: 1, padding: 4 }}>
+              ×
+            </button>
+
             <div style={{ position: 'relative' }}>
-              <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>🏛️</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 22, marginBottom: 6 }}>
-                  Welcome to CIVIC<span style={{ color: S.gold }}>WATCH</span>
-                </div>
-                <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.6 }}>
-                  {user?.firstName ? `Hi ${user.firstName}! Here's` : "Here's"} a quick look at what you can do.
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
-                {[
-                  { icon: '📍', title: 'Find Your Reps', desc: 'Enter your address to see every official — federal, state, and local — who represents you.' },
-                  { icon: '⚖️', title: 'Track Votes & Trades', desc: 'See every vote cast and every STOCK Act disclosure filed by your representatives.' },
-                  { icon: '🔔', title: 'Set Up Alerts', desc: 'Click "Track" on any representative to get notified of new votes and trades.' },
-                  { icon: '🤖', title: 'AI Analysis', desc: 'Pro members get AI-powered conflict scoring, wealth analysis, and peer comparisons.' },
-                ].map(f => (
-                  <div key={f.icon} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', padding: '12px 14px', background: 'rgba(27,42,107,0.4)', borderRadius: 10, border: `1px solid ${S.border}` }}>
-                    <span style={{ fontSize: 22, flexShrink: 0 }}>{f.icon}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{f.title}</div>
-                      <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.5 }}>{f.desc}</div>
+
+              {/* ── Step 1: Welcome ── */}
+              {onboardingStep === 1 && (
+                <div className="slide-in">
+                  <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                    <div style={{ fontSize: 60, marginBottom: 14, lineHeight: 1 }}>🏛️</div>
+                    <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 10 }}>
+                      Welcome to CIVIC<span style={{ color: S.gold }}>WATCH</span>
+                    </div>
+                    <div style={{ fontSize: 14, color: S.gray, lineHeight: 1.7, maxWidth: 340, margin: '0 auto' }}>
+                      Track your representatives' stock trades, net worth, legislation, and more. Real accountability, in real time.
                     </div>
                   </div>
+                  <button
+                    onClick={() => setOnboardingStep(2)}
+                    style={{ width: '100%', padding: '14px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 12, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 15, cursor: 'pointer', letterSpacing: 0.5 }}>
+                    Get Started →
+                  </button>
+                </div>
+              )}
+
+              {/* ── Step 2: Find Your Reps ── */}
+              {onboardingStep === 2 && (
+                <div className="slide-in">
+                  <div style={{ textAlign: 'center', marginBottom: 22 }}>
+                    <div style={{ fontSize: 44, marginBottom: 12, lineHeight: 1 }}>📍</div>
+                    <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 21, marginBottom: 10 }}>
+                      Find Your Representatives
+                    </div>
+                    <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.7 }}>
+                      We'll use your location to show you your House and Senate representatives. You can also search by name.
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={{ display: 'block', fontSize: 11, color: S.gray, marginBottom: 7, letterSpacing: 1, textTransform: 'uppercase' }}>Select your state</label>
+                    <select
+                      value={onboardingSelectedState}
+                      onChange={e => setOnboardingSelectedState(e.target.value)}
+                      style={{ width: '100%', padding: '11px 14px', background: 'rgba(10,14,30,0.8)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.white, fontFamily: 'inherit', fontSize: 14, cursor: 'pointer', outline: 'none' }}>
+                      {Object.entries(STATE_ABBR).sort((a, b) => a[0].localeCompare(b[0])).map(([name, abbr]) => (
+                        <option key={abbr} value={abbr} style={{ background: S.navy }}>{name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      onClick={() => setOnboardingStep(3)}
+                      style={{ flex: 1, padding: '11px', background: 'transparent', border: `1px solid rgba(212,175,55,0.2)`, borderRadius: 12, color: S.gray, fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>
+                      Skip
+                    </button>
+                    <button
+                      onClick={() => { setSelectedState(onboardingSelectedState); setOnboardingStep(3) }}
+                      style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 12, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
+                      Next →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Step 3: Track Someone ── */}
+              {onboardingStep === 3 && (
+                <div className="slide-in">
+                  <div style={{ textAlign: 'center', marginBottom: 22 }}>
+                    <div style={{ fontSize: 44, marginBottom: 12, lineHeight: 1 }}>🔔</div>
+                    <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 21, marginBottom: 10 }}>
+                      Track a Representative
+                    </div>
+                    <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.7 }}>
+                      Get email alerts when your representatives make new trade disclosures. Tap the bell icon on any rep to start tracking.
+                    </div>
+                  </div>
+                  {/* Visual hint */}
+                  <div style={{ background: 'rgba(27,42,107,0.5)', border: `1px solid ${S.border}`, borderRadius: 12, padding: '14px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ flexShrink: 0, background: 'rgba(178,34,52,0.18)', border: `1px solid rgba(178,34,52,0.4)`, borderRadius: 8, padding: '8px 12px', fontSize: 18 }}>🔔</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 3 }}>Look for the Track button</div>
+                      <div style={{ fontSize: 11, color: S.gray, lineHeight: 1.5 }}>
+                        On each representative's card, tap <strong style={{ color: S.gold }}>🔔 Track</strong> to receive alerts for new votes and trade disclosures.
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 18, opacity: 0.5, flexShrink: 0 }}>←</div>
+                  </div>
+                  <button
+                    onClick={() => finishOnboarding(true)}
+                    style={{ width: '100%', padding: '14px', background: `linear-gradient(135deg, ${S.gold}, #b8952d)`, border: 'none', borderRadius: 12, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 15, cursor: 'pointer', letterSpacing: 0.5 }}>
+                    Done — Let's Go! 🏛️
+                  </button>
+                </div>
+              )}
+
+              {/* Progress dots */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 22 }}>
+                {[1, 2, 3].map(s => (
+                  <div key={s} style={{ width: 8, height: 8, borderRadius: '50%', background: s === onboardingStep ? S.gold : 'rgba(212,175,55,0.25)', transition: 'background 0.25s', cursor: s < onboardingStep ? 'pointer' : 'default' }} onClick={() => { if (s < onboardingStep) setOnboardingStep(s) }} />
                 ))}
               </div>
-              <button
-                onClick={() => { localStorage.setItem('cw_onboarded', '1'); setShowOnboarding(false) }}
-                style={{ width: '100%', padding: '13px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 12, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
-                Get Started →
-              </button>
             </div>
           </div>
         </div>
