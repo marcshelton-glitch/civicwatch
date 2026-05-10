@@ -2247,6 +2247,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {rep.source !== 'openstates' && (() => {
             const TYPE_COLOR = { P: '#4CAF50', D: '#4CAF50', A: '#5B9CFF', O: '#5B9CFF', G: '#5B9CFF', X: S.gray, W: '#f87171' }
             const TYPE_ICON  = { P: '📊', D: '📝', A: '📋', O: '📋', G: '📋', X: '⏳', W: '✗' }
+            const TYPE_LABEL = { P: 'PTR', D: 'PTR', A: 'Annual FD', O: 'Annual FD', G: 'Annual FD', X: 'Extension', W: 'Amendment' }
 
             return (
               <>
@@ -2461,7 +2462,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                     </div>
                                   </div>
                                   <span style={{ fontSize: 11, fontWeight: 600, color: TYPE_COLOR[f.type] || S.gray, background: `${TYPE_COLOR[f.type] || S.gray}18`, borderRadius: 4, padding: '2px 8px', whiteSpace: 'nowrap' }}>
-                                    {f.type}
+                                    {TYPE_LABEL[f.type] || f.type}
                                   </span>
                                   {f.isPtr && (
                                     <button
