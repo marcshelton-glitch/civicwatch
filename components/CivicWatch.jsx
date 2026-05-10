@@ -862,10 +862,10 @@ useEffect(() => {
           const stateReps = displayReps.filter(r => r.state === stateLabel || r.state === selectedState)
           if (stateReps.length === 0) {
             return (
-              <div style={{ textAlign: 'center', padding: 24, color: S.gray }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>🏛️</div>
-                <div style={{ fontSize: 12, marginBottom: 4 }}>No data loaded for this state.</div>
-                <div style={{ fontSize: 11, color: S.gray, marginBottom: 16 }}>Click the state on the map to load members.</div>
+              <div style={{ textAlign: 'center', padding: 28, color: S.gray }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: S.white, marginBottom: 8 }}>Click a district on the map</div>
+                <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Select a state to explore your representative's profile, votes, and disclosures.</div>
               </div>
             )
           }
@@ -949,16 +949,16 @@ useEffect(() => {
                 const allAlerts = [...liveAlerts, ...mockTrackedAlerts]
                 if (allAlerts.length === 0) return (
                   <div style={{ textAlign: 'center', padding: 48 }}>
-                    <div style={{ fontSize: 32, marginBottom: 12 }}>🔔</div>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>🔔</div>
                     {tracked.length === 0 ? (
                       <>
-                        <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No representatives selected.</div>
-                        <div style={{ fontSize: 12, color: S.gray }}>Use the chips above to choose who to track, or click "Select All from My State" to get started.</div>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, color: S.white, marginBottom: 8 }}>No representatives selected</div>
+                        <div style={{ fontSize: 13, color: S.gray, maxWidth: 360, margin: '0 auto', lineHeight: 1.6 }}>Use the chips above to choose who to track, or click "Select All from My State" to get started.</div>
                       </>
                     ) : (
                       <>
-                        <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No activity yet for your tracked representatives.</div>
-                        <div style={{ fontSize: 12, color: S.gray }}>Votes, trades, and events will appear here as they happen.</div>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, color: S.white, marginBottom: 8 }}>You're all caught up!</div>
+                        <div style={{ fontSize: 13, color: S.gray, maxWidth: 360, margin: '0 auto', lineHeight: 1.6 }}>We'll notify you when your tracked representatives make new trades or file disclosures.</div>
                       </>
                     )}
                   </div>
@@ -1347,8 +1347,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 </button>
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: S.gray }}>No STOCK Act trade disclosures on record.{' '}
-                <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold }}>View filings →</a>
+              <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Not all representatives file financial disclosures — some may not be required to.{' '}
+                <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold }}>House Clerk →</a>
               </div>
             )}
           </div>
@@ -1756,10 +1756,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
                     {/* No trades, no filing history */}
                     {trades.length === 0 && (!disclosures || disclosures.filings?.length === 0) && (
-                      <div style={{ padding: 28, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
-                        <div style={{ fontSize: 28, marginBottom: 10 }}>📋</div>
-                        <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>No financial disclosure records found</div>
-                        <div style={{ fontSize: 12, color: S.gray }}>This member may not have any filed disclosure records on record with the House Clerk.</div>
+                      <div style={{ padding: 32, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
+                        <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.white, marginBottom: 8 }}>No trade disclosures found</div>
+                        <div style={{ fontSize: 13, color: S.gray, maxWidth: 380, margin: '0 auto', lineHeight: 1.6 }}>This representative may not have filed any PTR reports, or their filings may be in a non-machine-readable format.</div>
                       </div>
                     )}
 
