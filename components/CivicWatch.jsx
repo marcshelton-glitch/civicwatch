@@ -1081,7 +1081,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
   // Fetch House Clerk filing index for federal House members
   useEffect(() => {
-    if (repTab === 'wealth' && isLive && rep.source !== 'openstates' && !disclosures && !loadingDisclosures) {
+    if ((repTab === 'wealth' || repTab === 'overview') && isLive && rep.source !== 'openstates' && !disclosures && !loadingDisclosures) {
       const lastName = (rep.name || '').split(',')[0].trim().split(' ').pop()
       const stateDst = (rep.state || '') + (rep.district ? String(rep.district).padStart(2, '0') : '')
       if (!lastName) return
@@ -1210,7 +1210,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         {tabs.map(t => (
           <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
             onClick={() => setRepTab(t.id)}
-            style={{ padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : t.id === "ai" ? `rgba(212,175,55,0.08)` : S.cardBg, color: repTab === t.id ? "white" : t.id === "ai" ? S.gold : S.gray, transition: "all 0.2s" }}>
+            style={{ padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : t.id === "ai" ? `rgba(212,175,55,0.08)` : S.cardBg, color: repTab === t.id ? "white" : t.id === "ai" ? S.gold : S.gray, transition: "all 0.2s", whiteSpace: "nowrap", flexShrink: 0, minWidth: "max-content" }}>
             {t.label}
           </button>
         ))}
@@ -1251,6 +1251,21 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             ) : rep.source === 'openstates' ? (
               <div style={{ fontSize: 12, color: S.gray }}>State legislators file disclosures at the state level.{' '}
                 <a href="https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/" target="_blank" rel="noreferrer" style={{ color: S.gold }}>FollowTheMoney →</a>
+              </div>
+            ) : loadingDisclosures ? (
+              <div style={{ fontSize: 12, color: S.gray }}>Loading disclosures…</div>
+            ) : disclosures?.filings?.length > 0 ? (
+              <div>
+                <div style={{ fontSize: 12, color: S.grayLight, marginBottom: 6 }}>
+                  <span style={{ color: '#4CAF50', fontWeight: 700 }}>{disclosures.filings.length}</span> STOCK Act filing{disclosures.filings.length !== 1 ? 's' : ''} on record
+                  {disclosures.ptrCount > 0 && <span style={{ color: S.gray }}> · {disclosures.ptrCount} trade report{disclosures.ptrCount !== 1 ? 's' : ''}</span>}
+                </div>
+                {disclosures.filings[0]?.date && (
+                  <div style={{ fontSize: 11, color: S.gray, marginBottom: 8 }}>Most recent: {disclosures.filings[0].date}</div>
+                )}
+                <button onClick={() => setRepTab('wealth')} style={{ fontSize: 11, color: S.gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
+                  See Wealth &amp; Trades tab →
+                </button>
               </div>
             ) : (
               <div style={{ fontSize: 12, color: S.gray }}>No STOCK Act trade disclosures on record.{' '}
