@@ -249,6 +249,15 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [searchError, setSearchError] = useState('')
   const [stats, setStats] = useState(null)
   const [statsDisplay, setStatsDisplay] = useState({ filings: 0, trades: 0, representatives: 0 })
+  const [prefs, setPrefs] = useState({
+    alert_frequency: 'daily',
+    alert_trades: true,
+    alert_networth: true,
+    alert_legislation: false,
+    alert_committees: false,
+  })
+  const [prefsSaved, setPrefsSaved] = useState(false)
+  const prefsSaveTimer = useRef(null)
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
@@ -280,6 +289,17 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
     fetch('/api/track')
       .then(r => r.json())
       .then(data => { if (Array.isArray(data.tracked)) setTracked(data.tracked) })
+      .catch(() => {})
+  }, [isSignedIn, user?.id])
+
+  // Load notification preferences from Supabase when user signs in
+  useEffect(() => {
+    if (!isSignedIn || !user) return
+    fetch('/api/preferences')
+      .then(r => r.json())
+      .then(data => {
+        if (data && !data.error) setPrefs(p => ({ ...p, ...data }))
+      })
       .catch(() => {})
   }, [isSignedIn, user?.id])
 
@@ -331,6 +351,24 @@ const filteredReps = displayReps.filter(r => {
   const markAllRead = () => {
     setAlerts(alerts.map(a => ({ ...a, read: true })))
     setLiveAlerts(liveAlerts.map(a => ({ ...a, read: true })))
+  }
+
+  const updatePref = (key, value) => {
+    if (!isSignedIn) { openSignIn(); return }
+    const next = { ...prefs, [key]: value }
+    setPrefs(next)
+    setPrefsSaved(false)
+    clearTimeout(prefsSaveTimer.current)
+    prefsSaveTimer.current = setTimeout(() => {
+      fetch('/api/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      })
+        .then(r => r.json())
+        .then(data => { if (data.ok) { setPrefsSaved(true); setTimeout(() => setPrefsSaved(false), 2500) } })
+        .catch(() => {})
+    }, 1000)
   }
   const BIOGUIDE_RE = /^[A-Z]\d{6}$/
   const toggleTrack = (repOrId) => {
@@ -1183,6 +1221,69 @@ useEffect(() => {
                 ))}
               </div>
             </div>
+            {/* ── Notification Settings ──────────────────────────────────── */}
+            <div style={{ marginBottom: 24, padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Notification Settings</div>
+                {prefsSaved && (
+                  <span style={{ fontSize: 11, color: S.green, fontWeight: 600, letterSpacing: 0.5 }}>Saved ✓</span>
+                )}
+              </div>
+
+              {/* Email address */}
+              {isSignedIn && user?.primaryEmailAddress?.emailAddress && (
+                <div style={{ marginBottom: 16, padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${S.border}`, borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 4 }}>Alerts sent to</div>
+                  <div style={{ fontSize: 13, color: S.grayLight }}>{user.primaryEmailAddress.emailAddress}</div>
+                </div>
+              )}
+
+              {/* Frequency */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Frequency</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { value: 'daily',   label: 'Daily digest',  hint: 'One email per day' },
+                    { value: 'weekly',  label: 'Weekly digest', hint: 'Every Monday' },
+                    { value: 'instant', label: 'Instant',       hint: 'Same-day (checks run daily)' },
+                  ].map(({ value, label, hint }) => {
+                    const active = prefs.alert_frequency === value
+                    return (
+                      <button key={value} onClick={() => updatePref('alert_frequency', value)}
+                        title={hint}
+                        style={{ padding: '7px 14px', background: active ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? S.gold : S.border}`, borderRadius: 8, color: active ? S.gold : S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: active ? 600 : 400, transition: 'all 0.15s' }}>
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Alert types */}
+              <div>
+                <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Alert Types</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)' },
+                    { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)' },
+                    { key: 'alert_legislation',  label: 'Sponsored legislation' },
+                    { key: 'alert_committees',   label: 'Committee assignments' },
+                  ].map(({ key, label }) => {
+                    const checked = prefs[key]
+                    return (
+                      <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                        <div onClick={() => updatePref(key, !checked)}
+                          style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
+                          {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
+                        </div>
+                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray }}>{label}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {loadingAlerts && (
                 <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
