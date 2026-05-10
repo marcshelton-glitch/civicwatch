@@ -250,12 +250,23 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [stats, setStats] = useState(null)
   const [statsDisplay, setStatsDisplay] = useState({ filings: 0, trades: 0, representatives: 0 })
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [showInstallBanner, setShowInstallBanner] = useState(false)
 
   useEffect(() => {
     setMounted(true)
     // Show immediately if localStorage flag is absent — no Clerk dependency so it
     // works even before auth loads or when running locally without Clerk keys.
     if (!localStorage.getItem('cw_onboarded')) setShowOnboarding(true)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem('cw_install_dismissed')) return
+    const handler = e => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    const timer = setTimeout(() => setShowInstallBanner(true), 30000)
+    return () => { window.removeEventListener('beforeinstallprompt', handler); clearTimeout(timer) }
   }, [])
 
   // Switch to My Reps tab once auth confirms the user is signed in
@@ -1502,6 +1513,56 @@ useEffect(() => {
           <div style={{ fontSize: 11, color: S.gray }}>Data sourced from <a href="https://congress.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Congress.gov</a>, <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>House Clerk STOCK Act Disclosures</a>, <a href="https://efts.senate.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Senate Financial Disclosures</a>, and <a href="https://legiscan.com" target="_blank" rel="noreferrer" style={{ color: S.gray }}>LegiScan LLC (CC BY 4.0)</a>.</div>
         </div>
       </footer>
+
+      {/* PWA INSTALL BANNER */}
+      {showInstallBanner && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+          background: `linear-gradient(135deg, #0d1a35, ${S.navyMid})`,
+          borderTop: `1px solid ${S.gold}`,
+          padding: '14px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          boxShadow: '0 -4px 24px rgba(0,0,0,0.5)',
+          animation: 'slideInUp 0.35s ease',
+        }}>
+          <style>{`@keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+          <span style={{ fontSize: 14, color: S.offWhite, display: 'flex', alignItems: 'center', gap: 8 }}>
+            📲 <span>Add <strong>CivicWatch</strong> to your home screen</span>
+          </span>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={async () => {
+                if (installPrompt) {
+                  installPrompt.prompt()
+                  const { outcome } = await installPrompt.userChoice
+                  if (outcome === 'accepted') {
+                    setInstallPrompt(null)
+                    setShowInstallBanner(false)
+                    localStorage.setItem('cw_install_dismissed', '1')
+                  }
+                } else {
+                  setShowInstallBanner(false)
+                }
+              }}
+              style={{
+                padding: '7px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: S.gold, color: '#0a0f1e', fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
+              }}
+            >
+              Install
+            </button>
+            <button
+              onClick={() => { setShowInstallBanner(false); localStorage.setItem('cw_install_dismissed', '1') }}
+              style={{
+                padding: '7px 10px', borderRadius: 6, border: `1px solid ${S.border}`, cursor: 'pointer',
+                background: 'transparent', color: S.gray, fontSize: 15, fontFamily: 'inherit', lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

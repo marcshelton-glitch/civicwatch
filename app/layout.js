@@ -1,4 +1,5 @@
 import { ClerkProvider } from '@clerk/nextjs'
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import './globals.css'
 
 export const metadata = {
@@ -6,6 +7,13 @@ export const metadata = {
   description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
   keywords: 'congress stock trades, representative financial disclosure, STOCK Act, congressional transparency, civicwatch',
   robots: { index: true, follow: true },
+  manifest: '/manifest.json',
+  themeColor: '#0a0f1e',
+  appleWebApp: {
+    capable: true,
+    title: 'CivicWatch',
+    statusBarStyle: 'black-translucent',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
@@ -40,7 +48,10 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider afterSignInUrl="/dashboard" afterSignUpUrl="/dashboard">
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          <ServiceWorkerRegistration />
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   )
