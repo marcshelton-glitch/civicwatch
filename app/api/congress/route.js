@@ -214,7 +214,7 @@ export async function GET(request) {
       return NextResponse.json({
         member: {
           bioguideId: m.bioguideId,
-          name: m.directOrderName,
+          name: m.invertedOrderName || m.directOrderName,
           party: m.partyHistory?.[0]?.partyName,
           state: m.state,
           birthYear: m.birthYear,

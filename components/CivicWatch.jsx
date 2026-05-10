@@ -419,12 +419,69 @@ const filteredReps = displayReps.filter(r => {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  // ── URL-persistence helpers ───────────────────────────────────────────────────
+  const selectRep = useCallback((rep) => {
+    setSelectedRep(rep)
+    router.replace(`/dashboard?rep=${rep.id}`, { scroll: false })
+  }, [router])
+
+  const clearRep = useCallback(() => {
+    setSelectedRep(null)
+    router.replace('/dashboard', { scroll: false })
+  }, [router])
+
+  // On mount: restore the selected rep from ?rep= URL param
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const repId = params.get('rep')
+    if (!repId) return
+    fetch(`/api/congress?type=member&bioguideId=${encodeURIComponent(repId)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.member) return
+        const m = data.member
+        const terms = m.terms || []
+        const latestTerm = terms[terms.length - 1] || {}
+        const isSen = (latestTerm.chamber || '').toLowerCase().includes('senate')
+        const nameParts = (m.name || '').split(', ')
+        const displayName = nameParts.length >= 2
+          ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
+          : m.name || ''
+        const nameSlug = displayName.toLowerCase()
+          .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+        setSelectedRep({
+          id: m.bioguideId,
+          name: m.name,
+          title: isSen ? 'U.S. Senator' : 'U.S. Representative',
+          party: m.party || 'Unknown',
+          state: m.state || '',
+          district: 'Statewide',
+          level: 'federal',
+          photo: m.depiction || `https://bioguide.congress.gov/bioguide/photo/${m.bioguideId[0]}/${m.bioguideId}.jpg`,
+          email: '',
+          phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
+          website: `https://www.congress.gov/member/${nameSlug}/${m.bioguideId}`,
+          officeHours: 'Mon-Fri 9am-5pm',
+          officeLocation: isSen ? 'U.S. Senate, Washington DC' : 'U.S. House, Washington DC',
+          bio: `${m.name} represents ${m.state}.`,
+          peers: [], peerComparison: {}, netWorthBefore: null, netWorthCurrent: null,
+          yearsInOffice: null, trades: [], votes: [], docket: [], townHall: [],
+          communityPoll: { healthcare: 0, climate: 0, housing: 0, education: 0 },
+          isLive: true,
+        })
+        if (m.state) setSelectedState(m.state)
+        setActiveTab('reps')
+      })
+      .catch(() => {})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-select the default rep once members load (public preview mode)
   useEffect(() => {
     if (!defaultBioguideId || selectedRep || liveReps.length === 0) return
     const def = liveReps.find(r => r.id === defaultBioguideId)
-    if (def) setSelectedRep(def)
-  }, [liveReps, defaultBioguideId])
+    if (def) selectRep(def)
+  }, [liveReps, defaultBioguideId]) // eslint-disable-line react-hooks/exhaustive-deps
 
 useEffect(() => {
   setLiveReps([])
@@ -666,7 +723,7 @@ useEffect(() => {
       <header style={{ background: `linear-gradient(135deg, #0A0E1E, ${S.navyMid})`, borderBottom: `2px solid ${S.gold}`, position: "sticky", top: 0, zIndex: 100 }}>
         <div className="header-inner" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <button className="header-logo"
-            onClick={() => { setActiveTab("reps"); setSelectedRep(null) }}
+            onClick={() => { setActiveTab("reps"); clearRep() }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
             <span style={{ fontSize: 26 }}>🏛️</span>
             <div>
@@ -683,7 +740,7 @@ useEffect(() => {
               { id: "constitution", label: "Constitution" },
             ].map(tab => (
               <button key={tab.id} className={`nav-btn ${activeTab === tab.id ? "active" : ""}`}
-                onClick={() => { setActiveTab(tab.id); setSelectedRep(null) }}
+                onClick={() => { setActiveTab(tab.id); clearRep() }}
                 style={{ background: "none", border: "none", color: activeTab === tab.id ? S.gold : S.gray, cursor: "pointer", padding: "8px 12px", fontSize: 12, fontFamily: "inherit", letterSpacing: 0.5, transition: "all 0.2s", borderBottom: `2px solid ${activeTab === tab.id ? S.gold : "transparent"}`, fontWeight: activeTab === tab.id ? 600 : 400 }}>
                 {tab.label}
               </button>
@@ -892,7 +949,7 @@ useEffect(() => {
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: `rgba(212,175,55,0.15)`, borderRadius: 8, fontSize: 12, color: S.gold, textDecoration: "none", border: `1px solid ${S.border}`, transition: "all 0.2s", fontWeight: 600 }}>🌐 Web</a>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => setSelectedRep(rep)}
+                      <button onClick={() => selectRep(rep)}
                         style={{ flex: 1, padding: "9px 0", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", cursor: "pointer", fontFamily: "inherit", fontWeight: 600, fontSize: 13 }}>
                         Full Profile →
                       </button>
@@ -1020,7 +1077,7 @@ useEffect(() => {
 
         {/* REP DETAIL */}
         {activeTab === "reps" && selectedRep && (
-          <RepDetail rep={selectedRep} onBack={() => setSelectedRep(null)} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} S={S} />
+          <RepDetail rep={selectedRep} onBack={clearRep} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} S={S} />
         )}
 
         {/* MAP */}
@@ -1088,7 +1145,7 @@ useEffect(() => {
           return stateReps.map(r => (
             <div key={r.id || r.bioguideId}
               style={{ display: "flex", gap: 10, marginBottom: 10, padding: 10, background: "rgba(27,42,107,0.3)", border: `1px solid ${S.border}`, borderRadius: 10, cursor: "pointer" }}
-              onClick={() => { setSelectedRep(r); setActiveTab("reps") }}
+              onClick={() => { selectRep(r); setActiveTab("reps") }}
               className="rep-card">
               <img src={r.photo} alt={r.name} style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
               <div style={{ overflow: 'hidden' }}>
@@ -1139,7 +1196,7 @@ useEffect(() => {
             const shareText = `${trade.name} ${tradeType === 'BUY' ? 'bought' : tradeType === 'SELL' ? 'sold' : 'exchanged'} ${trade.amount || ''} of ${trade.ticker || trade.asset}${trade.date ? ` on ${trade.date}` : ''} 🏛️ civicwatch.app`
             return (
               <div key={i}
-                onClick={matchedRep ? () => { setSelectedRep(matchedRep); setActiveTab('reps') } : undefined}
+                onClick={matchedRep ? () => { selectRep(matchedRep); setActiveTab('reps') } : undefined}
                 className="rep-card"
                 style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, cursor: matchedRep ? 'pointer' : 'default' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1404,7 +1461,7 @@ useEffect(() => {
                   }
                   return (
                     <div key={member.bioguideId}
-                      onClick={() => { setSelectedRep(rep); setActiveTab('reps') }}
+                      onClick={() => { selectRep(rep); setActiveTab('reps') }}
                       style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 12, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = S.gold}
                       onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
