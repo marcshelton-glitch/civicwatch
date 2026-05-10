@@ -696,6 +696,10 @@ useEffect(() => {
             </a>
           </nav>
           <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => router.push('/controversial')}
+              style={{ padding: "7px 14px", background: "transparent", border: `1px solid rgba(248,113,113,0.3)`, borderRadius: 8, color: '#f87171', fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+              🔥 Notable Trades
+            </button>
             <button onClick={() => router.push('/leaderboard')}
               style={{ padding: "7px 14px", background: "transparent", border: `1px solid ${S.border}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
               🏆 Leaderboard
@@ -1715,12 +1719,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [compareRep, setCompareRep] = useState(null)
   const [compareData, setCompareData] = useState(null)
   const [compareDataLoading, setCompareDataLoading] = useState(false)
+  const [liveCommittees, setLiveCommittees] = useState(null)
+  const [loadingCommittees, setLoadingCommittees] = useState(false)
+  const [liveFec, setLiveFec] = useState(null)
+  const [loadingFec, setLoadingFec] = useState(false)
+  const [stockPerf, setStockPerf] = useState({})
 
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
 
   const handleShare = (text, url) => {
-    const shareUrl = url || `https://civicwatch.app?rep=${rep.id}`
+    const shareUrl = url || `https://civicwatch.app/rep/${rep.id}`
     if (navigator.share) {
       navigator.share({ text, url: shareUrl }).catch(() => {})
     } else {
@@ -1745,6 +1754,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLoadingDisclosures(false)
     setFdNetWorth(null); setLoadingFdNetWorth(false); setNwHoverIdx(null)
     setCompareQuery(''); setCompareResults([]); setCompareRep(null); setCompareData(null); setCompareDataLoading(false)
+    setLiveCommittees(null); setLoadingCommittees(false)
+    setLiveFec(null); setLoadingFec(false)
+    setStockPerf({})
   }, [rep.id])
 
   const isLive = rep.isLive
@@ -1889,6 +1901,53 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         .catch(() => { setLiveNonprofits([]); setLoadingNonprofits(false) })
     }
   }, [repTab, rep.id])
+
+  // Fetch committees when bio tab opens (federal only)
+  useEffect(() => {
+    if (repTab === 'bio' && isLive && rep.source !== 'openstates' && !liveCommittees && !loadingCommittees) {
+      setLoadingCommittees(true)
+      fetch(`/api/congress?type=committees&bioguideId=${rep.id}`)
+        .then(r => r.json())
+        .then(d => { setLiveCommittees(d.committees || []); setLoadingCommittees(false) })
+        .catch(() => { setLiveCommittees([]); setLoadingCommittees(false) })
+    }
+  }, [repTab, rep.id])
+
+  // Fetch FEC data when bio tab opens (federal only)
+  useEffect(() => {
+    if (repTab === 'bio' && isLive && rep.source !== 'openstates' && !liveFec && !loadingFec) {
+      setLoadingFec(true)
+      const qs = new URLSearchParams({ bioguideId: rep.id, name: rep.name || '', state: rep.state || '' })
+      fetch(`/api/fec?${qs}`)
+        .then(r => r.json())
+        .then(d => { setLiveFec(d); setLoadingFec(false) })
+        .catch(() => { setLiveFec(null); setLoadingFec(false) })
+    }
+  }, [repTab, rep.id])
+
+  // Fetch stock performance for all tickers once trades are loaded
+  useEffect(() => {
+    if (!liveTrades || liveTrades.length === 0) return
+    const seen = new Set(Object.keys(stockPerf))
+    const tickers = [...new Set(
+      liveTrades.filter(t => t.ticker && /^[A-Z]{1,5}$/.test(t.ticker)).map(t => t.ticker)
+    )].filter(tk => !seen.has(tk)).slice(0, 12)
+    if (tickers.length === 0) return
+    // Mark all as loading
+    setStockPerf(prev => {
+      const next = { ...prev }
+      tickers.forEach(tk => { next[tk] = { loading: true } })
+      return next
+    })
+    tickers.forEach(ticker => {
+      const trade = liveTrades.find(t => t.ticker === ticker)
+      const dateParam = trade?.date ? `&date=${encodeURIComponent(trade.date)}` : ''
+      fetch(`/api/stock?ticker=${encodeURIComponent(ticker)}${dateParam}`)
+        .then(r => r.json())
+        .then(d => setStockPerf(prev => ({ ...prev, [ticker]: { pct: d.pct ?? null, loading: false } })))
+        .catch(() => setStockPerf(prev => ({ ...prev, [ticker]: { pct: null, loading: false } })))
+    })
+  }, [liveTrades])
 
   const votes = isLive ? (liveVotes || rep.votes) : rep.votes
   const trades = isLive ? (liveTrades || rep.trades) : rep.trades
@@ -2416,8 +2475,19 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                   )}
                                 </div>
                               </div>
-                              <div style={{ textAlign: 'right', flexShrink: 0, fontSize: 13, fontWeight: 600 }}>
-                                {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 600 }}>
+                                  {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}
+                                </div>
+                                {t.ticker && stockPerf[t.ticker] && !stockPerf[t.ticker].loading && stockPerf[t.ticker].pct != null && (() => {
+                                  const pct = parseFloat(stockPerf[t.ticker].pct)
+                                  const isUp = pct >= 0
+                                  return (
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: isUp ? '#4ade80' : '#f87171', marginTop: 2, whiteSpace: 'nowrap' }}>
+                                      {isUp ? '📈 +' : '📉 '}{stockPerf[t.ticker].pct}%
+                                    </div>
+                                  )
+                                })()}
                               </div>
                               <button
                                 onClick={() => handleShare(`${rep.name} (${partyAbbr(rep.party)}-${rep.state}) ${actionWord(t.type)} ${typeof t.amount === 'number' ? fmt(t.amount) : (t.amount || '')} of ${t.ticker || t.asset}${t.date ? ` on ${t.date}` : ''} 🏛️ civicwatch.app`)}
@@ -2664,6 +2734,75 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       </a>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* ── Committee Memberships ── */}
+              {rep.source !== 'openstates' && (liveCommittees?.length > 0 || loadingCommittees) && (
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>
+                    Committee Memberships
+                  </div>
+                  {loadingCommittees ? (
+                    <div style={{ textAlign: 'center', padding: '16px 0', color: S.gray, fontSize: 12 }}>
+                      <div style={{ width: 20, height: 20, border: `2px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 8px' }} />
+                      Loading committees…
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {liveCommittees.map((c, i) => (
+                        <div key={i} style={{ padding: '10px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <span style={{ fontSize: 14 }}>{c.chamber?.toLowerCase().includes('senate') ? '🏛️' : '🏢'}</span>
+                          <span style={{ fontSize: 13, color: S.grayLight, flex: 1 }}>{c.name}</span>
+                          {c.role && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: S.gold, background: 'rgba(212,175,55,0.12)', borderRadius: 4, padding: '2px 7px', whiteSpace: 'nowrap' }}>
+                              {c.role}
+                            </span>
+                          )}
+                          <span style={{ fontSize: 10, color: S.gray, background: 'rgba(255,255,255,0.05)', borderRadius: 4, padding: '2px 7px', whiteSpace: 'nowrap' }}>
+                            {c.chamber?.toLowerCase().includes('senate') ? 'Senate' : 'House'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Campaign Finance (FEC) ── */}
+              {rep.source !== 'openstates' && liveFec?.found && (
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>
+                    Campaign Finance
+                  </div>
+                  <div style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: liveFec.donors?.length > 0 ? 12 : 0 }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: S.gold }}>
+                          ${liveFec.totalRaised >= 1e6 ? (liveFec.totalRaised / 1e6).toFixed(1) + 'M' : liveFec.totalRaised >= 1e3 ? Math.round(liveFec.totalRaised / 1e3) + 'K' : liveFec.totalRaised?.toLocaleString()} raised
+                        </div>
+                        <div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>via FEC public records</div>
+                      </div>
+                      <a href={liveFec.fecUrl} target="_blank" rel="noreferrer"
+                        style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.border}`, padding: '4px 10px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                        FEC Profile →
+                      </a>
+                    </div>
+                    {liveFec.donors?.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 8 }}>Top Contributors</div>
+                        {liveFec.donors.slice(0, 5).map((d, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < 4 && i < liveFec.donors.length - 1 ? `1px solid ${S.border}` : 'none' }}>
+                            <div>
+                              <div style={{ fontSize: 12, color: S.grayLight }}>{d.name}</div>
+                              {d.employer && <div style={{ fontSize: 10, color: S.gray }}>{d.employer}</div>}
+                            </div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: S.gold, whiteSpace: 'nowrap', marginLeft: 12 }}>${d.amount?.toLocaleString()}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

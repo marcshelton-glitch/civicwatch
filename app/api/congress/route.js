@@ -737,10 +737,23 @@ export async function GET(request) {
     if (type === 'committees') {
       const data = await cFetch(`/member/${bioguideId}`)
       const terms = data.member?.terms?.item || []
-      const committees = terms
+      // Take committees from the most recent 2 terms to show current assignments
+      const recentTerms = terms.slice(-2)
+      const seen = new Set()
+      const committees = recentTerms
         .flatMap(t => t.memberOf || [])
-        .filter((c, i, arr) => arr.findIndex(x => x.name === c.name) === i)
-        .map(c => ({ name: c.name, chamber: c.chamber }))
+        .filter(c => {
+          if (!c.name || seen.has(c.name)) return false
+          seen.add(c.name)
+          return true
+        })
+        .map(c => ({
+          name: c.name,
+          chamber: c.chamber || '',
+          role: c.rank === '1' ? 'Chair'
+            : c.rank === '2' ? 'Ranking Member'
+            : null,
+        }))
       return NextResponse.json({ committees, source: 'live' })
     }
 

@@ -25,6 +25,10 @@ const isPublicRoute = createRouteMatcher([
   '/leaderboard(.*)',
   '/api/leaderboard(.*)',
   '/api/networth(.*)',
+  '/rep/(.*)',
+  '/controversial(.*)',
+  '/api/controversial(.*)',
+  '/api/stock(.*)',
 ])
 
 // Only Stripe checkout and billing portal require authentication at middleware level
