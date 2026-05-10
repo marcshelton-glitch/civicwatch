@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // pdfjs-dist uses Node.js workers and must not be bundled by Next.js/Turbopack
-  serverExternalPackages: ['pdfjs-dist'],
-
   async headers() {
     return [
       {

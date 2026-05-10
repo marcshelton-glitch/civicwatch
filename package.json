@@ -19,12 +19,12 @@
     "fast-xml-parser": "^5.7.1",
     "lucide-react": "^1.7.0",
     "next": "16.2.2",
-    "pdf-parse": "^2.4.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-simple-maps": "^3.0.0",
     "resend": "^6.10.0",
-    "stripe": "^21.0.1"
+    "stripe": "^21.0.1",
+    "unpdf": "^1.6.2"
   },
   "devDependencies": {
     "@google/generative-ai": "^0.24.1",

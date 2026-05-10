@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { extractText, getDocumentProxy } from 'unpdf'
 
 const HOUSE_CLERK = 'https://disclosures-clerk.house.gov/public_disc'
 
@@ -107,37 +108,8 @@ function parsePTR(text) {
 }
 
 async function extractPdfText(buf) {
-  // Import both the main library and the worker module before calling getDocument().
-  // In Node.js serverless, pdfjs disables real Worker threads and falls back to
-  // _setupFakeWorkerGlobal which does `await import(workerSrc)` — a relative URL that
-  // fails in Turbopack's CJS runtime. Instead, we pre-load the worker module and assign
-  // it to globalThis.pdfjsWorker; pdfjs checks this in #mainThreadWorkerMessageHandler
-  // and returns it immediately, skipping the broken dynamic import path entirely.
-  const [{ getDocument }, { WorkerMessageHandler }] = await Promise.all([
-    import('pdfjs-dist/legacy/build/pdf.mjs'),
-    import('pdfjs-dist/legacy/build/pdf.worker.mjs'),
-  ])
-  if (!globalThis.pdfjsWorker) {
-    globalThis.pdfjsWorker = { WorkerMessageHandler }
-  }
-
-  const pdf = await getDocument({ data: new Uint8Array(buf) }).promise
-  let text = ''
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i)
-    const content = await page.getTextContent()
-    let lastY = null, lastX = null
-    for (const item of content.items) {
-      if (!('str' in item)) continue
-      const [,, , , x, y] = item.transform
-      if (lastY !== null && Math.abs(y - lastY) > 2) text += '\n'
-      else if (lastX !== null && x - lastX > 8) text += '\t'
-      text += item.str
-      lastY = y
-      lastX = x + (item.width || 0)
-    }
-    text += '\n'
-  }
+  const pdf = await getDocumentProxy(new Uint8Array(buf))
+  const { text } = await extractText(pdf, { mergePages: true })
   return text
 }
 
