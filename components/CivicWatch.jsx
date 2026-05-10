@@ -899,7 +899,33 @@ useEffect(() => {
               </button>
             </div>
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Currently Tracking</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase" }}>Choose Representatives to Track</div>
+                  <div style={{ fontSize: 11, color: S.gray, marginTop: 3 }}>
+                    {tracked.length === 0 ? "No one selected — tap a name below to start tracking." : `Tracking ${tracked.length} rep${tracked.length !== 1 ? "s" : ""}`}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => {
+                      if (!isSignedIn) { openSignIn(); return }
+                      const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
+                      const stateRepIds = displayReps.filter(r => r.state === stateLabel || r.state === selectedState).map(r => r.id)
+                      setTracked(prev => [...new Set([...prev, ...stateRepIds])])
+                    }}
+                    style={{ padding: "6px 12px", background: "rgba(212,175,55,0.12)", border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, cursor: "pointer", fontFamily: "inherit", fontSize: 11, whiteSpace: "nowrap" }}>
+                    + Select All from My State
+                  </button>
+                  {tracked.length > 0 && (
+                    <button
+                      onClick={() => setTracked([])}
+                      style={{ padding: "6px 12px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 8, color: S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 11, whiteSpace: "nowrap" }}>
+                      Clear All
+                    </button>
+                  )}
+                </div>
+              </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {displayReps.map(r => (
                   <div key={r.id} onClick={() => toggleTrack(r.id)}
@@ -924,8 +950,17 @@ useEffect(() => {
                 if (allAlerts.length === 0) return (
                   <div style={{ textAlign: 'center', padding: 48 }}>
                     <div style={{ fontSize: 32, marginBottom: 12 }}>🔔</div>
-                    <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No activity yet for your tracked representatives.</div>
-                    <div style={{ fontSize: 12, color: S.gray }}>Track a representative using the ☆ button on their profile to see their votes and trades here.</div>
+                    {tracked.length === 0 ? (
+                      <>
+                        <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No representatives selected.</div>
+                        <div style={{ fontSize: 12, color: S.gray }}>Use the chips above to choose who to track, or click "Select All from My State" to get started.</div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: 14, color: S.gray, marginBottom: 6 }}>No activity yet for your tracked representatives.</div>
+                        <div style={{ fontSize: 12, color: S.gray }}>Votes, trades, and events will appear here as they happen.</div>
+                      </>
+                    )}
                   </div>
                 )
                 return allAlerts.map(alert => {
