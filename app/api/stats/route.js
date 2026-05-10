@@ -12,19 +12,23 @@ export async function GET() {
   try {
     const supabase = getSupabase()
 
-    const [filingsRes, tradesRes, repsRes] = await Promise.all([
+    const [filingsRes, houseTradesRes, senateTradesRes] = await Promise.all([
       supabase.from('fd_filings').select('*', { count: 'exact', head: true }),
       supabase.from('fd_trades').select('*', { count: 'exact', head: true }),
-      supabase.from('fd_filings').select('bioguide_id', { count: 'exact', head: true }).not('bioguide_id', 'is', null),
+      supabase.from('senate_trades').select('*', { count: 'exact', head: true }),
     ])
 
+    const filings = filingsRes.count ?? 0
+    const trades = (houseTradesRes.count ?? 0) + (senateTradesRes.count ?? 0)
+
     return NextResponse.json({
-      filings: filingsRes.count ?? 0,
-      trades: tradesRes.count ?? 0,
-      representatives: repsRes.count ?? 0,
+      filings,
+      trades,
+      members: 535,
+      updated: new Date().toISOString(),
     })
   } catch (e) {
     console.error('Stats route error:', e.message)
-    return NextResponse.json({ filings: 0, trades: 0, representatives: 0 }, { status: 500 })
+    return NextResponse.json({ filings: 0, trades: 0, members: 535 }, { status: 500 })
   }
 }

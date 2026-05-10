@@ -886,6 +886,7 @@ and got <span className="red">rich.</span>
         <div className="footer-links">
           <Link href="/sign-up" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign Up</Link>
           <Link href="/sign-in" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign In</Link>
+          <Link href="/about" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>About</Link>
           <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms</Link>
           <a href="https://congress.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Congress.gov</a>
           <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>House Disclosures</a>

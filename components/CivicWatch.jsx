@@ -688,6 +688,12 @@ useEffect(() => {
                 {tab.label}
               </button>
             ))}
+            <a href="/about"
+              style={{ background: "none", border: "none", color: S.gray, padding: "8px 12px", fontSize: 12, fontFamily: "inherit", letterSpacing: 0.5, textDecoration: "none", transition: "color 0.2s", whiteSpace: "nowrap" }}
+              onMouseEnter={e => e.currentTarget.style.color = S.gold}
+              onMouseLeave={e => e.currentTarget.style.color = S.gray}>
+              About
+            </a>
           </nav>
           <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => router.push('/leaderboard')}
