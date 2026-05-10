@@ -521,7 +521,7 @@ useEffect(() => {
             ) : isSignedIn ? (
               <button onClick={() => router.push('/pro')}
                 style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
-                ★ Go Pro $9.99/mo
+                ★ Go Pro
               </button>
             ) : (
               <button onClick={() => openSignIn()}

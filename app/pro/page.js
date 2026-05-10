@@ -199,7 +199,7 @@ export default function ProPage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
               <button className="cta-btn" onClick={handleUpgrade} disabled={loading}>
-                {loading ? 'Redirecting…' : '★ Go Pro — $9.99/mo'}
+                {loading ? 'Redirecting…' : '★ Go Pro'}
               </button>
               <div style={{ fontSize: 12, color: S.gray }}>Cancel anytime · No contracts · Stripe-secured checkout</div>
             </div>
@@ -266,7 +266,7 @@ export default function ProPage() {
                     </button>
                   ) : (
                     <button className="cta-btn" onClick={handleUpgrade} disabled={loading} style={{ width: '100%', padding: '13px 24px', fontSize: 14 }}>
-                      {loading ? 'Redirecting…' : '★ Go Pro — $9.99/mo'}
+                      {loading ? 'Redirecting…' : '★ Go Pro'}
                     </button>
                   )}
                 </div>
@@ -312,7 +312,7 @@ export default function ProPage() {
           </p>
           {!isPro && (
             <button className="cta-btn" onClick={handleUpgrade} disabled={loading}>
-              {loading ? 'Redirecting…' : '★ Go Pro — $9.99/mo'}
+              {loading ? 'Redirecting…' : '★ Go Pro'}
             </button>
           )}
         </div>
@@ -352,7 +352,7 @@ export default function ProPage() {
               Join CivicWatch Pro and get the full picture on every representative in Congress.
             </p>
             <button className="cta-btn" onClick={handleUpgrade} disabled={loading} style={{ fontSize: 17, padding: '18px 48px' }}>
-              {loading ? 'Redirecting…' : '★ Go Pro — $9.99/mo'}
+              {loading ? 'Redirecting…' : '★ Go Pro'}
             </button>
             <div style={{ marginTop: 16, fontSize: 12, color: S.gray }}>Cancel anytime · Stripe-secured · No ads ever</div>
           </div>
