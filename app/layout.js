@@ -2,8 +2,10 @@ import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
 export const metadata = {
-  title: 'CivicWatch — Your Representatives. Accountable.',
-  description: 'Track your elected representatives at every level of government. View voting records, stock trades, wealth disclosures, and town halls — all in one place.',
+  title: 'CivicWatch — Your Representatives, Accountable',
+  description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
+  keywords: 'congress stock trades, representative financial disclosure, STOCK Act, congressional transparency, civicwatch',
+  robots: { index: true, follow: true },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
@@ -12,25 +14,25 @@ export const metadata = {
     apple: { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
   },
   openGraph: {
-    title: 'CivicWatch — Your Representatives. Accountable.',
-    description: 'Track voting records, stock trades, wealth disclosures, and town halls for every elected official at every level of government.',
-    url: 'https://www.civicwatch.app',
+    title: 'CivicWatch — Your Representatives, Accountable',
+    description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
+    url: 'https://civicwatch.app',
     siteName: 'CivicWatch',
     images: [
       {
-        url: 'https://www.civicwatch.app/opengraph-image',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'CivicWatch — Your Representatives. Accountable.',
+        alt: 'CivicWatch — Your Representatives, Accountable',
       },
     ],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CivicWatch — Your Representatives. Accountable.',
-    description: 'Track voting records, stock trades, and town halls for every elected official.',
-    images: ['https://www.civicwatch.app/opengraph-image'],
+    title: 'CivicWatch — Your Representatives, Accountable',
+    description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
+    images: ['/og-image.png'],
   },
 }
 
