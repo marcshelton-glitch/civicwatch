@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { PDFParse } from 'pdf-parse'
 
 const HOUSE_CLERK = 'https://disclosures-clerk.house.gov/public_disc'
 
@@ -83,7 +82,7 @@ function parsePTR(text) {
       .find(m => /^[A-Z]{1,5}$/.test(m[1]) || /^[A-Z]{1,4}\.[A-Z]$/.test(m[1]))
     const ticker = tickerMatch?.[1] && !/^\d/.test(tickerMatch[1]) ? tickerMatch[1] : null
 
-    const preType = b.split(/\b[PSE]\s+\d{2}\/\d{2}\/\d{4}/)[0]
+    const preType = b.split(/\b[PSE](?:\s+\([^)]*\))?\s+\d{2}\/\d{2}\/\d{4}/)[0]
     const assetName = preType
       .replace(/^(SP|JT|DC)\s+/gm, '')
       .replace(/\[[A-Z]{2,5}\]/g, '')
@@ -107,8 +106,42 @@ function parsePTR(text) {
   return trades
 }
 
-export async function GET(request) {
+async function extractPdfText(buf) {
+  // Import both the main library and the worker module before calling getDocument().
+  // In Node.js serverless, pdfjs disables real Worker threads and falls back to
+  // _setupFakeWorkerGlobal which does `await import(workerSrc)` — a relative URL that
+  // fails in Turbopack's CJS runtime. Instead, we pre-load the worker module and assign
+  // it to globalThis.pdfjsWorker; pdfjs checks this in #mainThreadWorkerMessageHandler
+  // and returns it immediately, skipping the broken dynamic import path entirely.
+  const [{ getDocument }, { WorkerMessageHandler }] = await Promise.all([
+    import('pdfjs-dist/legacy/build/pdf.mjs'),
+    import('pdfjs-dist/legacy/build/pdf.worker.mjs'),
+  ])
+  if (!globalThis.pdfjsWorker) {
+    globalThis.pdfjsWorker = { WorkerMessageHandler }
+  }
 
+  const pdf = await getDocument({ data: new Uint8Array(buf) }).promise
+  let text = ''
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const content = await page.getTextContent()
+    let lastY = null, lastX = null
+    for (const item of content.items) {
+      if (!('str' in item)) continue
+      const [,, , , x, y] = item.transform
+      if (lastY !== null && Math.abs(y - lastY) > 2) text += '\n'
+      else if (lastX !== null && x - lastX > 8) text += '\t'
+      text += item.str
+      lastY = y
+      lastX = x + (item.width || 0)
+    }
+    text += '\n'
+  }
+  return text
+}
+
+export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const docId = (searchParams.get('docId') || '').trim()
   const year  = (searchParams.get('year')  || '').trim()
@@ -120,21 +153,21 @@ export async function GET(request) {
   try {
     const pdfRes = await fetch(pdfUrl, {
       headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' },
+      cache: 'no-store',
     })
     if (!pdfRes.ok) {
       return NextResponse.json({ error: `PDF fetch failed: ${pdfRes.status}`, pdfUrl }, { status: 502 })
     }
     const buf    = Buffer.from(await pdfRes.arrayBuffer())
-    const parser = new PDFParse({ data: buf, verbosity: 0 })
-    const result = await parser.getText()
-    const text   = sanitize(result.text || '')
+    const raw    = await extractPdfText(buf)
+    const text   = sanitize(raw)
     const trades = parsePTR(text)
     return NextResponse.json(
       { trades, pdfUrl, docId, year, parsed: trades.length > 0 },
       { headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=3600' } }
     )
   } catch (e) {
-    console.error('PTR parse error:', e.message)
-    return NextResponse.json({ error: 'Could not parse PDF', pdfUrl }, { status: 500 })
+    console.error('PTR parse error:', e.message, e.stack?.split('\n').slice(0, 3).join(' | '))
+    return NextResponse.json({ error: 'Could not parse PDF', detail: e.message, pdfUrl }, { status: 500 })
   }
 }
