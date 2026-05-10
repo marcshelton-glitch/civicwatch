@@ -548,9 +548,9 @@ useEffect(() => {
       const t = step / steps
       const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
       setStatsDisplay({
-        filings: Math.round(ease * stats.filings),
-        trades: Math.round(ease * stats.trades),
-        representatives: Math.round(ease * stats.representatives),
+        filings: Math.round(ease * Number(stats.filings || 0)),
+        trades: Math.round(ease * Number(stats.trades || 0)),
+        representatives: Math.round(ease * Number(stats.representatives || 0)),
       })
       if (step >= steps) clearInterval(timer)
     }, interval)

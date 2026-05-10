@@ -24,11 +24,11 @@ export async function GET() {
     return NextResponse.json({
       filings,
       trades,
-      members: 535,
+      representatives: 535,
       updated: new Date().toISOString(),
     })
   } catch (e) {
     console.error('Stats route error:', e.message)
-    return NextResponse.json({ filings: 0, trades: 0, members: 535 }, { status: 500 })
+    return NextResponse.json({ filings: 0, trades: 0, representatives: 535 }, { status: 500 })
   }
 }
