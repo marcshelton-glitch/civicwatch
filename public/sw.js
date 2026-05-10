@@ -1,0 +1,6 @@
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open('civicwatch-v1').then(c => c.addAll(['/', '/dashboard'])))
+})
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)))
+})
