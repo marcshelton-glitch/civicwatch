@@ -211,11 +211,11 @@ const S = {
 }
 
 export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA' }) {
-  const { user, isSignedIn } = useUser()
+  const { user, isSignedIn, isLoaded } = useUser()
   const { openSignIn } = useClerk()
   const router = useRouter()
   const isPro = user?.publicMetadata?.isPro === true
-  const [activeTab, setActiveTab] = useState("reps")
+  const [activeTab, setActiveTab] = useState("map")
   const [selectedRep, setSelectedRep] = useState(null)
   const [repTab, setRepTab] = useState("overview")
   const [tracked, setTracked] = useState([])
@@ -249,6 +249,11 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
       setShowOnboarding(true)
     }
   }, [])
+
+  // Switch to My Reps tab once auth confirms the user is signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) setActiveTab("reps")
+  }, [isLoaded, isSignedIn])
 
   const displayReps = filterLevel === 'state'
     ? municipalReps
