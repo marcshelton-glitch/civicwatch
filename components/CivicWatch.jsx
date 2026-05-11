@@ -684,15 +684,17 @@ useEffect(() => {
           .mobile-scroll { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
           .mobile-hide { display: none !important; }
           .map-layout { grid-template-columns: 1fr !important; }
-          /* Mobile header: nav tabs drop to their own scrollable row */
+          /* Mobile header: nav tabs wrap into 2 rows of 3 */
           .header-inner { flex-wrap: wrap !important; }
           .header-nav {
             order: 3; width: 100%; border-top: 1px solid rgba(212,175,55,0.15);
-            overflow-x: auto; -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; padding-bottom: 2px;
+            flex-wrap: wrap !important; gap: 0 !important; padding-bottom: 2px;
           }
-          .header-nav::-webkit-scrollbar { display: none; }
-          .header-nav .nav-btn { padding: 8px 10px !important; font-size: 11px !important; white-space: nowrap; }
+          .header-nav .nav-btn, .header-nav > a {
+            flex: 0 0 33.333% !important; box-sizing: border-box !important;
+            text-align: center !important; padding: 10px 4px !important;
+            font-size: 11px !important; white-space: normal !important;
+          }
           .header-logo { order: 1; }
           .header-actions { order: 2; }
           .header-actions .header-username { display: none !important; }
