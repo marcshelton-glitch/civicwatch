@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -178,6 +178,35 @@ const STATE_ABBR = {
   "South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT",
   "Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY",
   "District of Columbia":"DC",
+}
+
+const STATE_CENTROIDS = {
+  AL: [-86.7, 32.8], AK: [-153.4, 64.2], AZ: [-111.5, 34.3], AR: [-92.4, 34.9],
+  CA: [-119.7, 36.5], CO: [-105.5, 39.0], CT: [-72.7, 41.6], DE: [-75.5, 39.0],
+  FL: [-81.5, 27.7], GA: [-83.4, 32.7], HI: [-157.0, 20.5], ID: [-114.5, 44.4],
+  IL: [-89.2, 40.0], IN: [-86.3, 40.3], IA: [-93.5, 42.1], KS: [-98.4, 38.5],
+  KY: [-84.9, 37.8], LA: [-91.9, 31.1], ME: [-69.0, 45.4], MD: [-76.6, 39.0],
+  MA: [-71.8, 42.3], MI: [-84.5, 43.5], MN: [-94.3, 46.4], MS: [-89.7, 32.7],
+  MO: [-92.5, 38.3], MT: [-110.5, 47.0], NE: [-99.9, 41.5], NV: [-116.4, 38.8],
+  NH: [-71.6, 44.0], NJ: [-74.4, 40.1], NM: [-106.1, 34.4], NY: [-75.4, 43.0],
+  NC: [-79.4, 35.6], ND: [-100.5, 47.5], OH: [-82.8, 40.4], OK: [-97.5, 35.5],
+  OR: [-120.6, 43.9], PA: [-77.2, 40.9], RI: [-71.5, 41.7], SC: [-80.9, 33.8],
+  SD: [-100.2, 44.4], TN: [-86.3, 35.9], TX: [-99.3, 31.5], UT: [-111.1, 39.3],
+  VT: [-72.7, 44.0], VA: [-78.7, 37.5], WA: [-120.4, 47.4], WV: [-80.6, 38.9],
+  WI: [-89.8, 44.5], WY: [-107.6, 43.0],
+}
+
+// Small/narrow states that can't fit an inline label: use callout line with [dx, dy] pixel offsets
+const SMALL_STATE_CALLOUTS = {
+  VT: { dx: -28, dy: -18 },
+  NH: { dx: 28, dy: -18 },
+  MA: { dx: 30, dy: -22 },
+  RI: { dx: 32, dy:   8 },
+  CT: { dx: 32, dy:  24 },
+  NJ: { dx: 32, dy:   8 },
+  DE: { dx: 32, dy:  24 },
+  MD: { dx: 32, dy:  38 },
+  HI: { dx:  0, dy: -22 },
 }
 
 const fmt = (n) => {
@@ -1086,7 +1115,7 @@ useEffect(() => {
     <div className="map-layout" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
       <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
         {mounted ? (
-          <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto' }}>
+          <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
             <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
               {({ geographies }) =>
                 geographies.map(geo => {
@@ -1107,6 +1136,30 @@ useEffect(() => {
                 })
               }
             </Geographies>
+            {Object.entries(STATE_CENTROIDS).map(([abbr, coords]) => {
+              const callout = SMALL_STATE_CALLOUTS[abbr]
+              const labelStyle = { fontWeight: 700, fill: '#fff', stroke: 'rgba(0,0,0,0.75)', strokeWidth: 3, paintOrder: 'stroke', pointerEvents: 'none' }
+              if (callout) {
+                const { dx, dy } = callout
+                return (
+                  <Annotation key={abbr} subject={coords} dx={dx} dy={dy}
+                    connectorProps={{ stroke: 'rgba(255,255,255,0.55)', strokeWidth: 0.7, strokeLinecap: 'round' }}>
+                    <text
+                      x={dx > 0 ? 3 : dx < 0 ? -3 : 0}
+                      textAnchor={dx > 0 ? 'start' : dx < 0 ? 'end' : 'middle'}
+                      dy=".35em"
+                      fontSize={10}
+                      style={labelStyle}
+                    >{abbr}</text>
+                  </Annotation>
+                )
+              }
+              return (
+                <Marker key={abbr} coordinates={coords}>
+                  <text textAnchor="middle" dy=".35em" fontSize={11} style={labelStyle}>{abbr}</text>
+                </Marker>
+              )
+            })}
           </ComposableMap>
         ) : (
           <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
