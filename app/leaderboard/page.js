@@ -61,6 +61,7 @@ function RepPhoto({ bioguideId, name, size = 52 }) {
       src={photoUrl(bioguideId)}
       alt={name}
       onError={() => setErr(true)}
+      referrerPolicy="no-referrer"
       style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, objectFit: 'cover', border: `2px solid ${S.border}` }}
     />
   )
