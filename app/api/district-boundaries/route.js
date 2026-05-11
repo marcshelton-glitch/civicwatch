@@ -1,8 +1,10 @@
 const cache = new Map()
 
-// Normalize the district number from various Census field names
+// Normalize the district number from various Census field names.
+// CD119 is the current 119th Congress field on the working TIGER endpoint.
 function extractDistrictNum(props) {
   const raw =
+    props.CD119 ??
     props.CD118FP ??
     props.CD116FP ??
     props.CD115FP ??
@@ -25,14 +27,15 @@ export async function GET(request) {
     return Response.json(cache.get(fips))
   }
 
-  // Census TIGER REST endpoints to try in order
+  // Census TIGER REST endpoints to try in order.
+  // The working service is TIGERweb/Legislative layer 0 (119th Congress).
+  // It uses the STATE field (not STATEFP) and CD119 for district number.
+  // The tigerWMS_* URLs are stale and return 400 or empty results.
   const endpoints = [
-    // 118th Congress via tigerWMS_ACS2022 (layer 8 = congressional districts)
-    `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2022/MapServer/8/query?where=STATEFP%3D%27${fips}%27&outFields=CD118FP%2CSTATEFP%2CNAMELSAD&returnGeometry=true&geometryPrecision=5&f=geojson`,
-    // tigerWMS_Legislative fallback (layer 0)
-    `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Legislative/MapServer/0/query?where=STATEFP%3D%27${fips}%27&outFields=*&returnGeometry=true&geometryPrecision=5&f=geojson`,
-    // Older ACS layer if newer not available
-    `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2021/MapServer/8/query?where=STATEFP%3D%27${fips}%27&outFields=*&returnGeometry=true&geometryPrecision=5&f=geojson`,
+    // 119th Congress — the current working endpoint
+    `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Legislative/MapServer/0/query?where=STATE%3D%27${fips}%27&outFields=GEOID%2CCD119%2CSTATE%2CBASENAME%2CNAME&outSR=4326&returnGeometry=true&geometryPrecision=5&f=geojson`,
+    // Alternate layer 4 (also labeled 119th Congress in the service index)
+    `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Legislative/MapServer/4/query?where=STATE%3D%27${fips}%27&outFields=GEOID%2CCD119%2CSTATE%2CBASENAME%2CNAME&outSR=4326&returnGeometry=true&geometryPrecision=5&f=geojson`,
   ]
 
   for (const url of endpoints) {
@@ -58,10 +61,11 @@ export async function GET(request) {
       }
       cache.set(fips, normalized)
       return Response.json(normalized)
-    } catch {
-      // try next endpoint
+    } catch (err) {
+      console.error('[district-boundaries] endpoint failed:', err.message)
     }
   }
 
+  console.error(`[district-boundaries] all endpoints failed for fips=${fips}`)
   return Response.json({ type: 'FeatureCollection', features: [] })
 }
