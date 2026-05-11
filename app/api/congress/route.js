@@ -748,24 +748,40 @@ export async function GET(request) {
     if (type === 'search') {
       const name = (searchParams.get('name') || '').trim()
       if (name.length < 2) return NextResponse.json({ members: [], source: 'none' })
-      const data = await cFetch(`/member?name=${encodeURIComponent(name)}&currentMember=true&limit=20`)
-      const members = (data.members || []).map(m => {
-        const termItems = m.terms?.item || []
-        const latestTerm = termItems[termItems.length - 1] || {}
-        const chamber = latestTerm.chamber || ''
-        const isSen = chamber.toLowerCase().includes('senate')
-        return {
-          bioguideId: m.bioguideId,
-          name: m.name,
-          party: m.partyName || 'Unknown',
-          state: m.state,
-          district: m.district ? `District ${m.district}` : 'Statewide',
-          chamber,
-          isSenator: isSen,
-          url: m.url,
-          depiction: m.depiction?.imageUrl || null,
-        }
-      })
+
+      // Congress.gov /member doesn't support name filtering — fetch all current
+      // members (cached hourly) and filter in JS for reliable partial-name matching.
+      const [p1, p2, p3] = await Promise.all([
+        cFetch('/member?currentMember=true&limit=250&offset=0'),
+        cFetch('/member?currentMember=true&limit=250&offset=250'),
+        cFetch('/member?currentMember=true&limit=250&offset=500'),
+      ])
+      const allMembers = [
+        ...(p1.members || []),
+        ...(p2.members || []),
+        ...(p3.members || []),
+      ]
+      const nameLower = name.toLowerCase()
+      const members = allMembers
+        .filter(m => m.name?.toLowerCase().includes(nameLower))
+        .slice(0, 20)
+        .map(m => {
+          const termItems = m.terms?.item || []
+          const latestTerm = termItems[termItems.length - 1] || {}
+          const chamber = latestTerm.chamber || ''
+          const isSen = chamber.toLowerCase().includes('senate')
+          return {
+            bioguideId: m.bioguideId,
+            name: m.name,
+            party: m.partyName || 'Unknown',
+            state: m.state,
+            district: m.district ? `District ${m.district}` : 'Statewide',
+            chamber,
+            isSenator: isSen,
+            url: m.url,
+            depiction: m.depiction?.imageUrl || null,
+          }
+        })
       return NextResponse.json({ members, source: 'live' })
     }
 

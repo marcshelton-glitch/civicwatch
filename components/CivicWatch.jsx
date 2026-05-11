@@ -2236,7 +2236,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
           {rep.photo
-            ? <img src={rep.photo} alt={rep.name} style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+            ? <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
                 onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
             : null}
           <InitialsAvatar name={rep.name} party={rep.party} size={90}
@@ -3129,6 +3129,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             >
                               <div style={{ position: 'relative', flexShrink: 0 }}>
                                 <img src={photo} alt={displayName}
+                                  referrerPolicy="no-referrer"
                                   style={{ width: 44, height: 44, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
                                   onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
                                 <InitialsAvatar name={member.name} party={member.party} size={44} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
@@ -3172,6 +3173,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                               {rep.photo
                                 ? <img src={rep.photo} alt={repDisplayName}
+                                    referrerPolicy="no-referrer"
                                     style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
                                     onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
                                 : null}
@@ -3192,6 +3194,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                               <div style={{ position: 'relative', width: 60, margin: '0 auto 10px' }}>
                                 <img src={compareRep.photo} alt={compareRep.displayName}
+                                  referrerPolicy="no-referrer"
                                   style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
                                   onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
                                 <InitialsAvatar name={compareRep.name} party={compareRep.party} size={60}
