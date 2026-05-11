@@ -1352,7 +1352,24 @@ useEffect(() => {
           </div>
         ) : (() => {
           const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
-          const stateReps = displayReps.filter(r => r.state === stateLabel || r.state === selectedState)
+          const stateReps = displayReps
+            .filter(r => r.state === stateLabel || r.state === selectedState)
+            .sort((a, b) => {
+              const aIsSen = a.title?.includes('Senator')
+              const bIsSen = b.title?.includes('Senator')
+              if (aIsSen !== bIsSen) return aIsSen ? -1 : 1
+              if (aIsSen && bIsSen) {
+                const aLast = a.name?.split(',')[0] || a.name || ''
+                const bLast = b.name?.split(',')[0] || b.name || ''
+                return aLast.localeCompare(bLast)
+              }
+              // Both House members — sort by district number, at-large (0) last
+              const aNum = parseInt((a.district || '').match(/\d+/)?.[0] ?? '999')
+              const bNum = parseInt((b.district || '').match(/\d+/)?.[0] ?? '999')
+              const aSort = aNum === 0 ? 999 : aNum
+              const bSort = bNum === 0 ? 999 : bNum
+              return aSort - bSort
+            })
           if (stateReps.length === 0) {
             return (
               <div style={{ textAlign: 'center', padding: 28, color: S.gray }}>
