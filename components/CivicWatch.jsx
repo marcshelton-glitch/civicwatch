@@ -995,7 +995,7 @@ useEffect(() => {
                 return (
                   <div key={rep.id} className="rep-card"
                     style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#5B9CFF" : S.red }} />
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1a6dc9" : rep.party === "Republican" ? "#cc2020" : rep.party === "Independent" ? "#c9a84c" : rep.party === "Green" ? "#2a9d4c" : "#334466" }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
                         {rep.photo
@@ -1013,7 +1013,6 @@ useEffect(() => {
                         <div style={{ fontSize: 11, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.district}</div>
                         <div style={{ display: "flex", gap: 6 }}>
                           <span className={`badge ${rep.party === "Democrat" ? "dem-badge" : "rep-badge"}`}>{rep.party}</span>
-                          <span className={`badge ${rep.level === "federal" ? "federal-badge" : "muni-badge"}`}>{rep.level}</span>
                         </div>
                       </div>
                     </div>
@@ -1030,7 +1029,7 @@ useEffect(() => {
                       <a href={`tel:${rep.phone}`} className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.green, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>📞 Call</a>
                       <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
-                        style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
+                        style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
                       <a href={rep.website} target="_blank" rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: `rgba(212,175,55,0.15)`, borderRadius: 8, fontSize: 12, color: S.gold, textDecoration: "none", border: `1px solid ${S.border}`, transition: "all 0.2s", fontWeight: 600 }}>🌐 Web</a>
                     </div>
@@ -1573,11 +1572,11 @@ useEffect(() => {
                 <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Alert Types</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
-                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)' },
-                    { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)' },
-                    { key: 'alert_legislation',  label: 'Sponsored legislation' },
-                    { key: 'alert_committees',   label: 'Committee assignments' },
-                  ].map(({ key, label }) => {
+                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)', tier: 'Free',    tierColor: '#2a9d4c', tierBg: 'rgba(42,157,76,0.12)' },
+                    { key: 'alert_committees',   label: 'Committee assignments',              tier: 'Sign In',  tierColor: '#5B9CFF', tierBg: 'rgba(91,156,255,0.12)' },
+                    { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)', tier: 'Pro', tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
+                    { key: 'alert_legislation',  label: 'Sponsored legislation',             tier: 'Pro',      tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
+                  ].map(({ key, label, tier, tierColor, tierBg }) => {
                     const checked = prefs[key]
                     return (
                       <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -1585,7 +1584,8 @@ useEffect(() => {
                           style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
                           {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                         </div>
-                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray }}>{label}</span>
+                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray, flex: 1 }}>{label}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '2px 7px', borderRadius: 10, background: tierBg, color: tierColor, border: `1px solid ${tierColor}44`, flexShrink: 0 }}>{tier}</span>
                       </label>
                     )
                   })}
@@ -1683,7 +1683,7 @@ useEffect(() => {
                   const nameSlug = displayName.toLowerCase()
                     .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
                   const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
-                  const partyColor = member.party === 'Democrat' ? '#5B9CFF' : member.party === 'Republican' ? S.red : S.gray
+                  const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                   const rep = {
                     id: member.bioguideId,
                     name: member.name,
@@ -2251,7 +2251,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
           <div className="rep-hero-actions" style={{ display: "flex", gap: 8 }}>
             <a href={`tel:${rep.phone}`} style={{ padding: "9px 16px", background: S.green, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 {rep.phone}</a>
-            <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
+            <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
             <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>🌐 Website</a>
             <button onClick={() => toggleTrack(rep)} style={{ padding: "9px 16px", background: isTracked ? `rgba(212,175,55,0.15)` : "rgba(255,255,255,0.05)", border: `1px solid ${isTracked ? S.gold : S.border}`, borderRadius: 10, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
               {isTracked ? "★ Tracking" : "☆ Track"}
@@ -3683,6 +3683,23 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
 
   // ── IDLE ───────────────────────────────────────────────────────────────────
   if (status === 'idle') {
+    if (!isPro) {
+      return (
+        <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
+          <div style={{ fontSize: 48 }}>🔒</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
+            AI Analysis is a Pro feature
+          </div>
+          <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
+            Get a nonpartisan AI-generated accountability report on any member of Congress — voting record, stock trades, wealth trajectory, and peer standing.
+          </p>
+          <a href="/pro"
+            style={{ padding: '13px 32px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
+            Go Pro →
+          </a>
+        </div>
+      )
+    }
     return (
       <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', gap: 24 }}>
         <div style={{ width: 88, height: 88, borderRadius: '50%', background: `linear-gradient(135deg, ${S.navyMid}, #0A0E1E)`, border: `2px solid ${S.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38, boxShadow: `0 0 32px rgba(212,175,55,0.2)` }}>
@@ -3710,11 +3727,10 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
           ))}
         </div>
         <button
-          onClick={() => runAnalysis('preview')}
+          onClick={() => runAnalysis('full')}
           style={{ padding: '13px 32px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(178,34,52,0.35)` }}>
           Generate Analysis →
         </button>
-        <div style={{ fontSize: 11, color: S.gray }}>Free preview · Full report requires Pro</div>
       </div>
     )
   }

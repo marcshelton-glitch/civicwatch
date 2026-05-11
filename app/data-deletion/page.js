@@ -143,17 +143,20 @@ export default function DataDeletionPage() {
           <h2 className="mb-3 text-2xl font-semibold text-white">
             What Gets Deleted
           </h2>
-          <p className="mb-3">When we process your deletion request, we remove:</p>
+          <p className="mb-3">When we process your deletion request, we permanently remove:</p>
           <ul className="list-disc space-y-2 pl-6">
             <li>Your name, email address, and profile image</li>
-            <li>Your authentication credentials and sign-in history</li>
-            <li>Your tracked representatives and saved preferences</li>
+            <li>Your Clerk account, authentication credentials, and sign-in history</li>
+            <li>Your tracked representatives, alert history, and saved preferences</li>
             <li>Your poll votes and activity history</li>
             <li>
               Any other personal information stored in your CivicWatch
               account
             </li>
           </ul>
+          <p className="mt-3 font-medium text-white">
+            No personal data is retained after deletion is processed.
+          </p>
         </div>
 
         <div>
@@ -161,18 +164,18 @@ export default function DataDeletionPage() {
             What We May Retain
           </h2>
           <p className="mb-3">
-            We may retain a limited amount of information after deletion
-            for legal, security, or fraud-prevention reasons, including:
+            We retain no personal data after deletion. A limited set of
+            non-identifying records may be kept strictly for legal or
+            fraud-prevention purposes:
           </p>
           <ul className="list-disc space-y-2 pl-6">
             <li>
-              Billing and transaction records, which are retained by
-              Stripe and CivicWatch as required by tax and accounting
-              laws.
+              Billing and transaction records (retained by Stripe and
+              CivicWatch as required by tax and accounting laws — these
+              contain only transaction metadata, not personal profile data).
             </li>
             <li>
-              Anonymized usage analytics that no longer identify you
-              personally.
+              Anonymized, non-identifiable usage analytics.
             </li>
             <li>
               Records of past abuse or fraud, where required to protect
@@ -180,9 +183,8 @@ export default function DataDeletionPage() {
             </li>
           </ul>
           <p className="mt-3">
-            These limited records are retained only for as long as
-            necessary to meet the legal or operational purpose, and they
-            are not used for marketing or any other purpose.
+            These records cannot be used to identify you and are retained
+            only as long as legally required.
           </p>
         </div>
 
