@@ -180,6 +180,36 @@ const STATE_ABBR = {
   "District of Columbia":"DC",
 }
 
+// Per-state mercator projection config: [lng, lat] center + scale
+const STATE_PROJECTION = {
+  AK:{center:[-153,64],scale:600}, AL:{center:[-86.8,32.8],scale:4500},
+  AR:{center:[-92.4,34.9],scale:5000}, AZ:{center:[-111.7,34.3],scale:3800},
+  CA:{center:[-119.5,37.3],scale:2000}, CO:{center:[-105.5,39.0],scale:4000},
+  CT:{center:[-72.7,41.6],scale:22000}, DC:{center:[-77.0,38.9],scale:90000},
+  DE:{center:[-75.5,39.0],scale:25000}, FL:{center:[-81.5,27.8],scale:2800},
+  GA:{center:[-83.4,32.7],scale:4000}, HI:{center:[-157.0,20.5],scale:3500},
+  IA:{center:[-93.1,42.0],scale:5000}, ID:{center:[-114.5,44.4],scale:3000},
+  IL:{center:[-89.2,40.0],scale:4200}, IN:{center:[-86.1,40.0],scale:5500},
+  KS:{center:[-98.4,38.5],scale:4500}, KY:{center:[-84.9,37.5],scale:5500},
+  LA:{center:[-91.8,30.9],scale:4500}, MA:{center:[-71.8,42.2],scale:13000},
+  MD:{center:[-76.6,39.0],scale:9500}, ME:{center:[-69.2,45.4],scale:4500},
+  MI:{center:[-84.5,44.3],scale:2800}, MN:{center:[-94.3,46.4],scale:3500},
+  MO:{center:[-92.5,38.5],scale:4500}, MS:{center:[-89.7,32.7],scale:4500},
+  MT:{center:[-109.6,47.0],scale:2800}, NC:{center:[-79.0,35.5],scale:4500},
+  ND:{center:[-100.5,47.5],scale:4500}, NE:{center:[-99.8,41.5],scale:4500},
+  NH:{center:[-71.5,44.0],scale:9000}, NJ:{center:[-74.5,40.1],scale:9500},
+  NM:{center:[-106.1,34.4],scale:3500}, NV:{center:[-116.5,38.8],scale:3000},
+  NY:{center:[-75.5,43.0],scale:3500}, OH:{center:[-82.8,40.4],scale:5000},
+  OK:{center:[-97.5,35.5],scale:4200}, OR:{center:[-120.5,44.0],scale:3500},
+  PA:{center:[-77.2,41.2],scale:5500}, RI:{center:[-71.5,41.7],scale:28000},
+  SC:{center:[-80.9,33.8],scale:5000}, SD:{center:[-100.0,44.5],scale:4500},
+  TN:{center:[-86.3,35.9],scale:5500}, TX:{center:[-99.5,31.5],scale:1800},
+  UT:{center:[-111.1,39.3],scale:3800}, VA:{center:[-78.7,37.5],scale:5000},
+  VT:{center:[-72.7,44.0],scale:10000}, WA:{center:[-120.5,47.4],scale:3800},
+  WI:{center:[-89.5,44.5],scale:4500}, WV:{center:[-80.5,38.6],scale:6000},
+  WY:{center:[-107.5,43.0],scale:4000},
+}
+
 const fmt = (n) => {
   if (n == null || !isFinite(n)) return 'N/A'
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
@@ -261,6 +291,11 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
+  const [districtGeo, setDistrictGeo] = useState(null)
+  const [districtLoading, setDistrictLoading] = useState(false)
+  const [districtError, setDistrictError] = useState(null)
+  const [selectedDistrict, setSelectedDistrict] = useState(null)
+  const [showDistrictView, setShowDistrictView] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -465,6 +500,23 @@ useEffect(() => {
   }
   load()
 }, [selectedState])
+
+  useEffect(() => {
+    if (!showDistrictView || !selectedState) return
+    setDistrictGeo(null)
+    setDistrictError(null)
+    setSelectedDistrict(null)
+    setDistrictLoading(true)
+    fetch(`/api/district-boundaries?state=${selectedState}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { console.error('[DistrictMap]', data.error); setDistrictError(data.error) }
+        else if (!data.features || data.features.length === 0) { setDistrictError('No district boundaries found') }
+        else setDistrictGeo(data)
+      })
+      .catch(e => { console.error('[DistrictMap fetch]', e); setDistrictError(e.message) })
+      .finally(() => setDistrictLoading(false))
+  }, [showDistrictView, selectedState])
 
   useEffect(() => {
     if (!civicAddress) return
@@ -1026,44 +1078,132 @@ useEffect(() => {
         {/* MAP */}
         {activeTab === "map" && (
   <div className="slide-in">
-    <SectionHeader title="District Map" subtitle="Click any state to view its representatives." />
+    <SectionHeader title="District Map" subtitle={showDistrictView && selectedState ? `${STATE_MAP_DATA.find(s=>s.state===selectedState)?.label||selectedState} congressional districts` : "Click any state to drill into congressional districts."} />
     <div className="map-layout" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
       <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
+        {/* Header row: back button when drilling into a state */}
+        {showDistrictView && selectedState && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <button
+              onClick={() => { setShowDistrictView(false); setDistrictGeo(null); setSelectedDistrict(null) }}
+              style={{ background: 'none', border: `1px solid ${S.border}`, borderRadius: 8, padding: '4px 12px', color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12 }}
+            >← All States</button>
+            <span style={{ fontSize: 13, fontWeight: 600, color: S.white }}>
+              {STATE_MAP_DATA.find(s=>s.state===selectedState)?.label||selectedState}
+            </span>
+          </div>
+        )}
         {mounted ? (
-          <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto' }}>
-            <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
-              {({ geographies }) =>
-                geographies.map(geo => {
-                  const abbr = STATE_ABBR[geo.properties.name] || ''
-                  const isSelected = abbr === selectedState
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      onClick={() => abbr && setSelectedState(abbr)}
-                      style={{
-                        default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
-                        hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
-                        pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
-                      }}
-                    />
-                  )
-                })
-              }
-            </Geographies>
-          </ComposableMap>
+          /* District drill-down: show state-specific district map when drilling in */
+          showDistrictView && selectedState && districtGeo ? (
+            (() => {
+              const proj = STATE_PROJECTION[selectedState] || { center: [-96, 38], scale: 1000 }
+              const stateLabel = STATE_MAP_DATA.find(s=>s.state===selectedState)?.label
+              const stateRepsForMap = liveReps.filter(r => r.state === stateLabel || r.state === selectedState)
+              const districtNumToRep = {}
+              stateRepsForMap.forEach(r => {
+                const m = (r.district || '').match(/District\s+(\d+)/i)
+                if (m) districtNumToRep[parseInt(m[1])] = r
+              })
+              return (
+                <ComposableMap
+                  projection="geoMercator"
+                  projectionConfig={{ center: proj.center, scale: proj.scale }}
+                  style={{ width: '100%', height: 'auto' }}
+                >
+                  <Geographies geography={districtGeo}>
+                    {({ geographies }) =>
+                      geographies.map(geo => {
+                        const distNum = parseInt(geo.properties.CD119 || geo.properties.DISTRICT || 0)
+                        const rep = districtNumToRep[distNum]
+                        const isSel = selectedDistrict === geo.id || selectedDistrict === geo.properties.GEOID
+                        const fill = isSel ? S.gold
+                          : rep?.party === 'Democrat' ? 'rgba(59,110,180,0.7)'
+                          : rep?.party === 'Republican' ? 'rgba(180,59,59,0.7)'
+                          : 'rgba(100,110,130,0.6)'
+                        return (
+                          <Geography
+                            key={geo.rsmKey}
+                            geography={geo}
+                            onClick={() => {
+                              const geoId = geo.id || geo.properties.GEOID
+                              setSelectedDistrict(isSel ? null : geoId)
+                              if (rep) { setSelectedRep(rep); setActiveTab('reps') }
+                            }}
+                            style={{
+                              default: { fill, stroke: 'rgba(255,255,255,0.35)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
+                              hover: { fill: isSel ? S.gold : 'rgba(212,175,55,0.55)', stroke: 'rgba(255,255,255,0.6)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+                              pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1, outline: 'none' },
+                            }}
+                          />
+                        )
+                      })
+                    }
+                  </Geographies>
+                </ComposableMap>
+              )
+            })()
+          ) : showDistrictView && selectedState && districtLoading ? (
+            <div style={{ width: '100%', aspectRatio: '1.4', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: S.gray, fontSize: 13 }}>
+              <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
+              Loading district boundaries…
+            </div>
+          ) : showDistrictView && selectedState && districtError ? (
+            <div style={{ padding: 20, color: '#f87171', fontSize: 13, textAlign: 'center' }}>
+              <div style={{ marginBottom: 8 }}>Could not load district boundaries</div>
+              <div style={{ fontSize: 11, color: S.gray, marginBottom: 12 }}>{districtError}</div>
+              <button
+                onClick={() => setShowDistrictView(false)}
+                style={{ background: 'none', border: `1px solid ${S.border}`, borderRadius: 8, padding: '4px 12px', color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12 }}
+              >← Back to map</button>
+            </div>
+          ) : (
+            /* National states map — clicking a state sets selectedState and triggers district view */
+            <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto' }}>
+              <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
+                {({ geographies }) =>
+                  geographies.map(geo => {
+                    const abbr = STATE_ABBR[geo.properties.name] || ''
+                    const isSelected = abbr === selectedState
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onClick={() => { if (abbr) { setSelectedState(abbr); setShowDistrictView(true) } }}
+                        style={{
+                          default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
+                          hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+                          pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
+                        }}
+                      />
+                    )
+                  })
+                }
+              </Geographies>
+            </ComposableMap>
+          )
         ) : (
           <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
             Loading map…
           </div>
         )}
-        <div style={{ textAlign: 'center', fontSize: 11, color: S.gray, marginTop: 4 }}>
-          Click any state to load its representatives
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+          <div style={{ fontSize: 11, color: S.gray }}>
+            {showDistrictView && districtGeo
+              ? `${districtGeo.features.length} districts · click a district to view its representative`
+              : 'Click any state to drill into congressional districts'}
+          </div>
+          {showDistrictView && districtGeo && (
+            <div style={{ display: 'flex', gap: 10, fontSize: 10, color: S.gray }}>
+              <span><span style={{ display:'inline-block',width:8,height:8,borderRadius:2,background:'rgba(59,110,180,0.7)',marginRight:4 }}/>D</span>
+              <span><span style={{ display:'inline-block',width:8,height:8,borderRadius:2,background:'rgba(180,59,59,0.7)',marginRight:4 }}/>R</span>
+            </div>
+          )}
         </div>
       </div>
       <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
-          {STATE_MAP_DATA.find(s => s.state === selectedState)?.label || selectedState}
+          {STATE_MAP_DATA.find(s => s.state === selectedState)?.label || selectedState || 'Select a State'}
         </div>
         <div style={{ fontSize: 11, color: S.gray, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>
           Representatives
@@ -1080,8 +1220,10 @@ useEffect(() => {
             return (
               <div style={{ textAlign: 'center', padding: 28, color: S.gray }}>
                 <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: S.white, marginBottom: 8 }}>Click a district on the map</div>
-                <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Select a state to explore your representative's profile, votes, and disclosures.</div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: S.white, marginBottom: 8 }}>
+                  {selectedState ? 'Loading representatives…' : 'Click a state on the map'}
+                </div>
+                <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Select a state to explore congressional districts, representative profiles, votes, and disclosures.</div>
               </div>
             )
           }
