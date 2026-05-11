@@ -55,27 +55,28 @@ function formatLeadershipRoles(leadership) {
   if (!leadership?.length) return []
   const byRole = {}
   for (const entry of leadership) {
-    if (!entry.congress) continue
-    if (!byRole[entry.type]) byRole[entry.type] = new Set()
-    byRole[entry.type].add(entry.congress)
+    const start = entry.startCongress ?? entry.congress
+    const end = entry.endCongress ?? entry.congress
+    if (!start) continue
+    const key = entry.type
+    if (!byRole[key]) byRole[key] = []
+    byRole[key].push([start, end])
   }
   const currentYear = new Date().getFullYear()
-  return Object.entries(byRole).map(([role, congressSet]) => {
-    const sorted = [...congressSet].sort((a, b) => a - b)
+  return Object.entries(byRole).map(([role, pairs]) => {
+    // Sort and collapse overlapping/adjacent ranges
+    const sorted = pairs.sort((a, b) => a[0] - b[0])
     const ranges = []
-    let start = sorted[0], prev = sorted[0]
-    for (let i = 1; i < sorted.length; i++) {
-      if (sorted[i] === prev + 1) { prev = sorted[i] }
-      else { ranges.push([start, prev]); start = sorted[i]; prev = sorted[i] }
+    for (const [s, e] of sorted) {
+      const last = ranges[ranges.length - 1]
+      if (last && s <= last[1] + 1) { last[1] = Math.max(last[1], e) }
+      else { ranges.push([s, e]) }
     }
-    ranges.push([start, prev])
     const spans = ranges.map(([s, e]) => {
       const startYear = congressToYear(s)
       const endYear = congressToYear(e) + 2
       const endStr = endYear > currentYear ? 'present' : String(endYear)
-      return s === e
-        ? `${ordinal(s)} Congress (${startYear}–${endStr})`
-        : `${ordinal(s)}–${ordinal(e)} Congress (${startYear}–${endStr})`
+      return `(${startYear}–${endStr})`
     })
     return { role, spans }
   })
@@ -279,7 +280,7 @@ const S = {
 
 export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA' }) {
   const { user, isSignedIn, isLoaded } = useUser()
-  const { openSignIn } = useClerk()
+  const { openSignIn, openUserProfile } = useClerk()
   const router = useRouter()
   const isPro = user?.publicMetadata?.isPro === true
   const [activeTab, setActiveTab] = useState("map")
@@ -335,6 +336,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -866,9 +868,14 @@ useEffect(() => {
                 Sign In / Sign Up →
               </button>
             )}
-            <div className="header-username" style={{ fontSize: 12, color: S.gray }}>
-              {user?.firstName || ""}
-            </div>
+            {isSignedIn && (
+              <button
+                onClick={() => setShowSettings(true)}
+                title="Account settings"
+                style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: S.navy, flexShrink: 0, fontFamily: 'inherit' }}>
+                {(user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0] || '?').toUpperCase()}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -1933,6 +1940,24 @@ useEffect(() => {
         </div>
       </footer>
 
+      {/* ACCOUNT SETTINGS PANEL */}
+      {showSettings && isSignedIn && (
+        <AccountSettingsPanel
+          user={user}
+          isPro={isPro}
+          tracked={tracked}
+          liveReps={liveReps}
+          toggleTrack={toggleTrack}
+          prefs={prefs}
+          updatePref={updatePref}
+          prefsSaved={prefsSaved}
+          handleBillingPortal={handleBillingPortal}
+          openUserProfile={openUserProfile}
+          onClose={() => setShowSettings(false)}
+          S={S}
+        />
+      )}
+
       {/* PWA INSTALL BANNER */}
       {showInstallBanner && (
         <div style={{
@@ -1983,6 +2008,173 @@ useEffect(() => {
         </div>
       )}
     </div>
+  )
+}
+
+function AccountSettingsPanel({ user, isPro, tracked, liveReps, toggleTrack, prefs, updatePref, prefsSaved, handleBillingPortal, openUserProfile, onClose, S }) {
+  const email = user?.primaryEmailAddress?.emailAddress || ''
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || email
+
+  const trackedReps = liveReps.filter(r => tracked.includes(r.id))
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 200, backdropFilter: 'blur(2px)' }}
+      />
+      {/* Panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 201,
+        width: 'min(420px, 100vw)',
+        background: `linear-gradient(160deg, #0d1533, ${S.navyMid})`,
+        borderLeft: `1px solid rgba(212,175,55,0.25)`,
+        overflowY: 'auto',
+        display: 'flex', flexDirection: 'column',
+        fontFamily: "'Source Serif 4', Georgia, serif",
+        animation: 'slideInRight 0.25s ease',
+      }}>
+        <style>{`@keyframes slideInRight { from { transform: translateX(100%); opacity: 0 } to { transform: translateX(0); opacity: 1 } }`}</style>
+
+        {/* Header */}
+        <div style={{ padding: '18px 20px', borderBottom: `1px solid rgba(212,175,55,0.15)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.offWhite }}>
+            Account Settings
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: S.gray, cursor: 'pointer', fontSize: 22, lineHeight: 1, padding: '0 2px', fontFamily: 'inherit' }}>×</button>
+        </div>
+
+        <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* ── User Info ── */}
+          <div style={{ padding: 18, background: 'rgba(27,42,107,0.3)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 12 }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 14 }}>Profile</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: S.navy, flexShrink: 0 }}>
+                {(user?.firstName?.[0] || email[0] || '?').toUpperCase()}
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: S.offWhite, marginBottom: 2 }}>{name}</div>
+                <div style={{ fontSize: 12, color: S.gray }}>{email}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => openUserProfile()}
+              style={{ width: '100%', padding: '9px 16px', background: 'rgba(255,255,255,0.05)', border: `1px solid rgba(255,255,255,0.12)`, borderRadius: 8, color: S.grayLight, fontSize: 13, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', textAlign: 'center' }}>
+              Manage Account →
+            </button>
+          </div>
+
+          {/* ── Pro Plan ── */}
+          {isPro && (
+            <div style={{ padding: 18, background: 'rgba(212,175,55,0.07)', border: `1px solid rgba(212,175,55,0.3)`, borderRadius: 12 }}>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: S.gold, textTransform: 'uppercase', marginBottom: 10 }}>Subscription</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                <span style={{ fontSize: 18 }}>★</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: S.gold }}>CivicWatch Pro</div>
+                  <div style={{ fontSize: 12, color: S.gray, marginTop: 2 }}>Active · $9.99/mo</div>
+                </div>
+              </div>
+              <button
+                onClick={handleBillingPortal}
+                style={{ width: '100%', padding: '9px 16px', background: 'rgba(212,175,55,0.12)', border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+                Manage Billing →
+              </button>
+            </div>
+          )}
+
+          {/* ── Tracked Representatives ── */}
+          <div style={{ padding: 18, background: 'rgba(27,42,107,0.3)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Tracked Representatives</div>
+              <div style={{ fontSize: 11, color: S.gray }}>{tracked.length} tracked</div>
+            </div>
+            {trackedReps.length === 0 ? (
+              <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.6 }}>
+                You're not tracking anyone yet. Open any representative's profile and click <strong style={{ color: S.gold }}>🔔 Track</strong>.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {trackedReps.map(r => (
+                  <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                    <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: S.offWhite, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
+                      <div style={{ fontSize: 11, color: S.gray }}>{r.state} · {r.title}</div>
+                    </div>
+                    <button
+                      onClick={() => toggleTrack(r)}
+                      title="Stop tracking"
+                      style={{ background: 'none', border: `1px solid rgba(178,34,52,0.4)`, borderRadius: 6, color: '#FF6B7A', cursor: 'pointer', fontSize: 11, padding: '3px 8px', fontFamily: 'inherit', flexShrink: 0 }}>
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Notification Preferences (Pro only) ── */}
+          {isPro && (
+            <div style={{ padding: 18, background: 'rgba(27,42,107,0.3)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Email Notifications</div>
+                {prefsSaved && <span style={{ fontSize: 11, color: '#4CAF50', fontWeight: 600 }}>Saved ✓</span>}
+              </div>
+
+              {email && (
+                <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.08)`, borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 3 }}>Alerts sent to</div>
+                  <div style={{ fontSize: 12, color: S.grayLight }}>{email}</div>
+                </div>
+              )}
+
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Frequency</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {[
+                    { value: 'daily', label: 'Daily digest' },
+                    { value: 'weekly', label: 'Weekly' },
+                    { value: 'instant', label: 'Instant' },
+                  ].map(({ value, label }) => {
+                    const active = prefs.alert_frequency === value
+                    return (
+                      <button key={value} onClick={() => updatePref('alert_frequency', value)}
+                        style={{ padding: '6px 12px', background: active ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? S.gold : S.border}`, borderRadius: 8, color: active ? S.gold : S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: active ? 600 : 400 }}>
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { key: 'alert_trades', label: 'New trade disclosures' },
+                  { key: 'alert_networth', label: 'Net worth updates' },
+                  { key: 'alert_legislation', label: 'Sponsored legislation' },
+                  { key: 'alert_committees', label: 'Committee assignments' },
+                ].map(({ key, label }) => {
+                  const checked = prefs[key]
+                  return (
+                    <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                      <div onClick={() => updatePref(key, !checked)}
+                        style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
+                        {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
+                      </div>
+                      <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray }}>{label}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -2932,7 +3124,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               <span style={{ color: S.gold, flexShrink: 0, fontSize: 14 }}>•</span>
                               <span style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
                                 <span style={{ color: S.offWhite, fontWeight: 600 }}>{role}</span>
-                                {' — '}{spans.join(', ')}
+                                {' '}{spans.join(', ')}
                               </span>
                             </li>
                           ))}
