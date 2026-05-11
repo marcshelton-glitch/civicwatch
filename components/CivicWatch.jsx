@@ -684,27 +684,24 @@ useEffect(() => {
           .mobile-scroll { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
           .mobile-hide { display: none !important; }
           .map-layout { grid-template-columns: 1fr !important; }
-          /* Mobile header: nav tabs wrap into 2 rows of 3 */
+          /* Mobile header: nav tabs drop to their own scrollable row */
           .header-inner { flex-wrap: wrap !important; }
           .header-nav {
             order: 3; width: 100%; border-top: 1px solid rgba(212,175,55,0.15);
-            flex-wrap: wrap !important; gap: 0 !important; padding-bottom: 2px;
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; padding-bottom: 2px;
           }
-          .header-nav .nav-btn, .header-nav > a {
-            flex: 0 0 33.333% !important; box-sizing: border-box !important;
-            text-align: center !important; padding: 10px 4px !important;
-            font-size: 11px !important; white-space: normal !important;
-          }
+          .header-nav::-webkit-scrollbar { display: none; }
+          .header-nav .nav-btn { padding: 8px 10px !important; font-size: 11px !important; white-space: nowrap; }
           .header-logo { order: 1; }
           .header-actions { order: 2; }
           .header-actions .header-username { display: none !important; }
           /* Rep detail hero: action buttons always on their own full-width row on mobile */
           .rep-hero-actions { flex-basis: 100% !important; flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-direction: row !important; padding-bottom: 4px; }
           .rep-hero-actions::-webkit-scrollbar { display: none; }
-          /* Rep detail tab row: single scrollable row, no wrapping */
-          .rep-tabs-row { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: visible !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 4px; }
-          .rep-tabs-row::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-          .rep-tabs-row > button { flex-shrink: 0 !important; white-space: nowrap !important; min-width: max-content !important; }
+          /* Rep detail tab row: 2 rows of 4 on mobile */
+          .rep-tabs-row { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; overflow-x: visible !important; padding-bottom: 0 !important; }
+          .rep-tabs-row > button { flex: 0 0 25% !important; box-sizing: border-box !important; text-align: center !important; padding: 8px 4px !important; font-size: 10px !important; white-space: normal !important; min-width: 0 !important; }
           /* Hide office hours on mobile to save vertical space */
           .rep-office-hours { display: none !important; }
           /* Onboarding modal: full-screen on mobile */
