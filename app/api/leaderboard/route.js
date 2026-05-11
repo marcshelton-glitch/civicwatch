@@ -12,7 +12,13 @@ export async function GET() {
   try {
     const supabase = getSupabase()
 
-    const { data, error } = await supabase.rpc('leaderboard_top50').catch(() => ({ data: null, error: 'rpc_unavailable' }))
+    let data = null
+    try {
+      const result = await supabase.rpc('leaderboard_top50')
+      if (!result.error) data = result.data
+    } catch {
+      // rpc unavailable, fall through to fallback query
+    }
 
     if (!data) {
       // Fallback: raw query via select

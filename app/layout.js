@@ -2,13 +2,16 @@ import { ClerkProvider } from '@clerk/nextjs'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import './globals.css'
 
+export const viewport = {
+  themeColor: '#0a0f1e',
+}
+
 export const metadata = {
   title: 'CivicWatch — Your Representatives, Accountable',
   description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
   keywords: 'congress stock trades, representative financial disclosure, STOCK Act, congressional transparency, civicwatch',
   robots: { index: true, follow: true },
   manifest: '/manifest.json',
-  themeColor: '#0a0f1e',
   appleWebApp: {
     capable: true,
     title: 'CivicWatch',
