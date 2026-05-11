@@ -92,26 +92,26 @@ const ALERT_LOG = []
 const PLACEHOLDER_REP_NOTE = "This card would show the representative's name, photo, party, district, contact info, voting record, and stock trades once data is available."
 
 const CONSTITUTION_ARTICLES = [
-  { id: "art1", title: "Article I – The Legislative Branch", original: "All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives...", plain: "Congress (Senate + House of Representatives) holds all law-making power. The House has members based on population; senators serve 6-year terms, two per state. Congress can tax, borrow money, regulate commerce, declare war, and make all laws necessary to carry out these powers." },
-  { id: "art2", title: "Article II – The Executive Branch", original: "The executive Power shall be vested in a President of the United States of America. He shall hold his Office during the Term of four Years...", plain: "The President leads the executive branch, serving 4-year terms. The President is Commander in Chief, makes treaties (with Senate approval), appoints federal officers and judges, and must take care that laws are faithfully executed." },
-  { id: "art3", title: "Article III – The Judicial Branch", original: "The judicial Power of the United States, shall be vested in one supreme Court, and in such inferior Courts as the Congress may from time to time ordain and establish...", plain: "The Supreme Court and lower federal courts hold judicial power. Judges serve for life during good behavior. Federal courts handle cases involving the Constitution, federal laws, treaties, and disputes between states." },
-  { id: "art4", title: "Article IV – The States", original: "Full Faith and Credit shall be given in each State to the public Acts, Records, and judicial Proceedings of every other State...", plain: "States must respect each other's laws and court decisions. Citizens of each state have the same rights in other states. New states can be admitted to the Union. The federal government guarantees each state a republican form of government." },
-  { id: "art5", title: "Article V – Amendments", original: "The Congress, whenever two thirds of both Houses shall deem it necessary, shall propose Amendments to this Constitution...", plain: "The Constitution can be amended if two-thirds of Congress and three-fourths of state legislatures agree, or through a constitutional convention called by two-thirds of states." },
-  { id: "art6", title: "Article VI – Supremacy", original: "This Constitution, and the Laws of the United States which shall be made in Pursuance thereof shall be the supreme Law of the Land...", plain: "The Constitution is the supreme law of the land. All federal and state officials must swear to uphold it. No religious test can be required for public office." },
-  { id: "art7", title: "Article VII – Ratification", original: "The Ratification of the Conventions of nine States shall be sufficient for the Establishment of this Constitution...", plain: "The Constitution became effective when nine of the thirteen original states ratified it." },
+  { id: "preamble", title: "Preamble", original: "We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defence, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.", plain: "This introduction explains why the Constitution was created: to form a unified nation, ensure justice, maintain peace, and protect the freedom of all Americans." },
+  { id: "art1", title: "Article I – The Legislative Branch", original: "All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives...", plain: "Creates Congress — the Senate and House of Representatives — and gives them the power to make laws." },
+  { id: "art2", title: "Article II – The Executive Branch", original: "The executive Power shall be vested in a President of the United States of America. He shall hold his Office during the Term of four Years...", plain: "Creates the office of President, who enforces the laws and serves as Commander in Chief." },
+  { id: "art3", title: "Article III – The Judicial Branch", original: "The judicial Power of the United States, shall be vested in one supreme Court, and in such inferior Courts as the Congress may from time to time ordain and establish...", plain: "Creates the Supreme Court and gives Congress power to establish lower courts." },
+  { id: "art4", title: "Article IV – The States", original: "Full Faith and Credit shall be given in each State to the public Acts, Records, and judicial Proceedings of every other State...", plain: "Defines the relationship between states and the federal government, including how new states join the Union." },
+  { id: "art5", title: "Article V – Amendments", original: "The Congress, whenever two thirds of both Houses shall deem it necessary, shall propose Amendments to this Constitution...", plain: "Explains how the Constitution can be changed." },
+  { id: "art6", title: "Article VI – Supremacy", original: "This Constitution, and the Laws of the United States which shall be made in Pursuance thereof shall be the supreme Law of the Land...", plain: "The Constitution is the highest law in the land — it overrides state laws." },
+  { id: "art7", title: "Article VII – Ratification", original: "The Ratification of the Conventions of nine States shall be sufficient for the Establishment of this Constitution...", plain: "The Constitution became law when 9 of 13 states approved it." },
 ]
 
 const AMENDMENTS = [
-  { num: 1, title: "Freedom of Religion, Speech, Press, Assembly, Petition", original: "Congress shall make no law respecting an establishment of religion, or prohibiting the free exercise thereof; or abridging the freedom of speech, or of the press...", plain: "The government cannot establish an official religion, prevent you from practicing your faith, or stop you from speaking, publishing, assembling peacefully, or petitioning the government." },
+  { num: 1, title: "Freedom of Speech, Religion, Press, Assembly, and Petition", original: "Congress shall make no law respecting an establishment of religion, or prohibiting the free exercise thereof; or abridging the freedom of speech, or of the press...", plain: "The government cannot establish an official religion, prevent you from practicing your faith, or stop you from speaking, publishing, assembling peacefully, or petitioning the government." },
   { num: 2, title: "Right to Bear Arms", original: "A well regulated Militia, being necessary to the security of a free State, the right of the people to keep and bear Arms, shall not be infringed.", plain: "Citizens have the right to own and carry firearms. This right cannot be taken away by the government." },
-  { num: 4, title: "Search and Seizure", original: "The right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures, shall not be violated...", plain: "Police cannot search your home, papers, or body without a court-issued warrant based on probable cause." },
-  { num: 5, title: "Due Process, Double Jeopardy, Self-Incrimination", original: "No person shall be held to answer for a capital, or otherwise infamous crime, unless on a presentment or indictment of a Grand Jury...", plain: "You cannot be tried twice for the same crime. You cannot be forced to testify against yourself. The government cannot take your life, liberty, or property without due process." },
-  { num: 6, title: "Right to a Fair Trial", original: "In all criminal prosecutions, the accused shall enjoy the right to a speedy and public trial, by an impartial jury...", plain: "You have the right to a speedy, public trial with an impartial jury, to know the charges against you, to confront witnesses, and to have a lawyer." },
-  { num: 8, title: "No Cruel and Unusual Punishment", original: "Excessive bail shall not be required, nor excessive fines imposed, nor cruel and unusual punishments inflicted.", plain: "Bail and fines cannot be excessive, and punishments cannot be cruel or unusual." },
-  { num: 13, title: "Abolition of Slavery", original: "Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States...", plain: "Slavery is abolished throughout the United States." },
-  { num: 14, title: "Equal Protection and Due Process", original: "All persons born or naturalized in the United States and subject to the jurisdiction thereof, are citizens of the United States...", plain: "Everyone born in the US is a citizen. No state can deny citizens equal protection of the laws or due process." },
-  { num: 19, title: "Women's Right to Vote", original: "The right of citizens of the United States to vote shall not be denied or abridged on account of sex.", plain: "Women have the right to vote." },
-  { num: 26, title: "Voting Age Lowered to 18", original: "The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged on account of age.", plain: "Citizens 18 and older have the right to vote." },
+  { num: 4, title: "Protection from Unreasonable Search and Seizure", original: "The right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures, shall not be violated...", plain: "Police cannot search your home, papers, or body without a court-issued warrant based on probable cause." },
+  { num: 5, title: "Right to Remain Silent, Due Process", original: "No person shall be held to answer for a capital, or otherwise infamous crime, unless on a presentment or indictment of a Grand Jury...", plain: "You cannot be tried twice for the same crime. You cannot be forced to testify against yourself. The government cannot take your life, liberty, or property without due process." },
+  { num: 13, title: "Abolished Slavery (1865)", original: "Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States...", plain: "Slavery is abolished throughout the United States." },
+  { num: 14, title: "Citizenship and Equal Protection Under the Law (1868)", original: "All persons born or naturalized in the United States and subject to the jurisdiction thereof, are citizens of the United States...", plain: "Everyone born in the US is a citizen. No state can deny citizens equal protection of the laws or due process." },
+  { num: 15, title: "Right to Vote Regardless of Race (1870)", original: "The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.", plain: "Citizens cannot be denied the right to vote based on race or previous enslaved status." },
+  { num: 19, title: "Women's Right to Vote (1920)", original: "The right of citizens of the United States to vote shall not be denied or abridged on account of sex.", plain: "Women have the right to vote." },
+  { num: 26, title: "Voting Age Lowered to 18 (1971)", original: "The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged on account of age.", plain: "Citizens 18 and older have the right to vote." },
 ]
 
 const STATE_MAP_DATA = [
@@ -1002,7 +1002,7 @@ useEffect(() => {
                 return (
                   <div key={rep.id} className="rep-card"
                     style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#5B9CFF" : S.red }} />
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1a6dc9" : rep.party === "Republican" ? "#cc2020" : rep.party === "Independent" ? "#c9a84c" : rep.party === "Green" ? "#2a9d4c" : "#334466" }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
                         {rep.photo
@@ -1020,7 +1020,6 @@ useEffect(() => {
                         <div style={{ fontSize: 11, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.district}</div>
                         <div style={{ display: "flex", gap: 6 }}>
                           <span className={`badge ${rep.party === "Democrat" ? "dem-badge" : "rep-badge"}`}>{rep.party}</span>
-                          <span className={`badge ${rep.level === "federal" ? "federal-badge" : "muni-badge"}`}>{rep.level}</span>
                         </div>
                       </div>
                     </div>
@@ -1037,7 +1036,7 @@ useEffect(() => {
                       <a href={`tel:${rep.phone}`} className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.green, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>📞 Call</a>
                       <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
-                        style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
+                        style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
                       <a href={rep.website} target="_blank" rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: `rgba(212,175,55,0.15)`, borderRadius: 8, fontSize: 12, color: S.gold, textDecoration: "none", border: `1px solid ${S.border}`, transition: "all 0.2s", fontWeight: 600 }}>🌐 Web</a>
                     </div>
@@ -1580,11 +1579,11 @@ useEffect(() => {
                 <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Alert Types</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
-                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)' },
-                    { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)' },
-                    { key: 'alert_legislation',  label: 'Sponsored legislation' },
-                    { key: 'alert_committees',   label: 'Committee assignments' },
-                  ].map(({ key, label }) => {
+                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)', tier: 'Free',    tierColor: '#2a9d4c', tierBg: 'rgba(42,157,76,0.12)' },
+                    { key: 'alert_committees',   label: 'Committee assignments',              tier: 'Sign In',  tierColor: '#5B9CFF', tierBg: 'rgba(91,156,255,0.12)' },
+                    { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)', tier: 'Pro', tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
+                    { key: 'alert_legislation',  label: 'Sponsored legislation',             tier: 'Pro',      tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
+                  ].map(({ key, label, tier, tierColor, tierBg }) => {
                     const checked = prefs[key]
                     return (
                       <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -1592,7 +1591,8 @@ useEffect(() => {
                           style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
                           {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                         </div>
-                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray }}>{label}</span>
+                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray, flex: 1 }}>{label}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '2px 7px', borderRadius: 10, background: tierBg, color: tierColor, border: `1px solid ${tierColor}44`, flexShrink: 0 }}>{tier}</span>
                       </label>
                     )
                   })}
@@ -1690,7 +1690,7 @@ useEffect(() => {
                   const nameSlug = displayName.toLowerCase()
                     .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
                   const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
-                  const partyColor = member.party === 'Democrat' ? '#5B9CFF' : member.party === 'Republican' ? S.red : S.gray
+                  const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                   const rep = {
                     id: member.bioguideId,
                     name: member.name,
@@ -1764,16 +1764,25 @@ useEffect(() => {
         {/* CONSTITUTION */}
         {activeTab === "constitution" && (
           <div className="slide-in">
-            <SectionHeader title="The Constitution of the United States" subtitle="Original text and plain-language interpretation of every Article and Amendment." />
+            <SectionHeader title="The Constitution of the United States" subtitle="The supreme law of the United States — every Article and key Amendment, with plain-language explanations." />
+
+            {/* Header image */}
+            <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, border: `1px solid ${S.border}` }}>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/800px-Constitution_of_the_United_States%2C_page_1.jpg"
+                alt="Constitution of the United States, page 1"
+                referrerPolicy="no-referrer"
+                style={{ width: "100%", maxHeight: 260, objectFit: "cover", objectPosition: "top", display: "block" }}
+              />
+            </div>
+
+            {/* Intro */}
+            <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, marginBottom: 24, padding: "16px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+              The Constitution of the United States is the supreme law of the land, ratified in 1788. It establishes the framework of the federal government and guarantees fundamental rights to all Americans.
+            </p>
+
+            {/* Section toggle + archive link */}
             <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 8, overflow: "hidden" }}>
-                {["original", "plain"].map(m => (
-                  <button key={m} onClick={() => setConstitMode(m)}
-                    style={{ padding: "8px 18px", background: constitMode === m ? S.red : "transparent", border: "none", color: constitMode === m ? "white" : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>
-                    {m === "original" ? "Original" : "Plain English"}
-                  </button>
-                ))}
-              </div>
               <div style={{ display: "flex", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 8, overflow: "hidden" }}>
                 {["articles", "amendments"].map(m => (
                   <button key={m} onClick={() => setConstitSection(m)}
@@ -1787,10 +1796,11 @@ useEffect(() => {
                 📜 National Archives
               </a>
             </div>
+
             {constitSection === "articles" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {CONSTITUTION_ARTICLES.map(art => (
-                  <ConstitutionCard key={art.id} title={art.title} text={constitMode === "original" ? art.original : art.plain} mode={constitMode} S={S} />
+                  <ConstitutionCard key={art.id} title={art.title} plain={art.plain} original={art.original} S={S} />
                 ))}
               </div>
             )}
@@ -1798,16 +1808,15 @@ useEffect(() => {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
                 {AMENDMENTS.map(am => (
                   <div key={am.num} style={{ padding: 18, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-                    <div style={{ display: "flex", gap: 12, marginBottom: 10, alignItems: "flex-start" }}>
+                    <div style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
                       <div style={{ minWidth: 40, height: 40, background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 14 }}>{am.num}</div>
                       <div>
-                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: 13, color: S.gold, marginBottom: 2 }}>Amendment {am.num}</div>
-                        <div style={{ fontSize: 12, color: S.grayLight }}>{am.title}</div>
+                        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 2 }}>Amendment {am.num}</div>
+                        <div style={{ fontSize: 12, color: S.gold, fontWeight: 600 }}>{am.title}</div>
                       </div>
                     </div>
-                    <p style={{ fontSize: 13, color: constitMode === "original" ? S.offWhite : S.grayLight, lineHeight: 1.7, fontStyle: constitMode === "original" ? "italic" : "normal" }}>
-                      {constitMode === "original" ? am.original : am.plain}
-                    </p>
+                    <p style={{ fontSize: 13, color: S.gold, lineHeight: 1.7, marginBottom: 10 }}>{am.plain}</p>
+                    <p style={{ fontSize: 12, color: S.gray, lineHeight: 1.7, fontStyle: "italic", borderLeft: `3px solid rgba(212,175,55,0.3)`, paddingLeft: 12, margin: 0 }}>{am.original}</p>
                   </div>
                 ))}
               </div>
@@ -2391,6 +2400,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
   const isTracked = tracked.includes(rep.id)
 
+  const parseTradeUpperBound = (amount) => {
+    if (typeof amount === 'number') return amount
+    const m = String(amount).replace(/[$,]/g, '').match(/\d+\s*[-–]\s*(\d+)/)
+    return m ? parseInt(m[1]) : 0
+  }
+  const largestTrade = trades?.length > 0
+    ? trades.reduce((max, t) => parseTradeUpperBound(t.amount) > parseTradeUpperBound(max.amount) ? t : max, trades[0])
+    : null
+  const tradedLast90 = trades?.some(t => t.date && (Date.now() - new Date(t.date).getTime()) < 90 * 24 * 60 * 60 * 1000) ?? false
+
   const loadPtr = (docId, year) => {
     if (ptrResults[docId]) { setExpandedPtr(expandedPtr === docId ? null : docId); return }
     setPtrResults(prev => ({ ...prev, [docId]: { loading: true } }))
@@ -2443,7 +2462,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
           <div className="rep-hero-actions" style={{ display: "flex", gap: 8 }}>
             <a href={`tel:${rep.phone}`} style={{ padding: "9px 16px", background: S.green, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 {rep.phone}</a>
-            <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact'}</a>
+            <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
             <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>🌐 Website</a>
             <button onClick={() => toggleTrack(rep)} style={{ padding: "9px 16px", background: isTracked ? `rgba(212,175,55,0.15)` : "rgba(255,255,255,0.05)", border: `1px solid ${isTracked ? S.gold : S.border}`, borderRadius: 10, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
               {isTracked ? "★ Tracking" : "☆ Track"}
@@ -2482,18 +2501,24 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
             ) : trades.length > 0 ? (
               <>
-                {trades.slice(0, 3).map((t, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 12, alignItems: 'center' }}>
-                    <span style={{ color: t.type === "BUY" ? "#4CAF50" : "#f87171", fontWeight: 700, minWidth: 36 }}>{t.type}</span>
-                    <span style={{ color: S.grayLight, flex: 1, marginRight: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.ticker || t.asset}</span>
-                    <span style={{ color: S.gray, fontSize: 11 }}>{typeof t.amount === 'number' ? fmt(t.amount) : t.amount}</span>
-                  </div>
-                ))}
-                {tradesMeta && (
-                  <div style={{ marginTop: 8, fontSize: 11, color: S.gray }}>
-                    {tradesMeta.buys} buys · {tradesMeta.sells} sells · STOCK Act
+                <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                  {tradesMeta && (
+                    <span style={{ fontSize: 11, color: S.gray, background: 'rgba(255,255,255,0.06)', borderRadius: 6, padding: '3px 8px' }}>
+                      {tradesMeta.buys} buys · {tradesMeta.sells} sells
+                    </span>
+                  )}
+                  <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 6, padding: '3px 8px', background: tradedLast90 ? 'rgba(76,175,80,0.15)' : 'rgba(255,255,255,0.06)', color: tradedLast90 ? '#4CAF50' : S.gray }}>
+                    {tradedLast90 ? 'Traded last 90 days' : 'No trades last 90 days'}
+                  </span>
+                </div>
+                {largestTrade && (
+                  <div style={{ fontSize: 12, color: S.grayLight, marginBottom: 8 }}>
+                    Largest trade: <span style={{ color: S.offWhite, fontWeight: 600 }}>{typeof largestTrade.amount === 'number' ? fmt(largestTrade.amount) : largestTrade.amount}</span>
                   </div>
                 )}
+                <button onClick={() => setRepTab('wealth')} style={{ fontSize: 11, color: S.gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
+                  See full trading history →
+                </button>
               </>
             ) : rep.source === 'openstates' ? (
               <div style={{ fontSize: 12, color: S.gray }}>State legislators file disclosures at the state level.{' '}
@@ -2508,11 +2533,21 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   {disclosures.ptrCount > 0 && <span style={{ color: S.gray }}> · {disclosures.ptrCount} trade report{disclosures.ptrCount !== 1 ? 's' : ''}</span>}
                 </div>
                 {disclosures.filings[0]?.date && (
-                  <div style={{ fontSize: 11, color: S.gray, marginBottom: 8 }}>Most recent: {disclosures.filings[0].date}</div>
+                  <div style={{ fontSize: 11, color: S.gray, marginBottom: 8 }}>Most recent filing: {disclosures.filings[0].date}</div>
                 )}
-                <button onClick={() => setRepTab('wealth')} style={{ fontSize: 11, color: S.gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
-                  See Wealth &amp; Trades tab →
-                </button>
+                {disclosures.filings[0]?.date && (() => {
+                  const filedLast90 = (Date.now() - new Date(disclosures.filings[0].date).getTime()) < 90 * 24 * 60 * 60 * 1000
+                  return (
+                    <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, borderRadius: 6, padding: '3px 8px', marginBottom: 10, background: filedLast90 ? 'rgba(76,175,80,0.15)' : 'rgba(255,255,255,0.06)', color: filedLast90 ? '#4CAF50' : S.gray }}>
+                      {filedLast90 ? 'Filed last 90 days' : 'No filings last 90 days'}
+                    </span>
+                  )
+                })()}
+                <div>
+                  <button onClick={() => setRepTab('wealth')} style={{ fontSize: 11, color: S.gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
+                    See full trading history →
+                  </button>
+                </div>
               </div>
             ) : (
               <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Not all representatives file financial disclosures — some may not be required to.{' '}
@@ -3875,6 +3910,23 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
 
   // ── IDLE ───────────────────────────────────────────────────────────────────
   if (status === 'idle') {
+    if (!isPro) {
+      return (
+        <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
+          <div style={{ fontSize: 48 }}>🔒</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
+            AI Analysis is a Pro feature
+          </div>
+          <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
+            Get a nonpartisan AI-generated accountability report on any member of Congress — voting record, stock trades, wealth trajectory, and peer standing.
+          </p>
+          <a href="/pro"
+            style={{ padding: '13px 32px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
+            Go Pro →
+          </a>
+        </div>
+      )
+    }
     return (
       <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', gap: 24 }}>
         <div style={{ width: 88, height: 88, borderRadius: '50%', background: `linear-gradient(135deg, ${S.navyMid}, #0A0E1E)`, border: `2px solid ${S.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38, boxShadow: `0 0 32px rgba(212,175,55,0.2)` }}>
@@ -3902,11 +3954,10 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
           ))}
         </div>
         <button
-          onClick={() => runAnalysis('preview')}
+          onClick={() => runAnalysis('full')}
           style={{ padding: '13px 32px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(178,34,52,0.35)` }}>
           Generate Analysis →
         </button>
-        <div style={{ fontSize: 11, color: S.gray }}>Free preview · Full report requires Pro</div>
       </div>
     )
   }
@@ -4068,7 +4119,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ConstitutionCard({ title, text, mode, S }) {
+function ConstitutionCard({ title, plain, original, S }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="constitution-article" style={{ border: `1px solid ${S.border}`, borderRadius: 12, overflow: "hidden", transition: "all 0.2s" }}>
@@ -4079,9 +4130,8 @@ function ConstitutionCard({ title, text, mode, S }) {
       </button>
       {open && (
         <div style={{ padding: "0 20px 18px 20px", background: "rgba(10,22,40,0.4)" }}>
-          <p style={{ fontSize: 13, lineHeight: 1.8, color: mode === "original" ? S.offWhite : S.grayLight, fontStyle: mode === "original" ? "italic" : "normal", borderLeft: `3px solid ${mode === "original" ? S.gold : S.red}`, paddingLeft: 16 }}>
-            {text}
-          </p>
+          <p style={{ fontSize: 13, lineHeight: 1.7, color: '#D4AF37', marginBottom: 12 }}>{plain}</p>
+          <p style={{ fontSize: 12, lineHeight: 1.8, color: S.gray, fontStyle: "italic", borderLeft: `3px solid rgba(212,175,55,0.3)`, paddingLeft: 16, margin: 0 }}>{original}</p>
         </div>
       )}
     </div>

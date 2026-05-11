@@ -187,9 +187,11 @@ export default function AboutPage() {
               maxWidth: 600,
             }}
           >
-            Members of Congress make laws that affect every American — and they trade
-            stocks based on information the rest of us don&rsquo;t have. We built
-            CivicWatch to change that.
+            CivicWatch started with a simple question: if financial disclosure filings are
+            public record, why does finding them require a law degree and two hours of
+            government website navigation? We built this so anyone — not just journalists
+            or lobbyists — can see what their representatives are buying and selling in
+            seconds.
           </p>
         </header>
 
