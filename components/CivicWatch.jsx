@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography, Marker, Annotation, ZoomableGroup } from 'react-simple-maps'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -209,6 +209,44 @@ const SMALL_STATE_CALLOUTS = {
   HI: { dx:  0, dy: -22 },
 }
 
+// 2-digit Census FIPS code for each state abbreviation
+const STATE_FIPS = {
+  AL:'01',AK:'02',AZ:'04',AR:'05',CA:'06',CO:'08',CT:'09',DE:'10',DC:'11',
+  FL:'12',GA:'13',HI:'15',ID:'16',IL:'17',IN:'18',IA:'19',KS:'20',KY:'21',
+  LA:'22',ME:'23',MD:'24',MA:'25',MI:'26',MN:'27',MS:'28',MO:'29',MT:'30',
+  NE:'31',NV:'32',NH:'33',NJ:'34',NM:'35',NY:'36',NC:'37',ND:'38',OH:'39',
+  OK:'40',OR:'41',PA:'42',RI:'44',SC:'45',SD:'46',TN:'47',TX:'48',UT:'49',
+  VT:'50',VA:'51',WA:'53',WV:'54',WI:'55',WY:'56',
+}
+
+// Geographic [longitude, latitude] center for each state (used by ZoomableGroup)
+const STATE_GEO_CENTER = {
+  AL:[-86.9,32.8],AK:[-153.4,64.2],AZ:[-111.9,34.3],AR:[-92.4,34.9],
+  CA:[-119.4,37.2],CO:[-105.5,39.0],CT:[-72.7,41.6],DE:[-75.5,39.1],
+  DC:[-77.0,38.9],FL:[-81.5,28.7],GA:[-83.4,32.7],HI:[-157.5,20.3],
+  ID:[-114.5,44.4],IL:[-89.2,40.6],IN:[-86.3,40.3],IA:[-93.4,42.1],
+  KS:[-98.4,38.5],KY:[-84.9,37.5],LA:[-92.0,30.9],ME:[-69.4,45.4],
+  MD:[-76.6,39.1],MA:[-71.5,42.2],MI:[-85.4,44.3],MN:[-94.3,46.4],
+  MS:[-89.7,32.7],MO:[-92.3,38.5],MT:[-110.5,47.0],NE:[-99.9,41.5],
+  NV:[-116.4,38.8],NH:[-71.6,43.7],NJ:[-74.5,40.1],NM:[-106.2,34.5],
+  NY:[-75.5,42.8],NC:[-79.4,35.6],ND:[-100.5,47.5],OH:[-82.8,40.4],
+  OK:[-97.5,35.5],OR:[-120.6,44.0],PA:[-77.2,40.9],RI:[-71.5,41.7],
+  SC:[-80.9,33.8],SD:[-100.3,44.4],TN:[-86.7,35.7],TX:[-99.3,31.5],
+  UT:[-111.4,39.3],VT:[-72.7,44.1],VA:[-78.6,37.5],WA:[-120.5,47.4],
+  WV:[-80.6,38.6],WI:[-89.7,44.3],WY:[-107.6,43.0],
+}
+
+// ZoomableGroup zoom multiplier to roughly fill the viewport for each state
+const STATE_ZOOM_LEVELS = {
+  AK:1.8,TX:4,CA:4,MT:4,NM:4,AZ:4,NV:4,CO:4.5,
+  OR:4,WY:5,MI:4,MN:4.5,UT:5,ID:4.5,KS:5,NE:5,
+  SD:5,WA:5,ND:5,OK:5,MO:5,WI:5.5,FL:5,GA:5.5,
+  IL:6,IA:6,NY:5.5,NC:5.5,AR:6,AL:6,LA:6,MS:6,
+  PA:6,OH:6,VA:6,TN:6,KY:6,IN:6.5,ME:5.5,SC:7,
+  WV:7,MD:9,HI:6,MA:10,VT:9,NH:9,NJ:9,
+  CT:12,DE:15,RI:20,DC:28,
+}
+
 const fmt = (n) => {
   if (n == null || !isFinite(n)) return 'N/A'
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(n)
@@ -287,6 +325,13 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   })
   const [prefsSaved, setPrefsSaved] = useState(false)
   const prefsSaveTimer = useRef(null)
+
+  // District drill-down state
+  const [mapView, setMapView] = useState('national') // 'national' | 'state'
+  const [zoomedState, setZoomedState] = useState(null) // { abbreviation, name, fips }
+  const [hoveredDistrict, setHoveredDistrict] = useState(null)
+  const [selectedDistrict, setSelectedDistrict] = useState(null)
+
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
@@ -376,6 +421,19 @@ const filteredReps = displayReps.filter(r => {
     const matchSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase()) || r.district.toLowerCase().includes(searchTerm.toLowerCase())
     return matchLevel && matchParty && matchSearch
   })
+
+  // Map 2-digit zero-padded district number → House rep object
+  const districtReps = useMemo(() => {
+    const map = {}
+    liveReps
+      .filter(r => r.title === 'U.S. Representative')
+      .forEach(r => {
+        const m = (r.district || '').match(/\d+/)
+        const num = m ? String(parseInt(m[0])).padStart(2, '0') : '00'
+        map[num] = r
+      })
+    return map
+  }, [liveReps])
 
   const markAllRead = () => {
     setAlerts(alerts.map(a => ({ ...a, read: true })))
@@ -1111,71 +1169,181 @@ useEffect(() => {
         {/* MAP */}
         {activeTab === "map" && (
   <div className="slide-in">
-    <SectionHeader title="District Map" subtitle="Click any state to view its representatives." />
+    <SectionHeader
+      title="District Map"
+      subtitle={mapView === 'state' && zoomedState
+        ? `${zoomedState.name} — click a district to view its representative.`
+        : "Click any state to explore its congressional districts."}
+    />
+
+    {/* Back to national map button */}
+    {mapView === 'state' && (
+      <button
+        onClick={() => { setMapView('national'); setZoomedState(null); setSelectedDistrict(null); setHoveredDistrict(null) }}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: `1px solid ${S.border}`, borderRadius: 8, padding: '6px 14px', color: S.gold, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, marginBottom: 16 }}
+      >
+        ← Back to US Map
+      </button>
+    )}
+
     <div className="map-layout" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
       <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
         {mounted ? (
-          <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
-            <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
-              {({ geographies }) =>
-                geographies.map(geo => {
-                  const abbr = STATE_ABBR[geo.properties.name] || ''
-                  const isSelected = abbr === selectedState
+          <>
+            {/* ── NATIONAL VIEW ────────────────────────────── */}
+            {mapView === 'national' && (
+              <ComposableMap projection="geoAlbersUsa" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                <Geographies geography="https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json">
+                  {({ geographies }) =>
+                    geographies.map(geo => {
+                      const abbr = STATE_ABBR[geo.properties.name] || ''
+                      const isSelected = abbr === selectedState
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          onClick={() => {
+                            if (!abbr) return
+                            setSelectedState(abbr)
+                            const stateData = STATE_MAP_DATA.find(s => s.state === abbr)
+                            setZoomedState({ abbreviation: abbr, name: stateData?.label || abbr, fips: STATE_FIPS[abbr] })
+                            setMapView('state')
+                            setSelectedDistrict(null)
+                            setHoveredDistrict(null)
+                          }}
+                          style={{
+                            default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
+                            hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+                            pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
+                          }}
+                        />
+                      )
+                    })
+                  }
+                </Geographies>
+                {Object.entries(STATE_CENTROIDS).map(([abbr, coords]) => {
+                  const callout = SMALL_STATE_CALLOUTS[abbr]
+                  const labelStyle = { fontWeight: 700, fill: '#fff', stroke: 'rgba(0,0,0,0.75)', strokeWidth: 3, paintOrder: 'stroke', pointerEvents: 'none' }
+                  if (callout) {
+                    const { dx, dy } = callout
+                    return (
+                      <Annotation key={abbr} subject={coords} dx={dx} dy={dy}
+                        connectorProps={{ stroke: 'rgba(255,255,255,0.55)', strokeWidth: 0.7, strokeLinecap: 'round' }}>
+                        <text
+                          x={dx > 0 ? 3 : dx < 0 ? -3 : 0}
+                          textAnchor={dx > 0 ? 'start' : dx < 0 ? 'end' : 'middle'}
+                          dy=".35em"
+                          fontSize={10}
+                          style={labelStyle}
+                        >{abbr}</text>
+                      </Annotation>
+                    )
+                  }
                   return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      onClick={() => abbr && setSelectedState(abbr)}
-                      style={{
-                        default: { fill: isSelected ? S.gold : 'rgba(100,110,130,0.6)', stroke: isSelected ? '#F8F9FF' : 'rgba(255,255,255,0.2)', strokeWidth: isSelected ? 1.5 : 0.5, outline: 'none', cursor: 'pointer' },
-                        hover: { fill: 'rgba(150,160,175,0.8)', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
-                        pressed: { fill: S.gold, stroke: '#F8F9FF', strokeWidth: 1.5, outline: 'none' },
-                      }}
-                    />
+                    <Marker key={abbr} coordinates={coords}>
+                      <text textAnchor="middle" dy=".35em" fontSize={11} style={labelStyle}>{abbr}</text>
+                    </Marker>
                   )
-                })
-              }
-            </Geographies>
-            {Object.entries(STATE_CENTROIDS).map(([abbr, coords]) => {
-              const callout = SMALL_STATE_CALLOUTS[abbr]
-              const labelStyle = { fontWeight: 700, fill: '#fff', stroke: 'rgba(0,0,0,0.75)', strokeWidth: 3, paintOrder: 'stroke', pointerEvents: 'none' }
-              if (callout) {
-                const { dx, dy } = callout
-                return (
-                  <Annotation key={abbr} subject={coords} dx={dx} dy={dy}
-                    connectorProps={{ stroke: 'rgba(255,255,255,0.55)', strokeWidth: 0.7, strokeLinecap: 'round' }}>
-                    <text
-                      x={dx > 0 ? 3 : dx < 0 ? -3 : 0}
-                      textAnchor={dx > 0 ? 'start' : dx < 0 ? 'end' : 'middle'}
-                      dy=".35em"
-                      fontSize={10}
-                      style={labelStyle}
-                    >{abbr}</text>
-                  </Annotation>
-                )
-              }
-              return (
-                <Marker key={abbr} coordinates={coords}>
-                  <text textAnchor="middle" dy=".35em" fontSize={11} style={labelStyle}>{abbr}</text>
-                </Marker>
-              )
-            })}
-          </ComposableMap>
+                })}
+              </ComposableMap>
+            )}
+
+            {/* ── STATE / DISTRICT VIEW ────────────────────── */}
+            {mapView === 'state' && zoomedState && (
+              <ComposableMap
+                projection="geoAlbersUsa"
+                style={{ width: '100%', height: 'auto' }}
+              >
+                <ZoomableGroup
+                  center={STATE_GEO_CENTER[zoomedState.abbreviation] || [-98, 38]}
+                  zoom={STATE_ZOOM_LEVELS[zoomedState.abbreviation] || 5}
+                  minZoom={1}
+                  maxZoom={40}
+                  filterZoomEvent={() => false}
+                >
+                  <Geographies geography={`/api/district-boundaries?fips=${zoomedState.fips}`}>
+                    {({ geographies }) => {
+                      if (geographies.length === 0) {
+                        return null
+                      }
+                      return geographies.map(geo => {
+                        const distNum = geo.properties.districtNum || '00'
+                        const isAtLarge = distNum === '00'
+                        const isSelected = selectedDistrict === distNum
+                        const isHovered = hoveredDistrict === distNum
+                        const rep = districtReps[distNum]
+                        const partyFill = rep?.party === 'Democrat'
+                          ? 'rgba(59,111,190,0.75)'
+                          : rep?.party === 'Republican'
+                            ? 'rgba(178,34,52,0.75)'
+                            : 'rgba(80,95,130,0.7)'
+                        return (
+                          <Geography
+                            key={geo.rsmKey}
+                            geography={geo}
+                            onMouseEnter={() => setHoveredDistrict(distNum)}
+                            onMouseLeave={() => setHoveredDistrict(null)}
+                            onClick={() => {
+                              setSelectedDistrict(distNum)
+                              if (rep) {
+                                setSelectedRep(rep)
+                                setActiveTab('reps')
+                              }
+                            }}
+                            style={{
+                              default: {
+                                fill: isSelected ? S.gold : partyFill,
+                                stroke: S.white,
+                                strokeWidth: isSelected ? 1.5 : 0.5,
+                                outline: 'none',
+                                cursor: 'pointer',
+                                opacity: isHovered ? 1 : 0.85,
+                              },
+                              hover: {
+                                fill: isSelected ? S.gold : 'rgba(180,170,120,0.85)',
+                                stroke: S.white,
+                                strokeWidth: 1,
+                                outline: 'none',
+                                cursor: 'pointer',
+                              },
+                              pressed: { fill: S.gold, stroke: S.white, strokeWidth: 1.5, outline: 'none' },
+                            }}
+                          />
+                        )
+                      })
+                    }}
+                  </Geographies>
+                </ZoomableGroup>
+              </ComposableMap>
+            )}
+          </>
         ) : (
           <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
             Loading map…
           </div>
         )}
-        <div style={{ textAlign: 'center', fontSize: 11, color: S.gray, marginTop: 4 }}>
-          Click any state to load its representatives
+
+        {/* Map hint / hover label */}
+        <div style={{ textAlign: 'center', fontSize: 11, color: S.gray, marginTop: 4, minHeight: 16 }}>
+          {mapView === 'state' && hoveredDistrict
+            ? (() => {
+                const rep = districtReps[hoveredDistrict]
+                const label = hoveredDistrict === '00' ? 'At-Large' : `District ${parseInt(hoveredDistrict)}`
+                return rep ? `${label} — ${rep.name} (${rep.party?.charAt(0) || '?'})` : label
+              })()
+            : mapView === 'state'
+              ? 'Click a district to view its representative'
+              : 'Click any state to zoom into its congressional districts'}
         </div>
       </div>
+
+      {/* ── SIDEBAR ────────────────────────────────────── */}
       <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
-          {STATE_MAP_DATA.find(s => s.state === selectedState)?.label || selectedState}
+          {mapView === 'state' && zoomedState ? zoomedState.name : STATE_MAP_DATA.find(s => s.state === selectedState)?.label || selectedState}
         </div>
         <div style={{ fontSize: 11, color: S.gray, marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 }}>
-          Representatives
+          {mapView === 'state' ? 'Congressional Districts' : 'Representatives'}
         </div>
         {loadingReps ? (
           <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
@@ -1189,24 +1357,33 @@ useEffect(() => {
             return (
               <div style={{ textAlign: 'center', padding: 28, color: S.gray }}>
                 <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: S.white, marginBottom: 8 }}>Click a district on the map</div>
-                <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Select a state to explore your representative's profile, votes, and disclosures.</div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: S.white, marginBottom: 8 }}>
+                  {mapView === 'state' ? 'Loading districts…' : 'Click a state on the map'}
+                </div>
+                <div style={{ fontSize: 12, color: S.gray, lineHeight: 1.6 }}>Select a state to explore its congressional districts, votes, and disclosures.</div>
               </div>
             )
           }
-          return stateReps.map(r => (
-            <div key={r.id || r.bioguideId}
-              style={{ display: "flex", gap: 10, marginBottom: 10, padding: 10, background: "rgba(27,42,107,0.3)", border: `1px solid ${S.border}`, borderRadius: 10, cursor: "pointer" }}
-              onClick={() => { selectRep(r); setActiveTab("reps") }}
-              className="rep-card">
-              <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
-                <div style={{ fontSize: 11, color: S.gold }}>{r.title}</div>
-                <div style={{ fontSize: 10, color: S.gray }}>{r.district}</div>
+          return stateReps.map(r => {
+            const distMatch = (r.district || '').match(/\d+/)
+            const distNum = distMatch ? String(parseInt(distMatch[0])).padStart(2, '0') : null
+            const isHighlighted = mapView === 'state' && distNum && (distNum === hoveredDistrict || distNum === selectedDistrict)
+            return (
+              <div key={r.id || r.bioguideId}
+                style={{ display: "flex", gap: 10, marginBottom: 10, padding: 10, background: isHighlighted ? `rgba(212,175,55,0.15)` : "rgba(27,42,107,0.3)", border: `1px solid ${isHighlighted ? S.gold : S.border}`, borderRadius: 10, cursor: "pointer", transition: 'background 0.15s, border-color 0.15s' }}
+                onMouseEnter={() => mapView === 'state' && distNum && setHoveredDistrict(distNum)}
+                onMouseLeave={() => mapView === 'state' && setHoveredDistrict(null)}
+                onClick={() => { selectRep(r); setActiveTab("reps") }}
+                className="rep-card">
+                <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
+                  <div style={{ fontSize: 11, color: S.gold }}>{r.title}</div>
+                  <div style={{ fontSize: 10, color: S.gray }}>{r.district}</div>
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         })()}
       </div>
     </div>
