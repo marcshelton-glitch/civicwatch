@@ -2193,6 +2193,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [tradesMeta, setTradesMeta] = useState(null)
   const [liveBio, setLiveBio] = useState(null)
   const [liveSponsored, setLiveSponsored] = useState(null)
+  const [liveCommittees, setLiveCommittees] = useState(null)
   const [liveDocket, setLiveDocket] = useState(null)
   const [liveDocketSource, setLiveDocketSource] = useState(null)
   const [liveTownHall, setLiveTownHall] = useState(null)
@@ -2240,7 +2241,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   // previous rep never briefly flashes for the newly selected rep
   useEffect(() => {
     setLiveVotes(null); setLiveTrades(null); setTradesMeta(null)
-    setLiveBio(null); setLiveSponsored(null)
+    setLiveBio(null); setLiveSponsored(null); setLiveCommittees(null)
     setLiveDocket(null); setLiveDocketSource(null)
     setLiveTownHall(null); setLiveTownHallMeta(null)
     setLiveNonprofits(null); setNetWorthHistory(null)
@@ -2309,9 +2310,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       Promise.all([
         fetch(`/api/congress?type=member&bioguideId=${rep.id}`).then(r => r.json()),
         fetch(`/api/congress?type=sponsored&bioguideId=${rep.id}`).then(r => r.json()),
-      ]).then(([bioData, sponsoredData]) => {
+        fetch(`/api/congress?type=committees&bioguideId=${rep.id}`).then(r => r.json()),
+      ]).then(([bioData, sponsoredData, committeeData]) => {
         setLiveBio(bioData.member || null)
         setLiveSponsored(sponsoredData.bills || [])
+        setLiveCommittees(committeeData.committees || [])
         setLoadingBio(false)
       }).catch(() => { setLoadingBio(false) })
     }
@@ -2695,7 +2698,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           <span style={{ fontSize: 11, color: '#4ade80', whiteSpace: 'nowrap' }}>✓ {v.totalYea} Yea</span>
                           <span style={{ fontSize: 11, color: '#f87171', whiteSpace: 'nowrap' }}>✗ {v.totalNay} Nay</span>
                           {(v.totalOther ?? 0) > 0 && <span style={{ fontSize: 11, color: S.gray, whiteSpace: 'nowrap' }}>{v.totalOther} Other</span>}
-                          {v.chamber && <span style={{ fontSize: 11, color: S.gray, marginLeft: 'auto' }}>{v.chamber}{v.congress ? ` · ${v.congress}th Congress` : ''}</span>}
+                          {v.chamber && <span style={{ fontSize: 11, color: S.gray, marginLeft: 'auto' }}>{v.chamber}{v.congress ? ` · ${congressToYear(v.congress)}–${congressToYear(v.congress) + 2 > new Date().getFullYear() ? 'present' : congressToYear(v.congress) + 2}` : ''}</span>}
                         </div>
                       )}
                     </div>
@@ -3244,6 +3247,49 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 {rep.peers?.length > 0 && <div style={{ marginTop: 10, fontSize: 12, color: S.gray }}>Peers: {rep.peers.join(" · ")}</div>}
               </div>
 
+              {liveCommittees && liveCommittees.length > 0 && (() => {
+                const currentYear = new Date().getFullYear()
+                const currentCongress = Math.floor((currentYear - 1789) / 2) + 1
+                const currentCs = liveCommittees.filter(c => c.endCongress >= currentCongress - 1)
+                const pastCs = liveCommittees.filter(c => c.endCongress < currentCongress - 1)
+                const renderCommittee = c => {
+                  const startYr = congressToYear(c.startCongress)
+                  const endYr = congressToYear(c.endCongress) + 2
+                  const isCurrent = c.endCongress >= currentCongress - 1
+                  const dateStr = isCurrent
+                    ? (c.startCongress === c.endCongress ? `(${startYr}–present)` : `(${startYr}–present)`)
+                    : (startYr === endYr - 2 ? `(${startYr}–${endYr})` : `(${startYr}–${endYr})`)
+                  return (
+                    <div key={c.name} style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 6 }}>
+                      <span style={{ color: isCurrent ? S.gold : 'rgba(212,175,55,0.35)', flexShrink: 0, fontSize: 12 }}>●</span>
+                      <span style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.5 }}>
+                        <span style={{ color: isCurrent ? S.offWhite : S.gray, fontWeight: isCurrent ? 600 : 400 }}>{c.name}</span>
+                        {' '}
+                        <span style={{ color: S.gray, fontSize: 11 }}>{dateStr}</span>
+                        {isCurrent && <span style={{ marginLeft: 6, fontSize: 10, background: 'rgba(212,175,55,0.12)', color: S.gold, border: `1px solid rgba(212,175,55,0.35)`, borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>Current</span>}
+                      </span>
+                    </div>
+                  )
+                }
+                return (
+                  <div style={{ padding: 22, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, marginBottom: 18 }}>
+                    <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Committee Assignments</div>
+                    {currentCs.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, marginBottom: 8 }}>CURRENT</div>
+                        {currentCs.map(renderCommittee)}
+                      </>
+                    )}
+                    {pastCs.length > 0 && (
+                      <>
+                        <div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, marginTop: currentCs.length > 0 ? 14 : 0, marginBottom: 8 }}>PAST</div>
+                        {pastCs.map(renderCommittee)}
+                      </>
+                    )}
+                  </div>
+                )
+              })()}
+
               {liveSponsored && liveSponsored.length > 0 && (
                 <div style={{ marginBottom: 18 }}>
                   <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Recently Sponsored Legislation</div>
@@ -3458,6 +3504,24 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               label: 'Terms Served',
                               left: liveBio?.terms?.length ? String(liveBio.terms.length) : '—',
                               right: compareData?.bio?.terms?.length ? String(compareData.bio.terms.length) : '—',
+                            },
+                            {
+                              icon: '📅',
+                              label: 'Serving Since',
+                              left: (() => {
+                                const terms = liveBio?.terms || []
+                                if (!terms.length) return '—'
+                                const sorted = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))
+                                const first = sorted[0]
+                                return String(first.startYear || congressToYear(first.congress))
+                              })(),
+                              right: (() => {
+                                const terms = compareData?.bio?.terms || []
+                                if (!terms.length) return '—'
+                                const sorted = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))
+                                const first = sorted[0]
+                                return String(first.startYear || congressToYear(first.congress))
+                              })(),
                             },
                             {
                               icon: '🎂',

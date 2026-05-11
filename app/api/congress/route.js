@@ -737,10 +737,20 @@ export async function GET(request) {
     if (type === 'committees') {
       const data = await cFetch(`/member/${bioguideId}`)
       const terms = data.member?.terms?.item || []
-      const committees = terms
-        .flatMap(t => t.memberOf || [])
-        .filter((c, i, arr) => arr.findIndex(x => x.name === c.name) === i)
-        .map(c => ({ name: c.name, chamber: c.chamber }))
+      // Group by committee name, tracking min/max congress so we can show year ranges
+      const byName = {}
+      for (const term of terms) {
+        const congress = term.congress
+        for (const c of (term.memberOf || [])) {
+          if (!c.name) continue
+          if (!byName[c.name]) byName[c.name] = { name: c.name, chamber: c.chamber, startCongress: congress, endCongress: congress }
+          else {
+            if (congress < byName[c.name].startCongress) byName[c.name].startCongress = congress
+            if (congress > byName[c.name].endCongress) byName[c.name].endCongress = congress
+          }
+        }
+      }
+      const committees = Object.values(byName).sort((a, b) => b.endCongress - a.endCongress)
       return NextResponse.json({ committees, source: 'live' })
     }
 
