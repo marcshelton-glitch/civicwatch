@@ -22,25 +22,23 @@ export async function GET() {
 
     if (!data) {
       // Fallback: raw query via select
-      // fd_filings has: bioguide_id, last_name, filing_date, filing_type, doc_id, etc.
-      // It does NOT have name/state/party columns — those live on the member, not the filing.
+      // fd_filings has: bioguide_id, last_name, first_name, state_dst, filing_type, filing_date, etc.
       const { data: rows, error: qErr } = await supabase
         .from('fd_filings')
-        .select('bioguide_id, last_name, filing_date')
+        .select('bioguide_id, last_name, first_name, state_dst, filing_date')
         .eq('filing_type', 'P')
-        .not('bioguide_id', 'is', null)
 
       if (qErr) throw new Error(qErr.message)
 
-      // Aggregate in JS since Supabase JS client doesn't support GROUP BY directly
+      // Aggregate in JS — group by bioguide_id when available, else by last_name|first_name
       const map = new Map()
       for (const row of rows || []) {
-        const key = row.bioguide_id
+        const key = row.bioguide_id || `${row.last_name}|${row.first_name}`
         if (!map.has(key)) {
           map.set(key, {
-            bioguide_id: key,
-            name: row.last_name || null,
-            state: null,
+            bioguide_id: row.bioguide_id || null,
+            name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || null,
+            state: row.state_dst ? row.state_dst.slice(0, 2) : null,
             party: null,
             filing_count: 0,
             latest_filing: null,
@@ -48,7 +46,6 @@ export async function GET() {
         }
         const entry = map.get(key)
         entry.filing_count++
-        if (!entry.name && row.last_name) entry.name = row.last_name
         if (row.filing_date && (!entry.latest_filing || row.filing_date > entry.latest_filing)) {
           entry.latest_filing = row.filing_date
         }

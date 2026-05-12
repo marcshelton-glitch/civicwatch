@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
+import { geoMercator } from 'd3-geo'
 import SettingsPanel from './SettingsPanel'
 
 
@@ -336,6 +337,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [zoomedState, setZoomedState] = useState(null) // { abbreviation, name, fips }
   const [hoveredDistrict, setHoveredDistrict] = useState(null)
   const [selectedDistrict, setSelectedDistrict] = useState(null)
+  const [districtGeoJson, setDistrictGeoJson] = useState(null)
 
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
@@ -361,6 +363,15 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   useEffect(() => {
     if (isLoaded && isSignedIn) setActiveTab("reps")
   }, [isLoaded, isSignedIn])
+
+  // Fetch district GeoJSON when zoomed state changes, to enable fitSize projection
+  useEffect(() => {
+    if (!zoomedState?.fips) { setDistrictGeoJson(null); return }
+    fetch(`/api/district-boundaries?fips=${zoomedState.fips}`)
+      .then(r => r.json())
+      .then(data => setDistrictGeoJson(data?.features?.length ? data : null))
+      .catch(() => setDistrictGeoJson(null))
+  }, [zoomedState?.fips])
 
   // Load persisted tracked reps from Supabase when user signs in
   useEffect(() => {
@@ -439,6 +450,12 @@ const filteredReps = displayReps.filter(r => {
       })
     return map
   }, [liveReps])
+
+  // Auto-fit projection for district view — computed from actual GeoJSON bounds
+  const districtProjection = useMemo(() => {
+    if (!districtGeoJson?.features?.length) return null
+    return geoMercator().fitExtent([[20, 20], [780, 580]], districtGeoJson)
+  }, [districtGeoJson])
 
   const markAllRead = () => {
     setAlerts(alerts.map(a => ({ ...a, read: true })))
@@ -883,11 +900,6 @@ useEffect(() => {
                 </button>
               </>
             )}
-            {user && (
-              <button onClick={() => setSettingsPanelOpen(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: '#c9a84c', border: isPro ? '2px solid #c9a84c' : '2px solid #334466', cursor: 'pointer', color: '#0d1f35', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, padding: 0 }}>
-                {user.imageUrl ? <img src={user.imageUrl} alt="avatar" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user.firstName?.[0] || user.primaryEmailAddress?.emailAddress?.[0] || '?').toUpperCase()}
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -1017,14 +1029,15 @@ useEffect(() => {
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1a6dc9" : rep.party === "Republican" ? "#cc2020" : rep.party === "Independent" ? "#c9a84c" : rep.party === "Green" ? "#2a9d4c" : "#334466" }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
-                        {rep.photo
-                          ? <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
+                        {rep.photo ? (
+                          <>
+                            <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
                               onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
-                          : null}
-                        {rep.photo
-                          ? <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
-                          : <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ border: `3px solid ${S.gold}` }} />
-                        }
+                            <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
+                          </>
+                        ) : (
+                          <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ border: `3px solid ${S.gold}` }} />
+                        )}
                         {isTracked && <div style={{ position: "absolute", bottom: 0, right: -2, background: S.gold, borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>✓</div>}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -1268,15 +1281,12 @@ useEffect(() => {
 
             {/* ── STATE / DISTRICT VIEW ────────────────────── */}
             {mapView === 'state' && zoomedState && (
+              districtProjection && districtGeoJson ? (
               <ComposableMap
-                projection="geoMercator"
-                projectionConfig={{
-                  center: STATE_GEO_CENTER[zoomedState.abbreviation] || [-98, 38],
-                  scale: STATE_DIST_SCALE[zoomedState.abbreviation] || 3000,
-                }}
+                projection={districtProjection}
                 style={{ width: '100%', height: 'auto' }}
               >
-                <Geographies geography={`/api/district-boundaries?fips=${zoomedState.fips}`}>
+                <Geographies geography={districtGeoJson}>
                   {({ geographies }) => {
                     if (geographies.length === 0) {
                       return null
@@ -1328,6 +1338,11 @@ useEffect(() => {
                   }}
                 </Geographies>
               </ComposableMap>
+              ) : (
+                <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
+                  Loading districts…
+                </div>
+              )
             )}
           </>
         ) : (
@@ -1405,7 +1420,14 @@ useEffect(() => {
                 onMouseLeave={() => mapView === 'state' && setHoveredDistrict(null)}
                 onClick={() => { selectRep(r); setActiveTab("reps") }}
                 className="rep-card">
-                <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
+                {r.photo ? (
+                  <>
+                    <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                    <InitialsAvatar name={r.name} party={r.party} size={38} style={{ display: 'none', border: `2px solid ${S.gold}`, flexShrink: 0 }} />
+                  </>
+                ) : (
+                  <InitialsAvatar name={r.name} party={r.party} size={38} style={{ border: `2px solid ${S.gold}`, flexShrink: 0 }} />
+                )}
                 <div style={{ overflow: 'hidden' }}>
                   <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
                   <div style={{ fontSize: 11, color: S.gold }}>{r.title}</div>
@@ -1642,7 +1664,7 @@ useEffect(() => {
                     <div key={alert.id} className={alert.read ? "" : "alert-unread"}
                       style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
                       <span style={{ fontSize: 20 }}>{typeIcon}</span>
-                      {photo && <img src={photo} alt="" referrerPolicy="no-referrer" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />}
+                      {photo && <img src={photo} alt="" referrerPolicy="no-referrer" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.message}</div>
                         <div style={{ fontSize: 11, color: S.gray }}>{displayTime}</div>
@@ -2288,12 +2310,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       <div style={{ background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, border: `1px solid ${S.border}`, borderRadius: 20, padding: 24, marginBottom: 20, position: "relative", overflow: "hidden" }}>
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
-          {rep.photo
-            ? <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+          {rep.photo ? (
+            <>
+              <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
                 onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
-            : null}
-          <InitialsAvatar name={rep.name} party={rep.party} size={90}
-            style={{ display: rep.photo ? 'none' : 'block', border: `4px solid ${S.gold}` }} />
+              <InitialsAvatar name={rep.name} party={rep.party} size={90}
+                style={{ display: 'none', border: `4px solid ${S.gold}` }} />
+            </>
+          ) : (
+            <InitialsAvatar name={rep.name} party={rep.party} size={90}
+              style={{ border: `4px solid ${S.gold}` }} />
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 4 }}>{rep.name}</div>
             <div style={{ fontSize: 13, color: S.gold, marginBottom: 8 }}>{rep.title} · {rep.state} · {rep.district}</div>
@@ -3322,14 +3349,19 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           {/* Rep headers */}
                           <div className="compare-card-header">
                             <div style={{ padding: '20px 16px', textAlign: 'center' }}>
-                              {rep.photo
-                                ? <img src={rep.photo} alt={repDisplayName}
+                              {rep.photo ? (
+                                <>
+                                  <img src={rep.photo} alt={repDisplayName}
                                     referrerPolicy="no-referrer"
                                     style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
                                     onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
-                                : null}
-                              <InitialsAvatar name={rep.name} party={rep.party} size={60}
-                                style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
+                                  <InitialsAvatar name={rep.name} party={rep.party} size={60}
+                                    style={{ display: 'none', border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
+                                </>
+                              ) : (
+                                <InitialsAvatar name={rep.name} party={rep.party} size={60}
+                                  style={{ border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
+                              )}
                               <div style={{ fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 3 }}>{repDisplayName}</div>
                               <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${repPartyColor}22`, color: repPartyColor, border: `1px solid ${repPartyColor}44` }}>
                                 {rep.party === 'Democrat' ? 'D' : rep.party === 'Republican' ? 'R' : 'I'} · {rep.state}
