@@ -16,14 +16,21 @@ export async function GET(request) {
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('fd_net_worth')
-    .select('year, min_value, max_value, filing_date')
+    .select('report_year, net_worth_min, net_worth_max, filing_date')
     .eq('bioguide_id', bioguideId)
-    .order('year', { ascending: true })
+    .order('report_year', { ascending: true })
 
   if (error) {
     console.error('networth GET error:', error.message)
     return NextResponse.json({ history: [] })
   }
 
-  return NextResponse.json({ history: data || [] })
+  const history = (data || []).map(row => ({
+    year: row.report_year,
+    min_value: row.net_worth_min,
+    max_value: row.net_worth_max,
+    filing_date: row.filing_date,
+  }))
+
+  return NextResponse.json({ history })
 }
