@@ -567,7 +567,7 @@ const filteredReps = displayReps.filter(r => {
           state: m.state || '',
           district: 'Statewide',
           level: 'federal',
-          photo: m.depiction || `https://bioguide.congress.gov/bioguide/photo/${m.bioguideId[0]}/${m.bioguideId}.jpg`,
+          photo: `/api/rep-photo/${m.bioguideId}`,
           email: '',
           phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
           website: `https://www.congress.gov/member/${nameSlug}/${m.bioguideId}`,
@@ -613,7 +613,7 @@ useEffect(() => {
             title: isSen ? 'U.S. Senator' : 'U.S. Representative',
             party: r.party||'Unknown', state: r.state||'', district: r.district||'Statewide',
             level: 'federal',
-            photo: r.depiction || `https://bioguide.congress.gov/bioguide/photo/${r.bioguideId[0]}/${r.bioguideId}.jpg`,
+            photo: `/api/rep-photo/${r.bioguideId}`,
             email: '', phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
             website: `https://www.congress.gov/member/${nameSlug}/${r.bioguideId}`,
             officeHours: 'Mon-Fri 9am-5pm',
@@ -1718,7 +1718,7 @@ useEffect(() => {
                     : member.name || ''
                   const nameSlug = displayName.toLowerCase()
                     .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
-                  const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
+                  const photo = `/api/rep-photo/${member.bioguideId}`
                   const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                   const rep = {
                     id: member.bioguideId,
@@ -3292,7 +3292,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           const displayName = nameParts.length >= 2
                             ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
                             : member.name || ''
-                          const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
+                          const photo = `/api/rep-photo/${member.bioguideId}`
                           const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                           return (
                             <div key={member.bioguideId}
