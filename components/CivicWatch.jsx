@@ -2054,7 +2054,6 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [fdNetWorth, setFdNetWorth] = useState(null)
   const [loadingFdNetWorth, setLoadingFdNetWorth] = useState(false)
   const [nwHoverIdx, setNwHoverIdx] = useState(null)
-  const [liveCommittees, setLiveCommittees] = useState(null)
   const [compareQuery, setCompareQuery] = useState('')
   const [compareResults, setCompareResults] = useState([])
   const [compareSearchLoading, setCompareSearchLoading] = useState(false)
