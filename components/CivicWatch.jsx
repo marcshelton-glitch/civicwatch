@@ -1107,7 +1107,7 @@ useEffect(() => {
                               <div style={{ fontSize: 12, color: levelColor, marginBottom: 6 }}>{rep.title}{rep.district ? ` · ${rep.district}` : ''}</div>
                               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                 <span className="badge" style={{ background: rep.party === 'Democrat' ? 'rgba(91,156,255,0.15)' : rep.party === 'Republican' ? 'rgba(178,34,52,0.2)' : 'rgba(255,255,255,0.08)', color: rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? '#FF6B6B' : S.gray, fontSize: 10, padding: '2px 8px', borderRadius: 6 }}>{rep.party}</span>
-                                <span className="badge" style={{ background: `rgba(212,175,55,0.1)`, color: levelColor, fontSize: 10, padding: '2px 8px', borderRadius: 6, textTransform: 'capitalize' }}>{rep.level}</span>
+                                {rep.level !== 'federal' && rep.level !== 'Federal' && <span className="badge" style={{ background: `rgba(212,175,55,0.1)`, color: levelColor, fontSize: 10, padding: '2px 8px', borderRadius: 6, textTransform: 'capitalize' }}>{rep.level}</span>}
                               </div>
                             </div>
                           </div>
@@ -1963,8 +1963,10 @@ useEffect(() => {
       <SettingsPanel
         isOpen={settingsPanelOpen}
         onClose={() => setSettingsPanelOpen(false)}
-        user={user}
+        trackedReps={trackedReps.map(r => ({ bioguide_id: r.id || r.bioguideId, rep_name: r.name }))}
+        onUntrack={id => toggleTrack(id)}
         isPro={isPro}
+        user={user}
         tracked={tracked}
         liveReps={liveReps}
         toggleTrack={toggleTrack}
@@ -3433,7 +3435,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
                             : member.name || ''
                           const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
-                          const partyColor = member.party === 'Democrat' ? '#5B9CFF' : member.party === 'Republican' ? S.red : S.gray
+                          const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                           return (
                             <div key={member.bioguideId}
                               onClick={() => {
