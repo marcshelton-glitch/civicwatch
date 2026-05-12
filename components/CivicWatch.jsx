@@ -1960,7 +1960,7 @@ useEffect(() => {
       <SettingsPanel
         isOpen={settingsPanelOpen}
         onClose={() => setSettingsPanelOpen(false)}
-        trackedReps={trackedReps.map(r => ({ bioguide_id: r.id || r.bioguideId, rep_name: r.name }))}
+        trackedReps={liveReps.filter(r => tracked.includes(r.id)).map(r => ({ bioguide_id: r.id || r.bioguideId, rep_name: r.name }))}
         onUntrack={id => toggleTrack(id)}
         isPro={isPro}
         user={user}
