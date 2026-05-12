@@ -22,9 +22,11 @@ export async function GET() {
 
     if (!data) {
       // Fallback: raw query via select
+      // fd_filings has: bioguide_id, last_name, filing_date, filing_type, doc_id, etc.
+      // It does NOT have name/state/party columns — those live on the member, not the filing.
       const { data: rows, error: qErr } = await supabase
         .from('fd_filings')
-        .select('bioguide_id, name, state, party, id, filing_date')
+        .select('bioguide_id, last_name, filing_date')
         .eq('filing_type', 'P')
         .not('bioguide_id', 'is', null)
 
@@ -37,18 +39,16 @@ export async function GET() {
         if (!map.has(key)) {
           map.set(key, {
             bioguide_id: key,
-            name: row.name,
-            state: row.state,
-            party: row.party,
+            name: row.last_name || null,
+            state: null,
+            party: null,
             filing_count: 0,
             latest_filing: null,
           })
         }
         const entry = map.get(key)
         entry.filing_count++
-        if (!entry.name && row.name) entry.name = row.name
-        if (!entry.state && row.state) entry.state = row.state
-        if (!entry.party && row.party) entry.party = row.party
+        if (!entry.name && row.last_name) entry.name = row.last_name
         if (row.filing_date && (!entry.latest_filing || row.filing_date > entry.latest_filing)) {
           entry.latest_filing = row.filing_date
         }

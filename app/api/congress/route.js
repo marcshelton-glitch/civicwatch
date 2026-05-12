@@ -770,13 +770,18 @@ export async function GET(request) {
         ...(p3.members || []),
       ]
 
+      // Congress.gov list endpoint uses `name` ("Last, First" format).
+      // Fall back to invertedOrderName / directOrderName if the field is absent.
+      const memberName = m => m.name || m.invertedOrderName || m.directOrderName || ''
+
       const normalize = m => {
+        const rawName = memberName(m)
         const termItems = m.terms?.item || []
         const latestTerm = termItems[termItems.length - 1] || {}
         const chamber = latestTerm.chamber || ''
         return {
           bioguideId: m.bioguideId,
-          name: m.name,
+          name: rawName,
           party: m.partyName || 'Unknown',
           state: m.state,
           district: m.district ? `District ${m.district}` : 'Statewide',
@@ -788,7 +793,7 @@ export async function GET(request) {
       }
 
       const members = allMembers
-        .filter(m => m.name && m.name.toLowerCase().includes(query))
+        .filter(m => memberName(m).toLowerCase().includes(query))
         .slice(0, 20)
         .map(normalize)
 

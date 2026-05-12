@@ -1732,7 +1732,7 @@ useEffect(() => {
                           referrerPolicy="no-referrer"
                           style={{ width: 56, height: 56, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
                           onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
-                        <InitialsAvatar name={member.name} party={member.party} size={56} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
+                        <InitialsAvatar name={displayName} party={member.party} size={56} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 3 }}>{displayName}</div>
@@ -3449,7 +3449,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                   referrerPolicy="no-referrer"
                                   style={{ width: 44, height: 44, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
                                   onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
-                                <InitialsAvatar name={member.name} party={member.party} size={44} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
+                                <InitialsAvatar name={displayName} party={member.party} size={44} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{displayName}</div>
