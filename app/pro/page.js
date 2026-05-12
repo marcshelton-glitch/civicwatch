@@ -62,6 +62,7 @@ const PRO_FEATURES = [
     icon: '📍',
     title: 'State & Local Representative Lookup',
     desc: 'Enter your home address or ZIP to instantly surface your state senators, state house members, and local officials alongside your federal reps.',
+    comingSoon: true,
   },
   {
     icon: '⭐',
@@ -152,6 +153,8 @@ export default function ProPage() {
         .cta-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .free-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 13px; color: ${S.grayLight}; }
         .check { color: #4CAF50; font-size: 14px; flex-shrink: 0; }
+        .coming-soon-badge { display: inline-block; padding: 2px 8px; background: rgba(255,165,0,0.12); border: 1px solid rgba(255,165,0,0.4); border-radius: 10px; font-size: 10px; font-weight: 700; color: #FFA500; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+        .pro-card.coming-soon { opacity: 0.75; }
         @media (max-width: 768px) {
           .comparison-grid { grid-template-columns: 1fr !important; }
           .hero-title { font-size: 36px !important; }
@@ -254,10 +257,10 @@ export default function ProPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {PRO_FEATURES.map(f => (
                     <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                      <span style={{ color: S.gold, fontSize: 14, flexShrink: 0 }}>★</span>
+                      <span style={{ color: f.comingSoon ? '#FFA500' : S.gold, fontSize: 14, flexShrink: 0 }}>★</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: S.offWhite }}>{f.icon} {f.title}</div>
-                        {f.comingSoon && <span style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(255,152,0,0.15)', border: '1px solid rgba(255,152,0,0.4)', borderRadius: 10, color: '#FF9800', fontWeight: 700, letterSpacing: 0.5 }}>COMING SOON</span>}
+                        <div style={{ fontSize: 14, fontWeight: 600, color: f.comingSoon ? S.gray : S.offWhite }}>{f.icon} {f.title}</div>
+                        {f.comingSoon && <span className="coming-soon-badge">Coming Soon</span>}
                       </div>
                     </div>
                   ))}
@@ -290,14 +293,12 @@ export default function ProPage() {
           </p>
           <div className="pro-features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             {PRO_FEATURES.map(f => (
-              <div key={f.title} className="pro-card" style={{ position: 'relative' }}>
-                {f.comingSoon && (
-                  <div style={{ position: 'absolute', top: 16, right: 16, fontSize: 10, padding: '3px 8px', background: 'rgba(255,152,0,0.15)', border: '1px solid rgba(255,152,0,0.4)', borderRadius: 10, color: '#FF9800', fontWeight: 700, letterSpacing: 0.5 }}>
-                    COMING SOON
-                  </div>
-                )}
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 18, marginBottom: 10, color: S.offWhite }}>{f.title}</div>
+              <div key={f.title} className={`pro-card${f.comingSoon ? ' coming-soon' : ''}`}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                  <div style={{ fontSize: 28 }}>{f.icon}</div>
+                  {f.comingSoon && <span className="coming-soon-badge">Coming Soon</span>}
+                </div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 18, marginBottom: 10, color: f.comingSoon ? S.grayLight : S.offWhite }}>{f.title}</div>
                 <div style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.75 }}>{f.desc}</div>
               </div>
             ))}

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation, ZoomableGroup } from 'react-simple-maps'
+import SettingsPanel from './SettingsPanel'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -283,6 +284,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const { openSignIn, openUserProfile } = useClerk()
   const router = useRouter()
   const isPro = user?.publicMetadata?.isPro === true
+  const [settingsPanelOpen, setSettingsPanelOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("map")
   const [selectedRep, setSelectedRep] = useState(null)
   const [repTab, setRepTab] = useState("overview")
@@ -336,7 +338,6 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -851,31 +852,36 @@ useEffect(() => {
                 {unreadCount}
               </div>
             )}
-            {isPro ? (
-              <button onClick={handleBillingPortal}
-                title="Manage your Pro subscription"
-                style={{ padding: "7px 14px", background: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08))`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5 }}>
-                ★ Pro Member
-              </button>
-            ) : isSignedIn ? (
-              <button onClick={() => router.push('/pro')}
-                style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
-                ★ Go Pro
-              </button>
-            ) : (
+            {!isSignedIn ? (
               <button onClick={() => openSignIn()}
                 style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
                 Sign In / Sign Up →
               </button>
+            ) : (
+              <>
+                {!isPro && (
+                  <button onClick={() => router.push('/pro')}
+                    style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
+                    ★ Go Pro
+                  </button>
+                )}
+                {/* Avatar button — opens settings panel */}
+                <button
+                  onClick={() => setSettingsPanelOpen(true)}
+                  title="Account settings"
+                  aria-label="Open account settings"
+                  style={{ width: 34, height: 34, borderRadius: "50%", padding: 0, border: `2px solid ${isPro ? S.gold : S.border}`, cursor: "pointer", overflow: "hidden", background: S.navyLight, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {user?.imageUrl ? (
+                    <img src={user.imageUrl} alt="Account" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                  ) : (
+                    <span style={{ fontSize: 13, fontWeight: 700, color: S.gold }}>
+                      {[user?.firstName, user?.lastName].filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
+                    </span>
+                  )}
+                </button>
+              </>
             )}
-            {isSignedIn && (
-              <button
-                onClick={() => setShowSettings(true)}
-                title="Account settings"
-                style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: S.navy, flexShrink: 0, fontFamily: 'inherit' }}>
-                {(user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0] || '?').toUpperCase()}
-              </button>
-            )}
+
           </div>
         </div>
       </header>
@@ -1950,22 +1956,19 @@ useEffect(() => {
       </footer>
 
       {/* ACCOUNT SETTINGS PANEL */}
-      {showSettings && isSignedIn && (
-        <AccountSettingsPanel
-          user={user}
-          isPro={isPro}
-          tracked={tracked}
-          liveReps={liveReps}
-          toggleTrack={toggleTrack}
-          prefs={prefs}
-          updatePref={updatePref}
-          prefsSaved={prefsSaved}
-          handleBillingPortal={handleBillingPortal}
-          openUserProfile={openUserProfile}
-          onClose={() => setShowSettings(false)}
-          S={S}
-        />
-      )}
+      <SettingsPanel
+        isOpen={settingsPanelOpen}
+        onClose={() => setSettingsPanelOpen(false)}
+        user={user}
+        isPro={isPro}
+        tracked={tracked}
+        liveReps={liveReps}
+        toggleTrack={toggleTrack}
+        prefs={prefs}
+        updatePref={updatePref}
+        prefsSaved={prefsSaved}
+        handleBillingPortal={handleBillingPortal}
+      />
 
       {/* PWA INSTALL BANNER */}
       {showInstallBanner && (
@@ -2019,8 +2022,6 @@ useEffect(() => {
     </div>
   )
 }
-
-function AccountSettingsPanel({ user, isPro, tracked, liveReps, toggleTrack, prefs, updatePref, prefsSaved, handleBillingPortal, openUserProfile, onClose, S }) {
   const email = user?.primaryEmailAddress?.emailAddress || ''
   const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || email
 
