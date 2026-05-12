@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { ComposableMap, Geographies, Geography, Marker, Annotation, ZoomableGroup } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import SettingsPanel from './SettingsPanel'
 
 
@@ -221,7 +221,7 @@ const STATE_FIPS = {
   VT:'50',VA:'51',WA:'53',WV:'54',WI:'55',WY:'56',
 }
 
-// Geographic [longitude, latitude] center for each state (used by ZoomableGroup)
+// Geographic [longitude, latitude] center for each state (center for geoMercator projectionConfig)
 const STATE_GEO_CENTER = {
   AL:[-86.9,32.8],AK:[-153.4,64.2],AZ:[-111.9,34.3],AR:[-92.4,34.9],
   CA:[-119.4,37.2],CO:[-105.5,39.0],CT:[-72.7,41.6],DE:[-75.5,39.1],
@@ -238,15 +238,17 @@ const STATE_GEO_CENTER = {
   WV:[-80.6,38.6],WI:[-89.7,44.3],WY:[-107.6,43.0],
 }
 
-// ZoomableGroup zoom multiplier to roughly fill the viewport for each state
-const STATE_ZOOM_LEVELS = {
-  AK:1.8,TX:4,CA:4,MT:4,NM:4,AZ:4,NV:4,CO:4.5,
-  OR:4,WY:5,MI:4,MN:4.5,UT:5,ID:4.5,KS:5,NE:5,
-  SD:5,WA:5,ND:5,OK:5,MO:5,WI:5.5,FL:5,GA:5.5,
-  IL:6,IA:6,NY:5.5,NC:5.5,AR:6,AL:6,LA:6,MS:6,
-  PA:6,OH:6,VA:6,TN:6,KY:6,IN:6.5,ME:5.5,SC:7,
-  WV:7,MD:9,HI:6,MA:10,VT:9,NH:9,NJ:9,
-  CT:12,DE:15,RI:20,DC:28,
+// geoMercator scale for the per-state district view (computed from each state's lon/lat extent)
+const STATE_DIST_SCALE = {
+  AL:4261,AK:1203,AZ:3589,AR:5844,CA:2153,CO:4943,
+  CT:18595,DE:14610,DC:97403,FL:3147,GA:4447,HI:5287,
+  ID:2922,IL:3719,IN:5114,IA:5655,KS:4646,KY:4464,
+  LA:4989,ME:4649,MD:7810,MA:10226,MI:3099,MN:3467,
+  MS:4352,MO:4447,MT:3305,NE:4138,NV:2922,NH:7867,
+  NJ:8182,NM:3589,NY:4545,NC:3812,ND:5383,OH:5245,
+  OK:3895,OR:4681,PA:6221,RI:22727,SC:6392,SD:4957,
+  TN:3860,TX:1912,UT:4091,VT:8893,VA:4044,WA:5166,
+  WV:6016,WI:4447,WY:5114,
 }
 
 const fmt = (n) => {
@@ -872,7 +874,7 @@ useEffect(() => {
                   aria-label="Open account settings"
                   style={{ width: 34, height: 34, borderRadius: "50%", padding: 0, border: `2px solid ${isPro ? S.gold : S.border}`, cursor: "pointer", overflow: "hidden", background: S.navyLight, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {user?.imageUrl ? (
-                    <img src={user.imageUrl} alt="Account" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                    <img src={user.imageUrl} alt="Account" referrerPolicy="no-referrer" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
                   ) : (
                     <span style={{ fontSize: 13, fontWeight: 700, color: S.gold }}>
                       {[user?.firstName, user?.lastName].filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
@@ -1267,69 +1269,64 @@ useEffect(() => {
             {/* ── STATE / DISTRICT VIEW ────────────────────── */}
             {mapView === 'state' && zoomedState && (
               <ComposableMap
-                projection="geoAlbersUsa"
+                projection="geoMercator"
+                projectionConfig={{
+                  center: STATE_GEO_CENTER[zoomedState.abbreviation] || [-98, 38],
+                  scale: STATE_DIST_SCALE[zoomedState.abbreviation] || 3000,
+                }}
                 style={{ width: '100%', height: 'auto' }}
               >
-                <ZoomableGroup
-                  center={STATE_GEO_CENTER[zoomedState.abbreviation] || [-98, 38]}
-                  zoom={STATE_ZOOM_LEVELS[zoomedState.abbreviation] || 5}
-                  minZoom={1}
-                  maxZoom={40}
-                  filterZoomEvent={() => false}
-                >
-                  <Geographies geography={`/api/district-boundaries?fips=${zoomedState.fips}`}>
-                    {({ geographies }) => {
-                      if (geographies.length === 0) {
-                        return null
-                      }
-                      return geographies.map(geo => {
-                        const distNum = geo.properties.districtNum || '00'
-                        const isAtLarge = distNum === '00'
-                        const isSelected = selectedDistrict === distNum
-                        const isHovered = hoveredDistrict === distNum
-                        const rep = districtReps[distNum]
-                        const partyFill = rep?.party === 'Democrat'
-                          ? 'rgba(59,111,190,0.75)'
-                          : rep?.party === 'Republican'
-                            ? 'rgba(178,34,52,0.75)'
-                            : 'rgba(80,95,130,0.7)'
-                        return (
-                          <Geography
-                            key={geo.rsmKey}
-                            geography={geo}
-                            onMouseEnter={() => setHoveredDistrict(distNum)}
-                            onMouseLeave={() => setHoveredDistrict(null)}
-                            onClick={() => {
-                              setSelectedDistrict(distNum)
-                              if (rep) {
-                                setSelectedRep(rep)
-                                setActiveTab('reps')
-                              }
-                            }}
-                            style={{
-                              default: {
-                                fill: isSelected ? S.gold : partyFill,
-                                stroke: S.white,
-                                strokeWidth: isSelected ? 1.5 : 0.5,
-                                outline: 'none',
-                                cursor: 'pointer',
-                                opacity: isHovered ? 1 : 0.85,
-                              },
-                              hover: {
-                                fill: isSelected ? S.gold : 'rgba(180,170,120,0.85)',
-                                stroke: S.white,
-                                strokeWidth: 1,
-                                outline: 'none',
-                                cursor: 'pointer',
-                              },
-                              pressed: { fill: S.gold, stroke: S.white, strokeWidth: 1.5, outline: 'none' },
-                            }}
-                          />
-                        )
-                      })
-                    }}
-                  </Geographies>
-                </ZoomableGroup>
+                <Geographies geography={`/api/district-boundaries?fips=${zoomedState.fips}`}>
+                  {({ geographies }) => {
+                    if (geographies.length === 0) {
+                      return null
+                    }
+                    return geographies.map(geo => {
+                      const distNum = geo.properties.districtNum || '00'
+                      const isSelected = selectedDistrict === distNum
+                      const isHovered = hoveredDistrict === distNum
+                      const rep = districtReps[distNum]
+                      const partyFill = rep?.party === 'Democrat'
+                        ? 'rgba(59,111,190,0.75)'
+                        : rep?.party === 'Republican'
+                          ? 'rgba(178,34,52,0.75)'
+                          : 'rgba(80,95,130,0.7)'
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          onMouseEnter={() => setHoveredDistrict(distNum)}
+                          onMouseLeave={() => setHoveredDistrict(null)}
+                          onClick={() => {
+                            setSelectedDistrict(distNum)
+                            if (rep) {
+                              setSelectedRep(rep)
+                              setActiveTab('reps')
+                            }
+                          }}
+                          style={{
+                            default: {
+                              fill: isSelected ? S.gold : partyFill,
+                              stroke: S.white,
+                              strokeWidth: isSelected ? 1.5 : 0.5,
+                              outline: 'none',
+                              cursor: 'pointer',
+                              opacity: isHovered ? 1 : 0.85,
+                            },
+                            hover: {
+                              fill: isSelected ? S.gold : 'rgba(180,170,120,0.85)',
+                              stroke: S.white,
+                              strokeWidth: 1,
+                              outline: 'none',
+                              cursor: 'pointer',
+                            },
+                            pressed: { fill: S.gold, stroke: S.white, strokeWidth: 1.5, outline: 'none' },
+                          }}
+                        />
+                      )
+                    })
+                  }}
+                </Geographies>
               </ComposableMap>
             )}
           </>
