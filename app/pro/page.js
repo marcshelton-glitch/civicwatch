@@ -40,6 +40,7 @@ const PRO_FEATURES = [
     icon: '🔍',
     title: 'Trade Conflict Analysis',
     desc: 'Deep-dive into stock trades cross-referenced against committee assignments and pending legislation. See which trades raise questions about information asymmetry.',
+    comingSoon: true,
   },
   {
     icon: '📈',
@@ -50,6 +51,7 @@ const PRO_FEATURES = [
     icon: '🔍',
     title: 'Peer Standing Breakdown',
     desc: 'Compare any representative\'s voting record, trade activity, and wealth accumulation against their own party and across the full chamber.',
+    comingSoon: true,
   },
   {
     icon: '🔔',
@@ -60,6 +62,7 @@ const PRO_FEATURES = [
     icon: '📍',
     title: 'State & Local Representative Lookup',
     desc: 'Enter your home address or ZIP to instantly surface your state senators, state house members, and local officials alongside your federal reps.',
+    comingSoon: true,
   },
   {
     icon: '⭐',
@@ -253,8 +256,9 @@ export default function ProPage() {
                   {PRO_FEATURES.map(f => (
                     <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                       <span style={{ color: S.gold, fontSize: 14, flexShrink: 0 }}>★</span>
-                      <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <div style={{ fontSize: 14, fontWeight: 600, color: S.offWhite }}>{f.icon} {f.title}</div>
+                        {f.comingSoon && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8, background: 'rgba(201,168,76,0.15)', color: '#c9a84c', border: '1px solid rgba(201,168,76,0.4)' }}>Soon</span>}
                       </div>
                     </div>
                   ))}
@@ -287,7 +291,10 @@ export default function ProPage() {
           </p>
           <div className="pro-features-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             {PRO_FEATURES.map(f => (
-              <div key={f.title} className="pro-card">
+              <div key={f.title} className="pro-card" style={{ position: 'relative' }}>
+                {f.comingSoon && (
+                  <span style={{ position: 'absolute', top: 16, right: 16, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: 'rgba(201,168,76,0.15)', color: '#c9a84c', border: '1px solid rgba(201,168,76,0.4)' }}>Coming Soon</span>
+                )}
                 <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
                 <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 18, marginBottom: 10, color: S.offWhite }}>{f.title}</div>
                 <div style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.75 }}>{f.desc}</div>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation, ZoomableGroup } from 'react-simple-maps'
+import SettingsPanel from './SettingsPanel'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -333,8 +334,13 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [selectedDistrict, setSelectedDistrict] = useState(null)
 
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
+  const trackedReps = tracked.map(id => {
+    const rep = liveReps.find(r => r.id === id) || municipalReps.find(r => r.id === id)
+    return { bioguide_id: id, rep_name: rep?.name || id }
+  })
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -478,6 +484,15 @@ const filteredReps = displayReps.filter(r => {
       }).catch(() => {})
     }
   }
+  const handleUntrack = (bioguideId) => {
+    setTracked(t => t.filter(x => x !== bioguideId))
+    fetch('/api/track', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bioguideId }),
+    }).catch(() => {})
+  }
+
   const handlePollVote = (repId, issue) => setPollVotes(prev => ({ ...prev, [`${repId}-${issue}`]: true }))
 
   useEffect(() => { if (selectedRep) setRepTab("overview") }, [selectedRep])
@@ -730,6 +745,7 @@ useEffect(() => {
 
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white, overflowX: "hidden", width: "100%" }}>
+      <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} trackedReps={trackedReps} onUntrack={handleUntrack} isPro={isPro} />
       <style>{`
         html, body { overflow-x: hidden; max-width: 100%; }
         * { box-sizing: border-box; min-width: 0; }
@@ -866,9 +882,11 @@ useEffect(() => {
                 Sign In / Sign Up →
               </button>
             )}
-            <div className="header-username" style={{ fontSize: 12, color: S.gray }}>
-              {user?.firstName || ""}
-            </div>
+            {user && (
+              <button onClick={() => setSettingsOpen(true)} style={{ width: 34, height: 34, borderRadius: '50%', background: '#c9a84c', border: isPro ? '2px solid #c9a84c' : '2px solid #334466', cursor: 'pointer', color: '#0d1f35', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, padding: 0 }}>
+                {user.imageUrl ? <img src={user.imageUrl} alt="avatar" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user.firstName?.[0] || user.primaryEmailAddress?.emailAddress?.[0] || '?').toUpperCase()}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -995,7 +1013,7 @@ useEffect(() => {
                 return (
                   <div key={rep.id} className="rep-card"
                     style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#5B9CFF" : S.red }} />
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1a6dc9" : rep.party === "Republican" ? "#cc2020" : rep.party === "Independent" ? "#c9a84c" : rep.party === "Green" ? "#2a9d4c" : "#334466" }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
                         {rep.photo
@@ -1013,7 +1031,7 @@ useEffect(() => {
                         <div style={{ fontSize: 11, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.district}</div>
                         <div style={{ display: "flex", gap: 6 }}>
                           <span className={`badge ${rep.party === "Democrat" ? "dem-badge" : "rep-badge"}`}>{rep.party}</span>
-                          <span className={`badge ${rep.level === "federal" ? "federal-badge" : "muni-badge"}`}>{rep.level}</span>
+                          {rep.level !== "federal" && rep.level !== "Federal" && <span className="badge muni-badge">{rep.level}</span>}
                         </div>
                       </div>
                     </div>
@@ -1075,7 +1093,7 @@ useEffect(() => {
                       return (
                         <div key={rep.id} className="rep-card"
                           style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? S.red : levelColor }} />
+                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#1a6dc9' : rep.party === 'Republican' ? '#cc2020' : rep.party === 'Independent' ? '#c9a84c' : rep.party === 'Green' ? '#2a9d4c' : '#334466' }} />
                           <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                             <div style={{ position: 'relative' }}>
                               {rep.photo
@@ -1573,11 +1591,11 @@ useEffect(() => {
                 <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Alert Types</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
-                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)' },
-                    { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)' },
-                    { key: 'alert_legislation',  label: 'Sponsored legislation' },
-                    { key: 'alert_committees',   label: 'Committee assignments' },
-                  ].map(({ key, label }) => {
+                    { key: 'alert_trades',      label: 'Trade Disclosures',   tier: 'Free',    tierColor: '#2a9d4c', tierBg: 'rgba(42,157,76,0.15)' },
+                    { key: 'alert_committees',   label: 'Committee Assignments', tier: 'Sign In', tierColor: '#4a9fd4', tierBg: 'rgba(74,159,212,0.15)' },
+                    { key: 'alert_networth',     label: 'Net Worth Updates',   tier: 'Pro',     tierColor: '#c9a84c', tierBg: 'rgba(201,168,76,0.15)' },
+                    { key: 'alert_legislation',  label: 'Sponsored Legislation', tier: 'Pro',   tierColor: '#c9a84c', tierBg: 'rgba(201,168,76,0.15)' },
+                  ].map(({ key, label, tier, tierColor, tierBg }) => {
                     const checked = prefs[key]
                     return (
                       <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -1585,7 +1603,8 @@ useEffect(() => {
                           style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
                           {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                         </div>
-                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray }}>{label}</span>
+                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray, flex: 1 }}>{label}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8, background: tierBg, color: tierColor, border: `1px solid ${tierColor}44`, flexShrink: 0 }}>{tier}</span>
                       </label>
                     )
                   })}
@@ -2013,6 +2032,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [fdNetWorth, setFdNetWorth] = useState(null)
   const [loadingFdNetWorth, setLoadingFdNetWorth] = useState(false)
   const [nwHoverIdx, setNwHoverIdx] = useState(null)
+  const [liveCommittees, setLiveCommittees] = useState(null)
   const [compareQuery, setCompareQuery] = useState('')
   const [compareResults, setCompareResults] = useState([])
   const [compareSearchLoading, setCompareSearchLoading] = useState(false)
@@ -2108,9 +2128,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       Promise.all([
         fetch(`/api/congress?type=member&bioguideId=${rep.id}`).then(r => r.json()),
         fetch(`/api/congress?type=sponsored&bioguideId=${rep.id}`).then(r => r.json()),
-      ]).then(([bioData, sponsoredData]) => {
+        fetch(`/api/congress?type=committees&bioguideId=${rep.id}`).then(r => r.json()),
+      ]).then(([bioData, sponsoredData, committeeData]) => {
         setLiveBio(bioData.member || null)
         setLiveSponsored(sponsoredData.bills || [])
+        setLiveCommittees(committeeData.committees || [])
         setLoadingBio(false)
       }).catch(() => { setLoadingBio(false) })
     }
@@ -2236,7 +2258,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
           {rep.photo
-            ? <img src={rep.photo} alt={rep.name} style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+            ? <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
                 onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
             : null}
           <InitialsAvatar name={rep.name} party={rep.party} size={90}
@@ -2278,6 +2300,29 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {/* Wealth Change */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Wealth & Trades</div>
+            {(() => {
+              const recentTrade = trades.length > 0 && trades.some(t => {
+                const d = new Date(t.transaction_date || t.date)
+                return !isNaN(d) && (Date.now() - d) < 90 * 24 * 60 * 60 * 1000
+              })
+              const largestTrade = trades.length > 0 ? trades.reduce((best, t) => (!best || (t.amount_max || 0) > (best.amount_max || 0)) ? t : best, null) : null
+              return (
+                <>
+                  {trades.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: recentTrade ? 'rgba(42,157,76,0.15)' : 'rgba(100,100,120,0.15)', color: recentTrade ? '#4CAF50' : S.gray, border: `1px solid ${recentTrade ? '#4CAF5044' : '#33446644'}` }}>
+                        {recentTrade ? 'Traded last 90 days' : 'No trades last 90 days'}
+                      </span>
+                    </div>
+                  )}
+                  {largestTrade && (
+                    <div style={{ fontSize: 11, color: S.gray, marginBottom: 6 }}>
+                      Largest: <span style={{ color: S.grayLight }}>{largestTrade.ticker || largestTrade.asset || 'Unknown'}</span>{largestTrade.amount_min != null ? ` · $${(largestTrade.amount_min / 1000).toFixed(0)}k–$${(largestTrade.amount_max / 1000).toFixed(0)}k` : largestTrade.amount ? ` · ${largestTrade.amount}` : ''}
+                    </div>
+                  )}
+                </>
+              )
+            })()}
             {rep.netWorthBefore ? (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
@@ -2468,7 +2513,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           <span style={{ fontSize: 11, color: '#4ade80', whiteSpace: 'nowrap' }}>✓ {v.totalYea} Yea</span>
                           <span style={{ fontSize: 11, color: '#f87171', whiteSpace: 'nowrap' }}>✗ {v.totalNay} Nay</span>
                           {(v.totalOther ?? 0) > 0 && <span style={{ fontSize: 11, color: S.gray, whiteSpace: 'nowrap' }}>{v.totalOther} Other</span>}
-                          {v.chamber && <span style={{ fontSize: 11, color: S.gray, marginLeft: 'auto' }}>{v.chamber}{v.congress ? ` · ${v.congress}th Congress` : ''}</span>}
+                          {v.chamber && <span style={{ fontSize: 11, color: S.gray, marginLeft: 'auto' }}>{v.chamber}{v.congress ? ` · ${congressToYear(v.congress)}–${v.congress >= 119 ? 'present' : congressToYear(v.congress + 1)}` : ''}</span>}
                         </div>
                       )}
                     </div>
@@ -2924,7 +2969,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       {liveBio.terms?.length ? ` Has served ${liveBio.terms.length} term${liveBio.terms.length > 1 ? 's' : ''} in Congress.` : ''}
                     </p>
                     {formatLeadershipRoles(liveBio.leadership).length > 0 && (
-                      <div>
+                      <div style={{ marginBottom: 14 }}>
                         <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 8 }}>Leadership Roles</div>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                           {formatLeadershipRoles(liveBio.leadership).map(({ role, spans }) => (
@@ -2933,6 +2978,22 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               <span style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
                                 <span style={{ color: S.offWhite, fontWeight: 600 }}>{role}</span>
                                 {' — '}{spans.join(', ')}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {liveCommittees && liveCommittees.length > 0 && (
+                      <div style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 8 }}>Committee Memberships</div>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          {liveCommittees.map((c, i) => (
+                            <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 5 }}>
+                              <span style={{ color: S.gold, flexShrink: 0, fontSize: 14 }}>•</span>
+                              <span style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
+                                <span style={{ color: S.offWhite }}>{c.name}</span>
+                                {c.chamber && <span style={{ color: S.gray }}>{' — '}{c.chamber}</span>}
                               </span>
                             </li>
                           ))}
@@ -3129,6 +3190,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             >
                               <div style={{ position: 'relative', flexShrink: 0 }}>
                                 <img src={photo} alt={displayName}
+                                  referrerPolicy="no-referrer"
                                   style={{ width: 44, height: 44, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
                                   onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
                                 <InitialsAvatar name={member.name} party={member.party} size={44} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
@@ -3172,6 +3234,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                               {rep.photo
                                 ? <img src={rep.photo} alt={repDisplayName}
+                                    referrerPolicy="no-referrer"
                                     style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
                                     onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
                                 : null}
@@ -3192,6 +3255,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                               <div style={{ position: 'relative', width: 60, margin: '0 auto 10px' }}>
                                 <img src={compareRep.photo} alt={compareRep.displayName}
+                                  referrerPolicy="no-referrer"
                                   style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
                                   onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
                                 <InitialsAvatar name={compareRep.name} party={compareRep.party} size={60}

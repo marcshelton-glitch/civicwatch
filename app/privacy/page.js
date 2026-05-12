@@ -117,7 +117,7 @@ export default function PrivacyPolicyPage() {
               <strong>Service providers</strong> who help us operate
               CivicWatch, including Clerk (authentication), Supabase
               (database hosting), Stripe (payments), Vercel (web hosting),
-              and Anthropic (AI features). These providers are bound by
+              and Google (AI features via Gemini). These providers are bound by
               contracts that restrict how they can use your data.
             </li>
             <li>

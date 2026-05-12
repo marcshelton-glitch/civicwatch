@@ -746,14 +746,24 @@ export async function GET(request) {
 
     // ── search ────────────────────────────────────────────────────────────
     if (type === 'search') {
-      const name = (searchParams.get('name') || '').trim()
-      if (name.length < 2) return NextResponse.json({ members: [], source: 'none' })
-      const data = await cFetch(`/member?name=${encodeURIComponent(name)}&currentMember=true&limit=20`)
-      const members = (data.members || []).map(m => {
+      const query = (searchParams.get('name') || '').trim().toLowerCase()
+      if (query.length < 2) return NextResponse.json({ members: [], source: 'none' })
+
+      const [p1, p2, p3] = await Promise.all([
+        cFetch('/member?currentMember=true&limit=250&offset=0'),
+        cFetch('/member?currentMember=true&limit=250&offset=250'),
+        cFetch('/member?currentMember=true&limit=250&offset=500'),
+      ])
+      const allMembers = [
+        ...(p1.members || []),
+        ...(p2.members || []),
+        ...(p3.members || []),
+      ]
+
+      const normalize = m => {
         const termItems = m.terms?.item || []
         const latestTerm = termItems[termItems.length - 1] || {}
         const chamber = latestTerm.chamber || ''
-        const isSen = chamber.toLowerCase().includes('senate')
         return {
           bioguideId: m.bioguideId,
           name: m.name,
@@ -761,11 +771,17 @@ export async function GET(request) {
           state: m.state,
           district: m.district ? `District ${m.district}` : 'Statewide',
           chamber,
-          isSenator: isSen,
+          isSenator: chamber.toLowerCase().includes('senate'),
           url: m.url,
           depiction: m.depiction?.imageUrl || null,
         }
-      })
+      }
+
+      const members = allMembers
+        .filter(m => m.name && m.name.toLowerCase().includes(query))
+        .slice(0, 20)
+        .map(normalize)
+
       return NextResponse.json({ members, source: 'live' })
     }
 

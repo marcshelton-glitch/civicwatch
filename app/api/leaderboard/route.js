@@ -24,8 +24,8 @@ export async function GET() {
       // Fallback: raw query via select
       const { data: rows, error: qErr } = await supabase
         .from('fd_filings')
-        .select('bioguide_id, member_name, state, party, id, filing_date')
-        .eq('type', 'P')
+        .select('bioguide_id, name, state, party, id, filing_date')
+        .eq('filing_type', 'P')
         .not('bioguide_id', 'is', null)
 
       if (qErr) throw new Error(qErr.message)
@@ -37,7 +37,7 @@ export async function GET() {
         if (!map.has(key)) {
           map.set(key, {
             bioguide_id: key,
-            name: row.member_name,
+            name: row.name,
             state: row.state,
             party: row.party,
             filing_count: 0,
@@ -46,7 +46,7 @@ export async function GET() {
         }
         const entry = map.get(key)
         entry.filing_count++
-        if (!entry.name && row.member_name) entry.name = row.member_name
+        if (!entry.name && row.name) entry.name = row.name
         if (!entry.state && row.state) entry.state = row.state
         if (!entry.party && row.party) entry.party = row.party
         if (row.filing_date && (!entry.latest_filing || row.filing_date > entry.latest_filing)) {
