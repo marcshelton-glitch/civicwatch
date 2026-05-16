@@ -221,7 +221,7 @@ export async function GET(request) {
           officialWebsiteUrl: m.officialWebsiteUrl,
           depiction: m.depiction?.imageUrl || null,
           leadership: m.leadership || [],
-          terms: m.terms?.item || [],
+          terms: m.terms || [],
         },
         source: 'live',
       })
@@ -331,7 +331,7 @@ export async function GET(request) {
         const nameParts = fullName.split(',')
         lastName = nameParts[0]?.trim().toLowerCase().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || ''
         firstName = nameParts[1]?.trim().split(/\s+/)[0]?.toLowerCase() || ''
-        const latestTerm = (m?.terms?.item || []).slice(-1)[0]
+        const latestTerm = (m?.terms || []).slice(-1)[0]
         isSenator = latestTerm?.chamber?.toLowerCase().includes('senate') || false
       } catch { /* skip */ }
 
@@ -654,7 +654,7 @@ export async function GET(request) {
         lastName = nameParts[0]?.trim().toLowerCase()
           .replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '')
           .replace(/[^a-z\-]/g, '') || ''
-        const latestTerm = (m?.terms?.item || []).slice(-1)[0]
+        const latestTerm = (m?.terms || []).slice(-1)[0]
         isSenator = latestTerm?.chamber?.toLowerCase().includes('senate') || false
       } catch { /* skip */ }
 
@@ -736,7 +736,7 @@ export async function GET(request) {
     // ── committees ────────────────────────────────────────────────────────
     if (type === 'committees') {
       const data = await cFetch(`/member/${bioguideId}`)
-      const terms = data.member?.terms?.item || []
+      const terms = data.member?.terms || []
       // Group by committee name, tracking min/max congress so we can show year ranges
       const byName = {}
       for (const term of terms) {
