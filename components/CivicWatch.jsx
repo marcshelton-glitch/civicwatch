@@ -3099,7 +3099,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
                       return (
                         <div style={{ marginTop: 18 }}>
-                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Political Service</div>
+                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Congressional Service</div>
                           <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
                             {servingSince && (
                               <div style={{ padding: '8px 14px', background: 'rgba(212,175,55,0.08)', border: `1px solid ${S.border}`, borderRadius: 8 }}>
@@ -3117,9 +3117,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           <div style={{ borderLeft: `2px solid ${S.border}`, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
                             {displayGroups.map((g, i) => {
                               const isCurrent = g.endYr > currentYear
-                              const chamberLabel = g.chamber?.toLowerCase().includes('senate') ? 'U.S. Senate' : 'U.S. House'
-                              const districtStr = !g.chamber?.toLowerCase().includes('senate') && g.district ? ` · District ${g.district}` : ''
+                              const chamberLabel = g.chamber || 'Congress'
                               const yearsStr = isCurrent ? `${g.startYr}–present` : `${g.startYr}–${g.endYr}`
+                              const locationParts = [g.stateCode, g.district && `District ${g.district}`].filter(Boolean)
                               return (
                                 <div key={i} style={{ position: 'relative' }}>
                                   <div style={{ position: 'absolute', left: -20, top: 5, width: 8, height: 8, borderRadius: '50%', background: isCurrent ? S.gold : 'rgba(212,175,55,0.35)' }} />
@@ -3130,7 +3130,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                     )}
                                   </div>
                                   <div style={{ fontSize: 12, color: S.gray, marginTop: 3 }}>
-                                    {g.stateCode}{districtStr} · {yearsStr}
+                                    {[...locationParts, yearsStr].join(' · ')}
                                   </div>
                                 </div>
                               )
