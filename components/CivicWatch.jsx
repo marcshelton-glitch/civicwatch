@@ -3079,13 +3079,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       const sortedTerms = [...liveBio.terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))
                       const currentChamber = sortedTerms[sortedTerms.length - 1]?.chamber || ''
 
-                      // Group consecutive terms in the same chamber into ranges
+                      // Group consecutive terms in the same chamber+state+district into ranges
                       const grouped = []
                       for (const term of sortedTerms) {
                         const startYr = term.startYear || congressToYear(term.congress)
                         const endYr = term.endYear || (congressToYear(term.congress) + 2)
                         const last = grouped[grouped.length - 1]
-                        if (last && last.chamber === term.chamber && startYr <= last.endYr + 1) {
+                        if (last && last.chamber === term.chamber && last.stateCode === term.stateCode && last.district === term.district && startYr <= last.endYr + 1) {
                           last.endYr = Math.max(last.endYr, endYr)
                         } else {
                           grouped.push({ chamber: term.chamber, stateCode: term.stateCode, district: term.district, startYr, endYr })
@@ -3095,7 +3095,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       const currentGroups = grouped.filter(g => g.chamber === currentChamber)
                       const servingSince = currentGroups.length > 0 ? currentGroups[0].startYr : null
                       const totalYears = Math.round(grouped.reduce((sum, g) => sum + (Math.min(g.endYr, currentYear) - g.startYr), 0))
-                      const displayGroups = [...grouped].reverse()
+
+                      // For display: group consecutive entries by chamber so each chamber gets one heading
+                      const displayChamberGroups = []
+                      for (const g of [...grouped].reverse()) {
+                        const last = displayChamberGroups[displayChamberGroups.length - 1]
+                        if (last && last.chamber === g.chamber) {
+                          last.rows.push(g)
+                        } else {
+                          displayChamberGroups.push({ chamber: g.chamber, rows: [g] })
+                        }
+                      }
 
                       return (
                         <div style={{ marginTop: 18 }}>
@@ -3115,11 +3125,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             )}
                           </div>
                           <div style={{ borderLeft: `2px solid ${S.border}`, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            {displayGroups.map((g, i) => {
-                              const isCurrent = g.endYr > currentYear
-                              const chamberLabel = g.chamber || 'Congress'
-                              const yearsStr = isCurrent ? `${g.startYr}–present` : `${g.startYr}–${g.endYr}`
-                              const locationParts = [g.stateCode, g.district && `District ${g.district}`].filter(Boolean)
+                            {displayChamberGroups.map((cg, i) => {
+                              const isCurrent = cg.rows.some(r => r.endYr > currentYear)
+                              const chamberLabel = cg.chamber?.toLowerCase().includes('senate') ? 'U.S. Senate' : 'U.S. House'
+                              const isSenate = cg.chamber?.toLowerCase().includes('senate')
                               return (
                                 <div key={i} style={{ position: 'relative' }}>
                                   <div style={{ position: 'absolute', left: -20, top: 5, width: 8, height: 8, borderRadius: '50%', background: isCurrent ? S.gold : 'rgba(212,175,55,0.35)' }} />
@@ -3129,8 +3138,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                       <span style={{ fontSize: 10, background: 'rgba(212,175,55,0.15)', color: S.gold, border: `1px solid rgba(212,175,55,0.5)`, borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>● Current</span>
                                     )}
                                   </div>
-                                  <div style={{ fontSize: 12, color: S.gray, marginTop: 3 }}>
-                                    {[...locationParts, yearsStr].join(' · ')}
+                                  <div style={{ fontSize: 12, color: S.gray, marginTop: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    {cg.rows.map((r, j) => {
+                                      const districtStr = !isSenate && r.district ? ` · District ${r.district}` : ''
+                                      const yearsStr = r.endYr > currentYear ? `${r.startYr}–present` : `${r.startYr}–${r.endYr}`
+                                      return (
+                                        <div key={j}>{r.stateCode}{districtStr} · {yearsStr}</div>
+                                      )
+                                    })}
                                   </div>
                                 </div>
                               )
