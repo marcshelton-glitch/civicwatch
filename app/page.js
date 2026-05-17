@@ -47,6 +47,29 @@ const FEATURES = [
   },
 ]
 
+const HOW_IT_WORKS = [
+  {
+    icon: '🔍',
+    title: 'Search for your representatives',
+    desc: 'Find any member of Congress by name or state. Our full database covers all 535 members of the Senate and House of Representatives.',
+  },
+  {
+    icon: '📊',
+    title: 'Track their trades',
+    desc: 'See real-time stock trade disclosures required by the STOCK Act — every buy and sell, cross-referenced against committee assignments.',
+  },
+  {
+    icon: '🗳️',
+    title: 'Monitor their votes',
+    desc: 'Follow how your reps vote on legislation that affects you — from healthcare and defense to taxes and climate policy.',
+  },
+  {
+    icon: '🔔',
+    title: 'Set alerts',
+    desc: 'Get notified the moment a tracked representative makes a new trade disclosure or casts a key vote. Stay informed without the noise.',
+  },
+]
+
 const FALLBACK_TICKER = [
   'Sen. Warren · NVDA BUY · $15,001–$50,000',
   'Rep. Pelosi · AAPL BUY · $500,001–$1M',
@@ -609,12 +632,57 @@ export default function LandingPage() {
           background: linear-gradient(90deg, var(--red) 33%, #F0F2FF 33%, #F0F2FF 66%, var(--navy-light) 66%);
         }
 
+        /* HOW IT WORKS */
+        .hiw-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+        }
+
+        .hiw-steps {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 24px;
+        }
+
+        .hiw-step {
+          padding: 32px;
+          background: rgba(15,26,53,0.5);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          position: relative;
+          transition: border-color 0.3s, background 0.3s;
+        }
+        .hiw-step:hover { border-color: rgba(124,124,255,0.5); background: rgba(15,26,53,0.8); }
+
+        .hiw-number {
+          font-family: 'Playfair Display', serif;
+          font-size: 56px; font-weight: 900;
+          color: rgba(124,124,255,0.18);
+          line-height: 1; margin-bottom: 16px;
+        }
+
+        .hiw-icon {
+          font-size: 26px; margin-bottom: 12px; display: block;
+        }
+
+        .hiw-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 18px; font-weight: 700;
+          margin-bottom: 10px; color: var(--white);
+        }
+
+        .hiw-desc {
+          font-size: 14px; color: var(--gray);
+          line-height: 1.7; font-weight: 300;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
           .preview-body { grid-template-columns: 1fr; }
           .pricing-grid { grid-template-columns: 1fr; }
           .nav { padding: 0 16px; }
           .hero { padding: 100px 16px 60px; }
+          .hiw-steps { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -669,6 +737,13 @@ and got <span className="red">rich.</span>
               Sign In
             </Link>
           )}
+          <button
+            className="btn-hero-ghost"
+            style={{ fontFamily: 'inherit' }}
+            onClick={() => document.getElementById('how-it-works').scrollIntoView({ behavior: 'smooth' })}
+          >
+            See How It Works ↓
+          </button>
         </div>
 
       </section>
@@ -806,6 +881,31 @@ and got <span className="red">rich.</span>
           </div>
         </div>
       </section>
+
+      <div className="flag-stripe" style={{ maxWidth: 1100, margin: '0 auto' }} />
+
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" className="hiw-section">
+        <div className="section-label">How It Works</div>
+        <h2 className="section-title">
+          Follow the money.<br />Track the votes.
+        </h2>
+        <p className="section-sub">
+          Four steps to hold your representatives accountable — no expertise required.
+        </p>
+        <div className="hiw-steps">
+          {HOW_IT_WORKS.map((step, i) => (
+            <div key={i} className="hiw-step">
+              <div className="hiw-number">{String(i + 1).padStart(2, '0')}</div>
+              <span className="hiw-icon">{step.icon}</span>
+              <div className="hiw-title">{step.title}</div>
+              <div className="hiw-desc">{step.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="flag-stripe" style={{ maxWidth: 1100, margin: '0 auto' }} />
 
       {/* PRICING */}
       <section className="pricing-section">
