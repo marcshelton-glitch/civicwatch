@@ -1,8 +1,11 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
+
+const CapitolScene = dynamic(() => import('../components/CapitolScene'), { ssr: false })
 
 const STATS = [
   { value: '$174K', label: 'Average congressional salary' },
@@ -637,6 +640,7 @@ export default function LandingPage() {
       <section className="hero" ref={heroRef}>
         <div className="hero-bg" />
         <div className="hero-stripe" />
+        <CapitolScene />
 
         <div className="eyebrow" style={{ position: 'relative' }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
