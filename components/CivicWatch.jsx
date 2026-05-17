@@ -2082,6 +2082,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [compareRep, setCompareRep] = useState(null)
   const [compareData, setCompareData] = useState(null)
   const [compareDataLoading, setCompareDataLoading] = useState(false)
+  const [compareMode, setCompareMode] = useState(false)
 
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
@@ -2111,7 +2112,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
     setLoadingDisclosures(false)
     setFdNetWorth(null); setLoadingFdNetWorth(false); setNwHoverIdx(null)
-    setCompareQuery(''); setCompareResults([]); setCompareRep(null); setCompareData(null); setCompareDataLoading(false)
+    setCompareQuery(''); setCompareResults([]); setCompareRep(null); setCompareData(null); setCompareDataLoading(false); setCompareMode(false)
   }, [rep.id])
 
   const isLive = rep.isLive
@@ -2289,7 +2290,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     { id: "votes", label: "Votes" },
     { id: "docket", label: "Today's Docket" },
     { id: "wealth", label: "Wealth & Trades" },
-    { id: "bio", label: "Bio & Compare" },
+    { id: "bio", label: "Bio" },
     { id: "townhall", label: "Town Hall" },
     { id: "nonprofits", label: "🏦 Nonprofits" },
     { id: "ai", label: "🤖 AI Analysis" },
@@ -2336,9 +2337,210 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <button onClick={() => toggleTrack(rep)} style={{ padding: "9px 16px", background: isTracked ? `rgba(212,175,55,0.15)` : "rgba(255,255,255,0.05)", border: `1px solid ${isTracked ? S.gold : S.border}`, borderRadius: 10, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
               {isTracked ? "★ Tracking" : "☆ Track"}
             </button>
+            <button onClick={() => {
+              if (compareMode) {
+                setCompareMode(false)
+                setCompareRep(null)
+                setCompareQuery('')
+                setCompareResults([])
+                setCompareData(null)
+              } else {
+                setCompareMode(true)
+              }
+            }} style={{ padding: "9px 16px", background: compareMode ? `rgba(212,175,55,0.2)` : "rgba(255,255,255,0.05)", border: `1px solid ${compareMode ? S.gold : S.border}`, borderRadius: 10, color: compareMode ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
+              ⚖️ {compareMode ? 'Exit Compare' : 'Compare'}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* COMPARE PANEL */}
+      {compareMode && (() => {
+        const repDisplayName = (() => {
+          const parts = (rep.name || '').split(', ')
+          return parts.length >= 2 ? `${parts[1].split(' ')[0]} ${parts[0]}` : rep.name || ''
+        })()
+        const repPartyColor = rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? S.red : S.gray
+        return (
+          <div style={{ marginBottom: 20, background: `linear-gradient(145deg, rgba(10,22,40,0.95), rgba(27,42,107,0.35))`, border: `1px solid ${compareRep ? S.gold : S.border}`, borderRadius: 16, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: `1px solid rgba(212,175,55,0.15)` }}>
+              <div style={{ fontSize: 11, letterSpacing: 2, color: S.gold, textTransform: 'uppercase', fontWeight: 600 }}>⚖️ Compare Mode</div>
+              <button
+                onClick={() => { setCompareMode(false); setCompareRep(null); setCompareQuery(''); setCompareResults([]); setCompareData(null) }}
+                style={{ padding: '5px 12px', background: 'none', border: `1px solid ${S.border}`, borderRadius: 8, color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12 }}>
+                Exit Compare
+              </button>
+            </div>
+            {!compareRep ? (
+              <div style={{ padding: 16 }}>
+                <div style={{ position: 'relative', marginBottom: 10 }}>
+                  <input
+                    placeholder="Search a second rep to compare (e.g. Pelosi, Sanders…)"
+                    value={compareQuery}
+                    onChange={e => setCompareQuery(e.target.value)}
+                    style={{ width: '100%', padding: '12px 40px 12px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, color: S.white, fontFamily: 'inherit', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                  />
+                  {compareQuery && (
+                    <button
+                      onClick={() => { setCompareQuery(''); setCompareResults([]) }}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: S.gray, cursor: 'pointer', fontSize: 20, padding: '0 4px', lineHeight: 1 }}>
+                      ×
+                    </button>
+                  )}
+                </div>
+                {compareSearchLoading && (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray }}>
+                    <div style={{ width: 24, height: 24, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 8px' }} />
+                    Searching…
+                  </div>
+                )}
+                {!compareSearchLoading && compareResults.filter(m => m.bioguideId !== rep.id).length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {compareResults.filter(m => m.bioguideId !== rep.id).map(member => {
+                      const nameParts = (member.name || '').split(', ')
+                      const displayName = nameParts.length >= 2 ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}` : member.name || ''
+                      const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
+                      const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
+                      return (
+                        <div key={member.bioguideId}
+                          onClick={() => { setCompareRep({ ...member, displayName, photo, partyColor }); setCompareQuery(''); setCompareResults([]) }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s' }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = S.gold}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
+                        >
+                          <div style={{ position: 'relative', flexShrink: 0 }}>
+                            <img src={photo} alt={displayName}
+                              referrerPolicy="no-referrer"
+                              style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
+                              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                            <InitialsAvatar name={displayName} party={member.party} size={40} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{displayName}</div>
+                            <div style={{ fontSize: 11, color: S.gold }}>{member.isSenator ? 'U.S. Senator' : 'U.S. Representative'} · {member.state}</div>
+                          </div>
+                          <span style={{ fontSize: 12, color: S.gray, flexShrink: 0 }}>Select →</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+                {!compareSearchLoading && compareQuery.trim().length >= 2 && compareResults.filter(m => m.bioguideId !== rep.id).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 13 }}>
+                    No results for &ldquo;{compareQuery.trim()}&rdquo;
+                  </div>
+                )}
+                {!compareSearchLoading && compareQuery.trim().length < 2 && (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 13 }}>
+                    Type at least 2 characters to search for a rep to compare
+                  </div>
+                )}
+              </div>
+            ) : compareDataLoading ? (
+              <div style={{ textAlign: 'center', padding: '32px 0', color: S.gray }}>
+                <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
+                Loading comparison data…
+              </div>
+            ) : (
+              <>
+                <div className="compare-card-header">
+                  <div style={{ padding: '20px 16px', textAlign: 'center' }}>
+                    {rep.photo
+                      ? <img src={rep.photo} alt={repDisplayName}
+                          referrerPolicy="no-referrer"
+                          style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
+                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                      : null}
+                    <InitialsAvatar name={rep.name} party={rep.party} size={60}
+                      style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
+                    <div style={{ fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 3 }}>{repDisplayName}</div>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${repPartyColor}22`, color: repPartyColor, border: `1px solid ${repPartyColor}44` }}>
+                      {rep.party === 'Democrat' ? 'D' : rep.party === 'Republican' ? 'R' : 'I'} · {rep.state}
+                    </span>
+                  </div>
+                  <div className="compare-divider-vert" style={{ width: 1, background: `linear-gradient(to bottom, transparent, ${S.gold}, transparent)`, margin: '16px 0' }} />
+                  <div className="compare-vs-mobile">VS</div>
+                  <div style={{ padding: '20px 16px', textAlign: 'center' }}>
+                    <div style={{ position: 'relative', width: 60, margin: '0 auto 10px' }}>
+                      <img src={compareRep.photo} alt={compareRep.displayName}
+                        referrerPolicy="no-referrer"
+                        style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
+                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                      <InitialsAvatar name={compareRep.name} party={compareRep.party} size={60}
+                        style={{ display: 'none', border: `3px solid ${compareRep.partyColor}` }} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 3 }}>{compareRep.displayName}</div>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${compareRep.partyColor}22`, color: compareRep.partyColor, border: `1px solid ${compareRep.partyColor}44` }}>
+                      {compareRep.party === 'Democrat' ? 'D' : compareRep.party === 'Republican' ? 'R' : 'I'} · {compareRep.state}
+                    </span>
+                  </div>
+                </div>
+                {[
+                  {
+                    icon: '💰',
+                    label: 'Est. Net Worth',
+                    left: (() => { const nw = netWorthHistory?.[0]; if (!nw) return 'N/A'; return fmt((nw.netWorthMin + nw.netWorthMax) / 2) })(),
+                    right: (() => { const nw = compareData?.netWorthHistory?.[0]; if (!nw) return 'N/A'; return fmt((nw.netWorthMin + nw.netWorthMax) / 2) })(),
+                  },
+                  {
+                    icon: '📊',
+                    label: 'Total Trades',
+                    left: liveTrades != null ? String(liveTrades.length) : '—',
+                    right: compareData?.trades != null ? String(compareData.trades.length) : '—',
+                  },
+                  {
+                    icon: '🏛️',
+                    label: 'Terms Served',
+                    left: liveBio?.terms?.length ? String(liveBio.terms.length) : '—',
+                    right: compareData?.bio?.terms?.length ? String(compareData.bio.terms.length) : '—',
+                  },
+                  {
+                    icon: '📅',
+                    label: 'Serving Since',
+                    left: (() => { const terms = liveBio?.terms || []; if (!terms.length) return '—'; const sorted = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0)); const first = sorted[0]; return String(first.startYear || congressToYear(first.congress)) })(),
+                    right: (() => { const terms = compareData?.bio?.terms || []; if (!terms.length) return '—'; const sorted = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0)); const first = sorted[0]; return String(first.startYear || congressToYear(first.congress)) })(),
+                  },
+                  {
+                    icon: '🎂',
+                    label: 'Age',
+                    left: liveBio?.birthYear ? String(new Date().getFullYear() - liveBio.birthYear) : '—',
+                    right: compareData?.bio?.birthYear ? String(new Date().getFullYear() - compareData.bio.birthYear) : '—',
+                  },
+                  {
+                    icon: '🏦',
+                    label: 'Top Ticker',
+                    left: tradesMeta?.topTickers?.[0] || '—',
+                    right: compareData?.topTickers?.[0] || '—',
+                  },
+                ].map(({ icon, label, left, right }) => (
+                  <div key={label} style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', borderTop: `1px solid rgba(212,175,55,0.12)` }}>
+                    <div style={{ padding: '13px 16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: S.offWhite }}>{left}</div>
+                    </div>
+                    <div style={{ padding: '13px 10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 76, borderLeft: `1px solid rgba(212,175,55,0.12)`, borderRight: `1px solid rgba(212,175,55,0.12)` }}>
+                      <div style={{ fontSize: 14 }}>{icon}</div>
+                      <div style={{ fontSize: 9, color: S.gray, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 3, whiteSpace: 'nowrap' }}>{label}</div>
+                    </div>
+                    <div style={{ padding: '13px 16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: S.offWhite }}>{right}</div>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ padding: 12, borderTop: `1px solid rgba(212,175,55,0.12)` }}>
+                  <button
+                    onClick={() => { setCompareRep(null); setCompareQuery(''); setCompareResults([]); setCompareData(null) }}
+                    style={{ display: 'block', width: '100%', padding: '10px 0', background: 'none', border: `1px solid ${S.border}`, borderRadius: 10, color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, transition: 'all 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.color = S.gold }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.gray }}
+                  >
+                    Change Rep
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )
+      })()}
 
       {/* TABS */}
       <div className="rep-tabs-row" style={{ display: "flex", gap: 6, marginBottom: 20 }}>
@@ -3260,240 +3462,6 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               )}
             </>
           )}
-
-          {/* ── COMPARE WITH ANOTHER REP ── */}
-          {(() => {
-            const repDisplayName = (() => {
-              const parts = (rep.name || '').split(', ')
-              return parts.length >= 2 ? `${parts[1].split(' ')[0]} ${parts[0]}` : rep.name || ''
-            })()
-            const repPartyColor = rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? S.red : S.gray
-
-            return (
-              <div style={{ marginTop: 24 }}>
-                <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 14 }}>
-                  Compare with Another Rep
-                </div>
-
-                {!compareRep ? (
-                  <>
-                    <div style={{ position: 'relative', marginBottom: 14 }}>
-                      <input
-                        placeholder="Search by name (e.g. Pelosi, AOC, Sanders…)"
-                        value={compareQuery}
-                        onChange={e => setCompareQuery(e.target.value)}
-                        style={{ width: '100%', padding: '12px 40px 12px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, color: S.white, fontFamily: 'inherit', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-                      />
-                      {compareQuery && (
-                        <button
-                          onClick={() => { setCompareQuery(''); setCompareResults([]) }}
-                          style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: S.gray, cursor: 'pointer', fontSize: 20, padding: '0 4px', lineHeight: 1 }}>
-                          ×
-                        </button>
-                      )}
-                    </div>
-
-                    {compareSearchLoading && (
-                      <div style={{ textAlign: 'center', padding: '28px 0', color: S.gray }}>
-                        <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
-                        Searching…
-                      </div>
-                    )}
-
-                    {!compareSearchLoading && compareResults.filter(m => m.bioguideId !== rep.id).length > 0 && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {compareResults.filter(m => m.bioguideId !== rep.id).map(member => {
-                          const nameParts = (member.name || '').split(', ')
-                          const displayName = nameParts.length >= 2
-                            ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
-                            : member.name || ''
-                          const photo = `/api/rep-photo/${member.bioguideId}`
-                          const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
-                          return (
-                            <div key={member.bioguideId}
-                              onClick={() => {
-                                setCompareRep({ ...member, displayName, photo, partyColor })
-                                setCompareQuery('')
-                                setCompareResults([])
-                              }}
-                              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s' }}
-                              onMouseEnter={e => e.currentTarget.style.borderColor = S.gold}
-                              onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
-                            >
-                              <div style={{ position: 'relative', flexShrink: 0 }}>
-                                <img src={photo} alt={displayName}
-                                  referrerPolicy="no-referrer"
-                                  style={{ width: 44, height: 44, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
-                                  onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
-                                <InitialsAvatar name={displayName} party={member.party} size={44} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
-                              </div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{displayName}</div>
-                                <div style={{ fontSize: 11, color: S.gold }}>{member.isSenator ? 'U.S. Senator' : 'U.S. Representative'} · {member.state}</div>
-                              </div>
-                              <span style={{ fontSize: 12, color: S.gray, flexShrink: 0 }}>Select →</span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-
-                    {!compareSearchLoading && compareQuery.trim().length >= 2 && compareResults.filter(m => m.bioguideId !== rep.id).length === 0 && (
-                      <div style={{ textAlign: 'center', padding: '28px 0', color: S.gray, fontSize: 13 }}>
-                        No results found for &ldquo;{compareQuery.trim()}&rdquo;
-                      </div>
-                    )}
-
-                    {!compareSearchLoading && compareQuery.trim().length < 2 && (
-                      <div style={{ textAlign: 'center', padding: '28px 0', color: S.gray, fontSize: 13 }}>
-                        Type at least 2 characters to search for a representative to compare
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {compareDataLoading ? (
-                      <div style={{ textAlign: 'center', padding: '32px 0', color: S.gray }}>
-                        <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 10px' }} />
-                        Loading comparison data…
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ background: `linear-gradient(145deg, rgba(10,22,40,0.95), rgba(27,42,107,0.35))`, border: `1px solid ${S.border}`, borderRadius: 16, overflow: 'hidden', marginBottom: 12 }}>
-
-                          {/* Rep headers */}
-                          <div className="compare-card-header">
-                            <div style={{ padding: '20px 16px', textAlign: 'center' }}>
-                              {rep.photo ? (
-                                <>
-                                  <img src={rep.photo} alt={repDisplayName}
-                                    referrerPolicy="no-referrer"
-                                    style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
-                                    onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
-                                  <InitialsAvatar name={rep.name} party={rep.party} size={60}
-                                    style={{ display: 'none', border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
-                                </>
-                              ) : (
-                                <InitialsAvatar name={rep.name} party={rep.party} size={60}
-                                  style={{ border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
-                              )}
-                              <div style={{ fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 3 }}>{repDisplayName}</div>
-                              <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${repPartyColor}22`, color: repPartyColor, border: `1px solid ${repPartyColor}44` }}>
-                                {rep.party === 'Democrat' ? 'D' : rep.party === 'Republican' ? 'R' : 'I'} · {rep.state}
-                              </span>
-                            </div>
-
-                            {/* Vertical gold divider (hidden on mobile via CSS) */}
-                            <div className="compare-divider-vert" style={{ width: 1, background: `linear-gradient(to bottom, transparent, ${S.gold}, transparent)`, margin: '16px 0' }} />
-
-                            {/* VS divider shown only on mobile (stacked layout) */}
-                            <div className="compare-vs-mobile">VS</div>
-
-                            <div style={{ padding: '20px 16px', textAlign: 'center' }}>
-                              <div style={{ position: 'relative', width: 60, margin: '0 auto 10px' }}>
-                                <img src={compareRep.photo} alt={compareRep.displayName}
-                                  referrerPolicy="no-referrer"
-                                  style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
-                                  onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
-                                <InitialsAvatar name={compareRep.name} party={compareRep.party} size={60}
-                                  style={{ display: 'none', border: `3px solid ${compareRep.partyColor}` }} />
-                              </div>
-                              <div style={{ fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 3 }}>{compareRep.displayName}</div>
-                              <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${compareRep.partyColor}22`, color: compareRep.partyColor, border: `1px solid ${compareRep.partyColor}44` }}>
-                                {compareRep.party === 'Democrat' ? 'D' : compareRep.party === 'Republican' ? 'R' : 'I'} · {compareRep.state}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Comparison rows */}
-                          {[
-                            {
-                              icon: '💰',
-                              label: 'Est. Net Worth',
-                              left: (() => {
-                                const nw = netWorthHistory?.[0]
-                                if (!nw) return 'N/A'
-                                return fmt((nw.netWorthMin + nw.netWorthMax) / 2)
-                              })(),
-                              right: (() => {
-                                const nw = compareData?.netWorthHistory?.[0]
-                                if (!nw) return 'N/A'
-                                return fmt((nw.netWorthMin + nw.netWorthMax) / 2)
-                              })(),
-                            },
-                            {
-                              icon: '📊',
-                              label: 'Total Trades',
-                              left: liveTrades != null ? String(liveTrades.length) : '—',
-                              right: compareData?.trades != null ? String(compareData.trades.length) : '—',
-                            },
-                            {
-                              icon: '🏛️',
-                              label: 'Terms Served',
-                              left: liveBio?.terms?.length ? String(liveBio.terms.length) : '—',
-                              right: compareData?.bio?.terms?.length ? String(compareData.bio.terms.length) : '—',
-                            },
-                            {
-                              icon: '📅',
-                              label: 'Serving Since',
-                              left: (() => {
-                                const terms = liveBio?.terms || []
-                                if (!terms.length) return '—'
-                                const sorted = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))
-                                const first = sorted[0]
-                                return String(first.startYear || congressToYear(first.congress))
-                              })(),
-                              right: (() => {
-                                const terms = compareData?.bio?.terms || []
-                                if (!terms.length) return '—'
-                                const sorted = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))
-                                const first = sorted[0]
-                                return String(first.startYear || congressToYear(first.congress))
-                              })(),
-                            },
-                            {
-                              icon: '🎂',
-                              label: 'Age',
-                              left: liveBio?.birthYear ? String(new Date().getFullYear() - liveBio.birthYear) : '—',
-                              right: compareData?.bio?.birthYear ? String(new Date().getFullYear() - compareData.bio.birthYear) : '—',
-                            },
-                            {
-                              icon: '🏦',
-                              label: 'Top Ticker',
-                              left: tradesMeta?.topTickers?.[0] || '—',
-                              right: compareData?.topTickers?.[0] || '—',
-                            },
-                          ].map(({ icon, label, left, right }) => (
-                            <div key={label} style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', borderTop: `1px solid rgba(212,175,55,0.12)` }}>
-                              <div style={{ padding: '13px 16px', textAlign: 'center' }}>
-                                <div style={{ fontSize: 15, fontWeight: 700, color: S.offWhite }}>{left}</div>
-                              </div>
-                              <div style={{ padding: '13px 10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 76, borderLeft: `1px solid rgba(212,175,55,0.12)`, borderRight: `1px solid rgba(212,175,55,0.12)` }}>
-                                <div style={{ fontSize: 14 }}>{icon}</div>
-                                <div style={{ fontSize: 9, color: S.gray, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 3, whiteSpace: 'nowrap' }}>{label}</div>
-                              </div>
-                              <div style={{ padding: '13px 16px', textAlign: 'center' }}>
-                                <div style={{ fontSize: 15, fontWeight: 700, color: S.offWhite }}>{right}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <button
-                          onClick={() => { setCompareRep(null); setCompareQuery(''); setCompareResults([]); setCompareData(null) }}
-                          style={{ display: 'block', width: '100%', padding: '10px 0', background: 'none', border: `1px solid ${S.border}`, borderRadius: 10, color: S.gray, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, transition: 'all 0.2s' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.color = S.gold }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = S.border; e.currentTarget.style.color = S.gray }}
-                        >
-                          Clear Comparison
-                        </button>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            )
-          })()}
         </div>
       )}
 
