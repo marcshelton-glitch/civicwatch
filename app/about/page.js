@@ -610,6 +610,7 @@ export default function AboutPage() {
           }}
         >
           {[
+            { href: '/sign-up', label: 'Sign Up' },
             { href: '/dashboard', label: 'Dashboard' },
             { href: '/about', label: 'About' },
             { href: '/privacy', label: 'Privacy' },
