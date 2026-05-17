@@ -1,9 +1,10 @@
 'use client'
-import { useUser } from '@clerk/nextjs'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 
 export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack, isPro }) {
   const { user } = useUser()
+  const { signOut } = useClerk()
   const [prefs, setPrefs] = useState({ alert_frequency: 'daily', alert_trades: true, alert_networth: true, alert_legislation: false, alert_committees: false })
 
   useEffect(() => {
@@ -70,6 +71,16 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
             <div style={{ color: '#8899aa', fontSize: 12 }}>AI Analysis, email alerts, and more</div>
           </a>
         )}
+      </div>
+
+      {/* Sign out footer */}
+      <div style={{ padding: '12px 20px', borderTop: '1px solid #1e3a5f' }}>
+        <button
+          onClick={() => signOut({ redirectUrl: '/' })}
+          style={{ background: 'none', border: '1px solid #3a1a1a', borderRadius: 6, color: '#cc4444', fontSize: 13, cursor: 'pointer', width: '100%', padding: '8px 0', letterSpacing: '0.03em' }}
+        >
+          Sign Out
+        </button>
       </div>
     </div>
   )
