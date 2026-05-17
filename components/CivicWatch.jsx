@@ -579,7 +579,7 @@ const filteredReps = displayReps.filter(r => {
           communityPoll: { healthcare: 0, climate: 0, housing: 0, education: 0 },
           isLive: true,
         })
-        if (m.state) setSelectedState(m.state)
+        if (m.state) setSelectedState(STATE_ABBR[m.state] || m.state)
         setActiveTab('reps')
       })
       .catch(() => {})
