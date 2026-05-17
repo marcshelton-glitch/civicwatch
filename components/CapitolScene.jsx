@@ -1,178 +1,161 @@
-'use client';
-import { useEffect, useRef } from 'react';
+'use client'
+import { useEffect, useRef } from 'react'
 
 export default function CapitolScene() {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef(null)
 
   useEffect(() => {
-    let animId;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
 
-    import('three').then((THREE) => {
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setClearColor(0x000000, 0);
+    const setSize = () => {
+      canvas.width = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+    }
+    setSize()
+    const ro = new ResizeObserver(setSize)
+    ro.observe(canvas)
 
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, canvas.offsetWidth / canvas.offsetHeight, 0.1, 100);
-      camera.position.set(0, 1, 10);
-      camera.lookAt(0, 0.5, 0);
+    const makeStars = (W, H) =>
+      Array.from({ length: 200 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H * 0.72,
+        r: Math.random() * 1.3 + 0.2,
+        base: Math.random() * 0.45 + 0.15,
+        speed: Math.random() * 0.022 + 0.006,
+        phase: Math.random() * Math.PI * 2,
+      }))
 
-      function resize() {
-        const w = canvas.offsetWidth, h = canvas.offsetHeight;
-        renderer.setSize(w, h, false);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-      }
-      resize();
-      window.addEventListener('resize', resize);
+    const makeParticles = (W, H) =>
+      Array.from({ length: 28 }, () => ({
+        x: Math.random() * W,
+        y: H * (0.55 + Math.random() * 0.5),
+        vy: -(Math.random() * 0.28 + 0.1),
+        r: Math.random() * 1.6 + 0.4,
+        alpha: Math.random() * 0.45 + 0.08,
+        gold: Math.random() > 0.38,
+      }))
 
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x7c7cff, transparent: true, opacity: 0.55 });
-      const lineMatDim = new THREE.LineBasicMaterial({ color: 0x7c7cff, transparent: true, opacity: 0.25 });
-      const wireMat = new THREE.MeshBasicMaterial({ color: 0x7c7cff, wireframe: true, transparent: true, opacity: 0.15 });
-      const solidMat = new THREE.MeshBasicMaterial({ color: 0x7c7cff, transparent: true, opacity: 0.45 });
+    let stars = makeStars(canvas.width, canvas.height)
+    let particles = makeParticles(canvas.width, canvas.height)
 
-      function edges(geo, mat) {
-        return new THREE.LineSegments(new THREE.EdgesGeometry(geo), mat || lineMat);
-      }
+    const onResize = () => {
+      stars = makeStars(canvas.width, canvas.height)
+      particles = makeParticles(canvas.width, canvas.height)
+    }
+    ro.observe(canvas)
+    canvas.addEventListener('resize', onResize)
 
-      const capitol = new THREE.Group();
+    let frame = 0
+    let raf
 
-      const base1 = edges(new THREE.BoxGeometry(7.2, 0.2, 3.0), lineMatDim);
-      base1.position.y = -0.9;
-      capitol.add(base1);
-      const base2 = edges(new THREE.BoxGeometry(6.6, 0.2, 2.7), lineMatDim);
-      base2.position.y = -0.7;
-      capitol.add(base2);
+    const draw = () => {
+      frame++
+      const W = canvas.width
+      const H = canvas.height
+      ctx.clearRect(0, 0, W, H)
 
-      const body = edges(new THREE.BoxGeometry(6.2, 1.4, 2.4));
-      body.position.y = 0.1;
-      capitol.add(body);
-
-      const lw = edges(new THREE.BoxGeometry(2.4, 1.1, 2.0), lineMatDim);
-      lw.position.set(-4.3, -0.05, 0);
-      capitol.add(lw);
-      const rw = edges(new THREE.BoxGeometry(2.4, 1.1, 2.0), lineMatDim);
-      rw.position.set(4.3, -0.05, 0);
-      capitol.add(rw);
-
-      const lp = edges(new THREE.BoxGeometry(1.2, 0.15, 2.0), lineMatDim);
-      lp.position.set(-4.3, 0.5, 0);
-      capitol.add(lp);
-      const rp = edges(new THREE.BoxGeometry(1.2, 0.15, 2.0), lineMatDim);
-      rp.position.set(4.3, 0.5, 0);
-      capitol.add(rp);
-
-      const rtBase = edges(new THREE.BoxGeometry(2.0, 0.4, 2.0));
-      rtBase.position.y = 0.9;
-      capitol.add(rtBase);
-
-      const drum = edges(new THREE.CylinderGeometry(0.85, 0.85, 0.9, 12));
-      drum.position.y = 1.5;
-      capitol.add(drum);
-
-      for (let i = 0; i < 6; i++) {
-        const angle = (i / 5) * Math.PI;
-        const col = edges(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 6), lineMatDim);
-        col.position.set(Math.cos(angle) * 0.9, 1.5, Math.sin(angle) * 0.9);
-        capitol.add(col);
+      for (const s of stars) {
+        const a = s.base + s.base * 0.55 * Math.sin(frame * s.speed + s.phase)
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(220,228,255,${a.toFixed(3)})`
+        ctx.fill()
       }
 
-      const domeMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.88, 20, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
-        wireMat
-      );
-      domeMesh.position.y = 2.0;
-      capitol.add(domeMesh);
-
-      const domeRing = edges(new THREE.CylinderGeometry(0.88, 0.88, 0.12, 20));
-      domeRing.position.y = 2.0;
-      capitol.add(domeRing);
-
-      const lantern = edges(new THREE.CylinderGeometry(0.16, 0.2, 0.38, 10));
-      lantern.position.y = 2.88;
-      capitol.add(lantern);
-
-      const statueMesh = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), solidMat);
-      statueMesh.position.y = 3.27;
-      capitol.add(statueMesh);
-
-      capitol.position.set(3.2, -0.5, 0);
-      scene.add(capitol);
-
-      const pCount = 700;
-      const pos = new Float32Array(pCount * 3);
-      const vel = new Float32Array(pCount * 3);
-      for (let i = 0; i < pCount; i++) {
-        pos[i * 3] = (Math.random() - 0.5) * 22;
-        pos[i * 3 + 1] = (Math.random() - 0.5) * 14;
-        pos[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
-        vel[i * 3] = (Math.random() - 0.5) * 0.002;
-        vel[i * 3 + 1] = (Math.random() - 0.5) * 0.001;
-        vel[i * 3 + 2] = 0;
-      }
-      const pGeo = new THREE.BufferGeometry();
-      pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      const pMat = new THREE.PointsMaterial({ color: 0x818cf8, size: 0.04, transparent: true, opacity: 0.5 });
-      const particles = new THREE.Points(pGeo, pMat);
-      scene.add(particles);
-
-      let mouseX = 0, mouseY = 0;
-      function onMouseMove(e) {
-        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-      }
-      document.addEventListener('mousemove', onMouseMove);
-
-      let t = 0;
-      function animate() {
-        animId = requestAnimationFrame(animate);
-        t += 0.008;
-
-        capitol.rotation.y += 0.0025;
-        capitol.position.y = -0.5 + Math.sin(t * 0.6) * 0.12;
-
-        camera.position.x += (mouseX * 0.6 - camera.position.x) * 0.03;
-        camera.position.y += (-mouseY * 0.3 + 1.0 - camera.position.y) * 0.03;
-        camera.lookAt(0, 0.5, 0);
-
-        const pPos = pGeo.attributes.position.array;
-        for (let i = 0; i < pCount; i++) {
-          pPos[i * 3] += vel[i * 3];
-          pPos[i * 3 + 1] += vel[i * 3 + 1];
-          if (pPos[i * 3] > 11) pPos[i * 3] = -11;
-          if (pPos[i * 3] < -11) pPos[i * 3] = 11;
-          if (pPos[i * 3 + 1] > 7) pPos[i * 3 + 1] = -7;
-          if (pPos[i * 3 + 1] < -7) pPos[i * 3 + 1] = 7;
+      for (const p of particles) {
+        p.y -= p.vy
+        if (p.y < -8) {
+          p.y = H * (0.85 + Math.random() * 0.2)
+          p.x = Math.random() * W
         }
-        pGeo.attributes.position.needsUpdate = true;
-
-        renderer.render(scene, camera);
+        const a = p.alpha.toFixed(3)
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = p.gold ? `rgba(212,175,55,${a})` : `rgba(178,34,52,${(p.alpha * 0.65).toFixed(3)})`
+        ctx.fill()
       }
-      animate();
 
-      return () => {
-        cancelAnimationFrame(animId);
-        document.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('resize', resize);
-        renderer.dispose();
-      };
-    });
+      const cx = W * 0.5
+      const cy = H * 0.6
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.38)
+      grd.addColorStop(0, 'rgba(178,34,52,0.045)')
+      grd.addColorStop(0.5, 'rgba(27,42,107,0.03)')
+      grd.addColorStop(1, 'rgba(0,0,0,0)')
+      ctx.fillStyle = grd
+      ctx.fillRect(0, 0, W, H)
 
-    return () => { if (animId) cancelAnimationFrame(animId); };
-  }, []);
+      raf = requestAnimationFrame(draw)
+    }
+
+    draw()
+
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+    }
+  }, [])
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        willChange: 'transform',
-      }}
-    />
-  );
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
+      <canvas
+        ref={canvasRef}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+      />
+      {/* Capitol dome silhouette */}
+      <svg
+        viewBox="0 0 800 500"
+        preserveAspectRatio="xMidYMax meet"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          width: '100%',
+          opacity: 0.17,
+          pointerEvents: 'none',
+        }}
+      >
+        <g fill="#1B2A6B">
+          {/* Bottom steps */}
+          <rect x="70"  y="464" width="660" height="36" />
+          <rect x="110" y="442" width="580" height="24" />
+          <rect x="148" y="420" width="504" height="24" />
+
+          {/* Side wings */}
+          <rect x="72"  y="286" width="168" height="134" />
+          <rect x="560" y="286" width="168" height="134" />
+
+          {/* Main building body */}
+          <rect x="168" y="286" width="464" height="134" />
+
+          {/* Center pavilion (taller) */}
+          <rect x="265" y="232" width="270" height="188" />
+
+          {/* Rotunda drum */}
+          <rect x="328" y="142" width="144" height="110" />
+
+          {/* Dome hemisphere — cubic bezier arc */}
+          <path d="M 288 144 C 288 52, 512 52, 512 144 Z" />
+
+          {/* Inner dome highlight cut-out (slightly darker) */}
+          <path
+            d="M 310 144 C 310 82, 490 82, 490 144"
+            fill="none"
+            stroke="#0D1640"
+            strokeWidth="2.5"
+            opacity="0.45"
+          />
+
+          {/* Lantern */}
+          <rect x="388" y="36" width="24" height="56" />
+
+          {/* Cupola */}
+          <rect x="395" y="14" width="10" height="22" />
+          <polygon points="400,0 391,14 409,14" />
+        </g>
+      </svg>
+    </div>
+  )
 }
