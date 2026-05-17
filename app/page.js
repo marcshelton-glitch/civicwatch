@@ -1,17 +1,14 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
-const CapitolScene = dynamic(() => import('@/components/CapitolScene'), { ssr: false })
-
 const STATS = [
-  { prefix: '$', num: 174, suffix: 'K', label: 'Average congressional salary' },
-  { prefix: '$', num: 1.9, suffix: 'M', decimals: 1, label: 'Average member net worth' },
-  { prefix: '', num: 3847, suffix: '', label: 'STOCK Act trades in 2024' },
-  { prefix: '', num: 535, suffix: '', label: 'Members tracked' },
+  { value: '$174K', label: 'Average congressional salary' },
+  { value: '$1.9M', label: 'Average member net worth' },
+  { value: '3,847', label: 'STOCK Act trades in 2024' },
+  { value: '535', label: 'Members tracked' },
 ]
 
 const FEATURES = [
@@ -33,7 +30,7 @@ const FEATURES = [
   {
     icon: '🤖',
     title: 'AI Accountability Reports',
-    desc: "Nonpartisan AI analysis of each member's full record — trades, votes, wealth, and peer standing — in plain English.",
+    desc: 'Nonpartisan AI analysis of each member\'s full record — trades, votes, wealth, and peer standing — in plain English.',
   },
   {
     icon: '🔔',
@@ -66,115 +63,13 @@ function fmtTrade(t) {
   return { text: `${name}${ticker} ${label}${amount}`, isBuy, isSell }
 }
 
-function TiltCard({ children, style, className, ...rest }) {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    function onMove(e) {
-      const r = el.getBoundingClientRect()
-      const x = (e.clientX - r.left) / r.width
-      const y = (e.clientY - r.top) / r.height
-      el.style.transform = `perspective(900px) rotateX(${(y - 0.5) * 10}deg) rotateY(${(x - 0.5) * -10}deg) scale3d(1.02,1.02,1.02)`
-      el.style.setProperty('--gx', `${x * 100}%`)
-      el.style.setProperty('--gy', `${y * 100}%`)
-      el.style.setProperty('--go', '1')
-    }
-    function onLeave() {
-      el.style.transform = ''
-      el.style.setProperty('--go', '0')
-    }
-
-    el.addEventListener('mousemove', onMove)
-    el.addEventListener('mouseleave', onLeave)
-    return () => {
-      el.removeEventListener('mousemove', onMove)
-      el.removeEventListener('mouseleave', onLeave)
-    }
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        position: 'relative',
-        transition: 'transform 0.15s ease',
-        transformStyle: 'preserve-3d',
-        ...style,
-      }}
-      {...rest}
-    >
-      <div style={{
-        position: 'absolute', inset: 0, borderRadius: 'inherit', pointerEvents: 'none', zIndex: 1,
-        background: 'radial-gradient(circle at var(--gx,50%) var(--gy,50%), rgba(124,124,255,0.18) 0%, transparent 55%)',
-        opacity: 'var(--go, 0)',
-        transition: 'opacity 0.3s',
-      }} />
-      {children}
-    </div>
-  )
-}
-
-function StatCounter({ prefix, num, suffix, decimals = 0, label, started }) {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    if (!started) return
-    const duration = 1800
-    const t0 = performance.now()
-    let raf
-
-    function tick(now) {
-      const p = Math.min((now - t0) / duration, 1)
-      const eased = 1 - Math.pow(1 - p, 3)
-      setCount(eased * num)
-      if (p < 1) raf = requestAnimationFrame(tick)
-    }
-
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [started, num])
-
-  const display = decimals > 0
-    ? count.toFixed(decimals)
-    : Math.floor(count).toLocaleString()
-
-  return (
-    <div style={{ textAlign: 'center', padding: '40px 24px' }}>
-      <div style={{
-        fontFamily: "'Inter', sans-serif",
-        fontSize: 'clamp(36px,4vw,52px)',
-        fontWeight: 800,
-        letterSpacing: '-1px',
-        color: '#7c7cff',
-        lineHeight: 1,
-        marginBottom: 12,
-      }}>
-        {prefix}{display}{suffix}
-      </div>
-      <div style={{
-        fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: '#64748b', lineHeight: 1.5,
-      }}>
-        {label}
-      </div>
-    </div>
-  )
-}
-
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = useUser()
   const router = useRouter()
   const [scrollY, setScrollY] = useState(0)
-  const [statsStarted, setStatsStarted] = useState(false)
-  const statsRef = useRef(null)
-  const featuresRef = useRef(null)
-  const [tickerItems, setTickerItems] = useState(
-    FALLBACK_TICKER.map(t => ({ text: t, isBuy: t.includes('BUY'), isSell: t.includes('SELL') }))
-  )
+  const heroRef = useRef(null)
+  const tickerRef = useRef(null)
+  const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER.map(t => ({ text: t, isBuy: t.includes('BUY'), isSell: t.includes('SELL') })))
 
   useEffect(() => {
     if (isLoaded && isSignedIn) router.replace('/dashboard')
@@ -184,239 +79,216 @@ export default function LandingPage() {
     fetch('/api/public-feed')
       .then(r => r.json())
       .then(data => {
-        if (data.trades && data.trades.length >= 4) setTickerItems(data.trades.map(fmtTrade))
+        if (data.trades && data.trades.length >= 4) {
+          setTickerItems(data.trades.map(fmtTrade))
+        }
       })
       .catch(() => {})
   }, [])
 
-  // Scroll parallax
   useEffect(() => {
-    const onScroll = () => setScrollY(window.scrollY)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // Stats counter trigger
-  useEffect(() => {
-    if (!statsRef.current) return
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setStatsStarted(true)
-        obs.disconnect()
-      }
-    }, { threshold: 0.3 })
-    obs.observe(statsRef.current)
-    return () => obs.disconnect()
-  }, [])
-
-  // Feature card staggered reveal
-  useEffect(() => {
-    if (!featuresRef.current) return
-    const cards = featuresRef.current.querySelectorAll('[data-card]')
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const delay = parseInt(entry.target.dataset.delay || '0')
-          setTimeout(() => {
-            entry.target.style.opacity = '1'
-            entry.target.style.transform = 'translateY(0)'
-          }, delay)
-          obs.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.1 })
-    cards.forEach(c => obs.observe(c))
-    return () => obs.disconnect()
+    const handleScroll = () => setScrollY(window.scrollY)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <div style={{
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      background: '#07070f',
-      color: '#e2e8f0',
+      fontFamily: "'Source Serif 4', Georgia, serif",
+      background: '#080E1C',
+      color: '#F0F2FF',
       overflowX: 'hidden',
       minHeight: '100vh',
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap');
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-          --bg: #07070f;
-          --accent: #7c7cff;
-          --accent-dim: rgba(124,124,255,0.1);
-          --accent-border: rgba(124,124,255,0.18);
-          --card-bg: rgba(255,255,255,0.03);
-          --card-border: rgba(255,255,255,0.07);
-          --text: #e2e8f0;
-          --dim: #94a3b8;
-          --dimmer: #64748b;
-          --green: #4ade80;
-          --red: #f87171;
+          --navy: #080E1C;
+          --navy-mid: #0F1A35;
+          --navy-light: #1B2A6B;
+          --red: #B22234;
+          --red-bright: #D42B42;
+          --gold: #D4AF37;
+          --gold-dim: rgba(212,175,55,0.15);
+          --white: #F0F2FF;
+          --gray: #7A8499;
+          --border: rgba(212,175,55,0.2);
         }
 
-        .lp-nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-          height: 60px;
-          display: flex; align-items: center; justify-content: space-between;
+        .grain {
+          position: fixed; inset: 0; pointer-events: none; z-index: 1;
+          opacity: 0.035;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        .nav { 
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           padding: 0 32px;
-          background: rgba(7,7,15,0.75);
-          backdrop-filter: blur(20px) saturate(180%);
-          border-bottom: 1px solid var(--accent-border);
+          display: flex; align-items: center; justify-content: space-between;
+          height: 64px;
+          background: rgba(8,14,28,0.85);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border);
         }
 
-        .lp-logo {
-          font-size: 15px; font-weight: 800; letter-spacing: 0.12em;
-          color: #fff; text-decoration: none; text-transform: uppercase;
+        .nav-logo {
+          font-family: 'Playfair Display', serif;
+          font-weight: 900; font-size: 20px; letter-spacing: 2px;
+          color: var(--white); text-decoration: none;
         }
-        .lp-logo span { color: var(--accent); }
+        .nav-logo span { color: var(--gold); }
 
-        .lp-nav-actions { display: flex; gap: 10px; align-items: center; }
+        .nav-actions { display: flex; gap: 12px; align-items: center; }
 
         .btn-ghost {
-          padding: 7px 18px;
+          padding: 8px 20px;
           background: transparent;
-          border: 1px solid var(--card-border);
-          border-radius: 8px;
-          color: var(--dim); font-size: 13px; font-weight: 500;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          color: var(--gray);
+          font-family: inherit; font-size: 13px;
           cursor: pointer; text-decoration: none;
-          transition: border-color 0.2s, color 0.2s;
+          transition: all 0.2s;
         }
-        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
 
-        .btn-accent {
-          padding: 7px 18px;
-          background: var(--accent);
-          border: none; border-radius: 8px;
-          color: #fff; font-size: 13px; font-weight: 600;
+        .btn-primary {
+          padding: 8px 20px;
+          background: linear-gradient(135deg, var(--red), #8B1A2A);
+          border: none; border-radius: 6px;
+          color: white; font-family: inherit; font-size: 13px; font-weight: 600;
           cursor: pointer; text-decoration: none;
-          transition: opacity 0.2s, transform 0.2s;
+          transition: all 0.2s;
+          letter-spacing: 0.3px;
         }
-        .btn-accent:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(178,34,52,0.5); }
 
         /* HERO */
-        .lp-hero {
-          position: relative; min-height: 100vh;
-          display: flex; align-items: center;
-          overflow: hidden;
+        .hero {
+          min-height: 100vh;
+          display: flex; flex-direction: column;
+          justify-content: center; align-items: center;
+          text-align: center;
+          padding: 120px 24px 80px;
+          position: relative;
         }
 
-        .lp-hero-content {
-          position: relative; z-index: 10;
-          max-width: 1200px; margin: 0 auto;
-          padding: 100px 48px 80px;
-          width: 100%;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 40px;
-          align-items: center;
+        .hero-bg {
+          position: absolute; inset: 0;
+          background: 
+            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(178,34,52,0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 80% 80%, rgba(27,42,107,0.3) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 50% at 20% 60%, rgba(212,175,55,0.05) 0%, transparent 50%);
         }
 
-        .lp-hero-left { display: flex; flex-direction: column; gap: 28px; }
+        .hero-stripe {
+          position: absolute; top: 0; left: 0; right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, var(--red) 33%, #F0F2FF 33%, #F0F2FF 66%, var(--navy-light) 66%);
+        }
 
-        .lp-eyebrow {
+        .eyebrow {
           display: inline-flex; align-items: center; gap: 8px;
-          padding: 5px 14px;
-          background: var(--accent-dim);
-          border: 1px solid var(--accent-border);
-          border-radius: 100px;
-          font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-          color: var(--accent); width: fit-content;
-          animation: fadeSlideUp 0.7s ease both;
+          padding: 6px 16px;
+          background: rgba(212,175,55,0.08);
+          border: 1px solid var(--border);
+          border-radius: 30px;
+          font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+          color: var(--gold); margin-bottom: 32px;
+          animation: fadeUp 0.6s ease forwards;
         }
 
-        .lp-live-dot {
-          width: 6px; height: 6px; border-radius: 50%;
-          background: #4ade80;
-          box-shadow: 0 0 6px #4ade80;
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-
-        .lp-headline {
-          font-size: clamp(36px, 4.5vw, 62px);
+        .hero-headline {
+          font-family: 'Playfair Display', serif;
           font-weight: 900;
-          line-height: 1.08;
-          letter-spacing: -0.03em;
-          color: #fff;
-          animation: fadeSlideUp 0.7s 0.1s ease both;
+          font-size: clamp(42px, 7vw, 88px);
+          line-height: 1.05;
+          letter-spacing: -1px;
+          max-width: 900px;
+          margin-bottom: 12px;
+          animation: fadeUp 0.6s 0.1s ease both;
         }
 
-        .lp-headline .acc { color: var(--accent); }
+        .hero-headline .accent { 
+          color: var(--gold);
+          font-style: italic;
+        }
 
-        .lp-sub {
-          font-size: clamp(15px, 1.6vw, 18px);
-          color: var(--dim);
+        .hero-headline .red { color: var(--red-bright); }
+
+        .hero-sub {
+          font-size: clamp(16px, 2vw, 20px);
+          color: var(--gray);
+          max-width: 560px;
           line-height: 1.7;
-          font-weight: 400;
-          max-width: 480px;
-          animation: fadeSlideUp 0.7s 0.2s ease both;
+          margin-bottom: 40px;
+          font-weight: 300;
+          animation: fadeUp 0.6s 0.2s ease both;
         }
 
-        .lp-ctas {
-          display: flex; gap: 12px; flex-wrap: wrap;
-          animation: fadeSlideUp 0.7s 0.3s ease both;
+        .hero-ctas {
+          display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+          margin-bottom: 64px;
+          animation: fadeUp 0.6s 0.3s ease both;
         }
 
-        .btn-hero-primary {
-          padding: 13px 28px;
-          background: var(--accent);
-          border: none; border-radius: 10px;
-          color: #fff; font-size: 15px; font-weight: 600;
+        .btn-hero {
+          padding: 15px 36px;
+          background: linear-gradient(135deg, var(--red), #8B1A2A);
+          border: none; border-radius: 8px;
+          color: white; font-family: 'Playfair Display', serif;
+          font-size: 16px; font-weight: 700;
           cursor: pointer; text-decoration: none;
-          transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-          box-shadow: 0 4px 24px rgba(124,124,255,0.35);
+          transition: all 0.25s;
+          letter-spacing: 0.3px;
+          box-shadow: 0 4px 24px rgba(178,34,52,0.4);
         }
-        .btn-hero-primary:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(124,124,255,0.5); }
+        .btn-hero:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(178,34,52,0.55); }
 
         .btn-hero-ghost {
-          padding: 13px 28px;
+          padding: 15px 36px;
           background: transparent;
-          border: 1px solid var(--card-border);
-          border-radius: 10px;
-          color: var(--dim); font-size: 15px; font-weight: 500;
+          border: 1px solid rgba(212,175,55,0.4);
+          border-radius: 8px;
+          color: var(--gold); font-family: inherit;
+          font-size: 16px; font-weight: 400;
           cursor: pointer; text-decoration: none;
-          transition: border-color 0.2s, color 0.2s;
+          transition: all 0.25s;
         }
-        .btn-hero-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .btn-hero-ghost:hover { background: var(--gold-dim); border-color: var(--gold); }
 
         /* TICKER */
-        .lp-ticker-wrap {
+        .ticker-wrap {
           width: 100%; overflow: hidden;
-          background: rgba(124,124,255,0.04);
-          border-top: 1px solid var(--accent-border);
-          border-bottom: 1px solid var(--accent-border);
-          padding: 11px 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: rgba(15,26,53,0.8);
+          padding: 12px 0;
+          animation: fadeUp 0.6s 0.4s ease both;
         }
 
-        .lp-ticker-track {
-          display: flex;
+        .ticker-track {
+          display: flex; gap: 0;
           animation: ticker 40s linear infinite;
           width: max-content;
         }
-        .lp-ticker-track:hover { animation-play-state: paused; }
+        .ticker-track:hover { animation-play-state: paused; }
 
-        .lp-ticker-item {
+        .ticker-item {
           display: flex; align-items: center; gap: 8px;
-          padding: 0 28px;
-          font-size: 12px; letter-spacing: 0.04em;
-          color: var(--dimmer);
-          border-right: 1px solid var(--card-border);
+          padding: 0 32px;
+          font-size: 12px; letter-spacing: 0.5px;
+          color: var(--gray);
+          border-right: 1px solid var(--border);
           white-space: nowrap;
         }
 
         .ticker-dot {
-          width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+          width: 6px; height: 6px; border-radius: 50%;
+          flex-shrink: 0;
         }
 
         @keyframes ticker {
@@ -424,492 +296,603 @@ export default function LandingPage() {
           100% { transform: translateX(-50%); }
         }
 
-        /* STATS */
-        .lp-stats {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          border-top: 1px solid var(--card-border);
-          border-bottom: 1px solid var(--card-border);
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
-        .lp-stat-cell {
-          border-right: 1px solid var(--card-border);
-          transition: background 0.3s;
+        /* STATS */
+        .stats-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 2px;
+          position: relative;
         }
-        .lp-stat-cell:last-child { border-right: none; }
-        .lp-stat-cell:hover { background: var(--accent-dim); }
+
+        .stat-card {
+          padding: 40px 32px;
+          background: rgba(15,26,53,0.5);
+          border: 1px solid var(--border);
+          text-align: center;
+          position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+          content: '';
+          position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, var(--red), var(--gold));
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        .stat-card:hover::before { opacity: 1; }
+
+        .stat-value {
+          font-family: 'Playfair Display', serif;
+          font-size: 48px; font-weight: 900;
+          color: var(--gold);
+          line-height: 1;
+          margin-bottom: 10px;
+        }
+
+        .stat-label {
+          font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+          color: var(--gray); line-height: 1.5;
+        }
+
+        /* SECTION LABEL */
+        .section-label {
+          text-align: center;
+          font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+          color: var(--gold); margin-bottom: 16px;
+        }
+
+        .section-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(28px, 4vw, 48px);
+          font-weight: 900; text-align: center;
+          margin-bottom: 16px; line-height: 1.1;
+        }
+
+        .section-sub {
+          text-align: center; color: var(--gray);
+          font-size: 16px; line-height: 1.7;
+          max-width: 540px; margin: 0 auto 56px;
+          font-weight: 300;
+        }
 
         /* FEATURES */
-        .lp-features-grid {
+        .features-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+        }
+
+        .features-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
           gap: 1px;
-          background: var(--card-border);
-          border: 1px solid var(--card-border);
+          background: var(--border);
+          border: 1px solid var(--border);
           border-radius: 16px;
           overflow: hidden;
         }
 
-        .lp-feature-card {
-          padding: 32px 28px;
-          background: var(--bg);
-          cursor: default;
-          opacity: 0;
-          transform: translateY(28px);
-          transition: background 0.3s, opacity 0.5s ease, transform 0.5s ease;
+        .feature-card {
+          padding: 36px 32px;
+          background: #080E1C;
+          transition: background 0.3s;
+          position: relative;
+        }
+        .feature-card:hover { background: rgba(15,26,53,0.9); }
+
+        .feature-icon {
+          font-size: 28px; margin-bottom: 16px; display: block;
+        }
+
+        .feature-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 18px; font-weight: 700;
+          margin-bottom: 10px; color: var(--white);
+        }
+
+        .feature-desc {
+          font-size: 14px; color: var(--gray);
+          line-height: 1.7; font-weight: 300;
+        }
+
+        /* MOCKUP / PREVIEW */
+        .preview-section {
+          padding: 80px 24px;
+          max-width: 1100px; margin: 0 auto;
+        }
+
+        .preview-card {
+          background: linear-gradient(145deg, rgba(27,42,107,0.4), rgba(8,14,28,0.95));
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .preview-header {
+          padding: 16px 24px;
+          background: rgba(15,26,53,0.8);
+          border-bottom: 1px solid var(--border);
+          display: flex; align-items: center; gap: 12px;
+        }
+
+        .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        .preview-body {
+          padding: 32px;
+          display: grid; grid-template-columns: 1fr 1fr 1fr;
+          gap: 16px;
+        }
+
+        .mock-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 18px;
+        }
+
+        .mock-label {
+          font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--gray); margin-bottom: 10px;
+        }
+
+        .mock-value {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px; font-weight: 700;
+        }
+
+        .mock-row {
+          display: flex; justify-content: space-between;
+          align-items: center; padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          font-size: 12px;
+        }
+        .mock-row:last-child { border-bottom: none; }
+
+        .yea { color: #4CAF50; font-weight: 700; }
+        .nay { color: var(--red-bright); font-weight: 700; }
+        .buy { color: #4CAF50; font-weight: 700; }
+        .sell { color: var(--red-bright); font-weight: 700; }
+
+        /* PRICING */
+        .pricing-section {
+          padding: 80px 24px;
+          max-width: 900px; margin: 0 auto;
+        }
+
+        .pricing-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+        }
+
+        .pricing-card {
+          border-radius: 16px;
+          padding: 40px 36px;
+          border: 1px solid var(--border);
+          background: rgba(15,26,53,0.4);
+          position: relative;
+        }
+
+        .pricing-card.featured {
+          background: linear-gradient(145deg, rgba(27,42,107,0.6), rgba(8,14,28,0.95));
+          border-color: var(--gold);
+        }
+
+        .pricing-badge {
+          position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+          background: linear-gradient(135deg, var(--gold), #B8960C);
+          color: #080E1C; font-size: 11px; font-weight: 700;
+          letter-spacing: 1.5px; text-transform: uppercase;
+          padding: 4px 16px; border-radius: 20px; white-space: nowrap;
+        }
+
+        .pricing-tier {
+          font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+          color: var(--gray); margin-bottom: 12px;
+        }
+
+        .pricing-price {
+          font-family: 'Playfair Display', serif;
+          font-size: 52px; font-weight: 900;
+          line-height: 1; margin-bottom: 6px;
+        }
+
+        .pricing-price span {
+          font-size: 18px; font-weight: 400; color: var(--gray);
+        }
+
+        .pricing-desc {
+          font-size: 13px; color: var(--gray);
+          margin-bottom: 28px; line-height: 1.6;
+        }
+
+        .pricing-features { list-style: none; margin-bottom: 32px; }
+        .pricing-features li {
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          font-size: 13px; color: var(--gray);
+          display: flex; align-items: center; gap: 10px;
+        }
+        .pricing-features li:last-child { border-bottom: none; }
+        .pricing-features li::before { content: '✓'; color: var(--gold); font-weight: 700; }
+
+        .btn-plan {
+          width: 100%; padding: 14px;
+          border-radius: 8px; border: none;
+          font-family: 'Playfair Display', serif;
+          font-size: 15px; font-weight: 700;
+          cursor: pointer; text-decoration: none;
+          display: block; text-align: center;
+          transition: all 0.2s;
+        }
+
+        .btn-plan.free {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: var(--gray);
+        }
+        .btn-plan.free:hover { border-color: var(--gold); color: var(--gold); }
+
+        .btn-plan.pro {
+          background: linear-gradient(135deg, var(--gold), #B8960C);
+          color: #080E1C;
+        }
+        .btn-plan.pro:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(212,175,55,0.4); }
+
+        /* CTA */
+        .cta-section {
+          padding: 100px 24px;
+          text-align: center;
           position: relative;
           overflow: hidden;
         }
-        .lp-feature-card:hover { background: rgba(124,124,255,0.04); }
 
-        .lp-feat-icon { font-size: 26px; margin-bottom: 14px; }
-        .lp-feat-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-        .lp-feat-desc { font-size: 13px; color: var(--dimmer); line-height: 1.65; }
-
-        /* SECTION HEADERS */
-        .lp-section-label {
-          font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-          color: var(--accent); margin-bottom: 14px; text-align: center;
-        }
-        .lp-section-title {
-          font-size: clamp(26px, 3.5vw, 44px); font-weight: 800;
-          letter-spacing: -0.02em; line-height: 1.1;
-          color: #fff; text-align: center; margin-bottom: 14px;
-        }
-        .lp-section-sub {
-          font-size: 16px; color: var(--dim); line-height: 1.7;
-          text-align: center; max-width: 520px; margin: 0 auto 52px;
+        .cta-bg {
+          position: absolute; inset: 0;
+          background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(178,34,52,0.1) 0%, transparent 70%);
         }
 
-        /* PREVIEW CARD */
-        .lp-preview-card {
-          border-radius: 16px; overflow: hidden;
-          border: 1px solid var(--card-border);
-          background: rgba(255,255,255,0.02);
-          transition: transform 0.15s ease;
+        .cta-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(32px, 5vw, 60px);
+          font-weight: 900; line-height: 1.1;
+          max-width: 700px; margin: 0 auto 20px;
           position: relative;
         }
-        .lp-preview-header {
-          padding: 14px 22px;
-          background: rgba(255,255,255,0.03);
-          border-bottom: 1px solid var(--card-border);
-          display: flex; align-items: center; gap: 10px;
-        }
-        .lp-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .lp-preview-body {
-          padding: 28px;
-          display: grid; grid-template-columns: repeat(3,1fr); gap: 14px;
-        }
-        .lp-mock-card {
-          background: rgba(255,255,255,0.025);
-          border: 1px solid var(--card-border);
-          border-radius: 10px; padding: 16px;
-        }
-        .lp-mock-label {
-          font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
-          color: var(--dimmer); margin-bottom: 10px;
-        }
-        .lp-mock-value { font-size: 22px; font-weight: 700; }
-        .lp-mock-row {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-          font-size: 11px;
-        }
-        .lp-mock-row:last-child { border-bottom: none; }
 
-        /* PRICING */
-        .lp-pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-
-        .lp-pricing-card {
-          border-radius: 14px; padding: 36px 32px;
-          border: 1px solid var(--card-border);
-          background: rgba(255,255,255,0.02);
-          position: relative; overflow: hidden;
-          transition: transform 0.15s ease;
-        }
-        .lp-pricing-card.featured {
-          border-color: var(--accent-border);
-          background: rgba(124,124,255,0.06);
-        }
-
-        .lp-pricing-badge {
-          position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
-          background: var(--accent);
-          color: #fff; font-size: 10px; font-weight: 700;
-          letter-spacing: 0.12em; text-transform: uppercase;
-          padding: 3px 16px; border-radius: 0 0 10px 10px; white-space: nowrap;
-        }
-        .lp-pricing-tier { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 10px; }
-        .lp-pricing-price { font-size: 52px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; }
-        .lp-pricing-desc { font-size: 13px; color: var(--dim); margin-bottom: 24px; line-height: 1.6; }
-        .lp-pricing-features { list-style: none; margin-bottom: 28px; }
-        .lp-pricing-features li {
-          padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-          font-size: 13px; color: var(--dimmer);
-          display: flex; align-items: center; gap: 10px;
-        }
-        .lp-pricing-features li:last-child { border-bottom: none; }
-        .lp-pricing-features li::before { content: '✓'; color: var(--accent); font-weight: 700; }
-
-        .btn-plan-free {
-          width: 100%; padding: 12px; border-radius: 8px;
-          background: transparent; border: 1px solid var(--card-border);
-          color: var(--dim); font-size: 14px; font-weight: 600;
-          cursor: pointer; text-decoration: none; display: block; text-align: center;
-          transition: border-color 0.2s, color 0.2s;
-        }
-        .btn-plan-free:hover { border-color: var(--accent); color: var(--accent); }
-
-        .btn-plan-pro {
-          width: 100%; padding: 12px; border-radius: 8px;
-          background: var(--accent); border: none;
-          color: #fff; font-size: 14px; font-weight: 600;
-          cursor: pointer; text-decoration: none; display: block; text-align: center;
-          transition: opacity 0.2s, transform 0.2s;
-          box-shadow: 0 4px 20px rgba(124,124,255,0.35);
-        }
-        .btn-plan-pro:hover { opacity: 0.85; transform: translateY(-1px); }
-
-        /* CTA */
-        .lp-cta {
-          padding: 120px 24px; text-align: center;
-          position: relative; overflow: hidden;
-        }
-        .lp-cta-glow {
-          position: absolute; inset: 0; pointer-events: none;
-          background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(124,124,255,0.08) 0%, transparent 70%);
+        .cta-sub {
+          font-size: 16px; color: var(--gray);
+          max-width: 440px; margin: 0 auto 40px;
+          line-height: 1.7; font-weight: 300;
+          position: relative;
         }
 
         /* FOOTER */
-        .lp-footer {
-          border-top: 1px solid var(--card-border);
-          padding: 40px 24px; text-align: center;
+        footer {
+          border-top: 1px solid var(--border);
+          padding: 40px 24px;
+          text-align: center;
         }
-        .lp-footer-logo {
-          font-size: 14px; font-weight: 800; letter-spacing: 0.12em;
-          color: var(--accent); margin-bottom: 16px;
+
+        .footer-logo {
+          font-family: 'Playfair Display', serif;
+          font-weight: 900; font-size: 18px; letter-spacing: 2px;
+          color: var(--gold); margin-bottom: 16px;
         }
-        .lp-footer-links {
+
+        .footer-links {
           display: flex; gap: 24px; justify-content: center;
           flex-wrap: wrap; margin-bottom: 20px;
         }
-        .lp-footer-links a {
-          font-size: 12px; color: var(--dimmer);
-          text-decoration: none; transition: color 0.2s;
+
+        .footer-links a {
+          font-size: 12px; color: var(--gray);
+          text-decoration: none; letter-spacing: 0.5px;
+          transition: color 0.2s;
         }
-        .lp-footer-links a:hover { color: var(--accent); }
-        .lp-footer-copy { font-size: 11px; color: var(--dimmer); line-height: 1.7; max-width: 700px; margin: 0 auto; }
+        .footer-links a:hover { color: var(--gold); }
+
+        .footer-copy {
+          font-size: 11px; color: rgba(122,132,153,0.6);
+          line-height: 1.6;
+        }
+
+        /* DIVIDER */
+        .flag-stripe {
+          height: 3px;
+          background: linear-gradient(90deg, var(--red) 33%, #F0F2FF 33%, #F0F2FF 66%, var(--navy-light) 66%);
+        }
 
         /* RESPONSIVE */
-        @media (max-width: 900px) {
-          .lp-hero-content { grid-template-columns: 1fr; }
-          .lp-hero-right { display: none; }
-          .lp-stats { grid-template-columns: repeat(2,1fr); }
-          .lp-features-grid { grid-template-columns: 1fr; }
-          .lp-preview-body { grid-template-columns: 1fr; }
-          .lp-pricing-grid { grid-template-columns: 1fr; }
-          .lp-nav { padding: 0 16px; }
-          .lp-hero-content { padding: 90px 20px 60px; }
-        }
-
-        @media (max-width: 600px) {
-          .lp-stats { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 768px) {
+          .preview-body { grid-template-columns: 1fr; }
+          .pricing-grid { grid-template-columns: 1fr; }
+          .nav { padding: 0 16px; }
+          .hero { padding: 100px 16px 60px; }
         }
       `}</style>
 
+      {/* Grain overlay */}
+      <div className="grain" />
+
       {/* NAV */}
-      <nav className="lp-nav">
-        <Link href="/" className="lp-logo">CIVIC<span>WATCH</span></Link>
-        <div className="lp-nav-actions">
+      <nav className="nav">
+        <Link href="/" className="nav-logo">CIVIC<span>WATCH</span></Link>
+        <div className="nav-actions">
           {isSignedIn ? (
-            <Link href="/dashboard" className="btn-accent">Dashboard →</Link>
+            <Link href="/dashboard" className="btn-primary">Go to Dashboard →</Link>
           ) : (
             <>
               <Link href="/sign-in" className="btn-ghost">Sign In</Link>
-              <Link href="/dashboard" className="btn-accent">Explore Free →</Link>
+              <Link href="/dashboard" className="btn-primary">Explore Free →</Link>
             </>
           )}
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="lp-hero">
-        {/* Three.js canvas — fills full hero, parallax on scroll */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          transform: `translateY(${scrollY * 0.25}px)`,
-          willChange: 'transform',
-        }}>
-          <CapitolScene />
+      <section className="hero" ref={heroRef}>
+        <div className="hero-bg" />
+        <div className="hero-stripe" />
+
+        <div className="eyebrow" style={{ position: 'relative' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
+          Live · Congress.gov · STOCK Act Disclosures
         </div>
 
-        {/* Left-side gradient fade for text legibility */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(100deg, #07070f 42%, rgba(7,7,15,0.7) 62%, transparent 80%)',
-        }} />
-        {/* Bottom fade into ticker */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, pointerEvents: 'none',
-          background: 'linear-gradient(to bottom, transparent, #07070f)',
-        }} />
+        <h1 className="hero-headline" style={{ position: 'relative' }}>
+        See exactly how your<br />
+Elected Representatives<br />
+<span className="accent">voted, traded,</span><br />
+and got <span className="red">rich.</span>
+        </h1>
 
-        {/* Hero content grid */}
-        <div className="lp-hero-content" style={{ transform: `translateY(${scrollY * -0.06}px)` }}>
-          <div className="lp-hero-left">
-            <div className="lp-eyebrow">
-              <span className="lp-live-dot" />
-              Live · Congress.gov · STOCK Act Disclosures
-            </div>
+        <p className="hero-sub" style={{ position: 'relative' }}>
+          CivicWatch pulls live voting records, STOCK Act trade disclosures,
+          and financial filings — then puts them in plain English.
+          No spin. No party line. Just the record.
+        </p>
 
-            <h1 className="lp-headline">
-              See exactly how your<br />
-              Elected Representatives<br />
-              <span className="acc">voted, traded,</span><br />
-              and got rich.
-            </h1>
-
-            <p className="lp-sub">
-              CivicWatch pulls live voting records, STOCK Act trade disclosures,
-              and financial filings — then puts them in plain English.
-              No spin. No party line. Just the record.
-            </p>
-
-            <div className="lp-ctas">
-              <Link href="/dashboard" className="btn-hero-primary">
-                {isSignedIn ? 'Go to Dashboard →' : 'Explore Live Data — No Login →'}
-              </Link>
-              {!isSignedIn && (
-                <Link href="/sign-in" className="btn-hero-ghost">Sign In</Link>
-              )}
-            </div>
-          </div>
-
-          {/* Right column is just empty — Capitol fills that space via canvas */}
-          <div className="lp-hero-right" />
+        <div className="hero-ctas" style={{ position: 'relative' }}>
+          <Link href="/dashboard" className="btn-hero">
+            {isSignedIn ? "Go to Dashboard →" : "Explore Live Data — No Login Required →"}
+          </Link>
+          {!isSignedIn && (
+            <Link href="/sign-in" className="btn-hero-ghost">
+              Sign In
+            </Link>
+          )}
         </div>
+
       </section>
 
-      {/* TICKER */}
-      <div className="lp-ticker-wrap">
-        <div className="lp-ticker-track">
-          {[...tickerItems, ...tickerItems].map((item, i) => (
-            <div key={i} className="lp-ticker-item">
-              <span className="ticker-dot" style={{
-                background: item.isBuy ? '#4ade80' : item.isSell ? '#f87171' : '#7c7cff',
-              }} />
-              <span style={{ color: item.isBuy ? '#4ade80' : item.isSell ? '#f87171' : '#94a3b8' }}>
-                {item.text}
-              </span>
-            </div>
-          ))}
+      {/* TICKER — live congressional trade feed */}
+      <div className="ticker-wrap" ref={tickerRef}>
+        <div className="ticker-track">
+          {[...tickerItems, ...tickerItems].map((item, i) => {
+            const dotColor = item.isBuy ? '#4CAF50' : item.isSell ? '#D42B42' : '#D4AF37'
+            return (
+              <div key={i} className="ticker-item">
+                <span className="ticker-dot" style={{ background: dotColor }} />
+                <span style={{ color: item.isBuy ? '#4CAF50' : item.isSell ? '#D42B42' : '#CDD2E0' }}>
+                  {item.text}
+                </span>
+              </div>
+            )
+          })}
         </div>
       </div>
 
       {/* STATS */}
-      <section ref={statsRef} className="lp-stats">
-        {STATS.map((s, i) => (
-          <div key={i} className="lp-stat-cell">
-            <StatCounter {...s} started={statsStarted} />
-          </div>
-        ))}
-      </section>
-
-      {/* FEATURES */}
-      <section style={{ padding: '100px 24px', maxWidth: 1100, margin: '0 auto' }}>
-        <div className="lp-section-label">What CivicWatch Tracks</div>
-        <h2 className="lp-section-title">
-          Everything they'd rather<br />you didn't know
-        </h2>
-        <p className="lp-section-sub">
-          Six layers of accountability data, aggregated from official government sources
-          and made searchable in seconds.
-        </p>
-
-        <div className="lp-features-grid" ref={featuresRef}>
-          {FEATURES.map((f, i) => (
-            <TiltCard
-              key={i}
-              className="lp-feature-card"
-              data-card
-              data-delay={i * 80}
-            >
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <div className="lp-feat-icon">{f.icon}</div>
-                <div className="lp-feat-title">{f.title}</div>
-                <div className="lp-feat-desc">{f.desc}</div>
-              </div>
-            </TiltCard>
+      <section style={{ background: 'rgba(15,26,53,0.3)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="stats-section">
+          {STATS.map((s, i) => (
+            <div key={i} className="stat-card">
+              <div className="stat-value">{s.value}</div>
+              <div className="stat-label">{s.label}</div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* LIVE PREVIEW */}
-      <section style={{ padding: '0 24px 100px', maxWidth: 1100, margin: '0 auto' }}>
-        <div className="lp-section-label">Live Data Preview</div>
-        <h2 className="lp-section-title" style={{ marginBottom: 40 }}>The record, unfiltered</h2>
-
-        <TiltCard className="lp-preview-card">
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <div className="lp-preview-header">
-              <div className="lp-dot" style={{ background: '#FF5F57' }} />
-              <div className="lp-dot" style={{ background: '#FFBD2E' }} />
-              <div className="lp-dot" style={{ background: '#28CA41' }} />
-              <span style={{ fontSize: 12, color: 'var(--dimmer)', marginLeft: 8 }}>
-                CivicWatch — Representative Profile
-              </span>
+      {/* FEATURES */}
+      <section className="features-section">
+        <div className="section-label">What CivicWatch Tracks</div>
+        <h2 className="section-title">
+          Everything they'd rather<br />you didn't know
+        </h2>
+        <p className="section-sub">
+          Six layers of accountability data, aggregated from official government sources
+          and made searchable in seconds.
+        </p>
+        <div className="features-grid">
+          {FEATURES.map((f, i) => (
+            <div key={i} className="feature-card">
+              <span className="feature-icon">{f.icon}</span>
+              <div className="feature-title">{f.title}</div>
+              <div className="feature-desc">{f.desc}</div>
             </div>
+          ))}
+        </div>
+      </section>
 
-            <div className="lp-preview-body">
-              {/* Wealth */}
-              <div className="lp-mock-card">
-                <div className="lp-mock-label">Wealth Change in Office</div>
-                <div className="lp-mock-value" style={{ color: '#f87171', marginBottom: 8 }}>+625%</div>
-                <div style={{ fontSize: 11, color: 'var(--dimmer)', marginBottom: 12 }}>$1.2M → $8.7M · 15 years</div>
-                <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '85%', background: 'linear-gradient(90deg,#7c7cff,#f87171)', borderRadius: 2 }} />
-                </div>
-              </div>
-              {/* Votes */}
-              <div className="lp-mock-card">
-                <div className="lp-mock-label">Recent Votes</div>
-                {[
-                  { bill: 'Inflation Reduction Act', vote: 'YEA' },
-                  { bill: 'Healthcare Expansion', vote: 'YEA' },
-                  { bill: 'Border Security Act', vote: 'NAY' },
-                  { bill: 'Defense Appropriations', vote: 'YEA' },
-                ].map((v, i) => (
-                  <div key={i} className="lp-mock-row">
-                    <span style={{ color: 'var(--dimmer)', fontSize: 11 }}>{v.bill}</span>
-                    <span style={{ color: v.vote === 'YEA' ? '#4ade80' : '#f87171', fontWeight: 700, fontSize: 11 }}>{v.vote}</span>
-                  </div>
-                ))}
-              </div>
-              {/* Trades */}
-              <div className="lp-mock-card">
-                <div className="lp-mock-label">STOCK Act Disclosures</div>
-                {[
-                  { asset: 'NVDA', type: 'BUY', amount: '$45K' },
-                  { asset: 'ETH',  type: 'BUY', amount: '$22K' },
-                  { asset: 'PFE',  type: 'SELL', amount: '$31K' },
-                  { asset: 'TSLA', type: 'BUY', amount: '$18K' },
-                ].map((t, i) => (
-                  <div key={i} className="lp-mock-row">
-                    <span style={{ fontWeight: 600, fontSize: 12 }}>{t.asset}</span>
-                    <span style={{ color: t.type === 'BUY' ? '#4ade80' : '#f87171', fontWeight: 700, fontSize: 11 }}>{t.type}</span>
-                    <span style={{ color: 'var(--dimmer)', fontSize: 11 }}>{t.amount}</span>
-                  </div>
-                ))}
+      <div className="flag-stripe" style={{ maxWidth: 1100, margin: '0 auto' }} />
+
+      {/* APP PREVIEW */}
+      <section className="preview-section">
+        <div className="section-label">Live Data Preview</div>
+        <h2 className="section-title" style={{ marginBottom: 40 }}>
+          The record, unfiltered
+        </h2>
+        <div className="preview-card">
+          <div className="preview-header">
+            <div className="preview-dot" style={{ background: '#FF5F57' }} />
+            <div className="preview-dot" style={{ background: '#FFBD2E' }} />
+            <div className="preview-dot" style={{ background: '#28CA41' }} />
+            <span style={{ fontSize: 12, color: 'var(--gray)', marginLeft: 8 }}>CivicWatch — Representative Profile</span>
+          </div>
+          <div className="preview-body">
+            {/* Wealth card */}
+            <div className="mock-card">
+              <div className="mock-label">Wealth Change in Office</div>
+              <div className="mock-value" style={{ color: '#FF6B6B', marginBottom: 8 }}>+625%</div>
+              <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: 12 }}>$1.2M → $8.7M · 15 years</div>
+              <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: '85%', background: 'linear-gradient(90deg, #D4AF37, #B22234)', borderRadius: 2 }} />
               </div>
             </div>
-
-            {/* Blurred AI teaser */}
-            <div style={{
-              margin: '0 28px 28px', padding: 18,
-              background: 'rgba(124,124,255,0.04)',
-              border: '1px solid var(--accent-border)',
-              borderRadius: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              gap: 16, flexWrap: 'wrap',
-            }}>
-              <div>
-                <div style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 4 }}>
-                  🤖 AI Accountability Report
+            {/* Votes card */}
+            <div className="mock-card">
+              <div className="mock-label">Recent Votes</div>
+              {[
+                { bill: 'Inflation Reduction Act', vote: 'YEA' },
+                { bill: 'Healthcare Expansion', vote: 'YEA' },
+                { bill: 'Border Security Act', vote: 'NAY' },
+                { bill: 'Defense Appropriations', vote: 'YEA' },
+              ].map((v, i) => (
+                <div key={i} className="mock-row">
+                  <span style={{ color: 'var(--gray)', fontSize: 11 }}>{v.bill}</span>
+                  <span className={v.vote === 'YEA' ? 'yea' : 'nay'}>{v.vote}</span>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--dim)', filter: 'blur(4px)', userSelect: 'none' }}>
-                  This member's trading activity shows a notable pattern of purchasing technology stocks within weeks of serving on the Senate Commerce Committee...
+              ))}
+            </div>
+            {/* Trades card */}
+            <div className="mock-card">
+              <div className="mock-label">STOCK Act Disclosures</div>
+              {[
+                { asset: 'NVDA', type: 'BUY', amount: '$45K' },
+                { asset: 'ETH', type: 'BUY', amount: '$22K' },
+                { asset: 'PFE', type: 'SELL', amount: '$31K' },
+                { asset: 'TSLA', type: 'BUY', amount: '$18K' },
+              ].map((t, i) => (
+                <div key={i} className="mock-row">
+                  <span style={{ fontWeight: 600, fontSize: 12 }}>{t.asset}</span>
+                  <span className={t.type === 'BUY' ? 'buy' : 'sell'}>{t.type}</span>
+                  <span style={{ color: 'var(--gray)', fontSize: 11 }}>{t.amount}</span>
                 </div>
-              </div>
-              <Link href="/sign-up" style={{
-                padding: '10px 20px', background: 'var(--accent)',
-                borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 700,
-                textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
-                boxShadow: '0 4px 16px rgba(124,124,255,0.35)',
-              }}>
-                Unlock Full Report →
-              </Link>
+              ))}
             </div>
           </div>
-        </TiltCard>
+          {/* Blur overlay teasing Pro */}
+          <div style={{
+            margin: '0 32px 32px',
+            padding: 20,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid var(--border)',
+            borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 16, flexWrap: 'wrap',
+          }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: 2, color: 'var(--gold)', textTransform: 'uppercase', marginBottom: 4 }}>🤖 AI Accountability Report</div>
+              <div style={{ fontSize: 13, color: 'var(--gray)', filter: 'blur(4px)', userSelect: 'none' }}>
+                This member's trading activity shows a notable pattern of purchasing technology stocks within weeks of serving on the Senate Commerce Committee...
+              </div>
+            </div>
+            <Link href="/sign-up" style={{
+              padding: '10px 22px', background: 'linear-gradient(135deg, var(--gold), #B8960C)',
+              borderRadius: 8, color: '#080E1C', fontSize: 12, fontWeight: 700,
+              textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+            }}>
+              Unlock Full Report →
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* PRICING */}
-      <section style={{ padding: '0 24px 100px', maxWidth: 900, margin: '0 auto' }}>
-        <div className="lp-section-label">Pricing</div>
-        <h2 className="lp-section-title">Accountability shouldn't<br />cost a fortune</h2>
-        <p className="lp-section-sub">Start free. Upgrade when you want the full picture.</p>
-
-        <div className="lp-pricing-grid">
-          <TiltCard className="lp-pricing-card">
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <div className="lp-pricing-tier">Free</div>
-              <div className="lp-pricing-price">$0</div>
-              <div className="lp-pricing-desc">Everything you need to start holding your representatives accountable.</div>
-              <ul className="lp-pricing-features">
-                {['Browse all 535 representatives','Full voting records','STOCK Act trade disclosures','District map','Constitution reference','AI analysis preview'].map((f,i) => (
-                  <li key={i}>{f}</li>
-                ))}
-              </ul>
-              <Link href="/dashboard" className="btn-plan-free">Explore Free — No Login Needed</Link>
+      <section className="pricing-section">
+        <div className="section-label">Pricing</div>
+        <h2 className="section-title">
+          Accountability shouldn't<br />cost a fortune
+        </h2>
+        <p className="section-sub">
+          Start free. Upgrade when you want the full picture.
+        </p>
+        <div className="pricing-grid">
+          {/* Free */}
+          <div className="pricing-card">
+            <div className="pricing-tier">Free</div>
+            <div className="pricing-price">$0</div>
+            <div className="pricing-desc">Everything you need to start holding your representatives accountable.</div>
+            <ul className="pricing-features">
+              <li>Browse all 535 representatives</li>
+              <li>Full voting records</li>
+              <li>STOCK Act trade disclosures</li>
+              <li>District map</li>
+              <li>Constitution reference</li>
+              <li>AI analysis preview</li>
+            </ul>
+            <Link href="/dashboard" className="btn-plan free">Explore Free — No Login Needed</Link>
+          </div>
+          {/* Pro */}
+          <div className="pricing-card featured">
+            <div className="pricing-badge">★ Most Popular</div>
+            <div className="pricing-tier" style={{ color: 'var(--gold)' }}>Pro</div>
+            <div className="pricing-price" style={{ color: 'var(--gold)' }}>
+              $9.<span style={{ fontSize: 28, color: 'var(--gold)' }}>99</span>
+              <span style={{ fontSize: 14 }}>/mo</span>
             </div>
-          </TiltCard>
-
-          <TiltCard className="lp-pricing-card featured">
-            <div className="lp-pricing-badge">★ Most Popular</div>
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <div className="lp-pricing-tier" style={{ color: 'var(--accent)' }}>Pro</div>
-              <div className="lp-pricing-price" style={{ color: 'var(--accent)' }}>
-                $9<span style={{ fontSize: 28, fontWeight: 400, color: 'var(--dim)' }}>.99<span style={{ fontSize: 16 }}>/mo</span></span>
-              </div>
-              <div className="lp-pricing-desc">The full accountability picture, powered by AI.</div>
-              <ul className="lp-pricing-features">
-                {['Everything in Free','Full AI accountability reports','Trade conflict analysis','Wealth trajectory deep-dive','Peer standing breakdown','Track My Rep™ alerts','Priority support'].map((f,i) => (
-                  <li key={i}>{f}</li>
-                ))}
-              </ul>
-              <Link href="/sign-up" className="btn-plan-pro">Start Pro — $9.99/mo</Link>
-            </div>
-          </TiltCard>
+            <div className="pricing-desc">The full accountability picture, powered by AI.</div>
+            <ul className="pricing-features">
+              <li>Everything in Free</li>
+              <li>Full AI accountability reports</li>
+              <li>Trade conflict analysis</li>
+              <li>Wealth trajectory deep-dive</li>
+              <li>Peer standing breakdown</li>
+              <li>Track My Rep™ alerts</li>
+              <li>Priority support</li>
+            </ul>
+            <Link href="/sign-up" className="btn-plan pro">Start Pro — $9.99/mo</Link>
+          </div>
         </div>
       </section>
 
+      <div className="flag-stripe" />
+
       {/* CTA */}
-      <section className="lp-cta">
-        <div className="lp-cta-glow" />
-        <div className="lp-eyebrow" style={{ display: 'inline-flex', marginBottom: 28 }}>
+      <section className="cta-section">
+        <div className="cta-bg" />
+        <div className="eyebrow" style={{ position: 'relative', display: 'inline-flex' }}>
           🏛️ Free to start · No credit card required
         </div>
-        <h2 className="lp-section-title" style={{ marginBottom: 16, position: 'relative' }}>
+        <h2 className="cta-title" style={{ position: 'relative' }}>
           Your representatives work<br />
-          for <span style={{ color: 'var(--accent)' }}>you.</span><br />
+          for <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>you.</span><br />
           Start holding them to it.
         </h2>
-        <p className="lp-section-sub" style={{ position: 'relative' }}>
+        <p className="cta-sub" style={{ position: 'relative' }}>
           Join thousands of Americans who use CivicWatch to stay informed
           and hold power accountable — at every level of government.
         </p>
-        <div style={{ position: 'relative', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/dashboard" className="btn-hero-primary">
+        <div style={{ position: 'relative', display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link href="/dashboard" className="btn-hero">
             Explore Live Data — No Login →
           </Link>
           {!isSignedIn && (
-            <Link href="/sign-up" className="btn-hero-ghost">Create Free Account</Link>
+            <Link href="/sign-up" className="btn-hero-ghost">
+              Create Free Account
+            </Link>
           )}
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="lp-footer">
-        <div className="lp-footer-logo">CIVICWATCH™</div>
-        <div className="lp-footer-links">
-          <Link href="/sign-up">Sign Up</Link>
-          <Link href="/sign-in">Sign In</Link>
-          <Link href="/about">About</Link>
-          <Link href="/terms">Terms</Link>
-          <a href="https://congress.gov" target="_blank" rel="noreferrer noopener">Congress.gov</a>
-          <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer noopener">House Disclosures</a>
+      <footer>
+        <div className="flag-stripe" style={{ marginBottom: 40 }} />
+        <div className="footer-logo">CIVIC<span style={{ color: '#D4AF37' }}>WATCH</span>™</div>
+        <div className="footer-links">
+          <Link href="/sign-up" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign Up</Link>
+          <Link href="/sign-in" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign In</Link>
+          <Link href="/about" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>About</Link>
+          <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms</Link>
+          <a href="https://congress.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Congress.gov</a>
+          <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>House Disclosures</a>
         </div>
-        <div className="lp-footer-copy">
+        <div className="footer-copy">
           Data sourced from Congress.gov, House Clerk STOCK Act Disclosures, Senate Financial Disclosures, and LegiScan LLC (CC BY 4.0).<br />
           CivicWatch is an independent accountability platform. Not affiliated with any government agency or political party.<br />
           © {new Date().getFullYear()} CivicWatch. All rights reserved.
