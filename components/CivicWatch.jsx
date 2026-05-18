@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
-import { geoMercator, geoPath } from 'd3-geo'
 import SettingsPanel from './SettingsPanel'
 
 
@@ -406,11 +405,34 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
 
   useEffect(() => {
     if (!districtGeoJson?.features?.length) { setDistrictPaths([]); return }
-    const W = 600, H = 400
-    const proj = geoMercator().fitExtent([[20, 20], [W - 20, H - 20]], districtGeoJson)
-    const pathGen = geoPath().projection(proj)
+    const W = 600, H = 400, pad = 20
+    const mercY = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
+    const visitCoord = ([lon, lat]) => {
+      const my = mercY(lat)
+      if (lon < x0) x0 = lon; if (lon > x1) x1 = lon
+      if (my < y0) y0 = my; if (my > y1) y1 = my
+    }
+    const visitRing = ring => ring.forEach(visitCoord)
+    const visitGeom = ({ type, coordinates }) => {
+      if (type === 'Polygon') coordinates.forEach(visitRing)
+      else if (type === 'MultiPolygon') coordinates.forEach(poly => poly.forEach(visitRing))
+    }
+    districtGeoJson.features.forEach(f => visitGeom(f.geometry))
+    const sx = (W - 2 * pad) / (x1 - x0 || 1)
+    const sy = (H - 2 * pad) / (y1 - y0 || 1)
+    const s = Math.min(sx, sy)
+    const dx = pad + (W - 2 * pad - s * (x1 - x0)) / 2
+    const dy = pad + (H - 2 * pad - s * (y1 - y0)) / 2
+    const px = ([lon, lat]) => [(dx + s * (lon - x0)).toFixed(2), (dy + s * (y1 - mercY(lat))).toFixed(2)]
+    const ringPath = ring => ring.map((c, i) => `${i ? 'L' : 'M'}${px(c).join(',')}`).join('') + 'Z'
+    const geomPath = ({ type, coordinates }) => {
+      if (type === 'Polygon') return coordinates.map(ringPath).join(' ')
+      if (type === 'MultiPolygon') return coordinates.map(poly => poly.map(ringPath).join(' ')).join(' ')
+      return ''
+    }
     setDistrictPaths(districtGeoJson.features.map(f => ({
-      d: pathGen(f),
+      d: geomPath(f.geometry),
       districtNum: f.properties.districtNum || '00',
     })))
   }, [districtGeoJson])
@@ -2438,7 +2460,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     {compareResults.filter(m => m.bioguideId !== rep.id).map(member => {
                       const nameParts = (member.name || '').split(', ')
                       const displayName = nameParts.length >= 2 ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}` : member.name || ''
-                      const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
+                      const photo = `/api/rep-photo/${member.bioguideId}`
                       const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                       return (
                         <div key={member.bioguideId}
