@@ -41,7 +41,7 @@ export async function GET(request) {
   for (const url of endpoints) {
     try {
       const res = await fetch(url, {
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(10000),
         headers: { 'User-Agent': 'CivicWatch/1.0' },
       })
       if (!res.ok) continue
@@ -67,5 +67,5 @@ export async function GET(request) {
   }
 
   console.error(`[district-boundaries] all endpoints failed for fips=${fips}`)
-  return Response.json({ type: 'FeatureCollection', features: [] })
+  return Response.json({ error: 'District boundary data unavailable', type: 'FeatureCollection', features: [] }, { status: 503 })
 }

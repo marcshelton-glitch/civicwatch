@@ -347,6 +347,8 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [selectedDistrict, setSelectedDistrict] = useState(null)
   const [districtGeoJson, setDistrictGeoJson] = useState(null)
   const [districtPaths, setDistrictPaths] = useState([])
+  const [districtLoading, setDistrictLoading] = useState(false)
+  const [districtError, setDistrictError] = useState(null)
 
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
@@ -375,11 +377,31 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
 
   // Fetch district GeoJSON when zoomed state changes, to enable fitSize projection
   useEffect(() => {
-    if (!zoomedState?.fips) { setDistrictGeoJson(null); return }
+    if (!zoomedState?.fips) {
+      setDistrictGeoJson(null)
+      setDistrictLoading(false)
+      setDistrictError(null)
+      return
+    }
+    setDistrictLoading(true)
+    setDistrictError(null)
+    setDistrictGeoJson(null)
     fetch(`/api/district-boundaries?fips=${zoomedState.fips}`)
-      .then(r => r.json())
-      .then(data => setDistrictGeoJson(data?.features?.length ? data : null))
-      .catch(() => setDistrictGeoJson(null))
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then(data => {
+        if (data?.features?.length) {
+          setDistrictGeoJson(data)
+        } else {
+          setDistrictError('No district boundary data is available for this state.')
+        }
+      })
+      .catch(() => {
+        setDistrictError('Failed to load district boundaries. Please try again.')
+      })
+      .finally(() => setDistrictLoading(false))
   }, [zoomedState?.fips])
 
   useEffect(() => {
@@ -1329,9 +1351,34 @@ useEffect(() => {
                   )
                 })}
               </svg>
-              ) : (
+              ) : districtLoading ? (
                 <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
-                  {districtGeoJson === null && zoomedState ? 'Loading districts…' : 'Loading districts…'}
+                  Loading districts…
+                </div>
+              ) : (
+                <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: S.gray, fontSize: 13 }}>
+                  <div style={{ fontSize: 28 }}>⚠️</div>
+                  <div style={{ color: S.white, fontWeight: 600 }}>{districtError || 'Could not load district map.'}</div>
+                  <button
+                    onClick={() => {
+                      const fips = zoomedState?.fips
+                      if (!fips) return
+                      setDistrictLoading(true)
+                      setDistrictError(null)
+                      setDistrictGeoJson(null)
+                      fetch(`/api/district-boundaries?fips=${fips}`)
+                        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
+                        .then(data => {
+                          if (data?.features?.length) setDistrictGeoJson(data)
+                          else setDistrictError('No district boundary data is available for this state.')
+                        })
+                        .catch(() => setDistrictError('Failed to load district boundaries. Please try again.'))
+                        .finally(() => setDistrictLoading(false))
+                    }}
+                    style={{ padding: '8px 18px', background: S.navyMid, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, cursor: 'pointer', fontSize: 12 }}
+                  >
+                    Retry
+                  </button>
                 </div>
               )
             )}
