@@ -491,7 +491,7 @@ export default function AboutPage() {
               media interviews.
             </p>
             <a
-              href="mailto:marcshelton@gmail.com"
+              href="mailto:support@civicwatch.app"
               className="about-email-btn"
               style={{
                 display: 'inline-block',
@@ -507,7 +507,7 @@ export default function AboutPage() {
                 transition: 'background 0.2s',
               }}
             >
-              marcshelton@gmail.com
+              support@civicwatch.app
             </a>
           </section>
 
