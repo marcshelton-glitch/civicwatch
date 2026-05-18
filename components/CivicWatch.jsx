@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
-import { geoMercator, geoPath } from 'd3-geo'
 import SettingsPanel from './SettingsPanel'
 
 
@@ -406,12 +405,45 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
 
   useEffect(() => {
     if (!districtGeoJson?.features?.length) { setDistrictPaths([]); return }
-    const W = 600, H = 400
-    const proj = geoMercator().fitExtent([[20, 20], [W - 20, H - 20]], districtGeoJson)
-    const pathGen = geoPath().projection(proj)
-    setDistrictPaths(districtGeoJson.features.map(f => ({
-      d: pathGen(f),
-      districtNum: f.properties.districtNum || '00',
+    const features = districtGeoJson.features
+    const W = 600, H = 400, PAD = 20
+
+    let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity
+    const collectCoords = (coords) => {
+      if (typeof coords[0] === 'number') {
+        if (coords[0] < minLng) minLng = coords[0]
+        if (coords[0] > maxLng) maxLng = coords[0]
+        if (coords[1] < minLat) minLat = coords[1]
+        if (coords[1] > maxLat) maxLat = coords[1]
+      } else { coords.forEach(collectCoords) }
+    }
+    features.forEach(f => f.geometry?.coordinates && collectCoords(f.geometry.coordinates))
+
+    const lngRange = maxLng - minLng || 1
+    const latRange = maxLat - minLat || 1
+    const scale = Math.min((W - PAD * 2) / lngRange, (H - PAD * 2) / latRange)
+    const offsetX = PAD + (W - PAD * 2 - lngRange * scale) / 2
+    const offsetY = PAD + (H - PAD * 2 - latRange * scale) / 2
+
+    const project = ([lng, lat]) => [
+      offsetX + (lng - minLng) * scale,
+      offsetY + (maxLat - lat) * scale
+    ]
+
+    const ringToD = (ring) => ring?.length
+      ? ring.map((pt, i) => { const [x, y] = project(pt); return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}` }).join(' ') + ' Z'
+      : ''
+
+    const geomToD = (geom) => {
+      if (!geom) return ''
+      if (geom.type === 'Polygon') return geom.coordinates.map(ringToD).join(' ')
+      if (geom.type === 'MultiPolygon') return geom.coordinates.flatMap(p => p.map(ringToD)).join(' ')
+      return ''
+    }
+
+    setDistrictPaths(features.map(f => ({
+      d: geomToD(f.geometry),
+      districtNum: f.properties?.CD118FP || f.properties?.CD116FP || f.properties?.DISTRICT || f.properties?.districtNum || '00',
     })))
   }, [districtGeoJson])
 
