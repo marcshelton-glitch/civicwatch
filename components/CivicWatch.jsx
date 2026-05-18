@@ -405,44 +405,34 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
 
   useEffect(() => {
     if (!districtGeoJson?.features?.length) { setDistrictPaths([]); return }
-    const features = districtGeoJson.features
-    const W = 600, H = 400, PAD = 20
-
-    let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity
-    const collectCoords = (coords) => {
-      if (typeof coords[0] === 'number') {
-        if (coords[0] < minLng) minLng = coords[0]
-        if (coords[0] > maxLng) maxLng = coords[0]
-        if (coords[1] < minLat) minLat = coords[1]
-        if (coords[1] > maxLat) maxLat = coords[1]
-      } else { coords.forEach(collectCoords) }
+    const W = 600, H = 400, pad = 20
+    const mercY = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
+    const visitCoord = ([lon, lat]) => {
+      const my = mercY(lat)
+      if (lon < x0) x0 = lon; if (lon > x1) x1 = lon
+      if (my < y0) y0 = my; if (my > y1) y1 = my
     }
-    features.forEach(f => f.geometry?.coordinates && collectCoords(f.geometry.coordinates))
-
-    const lngRange = maxLng - minLng || 1
-    const latRange = maxLat - minLat || 1
-    const scale = Math.min((W - PAD * 2) / lngRange, (H - PAD * 2) / latRange)
-    const offsetX = PAD + (W - PAD * 2 - lngRange * scale) / 2
-    const offsetY = PAD + (H - PAD * 2 - latRange * scale) / 2
-
-    const project = ([lng, lat]) => [
-      offsetX + (lng - minLng) * scale,
-      offsetY + (maxLat - lat) * scale
-    ]
-
-    const ringToD = (ring) => ring?.length
-      ? ring.map((pt, i) => { const [x, y] = project(pt); return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}` }).join(' ') + ' Z'
-      : ''
-
-    const geomToD = (geom) => {
-      if (!geom) return ''
-      if (geom.type === 'Polygon') return geom.coordinates.map(ringToD).join(' ')
-      if (geom.type === 'MultiPolygon') return geom.coordinates.flatMap(p => p.map(ringToD)).join(' ')
+    const visitRing = ring => ring.forEach(visitCoord)
+    const visitGeom = ({ type, coordinates }) => {
+      if (type === 'Polygon') coordinates.forEach(visitRing)
+      else if (type === 'MultiPolygon') coordinates.forEach(poly => poly.forEach(visitRing))
+    }
+    districtGeoJson.features.forEach(f => visitGeom(f.geometry))
+    const sx = (W - 2 * pad) / (x1 - x0 || 1)
+    const sy = (H - 2 * pad) / (y1 - y0 || 1)
+    const s = Math.min(sx, sy)
+    const dx = pad + (W - 2 * pad - s * (x1 - x0)) / 2
+    const dy = pad + (H - 2 * pad - s * (y1 - y0)) / 2
+    const px = ([lon, lat]) => [(dx + s * (lon - x0)).toFixed(2), (dy + s * (y1 - mercY(lat))).toFixed(2)]
+    const ringPath = ring => ring.map((c, i) => `${i ? 'L' : 'M'}${px(c).join(',')}`).join('') + 'Z'
+    const geomPath = ({ type, coordinates }) => {
+      if (type === 'Polygon') return coordinates.map(ringPath).join(' ')
+      if (type === 'MultiPolygon') return coordinates.map(poly => poly.map(ringPath).join(' ')).join(' ')
       return ''
     }
-
-    setDistrictPaths(features.map(f => ({
-      d: geomToD(f.geometry),
+    setDistrictPaths(districtGeoJson.features.map(f => ({
+      d: geomPath(f.geometry),
       districtNum: f.properties?.CD118FP || f.properties?.CD116FP || f.properties?.DISTRICT || f.properties?.districtNum || '00',
     })))
   }, [districtGeoJson])

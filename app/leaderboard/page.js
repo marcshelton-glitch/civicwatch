@@ -36,7 +36,7 @@ function partyColor(party) {
 }
 
 function photoUrl(bioguideId) {
-  return `https://bioguide.congress.gov/bioguide/photo/${bioguideId[0]}/${bioguideId}.jpg`
+  return `/api/rep-photo/${bioguideId}`
 }
 
 function RepPhoto({ bioguideId, name, size = 52 }) {
