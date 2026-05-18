@@ -385,7 +385,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   useEffect(() => {
     if (!districtGeoJson?.features?.length) { setDistrictPaths([]); return }
     const W = 600, H = 400
-    const proj = geoMercator().fitSize([W, H], districtGeoJson)
+    const proj = geoMercator().fitExtent([[20, 20], [W - 20, H - 20]], districtGeoJson)
     const pathGen = geoPath().projection(proj)
     setDistrictPaths(districtGeoJson.features.map(f => ({
       d: pathGen(f),
@@ -821,9 +821,8 @@ useEffect(() => {
           .header-logo { order: 1; }
           .header-actions { order: 2; }
           .header-actions .header-username { display: none !important; }
-          /* Rep detail hero: action buttons always on their own full-width row on mobile */
-          .rep-hero-actions { flex-basis: 100% !important; flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-direction: row !important; padding-bottom: 4px; }
-          .rep-hero-actions::-webkit-scrollbar { display: none; }
+          /* Rep detail hero: action buttons wrap to multiple rows on mobile */
+          .rep-hero-actions { flex-basis: 100% !important; flex-wrap: wrap !important; flex-direction: row !important; }
           /* Rep detail tab row: 2 rows of 4 on mobile */
           .rep-tabs-row { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; overflow-x: visible !important; padding-bottom: 0 !important; }
           .rep-tabs-row > button { flex: 0 0 25% !important; box-sizing: border-box !important; text-align: center !important; padding: 8px 4px !important; font-size: 10px !important; white-space: normal !important; min-width: 0 !important; }
@@ -1313,8 +1312,8 @@ useEffect(() => {
                       key={i}
                       d={p.d}
                       fill={isSelected ? S.gold : partyFill}
-                      stroke={S.white}
-                      strokeWidth={isSelected ? 1.5 : 0.5}
+                      stroke="#ffffff"
+                      strokeWidth={1.5}
                       opacity={isHovered ? 1 : 0.85}
                       style={{ cursor: 'pointer', outline: 'none' }}
                       onMouseEnter={() => setHoveredDistrict(p.districtNum)}
