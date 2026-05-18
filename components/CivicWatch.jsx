@@ -47,6 +47,14 @@ function InitialsAvatar({ name = '', party = '', size = 68, style = {} }) {
 // ─── LEADERSHIP ROLE FORMATTING ───────────────────────────────────────────────
 function congressToYear(n) { return 1789 + (n - 1) * 2 }
 
+function deriveContactUrl(officialWebsiteUrl, isSenator) {
+  if (!officialWebsiteUrl) return null
+  try {
+    const base = new URL(officialWebsiteUrl).origin
+    return isSenator ? `${base}/content/contact-senator` : `${base}/contact`
+  } catch { return null }
+}
+
 function ordinal(n) {
   const v = n % 100
   const s = (v >= 11 && v <= 13) ? 'th' : ['th','st','nd','rd'][n % 10] || 'th'
@@ -570,6 +578,7 @@ const filteredReps = displayReps.filter(r => {
           photo: `/api/rep-photo/${m.bioguideId}`,
           email: '',
           phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
+          contactForm: deriveContactUrl(m.officialWebsiteUrl, isSen),
           website: `https://www.congress.gov/member/${nameSlug}/${m.bioguideId}`,
           officeHours: 'Mon-Fri 9am-5pm',
           officeLocation: isSen ? 'U.S. Senate, Washington DC' : 'U.S. House, Washington DC',
@@ -615,6 +624,7 @@ useEffect(() => {
             level: 'federal',
             photo: `/api/rep-photo/${r.bioguideId}`,
             email: '', phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
+            contactForm: deriveContactUrl(r.officialWebsiteUrl, isSen),
             website: `https://www.congress.gov/member/${nameSlug}/${r.bioguideId}`,
             officeHours: 'Mon-Fri 9am-5pm',
             officeLocation: isSen ? 'U.S. Senate, Washington DC' : 'U.S. House, Washington DC',
@@ -1060,7 +1070,7 @@ useEffect(() => {
                     <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                       <a href={`tel:${rep.phone}`} className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.green, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>📞 Call</a>
-                      <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
+                      <a href={rep.email ? `mailto:${rep.email}` : (rep.contactForm || rep.website)} target="_blank" rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: S.navyLight, borderRadius: 8, fontSize: 12, color: "white", textDecoration: "none", transition: "all 0.2s", fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
                       <a href={rep.website} target="_blank" rel="noreferrer" className="btn-contact" onClick={e => e.stopPropagation()}
                         style={{ flex: 1, textAlign: "center", padding: "7px 0", background: `rgba(212,175,55,0.15)`, borderRadius: 8, fontSize: 12, color: S.gold, textDecoration: "none", border: `1px solid ${S.border}`, transition: "all 0.2s", fontWeight: 600 }}>🌐 Web</a>
@@ -1731,6 +1741,7 @@ useEffect(() => {
                     photo,
                     email: '',
                     phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
+                    contactForm: deriveContactUrl(member.officialWebsiteUrl, isSen),
                     website: `https://www.congress.gov/member/${nameSlug}/${member.bioguideId}`,
                     officeHours: 'Mon-Fri 9am-5pm',
                     officeLocation: `U.S. ${isSen ? 'Senate' : 'House'}, Washington DC`,
@@ -2332,7 +2343,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
           <div className="rep-hero-actions" style={{ display: "flex", gap: 8 }}>
             <a href={`tel:${rep.phone}`} style={{ padding: "9px 16px", background: S.green, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>📞 {rep.phone}</a>
-            <a href={rep.email ? `mailto:${rep.email}` : rep.website} target={rep.email ? undefined : "_blank"} rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
+            <a href={rep.email ? `mailto:${rep.email}` : (rep.contactForm || rep.website)} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: S.navyLight, border: `1px solid ${S.border}`, borderRadius: 10, color: "white", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>✉️ {rep.email ? 'Email' : 'Contact Form'}</a>
             <a href={rep.website} target="_blank" rel="noreferrer" style={{ padding: "9px 16px", background: `rgba(212,175,55,0.15)`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>🌐 Website</a>
             <button onClick={() => toggleTrack(rep)} style={{ padding: "9px 16px", background: isTracked ? `rgba(212,175,55,0.15)` : "rgba(255,255,255,0.05)", border: `1px solid ${isTracked ? S.gold : S.border}`, borderRadius: 10, color: isTracked ? S.gold : S.gray, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }}>
               {isTracked ? "★ Tracking" : "☆ Track"}

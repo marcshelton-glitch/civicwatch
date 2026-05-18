@@ -201,6 +201,7 @@ export async function GET(request) {
           chamber,
           isSenator: isSen,
           url: m.url,
+          officialWebsiteUrl: m.officialWebsiteUrl || null,
           depiction: m.depiction?.imageUrl || null,
         }
       })
@@ -788,6 +789,7 @@ export async function GET(request) {
           chamber,
           isSenator: chamber.toLowerCase().includes('senate'),
           url: m.url,
+          officialWebsiteUrl: m.officialWebsiteUrl || null,
           depiction: m.depiction?.imageUrl || null,
         }
       }
