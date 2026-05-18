@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
-import { geoMercator } from 'd3-geo'
+import { geoMercator, geoPath } from 'd3-geo'
 import SettingsPanel from './SettingsPanel'
 
 
@@ -346,6 +346,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [hoveredDistrict, setHoveredDistrict] = useState(null)
   const [selectedDistrict, setSelectedDistrict] = useState(null)
   const [districtGeoJson, setDistrictGeoJson] = useState(null)
+  const [districtPaths, setDistrictPaths] = useState([])
 
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
@@ -380,6 +381,17 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
       .then(data => setDistrictGeoJson(data?.features?.length ? data : null))
       .catch(() => setDistrictGeoJson(null))
   }, [zoomedState?.fips])
+
+  useEffect(() => {
+    if (!districtGeoJson?.features?.length) { setDistrictPaths([]); return }
+    const W = 600, H = 400
+    const proj = geoMercator().fitSize([W, H], districtGeoJson)
+    const pathGen = geoPath().projection(proj)
+    setDistrictPaths(districtGeoJson.features.map(f => ({
+      d: pathGen(f),
+      districtNum: f.properties.districtNum || '00',
+    })))
+  }, [districtGeoJson])
 
   // Load persisted tracked reps from Supabase when user signs in
   useEffect(() => {
@@ -459,13 +471,7 @@ const filteredReps = displayReps.filter(r => {
     return map
   }, [liveReps])
 
-  // Auto-fit projection for district view — computed from actual GeoJSON bounds
-  const districtProjection = useMemo(() => {
-    if (!districtGeoJson?.features?.length) return null
-    return geoMercator().fitExtent([[20, 20], [780, 580]], districtGeoJson)
-  }, [districtGeoJson])
-
-  const markAllRead = () => {
+const markAllRead = () => {
     setAlerts(alerts.map(a => ({ ...a, read: true })))
     setLiveAlerts(liveAlerts.map(a => ({ ...a, read: true })))
   }
@@ -1291,66 +1297,42 @@ useEffect(() => {
 
             {/* ── STATE / DISTRICT VIEW ────────────────────── */}
             {mapView === 'state' && zoomedState && (
-              districtProjection && districtGeoJson ? (
-              <ComposableMap
-                projection={districtProjection}
-                style={{ width: '100%', height: 'auto' }}
-              >
-                <Geographies geography={districtGeoJson}>
-                  {({ geographies }) => {
-                    if (geographies.length === 0) {
-                      return null
-                    }
-                    return geographies.map(geo => {
-                      const distNum = geo.properties.districtNum || '00'
-                      const isSelected = selectedDistrict === distNum
-                      const isHovered = hoveredDistrict === distNum
-                      const rep = districtReps[distNum]
-                      const partyFill = rep?.party === 'Democrat'
-                        ? 'rgba(59,111,190,0.75)'
-                        : rep?.party === 'Republican'
-                          ? 'rgba(178,34,52,0.75)'
-                          : 'rgba(80,95,130,0.7)'
-                      return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          onMouseEnter={() => setHoveredDistrict(distNum)}
-                          onMouseLeave={() => setHoveredDistrict(null)}
-                          onClick={() => {
-                            setSelectedDistrict(distNum)
-                            if (rep) {
-                              setSelectedRep(rep)
-                              setActiveTab('reps')
-                            }
-                          }}
-                          style={{
-                            default: {
-                              fill: isSelected ? S.gold : partyFill,
-                              stroke: S.white,
-                              strokeWidth: isSelected ? 1.5 : 0.5,
-                              outline: 'none',
-                              cursor: 'pointer',
-                              opacity: isHovered ? 1 : 0.85,
-                            },
-                            hover: {
-                              fill: isSelected ? S.gold : 'rgba(180,170,120,0.85)',
-                              stroke: S.white,
-                              strokeWidth: 1,
-                              outline: 'none',
-                              cursor: 'pointer',
-                            },
-                            pressed: { fill: S.gold, stroke: S.white, strokeWidth: 1.5, outline: 'none' },
-                          }}
-                        />
-                      )
-                    })
-                  }}
-                </Geographies>
-              </ComposableMap>
+              districtPaths.length > 0 ? (
+              <svg viewBox="0 0 600 400" style={{ width: '100%', height: 'auto', display: 'block' }}>
+                {districtPaths.map((p, i) => {
+                  const isSelected = selectedDistrict === p.districtNum
+                  const isHovered = hoveredDistrict === p.districtNum
+                  const rep = districtReps[p.districtNum]
+                  const partyFill = rep?.party === 'Democrat'
+                    ? 'rgba(59,111,190,0.75)'
+                    : rep?.party === 'Republican'
+                      ? 'rgba(178,34,52,0.75)'
+                      : 'rgba(80,95,130,0.7)'
+                  return (
+                    <path
+                      key={i}
+                      d={p.d}
+                      fill={isSelected ? S.gold : partyFill}
+                      stroke={S.white}
+                      strokeWidth={isSelected ? 1.5 : 0.5}
+                      opacity={isHovered ? 1 : 0.85}
+                      style={{ cursor: 'pointer', outline: 'none' }}
+                      onMouseEnter={() => setHoveredDistrict(p.districtNum)}
+                      onMouseLeave={() => setHoveredDistrict(null)}
+                      onClick={() => {
+                        setSelectedDistrict(p.districtNum)
+                        if (rep) {
+                          setSelectedRep(rep)
+                          setActiveTab('reps')
+                        }
+                      }}
+                    />
+                  )
+                })}
+              </svg>
               ) : (
                 <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
-                  Loading districts…
+                  {districtGeoJson === null && zoomedState ? 'Loading districts…' : 'Loading districts…'}
                 </div>
               )
             )}
