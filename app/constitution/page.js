@@ -76,7 +76,7 @@ export default function ConstitutionPage() {
         {/* Header image */}
         <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 20, border: `1px solid ${S.border}` }}>
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/800px-Constitution_of_the_United_States%2C_page_1.jpg"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
             alt="Constitution of the United States, page 1"
             referrerPolicy="no-referrer"
             style={{ width: '100%', maxHeight: 260, objectFit: 'cover', objectPosition: 'top', display: 'block' }}
