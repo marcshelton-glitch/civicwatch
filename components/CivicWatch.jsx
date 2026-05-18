@@ -2470,7 +2470,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     {compareResults.filter(m => m.bioguideId !== rep.id).map(member => {
                       const nameParts = (member.name || '').split(', ')
                       const displayName = nameParts.length >= 2 ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}` : member.name || ''
-                      const photo = member.depiction || `https://bioguide.congress.gov/bioguide/photo/${member.bioguideId[0]}/${member.bioguideId}.jpg`
+                      const photo = `/api/rep-photo/${member.bioguideId}`
                       const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
                       return (
                         <div key={member.bioguideId}

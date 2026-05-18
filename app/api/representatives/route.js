@@ -39,7 +39,7 @@ export async function GET(request) {
           ? 'U.S. Senator' 
           : 'U.S. Representative',
         website: m.url,
-        photo: `https://bioguide.congress.gov/bioguide/photo/${m.bioguideId[0]}/${m.bioguideId}.jpg`,
+        photo: `/api/rep-photo/${m.bioguideId}`,
       }))
 
     return NextResponse.json({ 
