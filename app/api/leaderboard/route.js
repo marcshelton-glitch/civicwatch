@@ -8,42 +8,47 @@ const getSupabase = () => createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Enrich leaderboard entries with bioguide_id + party from the representatives table,
-// matching on state + last name (case-insensitive).
-async function enrichFromRepresentatives(supabase, entries) {
-  if (!entries || entries.length === 0) return entries
+async function enrichWithBioguideIds(entries) {
+  const KEY = process.env.CONGRESS_API_KEY
+  if (!KEY) return entries
 
-  const { data: repsData } = await supabase
-    .from('representatives')
-    .select('bioguide_id, name, state, party')
+  // Group by state code to minimize API calls
+  const byState = new Map()
+  for (const entry of entries) {
+    if (!entry.state) continue
+    if (!byState.has(entry.state)) byState.set(entry.state, [])
+    byState.get(entry.state).push(entry)
+  }
 
-  if (!repsData || repsData.length === 0) return entries
+  for (const [stateCode, stateEntries] of byState) {
+    try {
+      const url = `https://api.congress.gov/v3/member?stateCode=${stateCode}&limit=250&api_key=${KEY}`
+      const res = await fetch(url)
+      if (!res.ok) continue
+      const json = await res.json()
+      const members = json.members || []
 
-  // Build lookup: "STATE|lastname" -> rep row
-  // representatives.name may be "First Last" or "Last, First" — index every token > 2 chars
-  const byKey = new Map()
-  for (const r of repsData) {
-    const state = (r.state || '').toUpperCase()
-    const tokens = (r.name || '').split(/[\s,]+/).filter(p => p.length > 2)
-    for (const token of tokens) {
-      const key = `${state}|${token.toLowerCase()}`
-      if (!byKey.has(key)) byKey.set(key, r)
+      // Build lookup: lowercase last name → member info
+      const lookup = new Map()
+      for (const member of members) {
+        const lastName = member.name.split(',')[0].trim().toLowerCase()
+        lookup.set(lastName, member)
+      }
+
+      for (const entry of stateEntries) {
+        if (entry.bioguide_id || !entry.last_name) continue
+        const member = lookup.get(entry.last_name.toLowerCase())
+        if (member) {
+          entry.bioguide_id = member.bioguideId
+          entry.party = member.partyName || member.party || null
+        }
+      }
+    } catch {
+      // Skip state on error — leaderboard still returns without bioguide enrichment
     }
   }
 
-  return entries.map(e => {
-    if (e.bioguide_id && e.party) return e
-    // Extract last name from "First Last" format
-    const lastName = (e.name || '').split(/\s+/).filter(Boolean).pop() || ''
-    const key = `${(e.state || '').toUpperCase()}|${lastName.toLowerCase()}`
-    const match = byKey.get(key)
-    if (!match) return e
-    return {
-      ...e,
-      bioguide_id: e.bioguide_id || match.bioguide_id || null,
-      party: e.party || match.party || null,
-    }
-  })
+  return entries
 }
 
 export async function GET() {
@@ -59,8 +64,6 @@ export async function GET() {
     }
 
     if (!data) {
-      // Fallback: raw query via select
-      // fd_filings has: bioguide_id, last_name, first_name, state_dst, filing_type, filing_date, etc.
       const { data: rows, error: qErr } = await supabase
         .from('fd_filings')
         .select('bioguide_id, last_name, first_name, state_dst, filing_date')
@@ -68,13 +71,13 @@ export async function GET() {
 
       if (qErr) throw new Error(qErr.message)
 
-      // Aggregate in JS — group by last_name|first_name (bioguide_id is usually null here)
       const map = new Map()
       for (const row of rows || []) {
         const key = `${row.last_name}|${row.first_name}`
         if (!map.has(key)) {
           map.set(key, {
             bioguide_id: row.bioguide_id || null,
+            last_name: row.last_name || null,
             name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || null,
             state: row.state_dst ? row.state_dst.slice(0, 2) : null,
             party: null,
@@ -90,16 +93,20 @@ export async function GET() {
         }
       }
 
-      const sorted = [...map.values()]
+      let sorted = [...map.values()]
         .sort((a, b) => b.filing_count - a.filing_count)
         .slice(0, 50)
 
-      const enriched = await enrichFromRepresentatives(supabase, sorted)
-      return NextResponse.json(enriched)
+      sorted = await enrichWithBioguideIds(sorted)
+
+      // Strip internal last_name field before returning
+      for (const entry of sorted) delete entry.last_name
+
+      return NextResponse.json(sorted)
     }
 
-    // RPC path: also enrich in case the stored proc returns null bioguide_ids
-    const enriched = await enrichFromRepresentatives(supabase, data)
+    // RPC path: enrich in case the stored proc returns null bioguide_ids
+    const enriched = await enrichWithBioguideIds(data)
     return NextResponse.json(enriched)
   } catch (err) {
     console.error('Leaderboard error:', err.message)
