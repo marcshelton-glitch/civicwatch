@@ -2941,15 +2941,12 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 {loadingFdNetWorth && (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 12 }}>Loading net worth history…</div>
                 )}
-                {!loadingFdNetWorth && fdNetWorth === null && (
-                  <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>No net worth data available</div>
-                )}
-                {!loadingFdNetWorth && fdNetWorth !== null && (() => {
+                {!loadingFdNetWorth && (() => {
                   const fmtY = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${v}`
-                  if (fdNetWorth.length === 0) {
+                  if (!fdNetWorth || fdNetWorth.length === 0) {
                     return (
                       <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
-                        No net worth data on file
+                        No net worth history available
                       </div>
                     )
                   }
