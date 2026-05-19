@@ -433,7 +433,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
     }
     setDistrictPaths(districtGeoJson.features.map(f => ({
       d: geomPath(f.geometry),
-      districtNum: f.properties.districtNum || '00',
+      districtNum: f.properties?.CD118FP || f.properties?.CD116FP || f.properties?.DISTRICT || f.properties?.districtNum || '00',
     })))
   }, [districtGeoJson])
 
@@ -1859,7 +1859,7 @@ useEffect(() => {
             {/* Header image */}
             <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, border: `1px solid ${S.border}` }}>
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Constitution_of_the_United_States%2C_page_1.jpg/400px-Constitution_of_the_United_States%2C_page_1.jpg"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
                 alt="Constitution of the United States, page 1"
                 referrerPolicy="no-referrer"
                 style={{ width: "100%", maxHeight: 260, objectFit: "cover", objectPosition: "top", display: "block" }}
@@ -2222,8 +2222,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       setLoadingFdNetWorth(true)
       fetch(`/api/networth?bioguideId=${rep.id}`)
         .then(r => r.json())
-        .then(d => { setFdNetWorth(d.history || []); setLoadingFdNetWorth(false) })
-        .catch(() => { setFdNetWorth([]); setLoadingFdNetWorth(false) })
+        .then(d => { setFdNetWorth(d.history || []) })
+        .catch(() => { setFdNetWorth([]) })
+        .finally(() => setLoadingFdNetWorth(false))
     }
   }, [repTab, rep.id])
 
@@ -2939,6 +2940,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 {/* ── Net Worth Over Time Chart ── */}
                 {loadingFdNetWorth && (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 12 }}>Loading net worth history…</div>
+                )}
+                {!loadingFdNetWorth && fdNetWorth === null && (
+                  <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>No net worth data available</div>
                 )}
                 {!loadingFdNetWorth && fdNetWorth !== null && (() => {
                   const fmtY = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${v}`
