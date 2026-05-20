@@ -406,11 +406,15 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   useEffect(() => {
     if (!districtGeoJson?.features?.length) { setDistrictPaths([]); return }
     const W = 600, H = 400, pad = 20
+    // Both axes must be in the same units (radians) so Math.min(sx,sy) is meaningful.
+    // Longitude degrees → radians keeps x and y comparable to Mercator Y output.
+    const mercX = lon => lon * Math.PI / 180
     const mercY = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
     let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
     const visitCoord = ([lon, lat]) => {
+      const mx = mercX(lon)
       const my = mercY(lat)
-      if (lon < x0) x0 = lon; if (lon > x1) x1 = lon
+      if (mx < x0) x0 = mx; if (mx > x1) x1 = mx
       if (my < y0) y0 = my; if (my > y1) y1 = my
     }
     const visitRing = ring => ring.forEach(visitCoord)
@@ -424,7 +428,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
     const s = Math.min(sx, sy)
     const dx = pad + (W - 2 * pad - s * (x1 - x0)) / 2
     const dy = pad + (H - 2 * pad - s * (y1 - y0)) / 2
-    const px = ([lon, lat]) => [(dx + s * (lon - x0)).toFixed(2), (dy + s * (y1 - mercY(lat))).toFixed(2)]
+    const px = ([lon, lat]) => [(dx + s * (mercX(lon) - x0)).toFixed(2), (dy + s * (y1 - mercY(lat))).toFixed(2)]
     const ringPath = ring => ring.map((c, i) => `${i ? 'L' : 'M'}${px(c).join(',')}`).join('') + 'Z'
     const geomPath = ({ type, coordinates }) => {
       if (type === 'Polygon') return coordinates.map(ringPath).join(' ')
