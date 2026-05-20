@@ -49,7 +49,7 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
             <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Email Notifications</div>
             {[['alert_trades','Trade Disclosures'],['alert_committees','Committee Assignments'],['alert_networth','Net Worth Updates'],['alert_legislation','Sponsored Legislation']].map(([key, label]) => (
               <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, cursor: 'pointer' }}>
-                <input type="checkbox" checked={prefs[key] || false} onChange={e => { const updated = { ...prefs, [key]: e.target.checked }; setPrefs(updated); fetch('/api/preferences', { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(updated) }) }} />
+                <input type="checkbox" checked={prefs[key] || false} onChange={e => { const updated = { ...prefs, [key]: e.target.checked }; setPrefs(updated); fetch('/api/preferences', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(updated) }) }} />
                 <span style={{ color: '#e8e8e8', fontSize: 13 }}>{label}</span>
               </label>
             ))}
@@ -60,7 +60,7 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
         {isPro && (
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Billing</div>
-            <button onClick={() => fetch('/api/billing-portal').then(r=>r.json()).then(d=>{ if(d.url) window.location.href=d.url })} style={{ background: '#1e3a5f', color: '#e8e8e8', border: '1px solid #2a5f9e', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, width: '100%' }}>Manage Billing & Subscription →</button>
+            <button onClick={() => fetch('/api/billing-portal', { method: 'POST' }).then(r=>r.json()).then(d=>{ if(d.url) window.location.href=d.url })} style={{ background: '#1e3a5f', color: '#e8e8e8', border: '1px solid #2a5f9e', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, width: '100%' }}>Manage Billing & Subscription →</button>
           </div>
         )}
 
