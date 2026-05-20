@@ -1,6 +1,8 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import CookieBanner from '@/components/CookieBanner'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
 export const viewport = {
@@ -59,6 +61,8 @@ export default function RootLayout({ children }) {
           <ServiceWorkerRegistration />
           {children}
           <CookieBanner />
+          <Analytics />
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>
