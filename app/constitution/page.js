@@ -56,6 +56,7 @@ function ConstitutionCard({ title, plain, original }) {
 
 export default function ConstitutionPage() {
   const [section, setSection] = useState('articles')
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   return (
     <main style={{ minHeight: '100vh', background: S.navy, color: S.white, fontFamily: 'system-ui, sans-serif' }}>
@@ -74,14 +75,53 @@ export default function ConstitutionPage() {
         </div>
 
         {/* Header image */}
-        <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 20, border: `1px solid ${S.border}` }}>
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
-            alt="Constitution of the United States, page 1"
-            referrerPolicy="no-referrer"
-            style={{ width: '100%', maxHeight: 260, objectFit: 'cover', objectPosition: 'top', display: 'block' }}
-          />
+        <div style={{ marginBottom: 20 }}>
+          <div
+            style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${S.border}`, cursor: 'pointer', position: 'relative' }}
+            onClick={() => setLightboxOpen(true)}
+          >
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
+              alt="Constitution of the United States, page 1"
+              referrerPolicy="no-referrer"
+              style={{ width: '100%', maxHeight: 260, objectFit: 'cover', objectPosition: 'top', display: 'block', cursor: 'pointer' }}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontSize: 12, color: S.gray }}>🔍 Tap to expand</span>
+            <a
+              href="https://www.archives.gov/founding-docs/constitution"
+              target="_blank"
+              rel="noreferrer"
+              style={{ padding: '6px 14px', background: 'rgba(212,175,55,0.1)', border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: 'none', fontSize: 12, fontWeight: 600 }}
+            >
+              📜 View at National Archives
+            </a>
+          </div>
         </div>
+
+        {/* Lightbox */}
+        {lightboxOpen && (
+          <div
+            onClick={() => setLightboxOpen(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          >
+            <button
+              onClick={e => { e.stopPropagation(); setLightboxOpen(false) }}
+              style={{ position: 'absolute', top: 20, right: 24, background: 'rgba(212,175,55,0.15)', border: `1px solid ${S.gold}`, borderRadius: '50%', width: 40, height: 40, color: S.gold, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
+              alt="Constitution of the United States, page 1 — full view"
+              referrerPolicy="no-referrer"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain', borderRadius: 8, border: `1px solid ${S.border}` }}
+            />
+          </div>
+        )}
 
         {/* Intro */}
         <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, marginBottom: 24, padding: '16px 20px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
