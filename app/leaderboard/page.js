@@ -23,8 +23,6 @@ const PARTY_COLORS = {
 
 const FILTERS = [
   { id: 'all', label: 'All' },
-  { id: 'house', label: 'House' },
-  { id: 'senate', label: 'Senate' },
   { id: 'dem', label: 'Democrats' },
   { id: 'rep', label: 'Republicans' },
 ]
@@ -192,7 +190,7 @@ export default function LeaderboardPage() {
               return (
                 <button
                   key={rep.bioguide_id || i}
-                  onClick={() => router.push(`/?rep=${rep.bioguide_id}`)}
+                  onClick={() => rep.bioguide_id && router.push(`/dashboard?rep=${rep.bioguide_id}`)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
                     padding: '14px 16px',
@@ -201,7 +199,7 @@ export default function LeaderboardPage() {
                       : `rgba(27,42,107,0.3)`,
                     border: isTop3 ? `1px solid rgba(212,175,55,${0.4 - i * 0.1})` : `1px solid ${S.border}`,
                     borderRadius: 12,
-                    cursor: 'pointer', textAlign: 'left', width: '100%',
+                    cursor: rep.bioguide_id ? 'pointer' : 'default', textAlign: 'left', width: '100%',
                     transition: 'all 0.15s', fontFamily: 'inherit', color: S.white,
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = isTop3
