@@ -70,17 +70,20 @@ export async function GET() {
       .sort((a, b) => b.filing_count - a.filing_count)
       .slice(0, 50)
 
-    // Fetch party data from Congress.gov — two pages covers all 535 members
-    const [page0, page1] = await Promise.all([
+    // Fetch party data from Congress.gov — three pages to cover all 535+ members
+    const [page0, page1, page2] = await Promise.all([
       fetchMemberPartyPage(0),
       fetchMemberPartyPage(250),
+      fetchMemberPartyPage(500),
     ])
-    const partyLookup = { ...page0, ...page1 }
+    const partyLookup = { ...page0, ...page1, ...page2 }
 
-    // Enrich top-50 with party
+    // Enrich top-50 with party; normalize the ID before lookup
     for (const rep of sorted) {
-      if (rep.bioguide_id && partyLookup[rep.bioguide_id]) {
-        rep.party = partyLookup[rep.bioguide_id]
+      const id = rep.bioguide_id?.trim().toUpperCase()
+      if (id) rep.bioguide_id = id
+      if (id && partyLookup[id]) {
+        rep.party = partyLookup[id]
       }
     }
 

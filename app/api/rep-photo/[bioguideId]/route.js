@@ -4,10 +4,16 @@ import { NextResponse } from 'next/server'
 
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
 
-export async function GET(request, { params }) {
-  const { bioguideId } = await params
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (compatible; CivicWatch/1.0; +https://civicwatch.app)',
+  'Accept': 'image/jpeg,image/*,*/*',
+}
 
-  if (!BIOGUIDE_RE.test(bioguideId)) {
+export async function GET(request, { params }) {
+  const rawId = (await params).bioguideId
+  const bioguideId = rawId?.trim().toUpperCase()
+
+  if (!bioguideId || !BIOGUIDE_RE.test(bioguideId)) {
     return NextResponse.json({ error: 'Invalid bioguide ID' }, { status: 400 })
   }
 
@@ -16,11 +22,11 @@ export async function GET(request, { params }) {
 
   try {
     const bioguideUrl = `https://bioguide.congress.gov/bioguide/photo/${bioguideId[0]}/${bioguideId}.jpg`
-    let res = await fetch(bioguideUrl, { signal: controller.signal })
+    let res = await fetch(bioguideUrl, { signal: controller.signal, headers: FETCH_HEADERS })
 
     if (!res.ok) {
       const fallbackUrl = `https://www.congress.gov/img/member/${bioguideId.toLowerCase()}_200.jpg`
-      res = await fetch(fallbackUrl, { signal: controller.signal })
+      res = await fetch(fallbackUrl, { signal: controller.signal, headers: FETCH_HEADERS })
     }
 
     if (!res.ok) {
