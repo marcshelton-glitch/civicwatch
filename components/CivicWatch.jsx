@@ -350,6 +350,15 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [districtLoading, setDistrictLoading] = useState(false)
   const [districtError, setDistrictError] = useState(null)
 
+  // District map pan/zoom
+  const [mapScale, setMapScale] = useState(1)
+  const [mapTx, setMapTx] = useState(0)
+  const [mapTy, setMapTy] = useState(0)
+  const [mapPanning, setMapPanning] = useState(false)
+  const mapSvgRef = useRef(null)
+  const mapDragAnchor = useRef(null) // { ax, ay } in SVG coords
+  const mapDidDrag = useRef(false)
+
   const unreadCount = alerts.filter(a => !a.read).length + liveAlerts.filter(a => !a.read).length
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
@@ -402,6 +411,11 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
         setDistrictError('Failed to load district boundaries. Please try again.')
       })
       .finally(() => setDistrictLoading(false))
+  }, [zoomedState?.fips])
+
+  // Reset zoom/pan whenever the user switches to a different state
+  useEffect(() => {
+    setMapScale(1); setMapTx(0); setMapTy(0)
   }, [zoomedState?.fips])
 
   useEffect(() => {
@@ -1348,42 +1362,106 @@ useEffect(() => {
             {/* ── STATE / DISTRICT VIEW ────────────────────── */}
             {mapView === 'state' && zoomedState && (
               districtPaths.length > 0 ? (
-              <svg viewBox="0 0 600 400" style={{ width: '100%', height: 'auto', display: 'block' }}>
-                {districtPaths.map((p, i) => {
-                  const isSelected = selectedDistrict === p.districtNum
-                  const isHovered = hoveredDistrict === p.districtNum
-                  const rep = districtReps[p.districtNum]
-                  const partyFill = rep?.party === 'Democrat'
-                    ? 'rgba(21,101,192,0.75)'
-                    : rep?.party === 'Republican'
-                      ? 'rgba(204,32,32,0.75)'
-                      : rep?.party === 'Independent'
-                        ? 'rgba(212,184,0,0.7)'
-                        : rep?.party === 'Green'
-                          ? 'rgba(34,160,90,0.75)'
-                          : 'rgba(80,95,130,0.7)'
-                  return (
-                    <path
-                      key={i}
-                      d={p.d}
-                      fill={isSelected ? S.gold : partyFill}
-                      stroke="#ffffff"
-                      strokeWidth={1.5}
-                      opacity={isHovered ? 1 : 0.85}
-                      style={{ cursor: 'pointer', outline: 'none' }}
-                      onMouseEnter={() => setHoveredDistrict(p.districtNum)}
-                      onMouseLeave={() => setHoveredDistrict(null)}
-                      onClick={() => {
-                        setSelectedDistrict(p.districtNum)
-                        if (rep) {
-                          setSelectedRep(rep)
-                          setActiveTab('reps')
-                        }
-                      }}
-                    />
-                  )
-                })}
-              </svg>
+              <div style={{ position: 'relative', userSelect: 'none' }}>
+                {/* Zoom controls */}
+                <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {[
+                    { label: '+', title: 'Zoom in',  fn: () => { setMapScale(s => { const ns = Math.min(20, s * 1.4); setMapTx(tx => 300 - (300 - tx) * (ns / s)); setMapTy(ty => 200 - (200 - ty) * (ns / s)); return ns }) } },
+                    { label: '−', title: 'Zoom out', fn: () => { setMapScale(s => { const ns = Math.max(1,  s / 1.4); setMapTx(tx => 300 - (300 - tx) * (ns / s)); setMapTy(ty => 200 - (200 - ty) * (ns / s)); return ns }) } },
+                    { label: '⊙', title: 'Reset zoom', fn: () => { setMapScale(1); setMapTx(0); setMapTy(0) } },
+                  ].map(({ label, title, fn }) => (
+                    <button key={label} title={title} onClick={fn} style={{
+                      width: 28, height: 28, borderRadius: 6, border: `1px solid ${S.border}`,
+                      background: 'rgba(10,22,40,0.85)', color: S.white,
+                      fontSize: label === '⊙' ? 14 : 18, lineHeight: 1,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: 'monospace',
+                    }}>{label}</button>
+                  ))}
+                </div>
+
+                {/* Zoom level badge */}
+                {mapScale > 1.05 && (
+                  <div style={{ position: 'absolute', bottom: 8, right: 8, zIndex: 10, fontSize: 10, color: S.gray, background: 'rgba(10,22,40,0.7)', padding: '2px 6px', borderRadius: 4 }}>
+                    {mapScale.toFixed(1)}×
+                  </div>
+                )}
+
+                <svg
+                  ref={mapSvgRef}
+                  viewBox="0 0 600 400"
+                  style={{ width: '100%', height: 'auto', display: 'block', cursor: mapPanning ? 'grabbing' : mapScale > 1 ? 'grab' : 'default', touchAction: 'none' }}
+                  onWheel={e => {
+                    e.preventDefault()
+                    const rect = mapSvgRef.current.getBoundingClientRect()
+                    // Mouse position in SVG coordinate space
+                    const cx = (e.clientX - rect.left) / rect.width  * 600
+                    const cy = (e.clientY - rect.top)  / rect.height * 400
+                    const factor = e.deltaY < 0 ? 1.3 : 1 / 1.3
+                    setMapScale(s => {
+                      const ns = Math.max(1, Math.min(20, s * factor))
+                      setMapTx(tx => cx - (cx - tx) * (ns / s))
+                      setMapTy(ty => cy - (cy - ty) * (ns / s))
+                      return ns
+                    })
+                  }}
+                  onMouseDown={e => {
+                    if (mapScale <= 1) return
+                    mapDidDrag.current = false
+                    setMapPanning(true)
+                    const rect = mapSvgRef.current.getBoundingClientRect()
+                    const svgX = (e.clientX - rect.left) / rect.width  * 600
+                    const svgY = (e.clientY - rect.top)  / rect.height * 400
+                    mapDragAnchor.current = { ax: svgX - mapTx, ay: svgY - mapTy }
+                  }}
+                  onMouseMove={e => {
+                    if (!mapPanning || !mapDragAnchor.current) return
+                    mapDidDrag.current = true
+                    const rect = mapSvgRef.current.getBoundingClientRect()
+                    const svgX = (e.clientX - rect.left) / rect.width  * 600
+                    const svgY = (e.clientY - rect.top)  / rect.height * 400
+                    setMapTx(svgX - mapDragAnchor.current.ax)
+                    setMapTy(svgY - mapDragAnchor.current.ay)
+                  }}
+                  onMouseUp={() => { setMapPanning(false) }}
+                  onMouseLeave={() => { setMapPanning(false) }}
+                >
+                  <g transform={`translate(${mapTx},${mapTy}) scale(${mapScale})`}>
+                  {districtPaths.map((p, i) => {
+                    const isSelected = selectedDistrict === p.districtNum
+                    const isHovered = hoveredDistrict === p.districtNum
+                    const rep = districtReps[p.districtNum]
+                    const partyFill = rep?.party === 'Democrat'
+                      ? 'rgba(21,101,192,0.75)'
+                      : rep?.party === 'Republican'
+                        ? 'rgba(204,32,32,0.75)'
+                        : rep?.party === 'Independent'
+                          ? 'rgba(212,184,0,0.7)'
+                          : rep?.party === 'Green'
+                            ? 'rgba(34,160,90,0.75)'
+                            : 'rgba(80,95,130,0.7)'
+                    return (
+                      <path
+                        key={i}
+                        d={p.d}
+                        fill={isSelected ? S.gold : partyFill}
+                        stroke="#ffffff"
+                        strokeWidth={1.5 / mapScale}
+                        opacity={isHovered ? 1 : 0.85}
+                        style={{ cursor: mapDidDrag.current ? 'grabbing' : 'pointer', outline: 'none' }}
+                        onMouseEnter={() => !mapPanning && setHoveredDistrict(p.districtNum)}
+                        onMouseLeave={() => setHoveredDistrict(null)}
+                        onClick={() => {
+                          if (mapDidDrag.current) return // suppress click after drag
+                          setSelectedDistrict(p.districtNum)
+                          if (rep) { setSelectedRep(rep); setActiveTab('reps') }
+                        }}
+                      />
+                    )
+                  })}
+                  </g>
+                </svg>
+              </div>
               ) : districtLoading ? (
                 <div style={{ width: '100%', aspectRatio: '1.6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: S.gray, fontSize: 13 }}>
                   Loading districts…
