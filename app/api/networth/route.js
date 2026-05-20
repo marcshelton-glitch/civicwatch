@@ -16,26 +16,31 @@ export async function GET(request) {
 
   if (!bioguideId) return NextResponse.json({ error: 'bioguideId required' }, { status: 400 })
 
-  const supabase = getSupabase()
-  const { data, error } = await supabase
-    .from('fd_net_worth')
-    .select('report_year, net_worth_min, net_worth_max, filing_date')
-    .eq('bioguide_id', bioguideId)
-    .order('report_year', { ascending: true })
+  try {
+    const supabase = getSupabase()
+    const { data, error } = await supabase
+      .from('fd_net_worth')
+      .select('report_year, net_worth_min, net_worth_max, filing_date')
+      .eq('bioguide_id', bioguideId)
+      .order('report_year', { ascending: true })
 
-  if (error) {
-    console.error('networth GET error:', error.message)
-    return NextResponse.json({ history: [] })
+    if (error) {
+      console.error('networth GET error:', error.message)
+      return NextResponse.json({ history: [] })
+    }
+
+    const history = (data || [])
+      .filter(row => row.net_worth_min != null)
+      .map(row => ({
+        year: row.report_year,
+        min_value: row.net_worth_min,
+        max_value: row.net_worth_max ?? row.net_worth_min,
+        filing_date: row.filing_date,
+      }))
+
+    return NextResponse.json({ history })
+  } catch (err) {
+    console.error('networth GET error:', err.message)
+    return NextResponse.json({ error: 'Failed to fetch net worth data', history: [] }, { status: 500 })
   }
-
-  const history = (data || [])
-    .filter(row => row.net_worth_min != null)
-    .map(row => ({
-      year: row.report_year,
-      min_value: row.net_worth_min,
-      max_value: row.net_worth_max ?? row.net_worth_min,
-      filing_date: row.filing_date,
-    }))
-
-  return NextResponse.json({ history })
 }
