@@ -822,7 +822,7 @@ useEffect(() => {
   }
 
   const finishOnboarding = (goToMap = false) => {
-    localStorage.setItem('cw_onboarded', '1')
+    try { localStorage.setItem('cw_onboarded', '1') } catch {}
     setShowOnboarding(false)
     if (goToMap) setActiveTab('map')
     if (isSignedIn) fetch('/api/onboarding', { method: 'PATCH' }).catch(() => {})
@@ -2174,7 +2174,7 @@ useEffect(() => {
                   if (outcome === 'accepted') {
                     setInstallPrompt(null)
                     setShowInstallBanner(false)
-                    localStorage.setItem('cw_install_dismissed', '1')
+                    try { localStorage.setItem('cw_install_dismissed', '1') } catch {}
                   }
                 } else {
                   setShowInstallBanner(false)
@@ -2188,7 +2188,7 @@ useEffect(() => {
               Install
             </button>
             <button
-              onClick={() => { setShowInstallBanner(false); localStorage.setItem('cw_install_dismissed', '1') }}
+              onClick={() => { setShowInstallBanner(false); try { localStorage.setItem('cw_install_dismissed', '1') } catch {} }}
               style={{
                 padding: '7px 10px', borderRadius: 6, border: `1px solid ${S.border}`, cursor: 'pointer',
                 background: 'transparent', color: S.gray, fontSize: 15, fontFamily: 'inherit', lineHeight: 1,

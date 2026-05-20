@@ -11,7 +11,7 @@ export default function CookieBanner() {
   }, [])
 
   function accept() {
-    localStorage.setItem('cookie_consent', '1')
+    try { localStorage.setItem('cookie_consent', '1') } catch {}
     setVisible(false)
   }
 
