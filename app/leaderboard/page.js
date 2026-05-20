@@ -279,8 +279,9 @@ export default function LeaderboardPage() {
         {/* Footer note */}
         {!loading && !error && (
           <p style={{ textAlign: 'center', color: S.gray, fontSize: 11, marginTop: 32, lineHeight: 1.6 }}>
-            Data sourced from House Financial Disclosure filings (STOCK Act PTRs).
-            Click any representative to view their full profile.
+            Financial disclosure data is sourced from public congressional records filed with the House Clerk and Senate.
+            This information is publicly available under federal law (STOCK Act, 5 U.S.C. App. § 101 et seq.).{' '}
+            Data sourced from House Clerk STOCK Act PTRs and Senate EFTS. Click any representative to view their full profile.
           </p>
         )}
       </main>
