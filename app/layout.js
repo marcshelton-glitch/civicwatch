@@ -1,5 +1,6 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import CookieBanner from '@/components/CookieBanner'
 import './globals.css'
 
 export const viewport = {
@@ -54,6 +55,7 @@ export default function RootLayout({ children }) {
         <body>
           <ServiceWorkerRegistration />
           {children}
+          <CookieBanner />
         </body>
       </html>
     </ClerkProvider>
