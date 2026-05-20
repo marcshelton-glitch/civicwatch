@@ -1057,11 +1057,15 @@ and got <span className="red">rich.</span>
           <Link href="/sign-up" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign Up</Link>
           <Link href="/sign-in" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign In</Link>
           <Link href="/about" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>About</Link>
-          <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms</Link>
+          <Link href="/privacy" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Privacy Policy</Link>
+          <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms of Service</Link>
+          <Link href="/data-deletion" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Data Deletion</Link>
+          <a href="mailto:support@civicwatch.app" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Contact</a>
           <a href="https://congress.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Congress.gov</a>
           <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>House Disclosures</a>
         </div>
         <div className="footer-copy">
+          Congressional financial disclosures and voting records are public record sourced from official U.S. government databases.<br />
           Data sourced from Congress.gov, House Clerk STOCK Act Disclosures, Senate Financial Disclosures, and LegiScan LLC (CC BY 4.0).<br />
           CivicWatch is an independent accountability platform. Not affiliated with any government agency or political party.<br />
           © {new Date().getFullYear()} CivicWatch. All rights reserved.

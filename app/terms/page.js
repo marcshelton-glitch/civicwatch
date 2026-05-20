@@ -64,7 +64,7 @@ BILLING: Pro subscriptions are billed monthly to the payment method on file. Bil
 
 CANCELLATION: You may cancel your Pro subscription at any time through your account settings. Cancellation takes effect at the end of the current billing period. You will retain Pro access until the end of the paid period.
 
-REFUNDS: Due to the digital nature of the Service, all subscription fees are non-refundable except where required by applicable law. If you believe you were charged in error, contact us at billing@civicwatch.com within 30 days of the charge.
+REFUNDS: Subscriptions may be cancelled at any time. For monthly subscriptions, we offer a 7-day refund window for new subscribers — contact us at billing@civicwatch.com within 7 days of your initial charge to request a refund. After the 7-day window, monthly subscription fees are non-refundable, but you will retain access to Pro features until the end of the current billing period. If you believe you were charged in error, contact us at billing@civicwatch.com within 30 days of the charge.
 
 PRICE CHANGES: CivicWatch reserves the right to change subscription prices with 30 days written notice to your registered email address. Continued use of the Service after the price change constitutes acceptance of the new price.`,
   },

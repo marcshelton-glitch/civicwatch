@@ -464,6 +464,48 @@ export default function AboutPage() {
             </div>
           </section>
 
+          {/* PUBLIC RECORD DISCLAIMER */}
+          <section>
+            <h2
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: 26,
+                fontWeight: 700,
+                marginBottom: 20,
+                paddingBottom: 12,
+                borderBottom: `1px solid ${S.border}`,
+              }}
+            >
+              Public Record Disclaimer
+            </h2>
+            <div
+              style={{
+                padding: '20px 24px',
+                background: 'rgba(212,175,55,0.05)',
+                border: `1px solid ${S.border}`,
+                borderRadius: 8,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 15,
+                  lineHeight: 1.9,
+                  color: S.grayLight,
+                  fontWeight: 300,
+                  margin: 0,
+                }}
+              >
+                Congressional financial disclosures and voting records displayed on CivicWatch are{' '}
+                <strong style={{ color: S.white }}>public record</strong>, sourced directly from official
+                U.S. government databases including Congress.gov, the House of Representatives Office of
+                the Clerk, and the Senate Electronic Financial Disclosure system. These records are
+                required by law to be made publicly available. CivicWatch aggregates and presents this
+                information to make it more accessible — we do not create, alter, or editorialize the
+                underlying government data.
+              </p>
+            </div>
+          </section>
+
           {/* PRESS */}
           <section>
             <h2
@@ -613,8 +655,10 @@ export default function AboutPage() {
             { href: '/sign-up', label: 'Sign Up' },
             { href: '/dashboard', label: 'Dashboard' },
             { href: '/about', label: 'About' },
-            { href: '/privacy', label: 'Privacy' },
-            { href: '/terms', label: 'Terms' },
+            { href: '/privacy', label: 'Privacy Policy' },
+            { href: '/terms', label: 'Terms of Service' },
+            { href: '/data-deletion', label: 'Data Deletion' },
+            { href: 'mailto:support@civicwatch.app', label: 'Contact' },
           ].map(l => (
             <Link
               key={l.href}

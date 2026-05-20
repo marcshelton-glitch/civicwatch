@@ -99,8 +99,6 @@ const REPS = []
 const ALERT_LOG = []
 
 // ─── CONSTITUTION (real data) ─────────────────────────────────────────────────
-const PLACEHOLDER_REP_NOTE = "This card would show the representative's name, photo, party, district, contact info, voting record, and stock trades once data is available."
-
 const CONSTITUTION_ARTICLES = [
   { id: "preamble", title: "Preamble", original: "We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defence, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.", plain: "This introduction explains why the Constitution was created: to form a unified nation, ensure justice, maintain peace, and protect the freedom of all Americans." },
   { id: "art1", title: "Article I – The Legislative Branch", original: "All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives...", plain: "Creates Congress — the Senate and House of Representatives — and gives them the power to make laws." },

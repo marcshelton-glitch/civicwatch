@@ -39,6 +39,12 @@ export default function SignUpPage() {
           redirectUrl="/dashboard"
           signInUrl="/sign-in"
         />
+        <div style={{ marginTop: 16, fontSize: 11, color: '#8892A4', textAlign: 'center', lineHeight: 1.6 }}>
+          By creating an account, you agree to our{' '}
+          <a href="/terms" style={{ color: '#D4AF37', textDecoration: 'underline' }}>Terms of Service</a>
+          {' '}and{' '}
+          <a href="/privacy" style={{ color: '#D4AF37', textDecoration: 'underline' }}>Privacy Policy</a>.
+        </div>
       </div>
     </div>
   )
