@@ -1,11 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-
-const CapitolScene = dynamic(() => import('../components/CapitolScene'), { ssr: false })
 
 const STATS = [
   { value: '$174K', label: 'Average congressional salary' },
@@ -202,12 +199,60 @@ export default function LandingPage() {
           position: relative;
         }
 
+        /* ── Animated hero background glows ── */
         .hero-bg {
           position: absolute; inset: 0;
-          background: 
-            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(178,34,52,0.12) 0%, transparent 60%),
-            radial-gradient(ellipse 60% 40% at 80% 80%, rgba(27,42,107,0.3) 0%, transparent 60%),
-            radial-gradient(ellipse 40% 50% at 20% 60%, rgba(212,175,55,0.05) 0%, transparent 50%);
+          overflow: hidden; pointer-events: none;
+        }
+
+        /* Primary: deep red pulse — breathes in and out on a 7s cycle */
+        .hero-glow-red {
+          position: absolute;
+          top: -15%; left: 50%;
+          transform: translateX(-50%);
+          width: 130%; height: 110%;
+          background: radial-gradient(ellipse 55% 50% at 50% 28%,
+            rgba(178,34,52,0.22) 0%,
+            rgba(178,34,52,0.07) 45%,
+            transparent 70%);
+          animation: glowPulse 7s ease-in-out infinite;
+          will-change: opacity, transform;
+        }
+
+        /* Secondary: navy blue drifts slowly — 11s so it never aligns with red */
+        .hero-glow-blue {
+          position: absolute; inset: -25%;
+          background:
+            radial-gradient(ellipse 48% 42% at 80% 78%, rgba(27,42,107,0.38) 0%, transparent 55%),
+            radial-gradient(ellipse 38% 46% at 16% 62%, rgba(36,58,140,0.22) 0%, transparent 50%);
+          animation: glowDrift 11s ease-in-out infinite;
+          will-change: opacity, transform;
+        }
+
+        /* Accent: gold shimmer — 13s cycle, barely visible, gives warmth */
+        .hero-glow-gold {
+          position: absolute; inset: 0;
+          background: radial-gradient(ellipse 28% 22% at 50% 52%,
+            rgba(212,175,55,0.08) 0%,
+            transparent 65%);
+          animation: glowGold 13s ease-in-out infinite;
+          will-change: opacity;
+        }
+
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.8;  transform: translateX(-50%) scale(1); }
+          50%       { opacity: 1;   transform: translateX(-50%) scale(1.13); }
+        }
+
+        @keyframes glowDrift {
+          0%, 100% { opacity: 0.85; transform: scale(1)    translate(0,   0); }
+          33%      { opacity: 1;    transform: scale(1.07) translate(-18px, -12px); }
+          66%      { opacity: 0.8;  transform: scale(0.96) translate( 12px,  16px); }
+        }
+
+        @keyframes glowGold {
+          0%, 100% { opacity: 0; }
+          50%      { opacity: 1; }
         }
 
         .hero-stripe {
@@ -706,9 +751,12 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="hero" ref={heroRef}>
-        <div className="hero-bg" />
+        <div className="hero-bg">
+          <div className="hero-glow-red" />
+          <div className="hero-glow-blue" />
+          <div className="hero-glow-gold" />
+        </div>
         <div className="hero-stripe" />
-        <CapitolScene />
 
         <div className="eyebrow" style={{ position: 'relative' }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
