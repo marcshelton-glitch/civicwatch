@@ -3445,8 +3445,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       </div>
                     )}
 
-                    {/* ── Net Worth History (from Supabase, when DB is seeded) ── */}
-                    {netWorthHistory?.length > 0 && (() => {
+                    {/* ── Net Worth History (from Supabase fd_net_worth, keyed by bioguide_id) ── */}
+                    {fdNetWorth?.length > 0 && (() => {
                       const fmtRange = (min, max) => {
                         if (min == null) return '—'
                         const fmtN = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${v}`
@@ -3456,22 +3456,20 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div>
                           <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth — Annual Financial Disclosures</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            {netWorthHistory.map((n, i) => {
-                              const mid = v => v != null ? Math.round((v + (netWorthHistory[i]?.netWorthMax ?? v)) / 2) : null
-                              const nwMid = n.netWorthMin != null ? Math.round((n.netWorthMin + (n.netWorthMax ?? n.netWorthMin)) / 2) : null
-                              const prevMid = netWorthHistory[i+1]?.netWorthMin != null ? Math.round((netWorthHistory[i+1].netWorthMin + (netWorthHistory[i+1].netWorthMax ?? netWorthHistory[i+1].netWorthMin)) / 2) : null
+                            {fdNetWorth.map((n, i) => {
+                              const nwMid = n.min_value != null ? Math.round((n.min_value + (n.max_value ?? n.min_value)) / 2) : null
+                              const prevMid = fdNetWorth[i+1]?.min_value != null ? Math.round((fdNetWorth[i+1].min_value + (fdNetWorth[i+1].max_value ?? fdNetWorth[i+1].min_value)) / 2) : null
                               const delta = nwMid != null && prevMid != null ? nwMid - prevMid : null
                               return (
                                 <div key={n.year} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
                                   <div style={{ minWidth: 44, fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.gold }}>{n.year}</div>
                                   <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
-                                      {n.netWorthMin != null ? `Net Worth: ${fmtRange(n.netWorthMin, n.netWorthMax)}` : `Assets: ${fmtRange(n.assetsMin, n.assetsMax)}`}
+                                      Net Worth: {fmtRange(n.min_value, n.max_value)}
                                     </div>
-                                    <div style={{ fontSize: 11, color: S.gray }}>
-                                      Assets: {fmtRange(n.assetsMin, n.assetsMax)}
-                                      {n.liabilitiesMin != null && <> · Liabilities: {fmtRange(n.liabilitiesMin, n.liabilitiesMax)}</>}
-                                    </div>
+                                    {n.filing_date && (
+                                      <div style={{ fontSize: 11, color: S.gray }}>Filed: {n.filing_date}</div>
+                                    )}
                                   </div>
                                   {delta != null && (
                                     <div style={{ fontSize: 12, fontWeight: 600, color: delta >= 0 ? '#4CAF50' : '#f87171', whiteSpace: 'nowrap' }}>
