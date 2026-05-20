@@ -66,9 +66,23 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
 
         {/* Free: upgrade CTA */}
         {!isPro && (
-          <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a3a1a, #0d2a0d)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none', textAlign: 'center' }}>
-            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 4 }}>★ Upgrade to Pro</div>
-            <div style={{ color: '#8899aa', fontSize: 12 }}>AI Analysis, email alerts, and more</div>
+          <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a3a1a, #0d2a0d)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none' }}>
+            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 10, textAlign: 'center' }}>★ Upgrade to Pro — $9.99/mo</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                '🤖 Full AI accountability reports',
+                '📊 Net worth & financial disclosures',
+                '📈 Stock trade conflict analysis',
+                '🔔 Real-time alerts for tracked reps',
+                '⭐ Track any representative',
+              ].map(item => (
+                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b0bac8' }}>
+                  <span style={{ color: '#c9a84c', fontSize: 10 }}>✓</span>
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 12, textAlign: 'center', color: '#c9a84c', fontSize: 12, fontWeight: 600 }}>See full details →</div>
           </a>
         )}
       </div>

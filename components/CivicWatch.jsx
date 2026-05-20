@@ -2127,7 +2127,8 @@ useEffect(() => {
             <a href="/about" style={{ color: S.gray, textDecoration: "none" }}>About</a>
             <a href="/privacy" style={{ color: S.gray, textDecoration: "none" }}>Privacy Policy</a>
             <a href="/terms" style={{ color: S.gray, textDecoration: "none" }}>Terms of Service</a>
-            <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion / Contact</a>
+            <a href="mailto:marcshelton@gmail.com" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
+            <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion</a>
           </div>
           <div style={{ fontSize: 11, color: S.gray }}>Data sourced from <a href="https://congress.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Congress.gov</a>, <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>House Clerk STOCK Act Disclosures</a>, <a href="https://efts.senate.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Senate Financial Disclosures</a>, and <a href="https://legiscan.com" target="_blank" rel="noreferrer" style={{ color: S.gray }}>LegiScan LLC (CC BY 4.0)</a>.</div>
         </div>
@@ -3787,7 +3788,7 @@ Sincerely,
                           📅 {ev.date}{ev.time ? ` · ${ev.time}` : ''}
                         </div>
                         <div style={{ fontSize: 12, color: S.gray, marginBottom: ev.description ? 8 : 12 }}>
-                          📍 {ev.location || 'Location TBD'}
+                          📍 {ev.location || 'Location not listed'}
                         </div>
                         {ev.description && (
                           <div style={{ fontSize: 12, color: S.grayLight, marginBottom: 12, lineHeight: 1.5 }}>
