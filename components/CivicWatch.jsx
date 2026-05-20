@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
+import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
 
 
@@ -969,7 +970,7 @@ useEffect(() => {
                   aria-label="Open account settings"
                   style={{ width: 34, height: 34, borderRadius: "50%", padding: 0, border: `2px solid ${isPro ? S.gold : S.border}`, cursor: "pointer", overflow: "hidden", background: S.navyLight, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {user?.imageUrl ? (
-                    <img src={user.imageUrl} alt="Account" referrerPolicy="no-referrer" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                    <Image src={user.imageUrl} alt="Account" width={34} height={34} style={{ objectFit: "cover", borderRadius: "50%", width: "100%", height: "100%" }} />
                   ) : (
                     <span style={{ fontSize: 13, fontWeight: 700, color: S.gold }}>
                       {[user?.firstName, user?.lastName].filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
@@ -1109,8 +1110,8 @@ useEffect(() => {
                       <div style={{ position: "relative" }}>
                         {rep.photo ? (
                           <>
-                            <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 68, height: 68, borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
-                              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                            <Image src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
+                              onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
                             <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
                           </>
                         ) : (
@@ -1188,8 +1189,8 @@ useEffect(() => {
                           <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                             <div style={{ position: 'relative' }}>
                               {rep.photo
-                                ? <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 68, height: 68, borderRadius: '50%', border: `3px solid ${levelColor}`, objectFit: 'cover' }}
-                                    onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block' }} />
+                                ? <Image src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: '50%', border: `3px solid ${levelColor}`, objectFit: 'cover' }}
+                                    onError={e => { e.currentTarget.style.display='none'; e.currentTarget.nextSibling.style.display='block' }} />
                                 : null}
                               <InitialsAvatar name={rep.name} party={rep.party} size={68}
                                 style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${levelColor}` }} />
@@ -1569,7 +1570,7 @@ useEffect(() => {
                 className="rep-card">
                 {r.photo ? (
                   <>
-                    <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                    <Image src={r.photo} alt={r.name} width={38} height={38} style={{ borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
                     <InitialsAvatar name={r.name} party={r.party} size={38} style={{ display: 'none', border: `2px solid ${S.gold}`, flexShrink: 0 }} />
                   </>
                 ) : (
@@ -1630,7 +1631,7 @@ useEffect(() => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
                     <InitialsAvatar name={trade.name} party={party || ''} size={40} />
-                    {photo && <img src={photo} alt="" referrerPolicy="no-referrer" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${S.gold}` }} onError={e => { e.target.style.display = 'none' }} />}
+                    {photo && <Image src={photo} alt="" fill style={{ borderRadius: '50%', objectFit: 'cover', border: `2px solid ${S.gold}` }} onError={e => { e.currentTarget.style.display = 'none' }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: S.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trade.name}</div>
@@ -1705,7 +1706,7 @@ useEffect(() => {
                 {displayReps.map(r => (
                   <div key={r.id} onClick={() => toggleTrack(r.id)}
                     style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", background: tracked.includes(r.id) ? `rgba(212,175,55,0.12)` : S.cardBg, border: `1px solid ${tracked.includes(r.id) ? S.gold : S.border}`, borderRadius: 30, cursor: "pointer" }}>
-                    <img src={r.photo} alt={r.name} referrerPolicy="no-referrer" style={{ width: 26, height: 26, borderRadius: "50%", objectFit: "cover" }} onError={e => { e.target.style.display = 'none' }} />
+                    <Image src={r.photo} alt={r.name} width={26} height={26} style={{ borderRadius: "50%", objectFit: "cover" }} onError={e => { e.currentTarget.style.display = 'none' }} />
                     <span style={{ fontSize: 12, color: tracked.includes(r.id) ? S.gold : S.gray }}>{r.name.split(" ").slice(-1)[0]}</span>
                     {tracked.includes(r.id) && <span style={{ color: S.gold, fontSize: 11 }}>✓</span>}
                   </div>
@@ -1811,7 +1812,7 @@ useEffect(() => {
                     <div key={alert.id} className={alert.read ? "" : "alert-unread"}
                       style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
                       <span style={{ fontSize: 20 }}>{typeIcon}</span>
-                      {photo && <img src={photo} alt="" referrerPolicy="no-referrer" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />}
+                      {photo && <Image src={photo} alt="" width={34} height={34} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none' }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.message}</div>
                         <div style={{ fontSize: 11, color: S.gray }}>{displayTime}</div>
@@ -1898,10 +1899,10 @@ useEffect(() => {
                     >
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: partyColor }} />
                       <div style={{ position: 'relative', flexShrink: 0, marginTop: 3 }}>
-                        <img src={photo} alt={displayName}
-                          referrerPolicy="no-referrer"
-                          style={{ width: 56, height: 56, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
-                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                        <Image src={photo} alt={displayName}
+                          width={56} height={56}
+                          style={{ borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
+                          onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }} />
                         <InitialsAvatar name={displayName} party={member.party} size={56} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -2468,8 +2469,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
           {rep.photo ? (
             <>
-              <img src={rep.photo} alt={rep.name} referrerPolicy="no-referrer" style={{ width: 90, height: 90, borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
-                onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+              <Image src={rep.photo} alt={rep.name} width={90} height={90} style={{ borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+                onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
               <InitialsAvatar name={rep.name} party={rep.party} size={90}
                 style={{ display: 'none', border: `4px solid ${S.gold}` }} />
             </>
@@ -2564,10 +2565,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
                         >
                           <div style={{ position: 'relative', flexShrink: 0 }}>
-                            <img src={photo} alt={displayName}
-                              referrerPolicy="no-referrer"
-                              style={{ width: 40, height: 40, borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
-                              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                            <Image src={photo} alt={displayName}
+                              width={40} height={40}
+                              style={{ borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
+                              onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }} />
                             <InitialsAvatar name={displayName} party={member.party} size={40} style={{ display: 'none', border: `2px solid ${partyColor}` }} />
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -2601,10 +2602,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 <div className="compare-card-header">
                   <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                     {rep.photo
-                      ? <img src={rep.photo} alt={repDisplayName}
-                          referrerPolicy="no-referrer"
-                          style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
-                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                      ? <Image src={rep.photo} alt={repDisplayName}
+                          width={60} height={60}
+                          style={{ borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
+                          onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
                       : null}
                     <InitialsAvatar name={rep.name} party={rep.party} size={60}
                       style={{ display: rep.photo ? 'none' : 'block', border: `3px solid ${S.gold}`, margin: '0 auto 10px' }} />
@@ -2617,10 +2618,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   <div className="compare-vs-mobile">VS</div>
                   <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                     <div style={{ position: 'relative', width: 60, margin: '0 auto 10px' }}>
-                      <img src={compareRep.photo} alt={compareRep.displayName}
-                        referrerPolicy="no-referrer"
-                        style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
-                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }} />
+                      <Image src={compareRep.photo} alt={compareRep.displayName}
+                        width={60} height={60}
+                        style={{ borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
+                        onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
                       <InitialsAvatar name={compareRep.name} party={compareRep.party} size={60}
                         style={{ display: 'none', border: `3px solid ${compareRep.partyColor}` }} />
                     </div>

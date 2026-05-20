@@ -1,5 +1,11 @@
 import { SignUp } from '@clerk/nextjs'
 
+export const metadata = {
+  title: 'Create Account — CivicWatch',
+  description: 'Create a free CivicWatch account. Track congressional finances, get real-time trade alerts, and unlock AI accountability reports.',
+  robots: { index: false, follow: false },
+}
+
 export default function SignUpPage() {
   return (
     <div style={{

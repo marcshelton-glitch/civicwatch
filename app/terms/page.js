@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Terms of Service — CivicWatch',
-  description: 'Terms of Service for CivicWatch civic accountability platform.',
+  description: 'Terms of Service for CivicWatch — the congressional financial transparency platform. Covers account use, data policies, subscriptions, and user rights.',
 }
 
 const S = {

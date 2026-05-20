@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'CivicWatch — Your Representatives. Accountable.'
+export const alt = 'CivicWatch — Follow the money. Hold power accountable.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -74,7 +74,7 @@ export default function OgImage() {
               marginBottom: 48,
             }}
           >
-            Your Representatives. Accountable.
+            Follow the money. Hold power accountable.
           </div>
 
           {/* Feature pills */}

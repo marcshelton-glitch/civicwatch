@@ -1,5 +1,11 @@
 import { SignIn } from '@clerk/nextjs'
 
+export const metadata = {
+  title: 'Sign In — CivicWatch',
+  description: 'Sign in to CivicWatch to track your representatives\' stock trades, voting records, and receive real-time accountability alerts.',
+  robots: { index: false, follow: false },
+}
+
 export default function SignInPage() {
   return (
     <div style={{

@@ -1,3 +1,8 @@
+export const metadata = {
+  title: '404 — Page Not Found | CivicWatch',
+  description: 'This page could not be found. Visit CivicWatch to track congressional stock trades, voting records, and financial disclosures.',
+}
+
 export default function NotFound() {
   return (
     <div style={{
