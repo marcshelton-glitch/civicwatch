@@ -2125,6 +2125,7 @@ useEffect(() => {
           <div style={{ fontFamily: "'Playfair Display', serif", color: S.gold, fontSize: 14, marginBottom: 8 }}>CivicWatch™ · A Democracy Accountability Platform</div>
           <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", marginBottom: 10, fontSize: 12 }}>
             <a href="/about" style={{ color: S.gray, textDecoration: "none" }}>About</a>
+            <a href="/press" style={{ color: S.gray, textDecoration: "none" }}>Press</a>
             <a href="/privacy" style={{ color: S.gray, textDecoration: "none" }}>Privacy Policy</a>
             <a href="/terms" style={{ color: S.gray, textDecoration: "none" }}>Terms of Service</a>
             <a href="mailto:marcshelton@gmail.com" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
