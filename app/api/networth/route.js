@@ -25,12 +25,14 @@ export async function GET(request) {
     return NextResponse.json({ history: [] })
   }
 
-  const history = (data || []).map(row => ({
-    year: row.report_year,
-    min_value: row.net_worth_min,
-    max_value: row.net_worth_max,
-    filing_date: row.filing_date,
-  }))
+  const history = (data || [])
+    .filter(row => row.net_worth_min != null)
+    .map(row => ({
+      year: row.report_year,
+      min_value: row.net_worth_min,
+      max_value: row.net_worth_max ?? row.net_worth_min,
+      filing_date: row.filing_date,
+    }))
 
   return NextResponse.json({ history })
 }
