@@ -2328,7 +2328,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   useEffect(() => {
     if (repTab === 'wealth' && isLive && rep.source !== 'openstates' && !fdNetWorth && !loadingFdNetWorth) {
       setLoadingFdNetWorth(true)
-      fetch(`/api/networth?bioguideId=${rep.id}`)
+      const lastName = (rep.name || '').split(',')[0].trim()
+      const state = (rep.state || '').toUpperCase()
+      fetch(`/api/networth?bioguideId=${rep.id}&lastName=${encodeURIComponent(lastName)}&state=${encodeURIComponent(state)}`)
         .then(r => r.json())
         .then(d => { setFdNetWorth(d.history || []); setFdNetWorthMeta(d) })
         .catch(() => { setFdNetWorth([]); setFdNetWorthMeta(null) })

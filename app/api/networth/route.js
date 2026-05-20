@@ -7,31 +7,51 @@ const getSupabase = () => createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// GET /api/networth?bioguideId=P000197
+// GET /api/networth?bioguideId=P000197&lastName=Pelosi&state=CA
 export async function GET(request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { searchParams } = new URL(request.url)
   const bioguideId = (searchParams.get('bioguideId') || '').trim().toUpperCase()
+  const lastName = (searchParams.get('lastName') || '').trim()
+  const state = (searchParams.get('state') || '').trim().toUpperCase()
 
   if (!bioguideId) return NextResponse.json({ error: 'bioguideId required' }, { status: 400 })
 
   const supabase = getSupabase()
-  const { data, error } = await supabase
+
+  let { data, error } = await supabase
     .from('fd_net_worth')
     .select('report_year, net_worth_min, net_worth_max, filing_date')
     .eq('bioguide_id', bioguideId)
     .order('report_year', { ascending: true })
+
+  // Fallback: bioguide_id not yet populated in DB — query by last_name + state prefix
+  if (!error && (!data || data.length === 0) && lastName && state) {
+    ;({ data, error } = await supabase
+      .from('fd_net_worth')
+      .select('report_year, net_worth_min, net_worth_max, filing_date')
+      .ilike('last_name', lastName)
+      .ilike('state_dst', `${state}%`)
+      .order('report_year', { ascending: true }))
+  }
 
   if (error) {
     console.error('networth GET error:', error.message)
     return NextResponse.json({ history: [] })
   }
 
-  const CONGRESSIONAL_SALARY = 174000
+  // Deduplicate: one row per year (keep highest net_worth_max — likely the amended filing)
+  const byYear = {}
+  for (const row of data || []) {
+    if (row.net_worth_min == null) continue
+    if (!byYear[row.report_year] || row.net_worth_max > byYear[row.report_year].net_worth_max) {
+      byYear[row.report_year] = row
+    }
+  }
 
-  const history = (data || [])
-    .filter(row => row.net_worth_min != null)
+  const history = Object.values(byYear)
+    .sort((a, b) => a.report_year - b.report_year)
     .map(row => ({
       year: row.report_year,
       min_value: row.net_worth_min,
@@ -40,6 +60,8 @@ export async function GET(request) {
     }))
 
   if (history.length === 0) return NextResponse.json({ history: [] })
+
+  const CONGRESSIONAL_SALARY = 174000
 
   const first = history[0]
   const last = history[history.length - 1]
