@@ -199,60 +199,77 @@ export default function LandingPage() {
           position: relative;
         }
 
-        /* ── Animated hero background glows ── */
+        /* ── Animated hero background glows — 15s cycle, 5s per color ── */
         .hero-bg {
           position: absolute; inset: 0;
           overflow: hidden; pointer-events: none;
         }
 
-        /* Primary: deep red pulse — breathes in and out on a 7s cycle */
+        /* Red: visible 0–5s */
         .hero-glow-red {
           position: absolute;
-          top: -15%; left: 50%;
+          top: -20%; left: 50%;
           transform: translateX(-50%);
-          width: 130%; height: 110%;
-          background: radial-gradient(ellipse 55% 50% at 50% 28%,
-            rgba(178,34,52,0.22) 0%,
-            rgba(178,34,52,0.07) 45%,
+          width: 140%; height: 120%;
+          background: radial-gradient(ellipse 60% 55% at 50% 30%,
+            rgba(178,34,52,0.52) 0%,
+            rgba(178,34,52,0.18) 45%,
             transparent 70%);
-          animation: glowPulse 7s ease-in-out infinite;
+          animation: glowRed 15s ease-in-out infinite;
           will-change: opacity, transform;
         }
 
-        /* Secondary: navy blue drifts slowly — 11s so it never aligns with red */
+        /* Blue: visible 5–10s */
         .hero-glow-blue {
-          position: absolute; inset: -25%;
-          background:
-            radial-gradient(ellipse 48% 42% at 80% 78%, rgba(27,42,107,0.38) 0%, transparent 55%),
-            radial-gradient(ellipse 38% 46% at 16% 62%, rgba(36,58,140,0.22) 0%, transparent 50%);
-          animation: glowDrift 11s ease-in-out infinite;
+          position: absolute;
+          top: -20%; left: 50%;
+          transform: translateX(-50%);
+          width: 140%; height: 120%;
+          background: radial-gradient(ellipse 60% 55% at 50% 30%,
+            rgba(27,82,180,0.52) 0%,
+            rgba(36,58,140,0.18) 45%,
+            transparent 70%);
+          animation: glowBlue 15s ease-in-out infinite;
           will-change: opacity, transform;
         }
 
-        /* Accent: gold shimmer — 13s cycle, barely visible, gives warmth */
+        /* Gold: visible 10–15s */
         .hero-glow-gold {
-          position: absolute; inset: 0;
-          background: radial-gradient(ellipse 28% 22% at 50% 52%,
-            rgba(212,175,55,0.08) 0%,
-            transparent 65%);
-          animation: glowGold 13s ease-in-out infinite;
-          will-change: opacity;
+          position: absolute;
+          top: -20%; left: 50%;
+          transform: translateX(-50%);
+          width: 140%; height: 120%;
+          background: radial-gradient(ellipse 60% 55% at 50% 30%,
+            rgba(212,175,55,0.48) 0%,
+            rgba(212,175,55,0.14) 45%,
+            transparent 70%);
+          animation: glowGold 15s ease-in-out infinite;
+          will-change: opacity, transform;
         }
 
-        @keyframes glowPulse {
-          0%, 100% { opacity: 0.8;  transform: translateX(-50%) scale(1); }
-          50%       { opacity: 1;   transform: translateX(-50%) scale(1.13); }
+        @keyframes glowRed {
+          0%   { opacity: 0;   transform: translateX(-50%) scale(1); }
+          4%   { opacity: 1;   transform: translateX(-50%) scale(1.06); }
+          25%  { opacity: 1;   transform: translateX(-50%) scale(1.14); }
+          33%  { opacity: 0;   transform: translateX(-50%) scale(1.00); }
+          100% { opacity: 0;   transform: translateX(-50%) scale(1); }
         }
 
-        @keyframes glowDrift {
-          0%, 100% { opacity: 0.85; transform: scale(1)    translate(0,   0); }
-          33%      { opacity: 1;    transform: scale(1.07) translate(-18px, -12px); }
-          66%      { opacity: 0.8;  transform: scale(0.96) translate( 12px,  16px); }
+        @keyframes glowBlue {
+          0%   { opacity: 0;   transform: translateX(-50%) scale(1); }
+          33%  { opacity: 0;   transform: translateX(-50%) scale(1); }
+          37%  { opacity: 1;   transform: translateX(-50%) scale(1.06); }
+          58%  { opacity: 1;   transform: translateX(-50%) scale(1.14); }
+          66%  { opacity: 0;   transform: translateX(-50%) scale(1.00); }
+          100% { opacity: 0;   transform: translateX(-50%) scale(1); }
         }
 
         @keyframes glowGold {
-          0%, 100% { opacity: 0; }
-          50%      { opacity: 1; }
+          0%   { opacity: 0;   transform: translateX(-50%) scale(1); }
+          66%  { opacity: 0;   transform: translateX(-50%) scale(1); }
+          70%  { opacity: 1;   transform: translateX(-50%) scale(1.06); }
+          91%  { opacity: 1;   transform: translateX(-50%) scale(1.14); }
+          100% { opacity: 0;   transform: translateX(-50%) scale(0.98); }
         }
 
         .hero-stripe {
