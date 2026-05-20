@@ -497,8 +497,8 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
       : liveReps
 const filteredReps = displayReps.filter(r => {
     const matchLevel = filterLevel === "all" || r.level === filterLevel
-    const matchParty = filterParty === "all" || r.party.toLowerCase() === filterParty
-    const matchSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase()) || r.district.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchParty = filterParty === "all" || (r.party || '').toLowerCase() === filterParty
+    const matchSearch = (r.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || (r.district || '').toLowerCase().includes(searchTerm.toLowerCase())
     return matchLevel && matchParty && matchSearch
   })
 
