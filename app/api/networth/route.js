@@ -28,6 +28,8 @@ export async function GET(request) {
     return NextResponse.json({ history: [] })
   }
 
+  const CONGRESSIONAL_SALARY = 174000
+
   const history = (data || [])
     .filter(row => row.net_worth_min != null)
     .map(row => ({
@@ -37,5 +39,26 @@ export async function GET(request) {
       filing_date: row.filing_date,
     }))
 
-  return NextResponse.json({ history })
+  if (history.length === 0) return NextResponse.json({ history: [] })
+
+  const first = history[0]
+  const last = history[history.length - 1]
+  const entryWorth = (first.min_value + first.max_value) / 2
+  const currentWorth = (last.min_value + last.max_value) / 2
+  const growthAmount = currentWorth - entryWorth
+  const growthPct = entryWorth > 0 ? Math.round((growthAmount / entryWorth) * 100) : null
+  const yearsInOffice = last.year - first.year + 1
+  const salaryTotal = CONGRESSIONAL_SALARY * yearsInOffice
+
+  return NextResponse.json({
+    history,
+    entry_year: first.year,
+    entry_worth: entryWorth,
+    current_year: last.year,
+    current_worth: currentWorth,
+    growth_amount: growthAmount,
+    growth_pct: growthPct,
+    salary_total: salaryTotal,
+    categories: null,
+  })
 }

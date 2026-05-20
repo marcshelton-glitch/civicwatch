@@ -2242,6 +2242,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [shareToast, setShareToast] = useState(null)
   const [copiedTemplate, setCopiedTemplate] = useState(false)
   const [fdNetWorth, setFdNetWorth] = useState(null)
+  const [fdNetWorthMeta, setFdNetWorthMeta] = useState(null)
   const [loadingFdNetWorth, setLoadingFdNetWorth] = useState(false)
   const [nwHoverIdx, setNwHoverIdx] = useState(null)
   const [compareQuery, setCompareQuery] = useState('')
@@ -2279,7 +2280,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
     setLoadingDisclosures(false)
-    setFdNetWorth(null); setLoadingFdNetWorth(false); setNwHoverIdx(null)
+    setFdNetWorth(null); setFdNetWorthMeta(null); setLoadingFdNetWorth(false); setNwHoverIdx(null)
     setCompareQuery(''); setCompareResults([]); setCompareRep(null); setCompareData(null); setCompareDataLoading(false); setCompareMode(false)
   }, [rep.id])
 
@@ -2329,8 +2330,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       setLoadingFdNetWorth(true)
       fetch(`/api/networth?bioguideId=${rep.id}`)
         .then(r => r.json())
-        .then(d => { setFdNetWorth(d.history || []) })
-        .catch(() => { setFdNetWorth([]) })
+        .then(d => { setFdNetWorth(d.history || []); setFdNetWorthMeta(d) })
+        .catch(() => { setFdNetWorth([]); setFdNetWorthMeta(null) })
         .finally(() => setLoadingFdNetWorth(false))
     }
   }, [repTab, rep.id])
@@ -3044,92 +3045,189 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
             return (
               <>
-                {/* ── Net Worth Over Time Chart ── */}
+                {/* ── Net Worth Deep-Dive ── */}
                 {loadingFdNetWorth && (
                   <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 12 }}>Loading net worth history…</div>
                 )}
                 {!loadingFdNetWorth && (() => {
-                  const fmtY = v => v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : v >= 1e3 ? `$${Math.round(v/1e3)}K` : `$${v}`
+                  const fmtY = v => {
+                    if (v == null || !isFinite(v)) return 'N/A'
+                    const abs = Math.abs(v)
+                    const sign = v < 0 ? '-' : ''
+                    if (abs >= 1e9) return `${sign}$${(abs/1e9).toFixed(1)}B`
+                    if (abs >= 1e6) return `${sign}$${(abs/1e6).toFixed(1)}M`
+                    if (abs >= 1e3) return `${sign}$${Math.round(abs/1e3)}K`
+                    return `${sign}$${Math.round(abs)}`
+                  }
+
                   if (!fdNetWorth || fdNetWorth.length === 0) {
                     return (
                       <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
-                        No net worth history available
+                        Financial disclosure data not available for this representative
                       </div>
                     )
                   }
-                  if (fdNetWorth.length < 2) return null
-                  const midpoints = fdNetWorth.map(d => (d.min_value + d.max_value) / 2)
-                  const allVals = [...fdNetWorth.map(d => d.min_value), ...fdNetWorth.map(d => d.max_value)]
-                  const rawMin = Math.min(...allVals)
-                  const rawMax = Math.max(...allVals)
-                  const span = rawMax - rawMin || rawMax * 0.1 || 1
-                  const yMin = rawMin - span * 0.08
-                  const yMax = rawMax + span * 0.08
-                  const W = 520, H = 160
-                  const pad = { t: 14, r: 12, b: 28, l: 60 }
-                  const cW = W - pad.l - pad.r
-                  const cH = H - pad.t - pad.b
-                  const n = fdNetWorth.length
-                  const xS = i => pad.l + (i / (n - 1)) * cW
-                  const yS = v => pad.t + cH - ((v - yMin) / (yMax - yMin)) * cH
-                  const areaTop = fdNetWorth.map((d, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(d.max_value)}`).join(' ')
-                  const areaBot = [...fdNetWorth].reverse().map((d, i) => `L${xS(n - 1 - i)},${yS(d.min_value)}`).join(' ')
-                  const areaPath = `${areaTop} ${areaBot} Z`
-                  const linePath = midpoints.map((v, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(v)}`).join(' ')
-                  const yTickVals = [0, 0.25, 0.5, 0.75, 1].map(t => yMin + t * (yMax - yMin))
-                  return (
-                    <div style={{ marginBottom: 24, padding: '16px 16px 12px', background: '#0b1220', border: `1px solid ${S.border}`, borderRadius: 12 }}>
-                      <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>Est. Net Worth Over Time</div>
-                      <div style={{ position: 'relative' }}>
-                        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
-                          {/* Grid lines + Y axis labels */}
-                          {yTickVals.map((v, i) => (
-                            <g key={i}>
-                              <line x1={pad.l} y1={yS(v)} x2={W - pad.r} y2={yS(v)} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
-                              <text x={pad.l - 6} y={yS(v)} textAnchor="end" dominantBaseline="middle" fill="#556070" fontSize={9}>{fmtY(v)}</text>
-                            </g>
-                          ))}
-                          {/* Shaded area between min and max */}
-                          <path d={areaPath} fill="rgba(212,175,55,0.13)" />
-                          {/* Midpoint line */}
-                          <path d={linePath} fill="none" stroke="#D4AF37" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                          {/* X axis year labels */}
-                          {fdNetWorth.map((d, i) => (
-                            <text key={i} x={xS(i)} y={H - 6} textAnchor="middle" fill="#556070" fontSize={9}>{d.year}</text>
-                          ))}
-                          {/* Invisible hit targets + visible dots */}
-                          {fdNetWorth.map((d, i) => (
-                            <g key={i}>
-                              <rect x={xS(i) - 18} y={pad.t} width={36} height={cH} fill="transparent"
-                                onMouseEnter={() => setNwHoverIdx(i)} onMouseLeave={() => setNwHoverIdx(null)} />
-                              <circle cx={xS(i)} cy={yS(midpoints[i])} r={nwHoverIdx === i ? 5 : 3}
-                                fill={nwHoverIdx === i ? '#D4AF37' : '#0b1220'} stroke="#D4AF37"
-                                strokeWidth={nwHoverIdx === i ? 2 : 1.5} style={{ pointerEvents: 'none' }} />
-                            </g>
-                          ))}
-                        </svg>
-                        {/* Hover tooltip */}
-                        {nwHoverIdx !== null && (() => {
-                          const d = fdNetWorth[nwHoverIdx]
-                          const mid = (d.min_value + d.max_value) / 2
-                          const pct = n > 1 ? nwHoverIdx / (n - 1) : 0.5
-                          const clampedLeft = Math.max(6, Math.min(94, pct * 100))
-                          return (
-                            <div style={{
-                              position: 'absolute', bottom: 32, left: `${clampedLeft}%`,
-                              transform: 'translateX(-50%)',
-                              background: '#1a2538', border: '1px solid #D4AF37', borderRadius: 8,
-                              padding: '8px 12px', pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 10,
-                            }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: '#D4AF37' }}>{d.year}</div>
-                              <div style={{ fontSize: 11, color: '#c8d0dc', marginTop: 2 }}>~{fmtY(mid)}</div>
-                              <div style={{ fontSize: 10, color: '#556070', marginTop: 1 }}>{fmtY(d.min_value)} – {fmtY(d.max_value)}</div>
+
+                  const history = fdNetWorth
+                  const midpoints = history.map(d => (d.min_value + d.max_value) / 2)
+                  const meta = fdNetWorthMeta || {}
+                  const entryWorth = meta.entry_worth ?? midpoints[0]
+                  const currentWorth = meta.current_worth ?? midpoints[midpoints.length - 1]
+                  const entryYear = meta.entry_year ?? history[0]?.year
+                  const currentYear = meta.current_year ?? history[history.length - 1]?.year
+                  const growthAmt = meta.growth_amount ?? (currentWorth - entryWorth)
+                  const growthPct = meta.growth_pct ?? (entryWorth > 0 ? Math.round((growthAmt / entryWorth) * 100) : null)
+                  const salaryTotal = meta.salary_total ?? null
+                  const isEstimated = history.some(d => d.min_value !== d.max_value)
+
+                  const chartBlock = history.length >= 2 && (() => {
+                    const allVals = [...history.map(d => d.min_value), ...history.map(d => d.max_value)]
+                    const rawMin = Math.min(...allVals)
+                    const rawMax = Math.max(...allVals)
+                    const span = rawMax - rawMin || rawMax * 0.1 || 1
+                    const yMin = rawMin - span * 0.08
+                    const yMax = rawMax + span * 0.08
+                    const W = 520, H = 160
+                    const pad = { t: 14, r: 12, b: 28, l: 60 }
+                    const cW = W - pad.l - pad.r
+                    const cH = H - pad.t - pad.b
+                    const n = history.length
+                    const xS = i => pad.l + (i / (n - 1)) * cW
+                    const yS = v => pad.t + cH - ((v - yMin) / (yMax - yMin)) * cH
+                    const areaTop = history.map((d, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(d.max_value)}`).join(' ')
+                    const areaBot = [...history].reverse().map((d, i) => `L${xS(n - 1 - i)},${yS(d.min_value)}`).join(' ')
+                    const areaPath = `${areaTop} ${areaBot} Z`
+                    const linePath = midpoints.map((v, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(v)}`).join(' ')
+                    const yTickVals = [0, 0.25, 0.5, 0.75, 1].map(t => yMin + t * (yMax - yMin))
+                    return (
+                      <div style={{ marginBottom: 16, padding: '16px 16px 12px', background: '#0b1220', border: `1px solid ${S.border}`, borderRadius: 12 }}>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>Wealth Timeline</div>
+                        <div style={{ position: 'relative' }}>
+                          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                            {yTickVals.map((v, i) => (
+                              <g key={i}>
+                                <line x1={pad.l} y1={yS(v)} x2={W - pad.r} y2={yS(v)} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
+                                <text x={pad.l - 6} y={yS(v)} textAnchor="end" dominantBaseline="middle" fill="#556070" fontSize={9}>{fmtY(v)}</text>
+                              </g>
+                            ))}
+                            <path d={areaPath} fill="rgba(212,175,55,0.13)" />
+                            <path d={linePath} fill="none" stroke="#D4AF37" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                            {history.map((d, i) => (
+                              <text key={i} x={xS(i)} y={H - 6} textAnchor="middle" fill="#556070" fontSize={9}>{d.year}</text>
+                            ))}
+                            {history.map((d, i) => (
+                              <g key={i}>
+                                <rect x={xS(i) - 18} y={pad.t} width={36} height={cH} fill="transparent"
+                                  onMouseEnter={() => setNwHoverIdx(i)} onMouseLeave={() => setNwHoverIdx(null)} />
+                                <circle cx={xS(i)} cy={yS(midpoints[i])} r={nwHoverIdx === i ? 5 : 3}
+                                  fill={nwHoverIdx === i ? '#D4AF37' : '#0b1220'} stroke="#D4AF37"
+                                  strokeWidth={nwHoverIdx === i ? 2 : 1.5} style={{ pointerEvents: 'none' }} />
+                              </g>
+                            ))}
+                          </svg>
+                          {nwHoverIdx !== null && (() => {
+                            const d = history[nwHoverIdx]
+                            const mid = (d.min_value + d.max_value) / 2
+                            const pct = n > 1 ? nwHoverIdx / (n - 1) : 0.5
+                            const clampedLeft = Math.max(6, Math.min(94, pct * 100))
+                            return (
+                              <div style={{
+                                position: 'absolute', bottom: 32, left: `${clampedLeft}%`,
+                                transform: 'translateX(-50%)',
+                                background: '#1a2538', border: '1px solid #D4AF37', borderRadius: 8,
+                                padding: '8px 12px', pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 10,
+                              }}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: '#D4AF37' }}>{d.year}</div>
+                                <div style={{ fontSize: 11, color: '#c8d0dc', marginTop: 2 }}>~{fmtY(mid)}</div>
+                                <div style={{ fontSize: 10, color: '#556070', marginTop: 1 }}>{fmtY(d.min_value)} – {fmtY(d.max_value)}</div>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      </div>
+                    )
+                  })()
+
+                  const deepDiveContent = (
+                    <div style={{ marginBottom: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Net Worth</div>
+                        {isEstimated && <div style={{ fontSize: 10, color: S.gray }}>Est. from disclosed asset ranges</div>}
+                      </div>
+
+                      {history.length === 1 ? (
+                        <div style={{ padding: 18, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12, marginBottom: 14 }}>
+                          <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>Net Worth ({history[0].year})</div>
+                          <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 26, color: S.gold }}>
+                            {fmtY(midpoints[0])}
+                          </div>
+                          <div style={{ fontSize: 11, color: S.gray, marginTop: 6 }}>1 year of disclosure data available</div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="mobile-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                            <div style={{ padding: 16, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12 }}>
+                              <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>When Entering Office</div>
+                              <div style={{ fontSize: 11, color: S.gray, marginBottom: 4 }}>{entryYear}</div>
+                              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: S.gold, letterSpacing: -0.5 }}>
+                                {fmtY(entryWorth)}
+                              </div>
                             </div>
-                          )
-                        })()}
+                            <div style={{ padding: 16, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12 }}>
+                              <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>Net Worth Today</div>
+                              <div style={{ fontSize: 11, color: S.gray, marginBottom: 4 }}>{currentYear}</div>
+                              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: S.gold, letterSpacing: -0.5 }}>
+                                {fmtY(currentWorth)}
+                              </div>
+                            </div>
+                          </div>
+
+                          {growthPct !== null && salaryTotal !== null && (
+                            <div style={{ padding: '13px 16px', background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 10, marginBottom: 14, fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
+                              <span style={{ color: growthAmt >= 0 ? '#4ade80' : '#f87171', fontWeight: 700 }}>
+                                {growthAmt >= 0 ? '+' : ''}{fmtY(growthAmt)} ({growthAmt >= 0 ? '+' : ''}{growthPct}%)
+                              </span>
+                              {' '}while earning{' '}
+                              <span style={{ color: S.gold, fontWeight: 600 }}>{fmtY(salaryTotal)}</span>
+                              {' '}in congressional salary ({currentYear - entryYear + 1} yrs × $174K)
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {chartBlock}
+
+                      <div style={{ padding: '11px 14px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, fontSize: 11, color: S.gray }}>
+                        Asset category breakdown available in annual disclosure filings
                       </div>
                     </div>
                   )
+
+                  if (!isProProp) {
+                    return (
+                      <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', marginBottom: 4 }}>
+                        <div style={{ filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none' }}>
+                          {deepDiveContent}
+                        </div>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', borderRadius: 12 }}>
+                          <div style={{ fontSize: 32 }}>🔒</div>
+                          <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
+                            Net Worth Analysis · Pro Only
+                          </div>
+                          <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0, lineHeight: 1.6 }}>
+                            Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
+                          </p>
+                          <button
+                            onClick={handleSubscribe}
+                            style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
+                            ★ Upgrade to Pro · $9.99/mo
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  return deepDiveContent
                 })()}
 
                 {/* Loading spinner while both sources are fetching */}
