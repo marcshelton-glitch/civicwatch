@@ -46,6 +46,9 @@ export const metadata = {
     description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
     images: ['/og-image.png'],
   },
+  verification: {
+    google: 'dYkgYgk80Pl5OyCxB9q6Co6daeeKR2vJ4I06N8Sd5Js',
+  },
 }
 
 export default function RootLayout({ children }) {
