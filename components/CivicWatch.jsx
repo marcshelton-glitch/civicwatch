@@ -2123,7 +2123,13 @@ useEffect(() => {
       <footer style={{ marginTop: 48, borderTop: `1px solid ${S.border}`, padding: "20px 16px", textAlign: "center" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ height: 3, background: `linear-gradient(90deg, ${S.red} 33%, white 33%, white 66%, ${S.navyMid} 66%)`, marginBottom: 14, borderRadius: 2 }} />
-          <div style={{ fontFamily: "'Playfair Display', serif", color: S.gold, fontSize: 14, marginBottom: 4 }}>CivicWatch™ · A Democracy Accountability Platform</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: S.gold, fontSize: 14, marginBottom: 8 }}>CivicWatch™ · A Democracy Accountability Platform</div>
+          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", marginBottom: 10, fontSize: 12 }}>
+            <a href="/about" style={{ color: S.gray, textDecoration: "none" }}>About</a>
+            <a href="/privacy" style={{ color: S.gray, textDecoration: "none" }}>Privacy Policy</a>
+            <a href="/terms" style={{ color: S.gray, textDecoration: "none" }}>Terms of Service</a>
+            <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion / Contact</a>
+          </div>
           <div style={{ fontSize: 11, color: S.gray }}>Data sourced from <a href="https://congress.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Congress.gov</a>, <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>House Clerk STOCK Act Disclosures</a>, <a href="https://efts.senate.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Senate Financial Disclosures</a>, and <a href="https://legiscan.com" target="_blank" rel="noreferrer" style={{ color: S.gray }}>LegiScan LLC (CC BY 4.0)</a>.</div>
         </div>
       </footer>
