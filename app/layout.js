@@ -3,6 +3,7 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import CookieBanner from '@/components/CookieBanner'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import './globals.css'
 
 export const viewport = {
@@ -63,6 +64,8 @@ export default function RootLayout({ children }) {
           <CookieBanner />
           <Analytics />
           <SpeedInsights />
+          {/* GA Measurement ID set via NEXT_PUBLIC_GA_MEASUREMENT_ID Vercel env var */}
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
         </body>
       </html>
     </ClerkProvider>
