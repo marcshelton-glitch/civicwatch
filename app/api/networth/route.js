@@ -26,7 +26,7 @@ export async function GET(request) {
     .eq('bioguide_id', bioguideId)
     .order('report_year', { ascending: true })
 
-  // Fallback: bioguide_id not yet populated in DB — query by last_name + state prefix
+  // Fallback for the ~153 rows where bioguide_id couldn't be resolved (candidates, very new members)
   if (!error && (!data || data.length === 0) && lastName && state) {
     ;({ data, error } = await supabase
       .from('fd_net_worth')
