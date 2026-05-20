@@ -1,3 +1,5 @@
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async headers() {
@@ -49,4 +51,11 @@ images: {
 },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  org: "civicwatch",
+  project: "javascript-nextjs",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  tunnelRoute: "/monitoring",
+  automaticVercelMonitors: true,
+})
