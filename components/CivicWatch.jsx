@@ -362,16 +362,24 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)
 
+  // Isolated effect — no other code that can throw, so setMounted(true) always commits.
+  // Safari private mode / ITP can throw on localStorage; mixing them in one effect risks
+  // the state update being discarded if the effect function throws.
   useEffect(() => {
     setMounted(true)
-    // Show immediately if localStorage flag is absent — no Clerk dependency so it
-    // works even before auth loads or when running locally without Clerk keys.
-    if (!localStorage.getItem('cw_onboarded')) setShowOnboarding(true)
+  }, [])
+
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('cw_onboarded')) setShowOnboarding(true)
+    } catch {}
   }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (localStorage.getItem('cw_install_dismissed')) return
+    try {
+      if (localStorage.getItem('cw_install_dismissed')) return
+    } catch {}
     const handler = e => { e.preventDefault(); setInstallPrompt(e) }
     window.addEventListener('beforeinstallprompt', handler)
     const timer = setTimeout(() => setShowInstallBanner(true), 30000)
@@ -674,7 +682,10 @@ useEffect(() => {
   setLoadingReps(true)
   const load = async () => {
     try {
-      const res = await fetch(`/api/congress?type=members&state=${selectedState}`)
+      const res = await fetch(`/api/congress?type=members&state=${selectedState}`, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(20000),
+      })
       const data = await res.json()
       if (data.members && data.members.length > 0) {
         setLiveReps(data.members.map(r => {
@@ -777,7 +788,7 @@ useEffect(() => {
   }, [activeTab, tracked])
 
   useEffect(() => {
-    fetch('/api/stats').then(r => r.ok ? r.json() : null).then(data => { if (data) setStats(data) }).catch(() => {})
+    fetch('/api/stats', { cache: 'no-store', signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null).then(data => { if (data) setStats(data) }).catch(() => {})
   }, [])
 
   useEffect(() => {

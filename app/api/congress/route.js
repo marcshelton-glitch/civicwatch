@@ -59,7 +59,7 @@ function isRateLimited(userId) {
 async function cFetch(path) {
   if (!KEY) throw new Error('CONGRESS_API_KEY not configured')
   const url = `${BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${KEY}&format=json`
-  const res = await fetch(url, { next: { revalidate: 3600 } })
+  const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000) })
   if (!res.ok) throw new Error(`Congress API ${res.status}`)
   return res.json()
 }
