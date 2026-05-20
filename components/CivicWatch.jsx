@@ -26,7 +26,8 @@ function InitialsAvatar({ name = '', party = '', size = 68, style = {} }) {
     : (parts[0] || 'R').slice(0, 2).toUpperCase()
   const bg = party === 'Democrat'    ? '#0d2a4a'
            : party === 'Republican'  ? '#4a0d0d'
-           : party === 'Independent' ? '#2a3a1a'
+           : party === 'Independent' ? '#2a2400'
+           : party === 'Green'       ? '#0a2e18'
            : '#1b2a6b'
   const fontSize = Math.round(size * 0.33)
   const mid = size / 2
@@ -839,8 +840,10 @@ useEffect(() => {
         .progress-bar { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
         .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:0.5px; }
-        .dem-badge { background:rgba(0,80,200,0.2); color:#5B9CFF; }
-        .rep-badge { background:rgba(178,34,52,0.2); color:#FF6B7A; }
+        .dem-badge   { background:rgba(21,101,192,0.2);  color:#5B9CFF; }
+        .rep-badge   { background:rgba(204,32,32,0.2);   color:#FF6B6B; }
+        .ind-badge   { background:rgba(212,184,0,0.18);  color:#F0D000; }
+        .green-badge { background:rgba(34,160,90,0.18);  color:#4CAF76; }
         .federal-badge { background:rgba(212,175,55,0.15); color:${S.gold}; }
         .muni-badge { background:rgba(120,220,120,0.15); color:#90EE90; }
         .alert-unread { border-left: 3px solid ${S.gold}; background: rgba(212,175,55,0.05); }
@@ -1089,7 +1092,7 @@ useEffect(() => {
                 return (
                   <div key={rep.id} className="rep-card"
                     style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1a6dc9" : rep.party === "Republican" ? "#cc2020" : rep.party === "Independent" ? "#c9a84c" : rep.party === "Green" ? "#2a9d4c" : "#334466" }} />
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1565C0" : rep.party === "Republican" ? "#CC2020" : rep.party === "Independent" ? "#D4B800" : rep.party === "Green" ? "#22A05A" : "#334466" }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
                         {rep.photo ? (
@@ -1107,7 +1110,7 @@ useEffect(() => {
                         <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{rep.name}</div>
                         <div style={{ fontSize: 11, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.district}</div>
                         <div style={{ display: "flex", gap: 6 }}>
-                          <span className={`badge ${rep.party === "Democrat" ? "dem-badge" : "rep-badge"}`}>{rep.party}</span>
+                          <span className={`badge ${rep.party === "Democrat" ? "dem-badge" : rep.party === "Republican" ? "rep-badge" : rep.party === "Independent" ? "ind-badge" : rep.party === "Green" ? "green-badge" : "rep-badge"}`}>{rep.party}</span>
                         </div>
                       </div>
                     </div>
@@ -1169,7 +1172,7 @@ useEffect(() => {
                       return (
                         <div key={rep.id} className="rep-card"
                           style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#1a6dc9' : rep.party === 'Republican' ? '#cc2020' : rep.party === 'Independent' ? '#c9a84c' : rep.party === 'Green' ? '#2a9d4c' : '#334466' }} />
+                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#1565C0' : rep.party === 'Republican' ? '#CC2020' : rep.party === 'Independent' ? '#D4B800' : rep.party === 'Green' ? '#22A05A' : '#334466' }} />
                           <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                             <div style={{ position: 'relative' }}>
                               {rep.photo
@@ -1184,7 +1187,7 @@ useEffect(() => {
                               <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{rep.name}</div>
                               <div style={{ fontSize: 12, color: levelColor, marginBottom: 6 }}>{rep.title}{rep.district ? ` · ${rep.district}` : ''}</div>
                               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                <span className="badge" style={{ background: rep.party === 'Democrat' ? 'rgba(91,156,255,0.15)' : rep.party === 'Republican' ? 'rgba(178,34,52,0.2)' : 'rgba(255,255,255,0.08)', color: rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? '#FF6B6B' : S.gray, fontSize: 10, padding: '2px 8px', borderRadius: 6 }}>{rep.party}</span>
+                                <span className="badge" style={{ background: rep.party === 'Democrat' ? 'rgba(21,101,192,0.2)' : rep.party === 'Republican' ? 'rgba(204,32,32,0.2)' : rep.party === 'Independent' ? 'rgba(212,184,0,0.18)' : rep.party === 'Green' ? 'rgba(34,160,90,0.18)' : 'rgba(255,255,255,0.08)', color: rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? '#FF6B6B' : rep.party === 'Independent' ? '#F0D000' : rep.party === 'Green' ? '#4CAF76' : S.gray, fontSize: 10, padding: '2px 8px', borderRadius: 6 }}>{rep.party}</span>
                                 {rep.level !== 'federal' && rep.level !== 'Federal' && <span className="badge" style={{ background: `rgba(212,175,55,0.1)`, color: levelColor, fontSize: 10, padding: '2px 8px', borderRadius: 6, textTransform: 'capitalize' }}>{rep.level}</span>}
                               </div>
                             </div>
@@ -1351,10 +1354,14 @@ useEffect(() => {
                   const isHovered = hoveredDistrict === p.districtNum
                   const rep = districtReps[p.districtNum]
                   const partyFill = rep?.party === 'Democrat'
-                    ? 'rgba(59,111,190,0.75)'
+                    ? 'rgba(21,101,192,0.75)'
                     : rep?.party === 'Republican'
-                      ? 'rgba(178,34,52,0.75)'
-                      : 'rgba(80,95,130,0.7)'
+                      ? 'rgba(204,32,32,0.75)'
+                      : rep?.party === 'Independent'
+                        ? 'rgba(212,184,0,0.7)'
+                        : rep?.party === 'Green'
+                          ? 'rgba(34,160,90,0.75)'
+                          : 'rgba(80,95,130,0.7)'
                   return (
                     <path
                       key={i}
@@ -1534,8 +1541,8 @@ useEffect(() => {
             const matchedRep = liveReps.find(r => { const rn = normalize(r.name); return rn === tn || rn.includes(tn) || tn.includes(rn) })
             const photo = matchedRep?.photo
             const party = matchedRep?.party
-            const partyClass = party === 'Democrat' ? 'dem-badge' : party === 'Republican' ? 'rep-badge' : null
-            const partyShort = party === 'Democrat' ? 'D' : party === 'Republican' ? 'R' : party ? 'I' : null
+            const partyClass = party === 'Democrat' ? 'dem-badge' : party === 'Republican' ? 'rep-badge' : party === 'Independent' ? 'ind-badge' : party === 'Green' ? 'green-badge' : null
+            const partyShort = party === 'Democrat' ? 'D' : party === 'Republican' ? 'R' : party === 'Green' ? 'G' : party ? 'I' : null
             const tradeType = (trade.type || '').toUpperCase()
             const tradeColor = tradeType === 'BUY' ? '#4CAF50' : tradeType === 'SELL' ? '#f87171' : S.gray
             const shareText = `${trade.name} ${tradeType === 'BUY' ? 'bought' : tradeType === 'SELL' ? 'sold' : 'exchanged'} ${trade.amount || ''} of ${trade.ticker || trade.asset}${trade.date ? ` on ${trade.date}` : ''} 🏛️ civicwatch.app`
@@ -1783,7 +1790,7 @@ useEffect(() => {
                   const nameSlug = displayName.toLowerCase()
                     .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
                   const photo = `/api/rep-photo/${member.bioguideId}`
-                  const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
+                  const partyColor = member.party === 'Democrat' ? '#1565C0' : member.party === 'Republican' ? '#CC2020' : member.party === 'Independent' ? '#D4B800' : member.party === 'Green' ? '#22A05A' : '#334466'
                   const rep = {
                     id: member.bioguideId,
                     name: member.name,
@@ -2426,7 +2433,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           const parts = (rep.name || '').split(', ')
           return parts.length >= 2 ? `${parts[1].split(' ')[0]} ${parts[0]}` : rep.name || ''
         })()
-        const repPartyColor = rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? S.red : S.gray
+        const repPartyColor = rep.party === 'Democrat' ? '#5B9CFF' : rep.party === 'Republican' ? S.red : rep.party === 'Independent' ? '#F0D000' : rep.party === 'Green' ? '#4CAF76' : S.gray
         return (
           <div style={{ marginBottom: 20, background: `linear-gradient(145deg, rgba(10,22,40,0.95), rgba(27,42,107,0.35))`, border: `1px solid ${compareRep ? S.gold : S.border}`, borderRadius: 16, overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: `1px solid rgba(212,175,55,0.15)` }}>
@@ -2466,7 +2473,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       const nameParts = (member.name || '').split(', ')
                       const displayName = nameParts.length >= 2 ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}` : member.name || ''
                       const photo = `/api/rep-photo/${member.bioguideId}`
-                      const partyColor = member.party === 'Democrat' ? '#1a6dc9' : member.party === 'Republican' ? '#cc2020' : member.party === 'Independent' ? '#c9a84c' : member.party === 'Green' ? '#2a9d4c' : '#334466'
+                      const partyColor = member.party === 'Democrat' ? '#1565C0' : member.party === 'Republican' ? '#CC2020' : member.party === 'Independent' ? '#D4B800' : member.party === 'Green' ? '#22A05A' : '#334466'
                       return (
                         <div key={member.bioguideId}
                           onClick={() => { setCompareRep({ ...member, displayName, photo, partyColor }); setCompareQuery(''); setCompareResults([]) }}

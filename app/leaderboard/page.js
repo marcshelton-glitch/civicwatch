@@ -16,9 +16,10 @@ const S = {
 }
 
 const PARTY_COLORS = {
-  Democrat: { bg: 'rgba(13,42,74,0.9)', text: '#6BA3D6', border: 'rgba(107,163,214,0.4)' },
-  Republican: { bg: 'rgba(74,13,13,0.9)', text: '#D66B6B', border: 'rgba(214,107,107,0.4)' },
-  Independent: { bg: 'rgba(42,58,26,0.9)', text: '#9BC46B', border: 'rgba(155,196,107,0.4)' },
+  Democrat:    { bg: 'rgba(13,42,74,0.9)',   text: '#5B9CFF', border: 'rgba(91,156,255,0.4)' },
+  Republican:  { bg: 'rgba(74,13,13,0.9)',   text: '#FF6B6B', border: 'rgba(255,107,107,0.4)' },
+  Independent: { bg: 'rgba(50,42,0,0.9)',    text: '#F0D000', border: 'rgba(240,208,0,0.4)' },
+  Green:       { bg: 'rgba(10,46,24,0.9)',   text: '#4CAF76', border: 'rgba(76,175,118,0.4)' },
 }
 
 const FILTERS = [
