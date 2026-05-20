@@ -92,13 +92,28 @@ const CLERK_USER_ID_RE = /^user_[a-zA-Z0-9]{24,}$/
 export const runtime = 'nodejs'
 
 // ── Helper: find Clerk user by Stripe customerId ──────────────────────────────
-// Searches with a query filter instead of fetching all users (scales to any size)
+// Primary path: retrieve the Stripe Customer and read clerkUserId from its metadata
+// (stored there at checkout time in /api/subscribe). O(1), scales to any user count.
+// Fallback: scan Clerk user list (only works up to 100 users — kept as safety net).
 async function findClerkUserByStripeCustomerId(clerk, customerId) {
   try {
-    // Fetch a small page and match on exact metadata — Clerk doesn't support
-    // metadata-exact queries yet, so we fetch up to 100 and filter.
-    // For apps with >100 users, store clerkUserId on the Stripe Customer object
-    // at checkout time (see subscribe_route.js) as the preferred lookup path.
+    // Primary: get clerkUserId from Stripe Customer metadata
+    const customer = await stripe.customers.retrieve(customerId)
+    if (!customer.deleted) {
+      const clerkUserId = customer.metadata?.clerkUserId
+      if (clerkUserId && CLERK_USER_ID_RE.test(clerkUserId)) {
+        try {
+          const user = await clerk.users.getUser(clerkUserId)
+          if (user) return user
+        } catch { /* fall through to list scan */ }
+      }
+    }
+  } catch (err) {
+    console.error('Stripe customer retrieve error:', err.message)
+  }
+
+  // Fallback: scan Clerk user list (covers legacy customers created before metadata was added)
+  try {
     const result = await clerk.users.getUserList({ limit: 100 })
     return result.data.find(
       u => u.publicMetadata?.stripeCustomerId === customerId
