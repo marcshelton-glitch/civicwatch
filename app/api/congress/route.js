@@ -794,8 +794,12 @@ export async function GET(request) {
         }
       }
 
+      const queryTokens = query.split(/\s+/).filter(Boolean)
       const members = allMembers
-        .filter(m => memberName(m).toLowerCase().includes(query))
+        .filter(m => {
+          const name = memberName(m).toLowerCase()
+          return queryTokens.every(tok => name.includes(tok))
+        })
         .slice(0, 20)
         .map(normalize)
 

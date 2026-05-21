@@ -2335,16 +2335,20 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if (repTab === 'wealth' && rep.source !== 'openstates' && !fdNetWorth && !loadingFdNetWorth) {
-      setLoadingFdNetWorth(true)
-      const lastName = (rep.name || '').split(',')[0].trim()
-      const stateAbbr = STATE_ABBR[rep.state] || (rep.state || '').slice(0, 2).toUpperCase()
-      fetch(`/api/networth?bioguideId=${rep.id}&lastName=${encodeURIComponent(lastName)}&state=${encodeURIComponent(stateAbbr)}`)
-        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
-        .then(d => { setFdNetWorth(d.history || []); setFdNetWorthMeta(d) })
-        .catch(() => { setFdNetWorth([]); setFdNetWorthMeta(null) })
-        .finally(() => setLoadingFdNetWorth(false))
-    }
+    if (repTab !== 'wealth' || rep.source === 'openstates') return
+    setFdNetWorth(null)
+    setFdNetWorthMeta(null)
+    setNwHoverIdx(null)
+    setLoadingFdNetWorth(true)
+    const lastName = (rep.name || '').split(',')[0].trim()
+    const stateAbbr = STATE_ABBR[rep.state] || (rep.state || '').slice(0, 2).toUpperCase()
+    let cancelled = false
+    fetch(`/api/networth?bioguideId=${rep.id}&lastName=${encodeURIComponent(lastName)}&state=${encodeURIComponent(stateAbbr)}`)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
+      .then(d => { if (!cancelled) { setFdNetWorth(d.history || []); setFdNetWorthMeta(d) } })
+      .catch(() => { if (!cancelled) { setFdNetWorth([]); setFdNetWorthMeta(null) } })
+      .finally(() => { if (!cancelled) setLoadingFdNetWorth(false) })
+    return () => { cancelled = true }
   }, [repTab, rep.id])
 
   useEffect(() => {
