@@ -3072,7 +3072,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     return `${sign}$${Math.round(abs)}`
                   }
 
-                  if (!fdNetWorth || fdNetWorth.length === 0) {
+                  // null = fetch hasn't run yet; [] = fetch ran but no data
+                  if (fdNetWorth === null) return null
+                  if (fdNetWorth.length === 0) {
                     return (
                       <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
                         No financial disclosure records found for this member. Our dataset covers a subset of House members — data may not be available for all representatives, particularly former members or those who filed before our coverage window.{' '}
