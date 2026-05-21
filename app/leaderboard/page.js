@@ -240,6 +240,17 @@ export default function LeaderboardPage() {
                           {rep.party === 'Democrat' ? 'D' : rep.party === 'Republican' ? 'R' : rep.party?.[0] || '?'}
                         </span>
                       )}
+                      {rep.is_former && (
+                        <span style={{
+                          fontSize: 9, fontWeight: 600, letterSpacing: 0.5,
+                          padding: '2px 6px', borderRadius: 4,
+                          background: 'rgba(136,153,170,0.12)', color: S.gray,
+                          border: '1px solid rgba(136,153,170,0.25)',
+                          whiteSpace: 'nowrap', textTransform: 'uppercase',
+                        }}>
+                          Former
+                        </span>
+                      )}
                       {rep.state && (
                         <span style={{ fontSize: 12, color: S.gray }}>{rep.state}</span>
                       )}
