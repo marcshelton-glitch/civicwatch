@@ -2326,7 +2326,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if (repTab === 'wealth' && isLive && rep.source !== 'openstates' && !fdNetWorth && !loadingFdNetWorth) {
+    if (repTab === 'wealth' && rep.source !== 'openstates' && !fdNetWorth && !loadingFdNetWorth) {
       setLoadingFdNetWorth(true)
       const lastName = (rep.name || '').split(',')[0].trim()
       const state = (rep.state || '').toUpperCase()
