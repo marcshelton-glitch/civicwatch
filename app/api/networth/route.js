@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 
 const getSupabase = () => createClient(
@@ -8,9 +7,8 @@ const getSupabase = () => createClient(
 )
 
 // GET /api/networth?bioguideId=P000197&lastName=Pelosi&state=CA
+// Net worth data is public record (House Clerk financial disclosures); no auth required.
 export async function GET(request) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { searchParams } = new URL(request.url)
   const bioguideId = (searchParams.get('bioguideId') || '').trim().toUpperCase()
   const lastName = (searchParams.get('lastName') || '').trim()

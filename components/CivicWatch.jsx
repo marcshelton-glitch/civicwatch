@@ -2331,7 +2331,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       const lastName = (rep.name || '').split(',')[0].trim()
       const state = (rep.state || '').toUpperCase()
       fetch(`/api/networth?bioguideId=${rep.id}&lastName=${encodeURIComponent(lastName)}&state=${encodeURIComponent(state)}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
         .then(d => { setFdNetWorth(d.history || []); setFdNetWorthMeta(d) })
         .catch(() => { setFdNetWorth([]); setFdNetWorthMeta(null) })
         .finally(() => setLoadingFdNetWorth(false))
