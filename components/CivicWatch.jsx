@@ -3077,8 +3077,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   if (fdNetWorth.length === 0) {
                     return (
                       <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
-                        No financial disclosure records found for this member. Our dataset covers a subset of House members — data may not be available for all representatives, particularly former members or those who filed before our coverage window.{' '}
-                        <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold, textDecoration: 'underline' }}>View official House disclosures →</a>
+                        This dataset covers House member financial disclosures. Data may not be available for all representatives, particularly former members or those who filed before our coverage window.{' '}
+                        <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold, textDecoration: 'underline' }}>View House disclosures →</a>{' '}
+                        Senate members file through a separate system —{' '}
+                        <a href="https://efts.senate.gov/LATEST/search-index" target="_blank" rel="noreferrer" style={{ color: S.gold }}>view Senate disclosures →</a>
                       </div>
                     )
                   }
@@ -3467,7 +3469,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       }
                       return (
                         <div>
-                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth — Annual Financial Disclosures</div>
+                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth — House Annual Financial Disclosures</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             {fdNetWorth.map((n, i) => {
                               const nwMid = n.min_value != null ? Math.round((n.min_value + (n.max_value ?? n.min_value)) / 2) : null
