@@ -2338,8 +2338,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     if (repTab === 'wealth' && rep.source !== 'openstates' && !fdNetWorth && !loadingFdNetWorth) {
       setLoadingFdNetWorth(true)
       const lastName = (rep.name || '').split(',')[0].trim()
-      const state = (rep.state || '').toUpperCase()
-      fetch(`/api/networth?bioguideId=${rep.id}&lastName=${encodeURIComponent(lastName)}&state=${encodeURIComponent(state)}`)
+      const stateAbbr = STATE_ABBR[rep.state] || (rep.state || '').slice(0, 2).toUpperCase()
+      fetch(`/api/networth?bioguideId=${rep.id}&lastName=${encodeURIComponent(lastName)}&state=${encodeURIComponent(stateAbbr)}`)
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
         .then(d => { setFdNetWorth(d.history || []); setFdNetWorthMeta(d) })
         .catch(() => { setFdNetWorth([]); setFdNetWorthMeta(null) })
@@ -3051,9 +3051,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
           {/* ── Federal rep ── */}
           {rep.source !== 'openstates' && (() => {
-            const TYPE_COLOR = { P: '#4CAF50', D: '#4CAF50', A: '#5B9CFF', O: '#5B9CFF', G: '#5B9CFF', X: S.gray, W: '#f87171' }
-            const TYPE_ICON  = { P: '📊', D: '📝', A: '📋', O: '📋', G: '📋', X: '⏳', W: '✗' }
-            const FILING_TYPE_BADGE = { P: 'PTR', D: 'Amendment', A: 'Annual', O: 'Annual', G: 'New Member', X: 'Extension', W: 'Withdrawal', C: 'Candidate', H: 'Due Date' }
+            const TYPE_COLOR = { P: '#4CAF50', D: '#4CAF50', A: '#5B9CFF', O: '#5B9CFF', G: '#5B9CFF', X: S.gray, E: S.gray, W: '#f87171' }
+            const TYPE_ICON  = { P: '📊', D: '📝', A: '📋', O: '📋', G: '📋', X: '⏳', E: '⏳', W: '✗' }
+            const FILING_TYPE_BADGE = { P: 'PTR', D: 'Amendment', A: 'Annual', O: 'Annual', G: 'New Member', X: 'Extension', E: 'Extension', W: 'Withdrawal', C: 'Candidate', H: 'Due Date' }
 
             return (
               <>

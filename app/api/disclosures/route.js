@@ -11,6 +11,7 @@ const TYPE_LABELS = {
   D: 'PTR Amendment',
   G: 'New Member Report',
   X: 'Extension Request',
+  E: 'Extension Request',
   C: 'Candidate Filing',
   W: 'Withdrawal',
   H: 'Due Date Notice',
