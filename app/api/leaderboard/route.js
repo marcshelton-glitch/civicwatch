@@ -3,6 +3,24 @@ import { createClient } from '@supabase/supabase-js'
 
 export const revalidate = 21600
 
+// Hardcoded party fallback for top traders — used when Congress.gov API is unavailable or
+// the member doesn't appear in bulk pages (e.g. CONGRESS_API_KEY not set in Vercel).
+const PARTY_SEED = {
+  L000579: 'Democrat',   // Lowenthal
+  D000620: 'Democrat',   // Delaney
+  G000563: 'Republican', // Gibbs
+  M001157: 'Republican', // McCaul
+  P000197: 'Democrat',   // Pelosi
+  S001150: 'Democrat',   // Schiff
+  W000187: 'Democrat',   // Waters
+  K000389: 'Democrat',   // Khanna
+  C001092: 'Republican', // Collins
+  B001273: 'Republican', // Diane Black
+}
+
+// Members who have left Congress — always mark is_former regardless of API result.
+const FORMER_MEMBERS = new Set(['L000579', 'D000620', 'G000563', 'B001273'])
+
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -166,6 +184,9 @@ export async function GET() {
     }
 
     for (const rep of sorted) {
+      const id = rep.bioguide_id
+      if (id && !rep.party && PARTY_SEED[id]) rep.party = PARTY_SEED[id]
+      if (id && FORMER_MEMBERS.has(id)) rep.is_former = true
       if (rep.is_former === null) rep.is_former = false
       delete rep._last
       delete rep._first
