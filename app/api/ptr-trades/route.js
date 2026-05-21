@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { extractText, getDocumentProxy } from 'unpdf'
 
 const HOUSE_CLERK = 'https://disclosures-clerk.house.gov/public_disc'
@@ -115,9 +114,6 @@ async function extractPdfText(buf) {
 }
 
 export async function GET(request) {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const { searchParams } = new URL(request.url)
   const docId = (searchParams.get('docId') || '').trim()
   const year  = (searchParams.get('year')  || '').trim()
