@@ -3075,7 +3075,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   if (!fdNetWorth || fdNetWorth.length === 0) {
                     return (
                       <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
-                        Financial disclosure data not available for this representative
+                        No financial disclosure records found for this member. Our dataset covers a subset of House members — data may not be available for all representatives, particularly former members or those who filed before our coverage window.{' '}
+                        <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold, textDecoration: 'underline' }}>View official House disclosures →</a>
                       </div>
                     )
                   }
