@@ -45,6 +45,15 @@ function InitialsAvatar({ name = '', party = '', size = 68, style = {} }) {
   )
 }
 
+// ─── TRADE TYPE TRANSLATION ───────────────────────────────────────────────────
+function tradeTypeLabel(type) {
+  if (type === 'BUY') return 'Purchase'
+  if (type === 'SELL') return 'Sale'
+  if (type === 'EXCHANGE') return 'Exchange'
+  if (type === 'OTHER') return 'Other'
+  return type ? type.charAt(0).toUpperCase() + type.slice(1).toLowerCase() : 'Trade'
+}
+
 // ─── LEADERSHIP ROLE FORMATTING ───────────────────────────────────────────────
 function congressToYear(n) { return 1789 + (n - 1) * 2 }
 
@@ -1661,7 +1670,7 @@ useEffect(() => {
                   >📤</button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{ background: tradeColor + '22', color: tradeColor, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{tradeType || 'TRADE'}</span>
+                  <span style={{ background: tradeColor + '22', color: tradeColor, padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{tradeTypeLabel(tradeType) || 'Trade'}</span>
                   <span style={{ fontWeight: 700, fontSize: 13, color: S.white }}>{trade.ticker || trade.asset || '—'}</span>
                   {trade.amount && <span style={{ fontSize: 12, color: S.gray }}>{trade.amount}</span>}
                 </div>
@@ -3044,6 +3053,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {rep.source !== 'openstates' && (() => {
             const TYPE_COLOR = { P: '#4CAF50', D: '#4CAF50', A: '#5B9CFF', O: '#5B9CFF', G: '#5B9CFF', X: S.gray, W: '#f87171' }
             const TYPE_ICON  = { P: '📊', D: '📝', A: '📋', O: '📋', G: '📋', X: '⏳', W: '✗' }
+            const FILING_TYPE_BADGE = { P: 'PTR', D: 'Amendment', A: 'Annual', O: 'Annual', G: 'New Member', X: 'Extension', W: 'Withdrawal', C: 'Candidate', H: 'Due Date' }
 
             return (
               <>
@@ -3291,7 +3301,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {trades.map((t, i) => (
                             <div key={i} style={{ padding: '12px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
-                              <div style={{ minWidth: 50, fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray }}>{t.type}</div>
+                              <div style={{ minWidth: 50, fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray }}>{tradeTypeLabel(t.type)}</div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                   {t.asset}{t.ticker ? ` (${t.ticker})` : ''}
@@ -3355,7 +3365,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                     </div>
                                   </div>
                                   <span style={{ fontSize: 11, fontWeight: 600, color: TYPE_COLOR[f.type] || S.gray, background: `${TYPE_COLOR[f.type] || S.gray}18`, borderRadius: 4, padding: '2px 8px', whiteSpace: 'nowrap' }}>
-                                    {f.type}
+                                    {FILING_TYPE_BADGE[f.type] || f.type}
                                   </span>
                                   {f.isPtr && (
                                     <button
@@ -3390,7 +3400,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                           {ptResult.trades.map((t, ti) => (
                                             <div key={ti} style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${S.border}`, borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
-                                              <span style={{ fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray, minWidth: 50 }}>{t.type}</span>
+                                              <span style={{ fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray, minWidth: 50 }}>{tradeTypeLabel(t.type)}</span>
                                               <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                   {t.asset}{t.ticker ? ` (${t.ticker})` : ''}
