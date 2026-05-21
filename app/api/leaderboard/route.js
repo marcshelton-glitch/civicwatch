@@ -26,6 +26,20 @@ const PARTY_SEED = {
 // Members who have left Congress — always mark is_former regardless of API result.
 const FORMER_MEMBERS = new Set(['L000579', 'D000620', 'G000563', 'B001273', 'F000372', 'B000574', 'F000461', 'M001158', 'G000584'])
 
+// Last-name fallback for reps whose bioguide_id is null in the DB (PARTY_SEED can't fire).
+// Only applied when party or is_former is still unresolved after all API passes.
+const NAME_SEED = {
+  'delaney':      { party: 'Democrat',   is_former: true },  // John K. Delaney
+  'gibbs':        { party: 'Republican', is_former: true },
+  'black':        { party: 'Republican', is_former: true },  // Diane Black
+  'frelinghuysen':{ party: 'Republican', is_former: true },
+  'flores':       { party: 'Republican', is_former: true },  // Bill Flores
+  'marchant':     { party: 'Republican', is_former: true },  // Kenny Marchant
+  'gianforte':    { party: 'Republican', is_former: true },
+  'blumenauer':   { party: 'Democrat',   is_former: true },
+  'lowenthal':    { party: 'Democrat',   is_former: true },
+}
+
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -192,6 +206,13 @@ export async function GET() {
       const id = rep.bioguide_id
       if (id && !rep.party && PARTY_SEED[id]) rep.party = PARTY_SEED[id]
       if (id && FORMER_MEMBERS.has(id)) rep.is_former = true
+      if (!rep.party || rep.is_former === null) {
+        const nameFallback = NAME_SEED[rep._last]
+        if (nameFallback) {
+          if (!rep.party) rep.party = nameFallback.party
+          if (rep.is_former === null) rep.is_former = nameFallback.is_former
+        }
+      }
       if (rep.is_former === null) rep.is_former = false
       delete rep._last
       delete rep._first
