@@ -16,10 +16,15 @@ const PARTY_SEED = {
   K000389: 'Democrat',   // Khanna
   C001092: 'Republican', // Collins
   B001273: 'Republican', // Diane Black
+  F000372: 'Republican', // Frelinghuysen
+  B000574: 'Democrat',   // Blumenauer
+  F000461: 'Republican', // Bill Flores
+  M001158: 'Republican', // Kenny Marchant
+  G000584: 'Republican', // Greg Gianforte
 }
 
 // Members who have left Congress — always mark is_former regardless of API result.
-const FORMER_MEMBERS = new Set(['L000579', 'D000620', 'G000563', 'B001273'])
+const FORMER_MEMBERS = new Set(['L000579', 'D000620', 'G000563', 'B001273', 'F000372', 'B000574', 'F000461', 'M001158', 'G000584'])
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
