@@ -3053,7 +3053,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {rep.source !== 'openstates' && (() => {
             const TYPE_COLOR = { P: '#4CAF50', D: '#4CAF50', A: '#5B9CFF', O: '#5B9CFF', G: '#5B9CFF', X: S.gray, E: S.gray, W: '#f87171' }
             const TYPE_ICON  = { P: '📊', D: '📝', A: '📋', O: '📋', G: '📋', X: '⏳', E: '⏳', W: '✗' }
-            const FILING_TYPE_BADGE = { P: 'PTR', D: 'Amendment', A: 'Annual', O: 'Annual', G: 'New Member', X: 'Extension', E: 'Extension', W: 'Withdrawal', C: 'Candidate', H: 'Due Date' }
+            const FILING_TYPE_BADGE = { P: 'Trade Report', D: 'Amendment', A: 'Annual', O: 'Annual', G: 'New Member', X: 'Extension', E: 'Extension', W: 'Withdrawal', C: 'Candidate', H: 'Due Date' }
 
             return (
               <>
@@ -3469,7 +3469,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       }
                       return (
                         <div>
-                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth — House Annual Financial Disclosures</div>
+                          <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Net Worth — Annual Financial Disclosures</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             {fdNetWorth.map((n, i) => {
                               const nwMid = n.min_value != null ? Math.round((n.min_value + (n.max_value ?? n.min_value)) / 2) : null
