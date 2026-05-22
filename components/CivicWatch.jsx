@@ -8,6 +8,8 @@ import SettingsPanel from './SettingsPanel'
 import { SkeletonRepCard } from './SkeletonRepCard'
 import { SkeletonStatCard } from './SkeletonStatCard'
 import { SkeletonLineItem } from './SkeletonLineItem'
+import { FadeIn } from './FadeIn'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -851,6 +853,9 @@ useEffect(() => {
     if (isSignedIn) fetch('/api/onboarding', { method: 'PATCH' }).catch(() => {})
   }
 
+  const [statsBannerRef, statsBannerVisible] = useScrollReveal()
+  const [disclosuresRef, disclosuresVisible] = useScrollReveal()
+
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white, overflowX: "hidden", width: "100%" }}>
       <style>{`
@@ -1010,9 +1015,9 @@ useEffect(() => {
 
       {/* STATS BANNER */}
       <div style={{ background: `linear-gradient(135deg, #070C1A, ${S.navyMid})`, borderBottom: `1px solid rgba(212,175,55,0.2)` }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px",
+        <div ref={statsBannerRef} style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px",
           display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}
-          className="stats-banner-grid">
+          className={`stats-banner-grid reveal-stagger${statsBannerVisible ? ' is-visible' : ''}`}>
           {[
             { value: statsDisplay.filings.toLocaleString(), label: "Filings" },
             { value: statsDisplay.trades.toLocaleString(), label: "Trades" },
@@ -1631,7 +1636,7 @@ useEffect(() => {
           No recent disclosures — check back soon
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+        <div ref={disclosuresRef} className={`reveal-stagger${disclosuresVisible ? ' is-visible' : ''}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
           {feedData.trades.map((trade, i) => {
             const normalize = s => (s || '').toLowerCase().replace(/[^a-z]/g, '')
             const tn = normalize(trade.name)
@@ -2261,6 +2266,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [compareDataLoading, setCompareDataLoading] = useState(false)
   const [compareMode, setCompareMode] = useState(false)
 
+  const [overviewRef, overviewVisible] = useScrollReveal()
+
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
 
@@ -2492,6 +2499,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       </button>
 
       {/* HERO */}
+      <FadeIn delay={0}>
       <div style={{ background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, border: `1px solid ${S.border}`, borderRadius: 20, padding: 24, marginBottom: 20, position: "relative", overflow: "hidden" }}>
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -2537,6 +2545,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
         </div>
       </div>
+      </FadeIn>
 
       {/* COMPARE PANEL */}
       {compareMode && (() => {
@@ -2739,7 +2748,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── OVERVIEW ── */}
       {repTab === "overview" && (
-        <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minWidth: 0 }}>
+        <div ref={overviewRef} className={`slide-in mobile-stack reveal-stagger${overviewVisible ? ' is-visible' : ''}`} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minWidth: 0 }}>
 
           {/* Wealth Change */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
@@ -3047,7 +3056,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── WEALTH & TRADES ── */}
       {repTab === "wealth" && (
-        <div className="slide-in">
+        <FadeIn><div>
 
           {/* ── State rep ── */}
           {rep.source === 'openstates' && (
@@ -3510,12 +3519,12 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               </>
             )
           })()}
-        </div>
+        </div></FadeIn>
       )}
 
       {/* ── BIO & COMPARE ── */}
       {repTab === "bio" && (
-        <div className="slide-in">
+        <FadeIn><div>
           {loadingBio && (
             <div style={{ padding: 22, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, marginBottom: 18 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -3752,7 +3761,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               )}
             </>
           )}
-        </div>
+        </div></FadeIn>
       )}
 
       {/* ── TOWN HALL ── */}
