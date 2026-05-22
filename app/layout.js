@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import CookieBanner from '@/components/CookieBanner'
+import ScrollIndicator from '@/components/ScrollIndicator'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { GoogleAnalytics } from '@next/third-parties/google'
@@ -62,6 +63,7 @@ export default function RootLayout({ children }) {
           <ServiceWorkerRegistration />
           {children}
           <CookieBanner />
+          <ScrollIndicator />
           <Analytics />
           <SpeedInsights />
           {/* GA Measurement ID set via NEXT_PUBLIC_GA_MEASUREMENT_ID Vercel env var */}
