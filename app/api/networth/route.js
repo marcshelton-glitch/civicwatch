@@ -20,7 +20,7 @@ export async function GET(request) {
 
   let { data, error } = await supabase
     .from('fd_net_worth')
-    .select('report_year, net_worth_min, net_worth_max, filing_date')
+    .select('report_year, net_worth_min, net_worth_max')
     .eq('bioguide_id', bioguideId)
     .order('report_year', { ascending: true })
 
@@ -28,7 +28,7 @@ export async function GET(request) {
   if (!error && (!data || data.length === 0) && lastName && state) {
     ;({ data, error } = await supabase
       .from('fd_net_worth')
-      .select('report_year, net_worth_min, net_worth_max, filing_date')
+      .select('report_year, net_worth_min, net_worth_max')
       .ilike('last_name', lastName)
       .ilike('state_dst', `${state}%`)
       .order('report_year', { ascending: true }))
@@ -54,7 +54,6 @@ export async function GET(request) {
       year: row.report_year,
       min_value: row.net_worth_min,
       max_value: row.net_worth_max ?? row.net_worth_min,
-      filing_date: row.filing_date,
     }))
 
   if (history.length === 0) return NextResponse.json({ history: [] })
