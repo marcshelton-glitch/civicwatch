@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
-import { CountUp } from './CountUp'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -338,6 +337,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [stats, setStats] = useState(null)
+  const [statsDisplay, setStatsDisplay] = useState({ filings: 0, trades: 0, representatives: 0 })
   const [prefs, setPrefs] = useState({
     alert_frequency: 'daily',
     alert_trades: true,
@@ -800,6 +800,26 @@ useEffect(() => {
     fetch('/api/stats', { cache: 'no-store', signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null).then(data => { if (data) setStats(data) }).catch(() => {})
   }, [])
 
+  useEffect(() => {
+    if (!stats) return
+    const keys = ['filings', 'trades', 'representatives']
+    const duration = 1000
+    const steps = 40
+    const interval = duration / steps
+    let step = 0
+    const timer = setInterval(() => {
+      step++
+      const t = step / steps
+      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+      setStatsDisplay({
+        filings: Math.round(ease * Number(stats.filings || 0)),
+        trades: Math.round(ease * Number(stats.trades || 0)),
+        representatives: Math.round(ease * Number(stats.representatives || 0)),
+      })
+      if (step >= steps) clearInterval(timer)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [stats])
 
   const handleSubscribe = async () => {
     try {
@@ -991,15 +1011,13 @@ useEffect(() => {
           display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}
           className="stats-banner-grid">
           {[
-            { value: stats?.filings ?? 0, label: "Filings" },
-            { value: stats?.trades ?? 0, label: "Trades" },
-            { value: stats?.representatives ?? 0, label: "Representatives" },
-            { value: null, label: "Updated" },
+            { value: statsDisplay.filings.toLocaleString(), label: "Filings" },
+            { value: statsDisplay.trades.toLocaleString(), label: "Trades" },
+            { value: statsDisplay.representatives.toLocaleString(), label: "Representatives" },
+            { value: "Daily", label: "Updated" },
           ].map(({ value, label }) => (
             <div key={label} style={{ textAlign: "center", padding: "8px 4px" }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: S.gold, lineHeight: 1.1 }}>
-                {value === null ? "Daily" : <CountUp value={value} duration={1200} />}
-              </div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: S.gold, lineHeight: 1.1 }}>{value}</div>
               <div style={{ fontSize: 10, color: S.gray, textTransform: "uppercase", letterSpacing: 1, marginTop: 2 }}>{label}</div>
             </div>
           ))}
@@ -1105,8 +1123,8 @@ useEffect(() => {
                 const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
                 const isTracked = tracked.includes(rep.id)
                 return (
-                  <div key={rep.id} className="rep-card"
-                    style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
+                  <div key={rep.id} className="rep-card glass-card-strong"
+                    style={{ borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1565C0" : rep.party === "Republican" ? "#CC2020" : rep.party === "Independent" ? "#D4B800" : rep.party === "Green" ? "#22A05A" : "#334466" }} />
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
@@ -1185,8 +1203,8 @@ useEffect(() => {
                         : rep.level === 'district' ? '#90EE90'
                         : S.gold
                       return (
-                        <div key={rep.id} className="rep-card"
-                          style={{ background: `linear-gradient(145deg, rgba(27,42,107,0.6), rgba(10,14,30,0.9))`, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
+                        <div key={rep.id} className="rep-card glass-card-strong"
+                          style={{ borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#1565C0' : rep.party === 'Republican' ? '#CC2020' : rep.party === 'Independent' ? '#D4B800' : rep.party === 'Green' ? '#22A05A' : '#334466' }} />
                           <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                             <div style={{ position: 'relative' }}>
@@ -1299,7 +1317,7 @@ useEffect(() => {
     )}
 
     <div className="map-layout" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
-      <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
+      <div className="glass-card-strong" style={{ borderRadius: 16, padding: 20 }}>
         {mounted ? (
           <>
             {/* ── NATIONAL VIEW ────────────────────────────── */}
@@ -1516,7 +1534,7 @@ useEffect(() => {
       </div>
 
       {/* ── SIDEBAR ────────────────────────────────────── */}
-      <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 20 }}>
+      <div className="glass-card-strong" style={{ borderRadius: 16, padding: 20 }}>
         <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
           {mapView === 'state' && zoomedState ? zoomedState.name : STATE_MAP_DATA.find(s => s.state === selectedState)?.label || selectedState}
         </div>
@@ -1628,8 +1646,8 @@ useEffect(() => {
             return (
               <div key={i}
                 onClick={matchedRep ? () => { selectRep(matchedRep); setActiveTab('reps') } : undefined}
-                className="rep-card"
-                style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, cursor: matchedRep ? 'pointer' : 'default' }}>
+                className="rep-card glass-card"
+                style={{ borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 10, cursor: matchedRep ? 'pointer' : 'default' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
                     <InitialsAvatar name={trade.name} party={party || ''} size={40} />
@@ -1716,7 +1734,7 @@ useEffect(() => {
               </div>
             </div>
             {/* ── Notification Settings ──────────────────────────────────── */}
-            <div style={{ marginBottom: 24, padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+            <div className="glass-card" style={{ marginBottom: 24, padding: 20, borderRadius: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Notification Settings</div>
                 {prefsSaved && (
@@ -1811,8 +1829,8 @@ useEffect(() => {
                   const typeColor = { vote: S.gold, trade: "#FF6B6B", docket: "#5B9CFF", townhall: "#90EE90" }[alert.type]
                   const displayTime = alert.time && alert.time.match(/^\d{4}-\d{2}-\d{2}/) ? timeAgo(alert.time) : alert.time
                   return (
-                    <div key={alert.id} className={alert.read ? "" : "alert-unread"}
-                      style={{ padding: "14px 16px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
+                    <div key={alert.id} className={"glass-card" + (alert.read ? "" : " alert-unread")}
+                      style={{ padding: "14px 16px", borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
                       <span style={{ fontSize: 20 }}>{typeIcon}</span>
                       {photo && <Image src={photo} alt="" width={34} height={34} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none' }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -2725,7 +2743,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minWidth: 0 }}>
 
           {/* Wealth Change */}
-          <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
+          <div className="glass-card" style={{ borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Wealth & Trades</div>
             {(() => {
               const recentTrade = trades.length > 0 && trades.some(t => {
@@ -2818,7 +2836,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
 
           {/* Recent Votes */}
-          <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
+          <div className="glass-card" style={{ borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Recent Votes</div>
             {loadingVotes ? (
               <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
@@ -2842,7 +2860,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
 
           {/* Today's Schedule */}
-          <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
+          <div className="glass-card" style={{ borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Active Legislation</div>
             {loadingDocket ? (
               <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
@@ -2867,7 +2885,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
 
           {/* Contact / Office */}
-          <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
+          <div className="glass-card" style={{ borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Contact & Office</div>
             {rep.phone && (
               <div style={{ marginBottom: 8 }}>
@@ -2926,7 +2944,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   const totalVotes = (v.totalYea ?? 0) + (v.totalNay ?? 0) + (v.totalOther ?? 0)
                   const yeaPct = totalVotes > 0 ? Math.round((v.totalYea ?? 0) / totalVotes * 100) : null
                   return (
-                    <div key={i} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10 }}>
+                    <div key={i} className="glass-card" style={{ padding: '14px 16px', borderRadius: 10 }}>
                       {/* Row 1: vote badge, outcome, date */}
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
                         <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 15, color: voteColor, background: `${voteColor}18`, borderRadius: 6, padding: '3px 10px', letterSpacing: 1 }}>{v.vote}</span>
@@ -3028,7 +3046,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
           {/* ── State rep ── */}
           {rep.source === 'openstates' && (
-            <div style={{ padding: 28, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
+            <div className="glass-card" style={{ padding: 28, borderRadius: 12, textAlign: 'center' }}>
               <div style={{ fontSize: 28, marginBottom: 10 }}>🏛️</div>
               <div style={{ fontSize: 14, color: S.grayLight, marginBottom: 6 }}>State legislators file financial disclosures at the state level</div>
               <div style={{ fontSize: 12, color: S.gray }}>The federal STOCK Act and House Clerk disclosures apply only to U.S. Congress members.</div>
@@ -3162,7 +3180,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div style={{ padding: 18, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12, marginBottom: 14 }}>
                           <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>Net Worth ({history[0].year})</div>
                           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 26, color: S.gold }}>
-                            <CountUp value={Math.abs(midpoints[0])} format="currency" duration={1600} />
+                            {fmtY(midpoints[0])}
                           </div>
                           <div style={{ fontSize: 11, color: S.gray, marginTop: 6 }}>1 year of disclosure data available</div>
                         </div>
@@ -3173,14 +3191,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>When Entering Office</div>
                               <div style={{ fontSize: 11, color: S.gray, marginBottom: 4 }}>{entryYear}</div>
                               <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: S.gold, letterSpacing: -0.5 }}>
-                                <CountUp value={Math.abs(entryWorth)} format="currency" duration={1600} />
+                                {fmtY(entryWorth)}
                               </div>
                             </div>
                             <div style={{ padding: 16, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12 }}>
                               <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>Net Worth Today</div>
                               <div style={{ fontSize: 11, color: S.gray, marginBottom: 4 }}>{currentYear}</div>
                               <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: S.gold, letterSpacing: -0.5 }}>
-                                <CountUp value={Math.abs(currentWorth)} format="currency" duration={1600} />
+                                {fmtY(currentWorth)}
                               </div>
                             </div>
                           </div>
@@ -3188,11 +3206,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           {growthPct !== null && salaryTotal !== null && (
                             <div style={{ padding: '13px 16px', background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 10, marginBottom: 14, fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
                               <span style={{ color: growthAmt >= 0 ? '#4ade80' : '#f87171', fontWeight: 700 }}>
-                                {growthAmt >= 0 ? '+' : '-'}<CountUp value={Math.abs(growthAmt)} format="currency" duration={1600} />
-                                {' '}({growthAmt >= 0 ? '+' : '-'}<CountUp value={Math.abs(growthPct ?? 0)} duration={1600} />%)
+                                {growthAmt >= 0 ? '+' : ''}{fmtY(growthAmt)} ({growthAmt >= 0 ? '+' : ''}{growthPct}%)
                               </span>
                               {' '}while earning{' '}
-                              <span style={{ color: S.gold, fontWeight: 600 }}><CountUp value={Math.abs(salaryTotal)} format="currency" duration={1600} /></span>
+                              <span style={{ color: S.gold, fontWeight: 600 }}>{fmtY(salaryTotal)}</span>
                               {' '}in congressional salary ({currentYear - entryYear + 1} yrs × $174K)
                             </div>
                           )}
@@ -3292,7 +3309,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         {/* Individual trades */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {trades.map((t, i) => (
-                            <div key={i} style={{ padding: '12px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                            <div key={i} className="glass-card" style={{ padding: '12px 16px', borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
                               <div style={{ minWidth: 50, fontWeight: 700, fontSize: 12, color: t.type === 'BUY' ? '#4CAF50' : t.type === 'SELL' ? '#f87171' : S.gray }}>{tradeTypeLabel(t.type)}</div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -3433,7 +3450,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
                     {/* No trades, no filing history */}
                     {trades.length === 0 && (!disclosures || disclosures.filings?.length === 0) && (
-                      <div style={{ padding: 32, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, textAlign: 'center' }}>
+                      <div className="glass-card" style={{ padding: 32, borderRadius: 12, textAlign: 'center' }}>
                         <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
                         <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.white, marginBottom: 8 }}>No trade disclosures found</div>
                         <div style={{ fontSize: 13, color: S.gray, maxWidth: 380, margin: '0 auto', lineHeight: 1.6 }}>This representative may not have filed any PTR reports, or their filings may be in a non-machine-readable format.</div>
@@ -3463,7 +3480,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               const prevMid = fdNetWorth[i+1]?.min_value != null ? Math.round((fdNetWorth[i+1].min_value + (fdNetWorth[i+1].max_value ?? fdNetWorth[i+1].min_value)) / 2) : null
                               const delta = nwMid != null && prevMid != null ? nwMid - prevMid : null
                               return (
-                                <div key={n.year} style={{ padding: '14px 16px', background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
+                                <div key={n.year} className="glass-card" style={{ padding: '14px 16px', borderRadius: 10, display: 'flex', gap: 12, alignItems: 'center' }}>
                                   <div style={{ minWidth: 44, fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, color: S.gold }}>{n.year}</div>
                                   <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ fontSize: 14, fontWeight: 600, color: S.grayLight, marginBottom: 2 }}>
@@ -3504,7 +3521,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           )}
           {!loadingBio && (
             <>
-              <div style={{ padding: 22, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, marginBottom: 18 }}>
+              <div className="glass-card" style={{ padding: 22, borderRadius: 12, marginBottom: 18 }}>
                 <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Biography</div>
                 {liveBio ? (
                   <>
@@ -3663,7 +3680,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   )
                 }
                 return (
-                  <div style={{ padding: 22, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, marginBottom: 18 }}>
+                  <div className="glass-card" style={{ padding: 22, borderRadius: 12, marginBottom: 18 }}>
                     <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 12 }}>Committee Assignments</div>
                     {currentCs.length > 0 && (
                       <>
