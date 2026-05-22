@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
-import { SkeletonRepCard } from './SkeletonRepCard'
-import { SkeletonStatCard } from './SkeletonStatCard'
-import { SkeletonLineItem } from './SkeletonLineItem'
-import { FadeIn } from './FadeIn'
-import { useScrollReveal } from '../hooks/useScrollReveal'
+import { CountUp } from './CountUp'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -342,7 +338,6 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
   const [stats, setStats] = useState(null)
-  const [statsDisplay, setStatsDisplay] = useState({ filings: 0, trades: 0, representatives: 0 })
   const [prefs, setPrefs] = useState({
     alert_frequency: 'daily',
     alert_trades: true,
@@ -805,26 +800,6 @@ useEffect(() => {
     fetch('/api/stats', { cache: 'no-store', signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null).then(data => { if (data) setStats(data) }).catch(() => {})
   }, [])
 
-  useEffect(() => {
-    if (!stats) return
-    const keys = ['filings', 'trades', 'representatives']
-    const duration = 1000
-    const steps = 40
-    const interval = duration / steps
-    let step = 0
-    const timer = setInterval(() => {
-      step++
-      const t = step / steps
-      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
-      setStatsDisplay({
-        filings: Math.round(ease * Number(stats.filings || 0)),
-        trades: Math.round(ease * Number(stats.trades || 0)),
-        representatives: Math.round(ease * Number(stats.representatives || 0)),
-      })
-      if (step >= steps) clearInterval(timer)
-    }, interval)
-    return () => clearInterval(timer)
-  }, [stats])
 
   const handleSubscribe = async () => {
     try {
@@ -852,9 +827,6 @@ useEffect(() => {
     if (goToMap) setActiveTab('map')
     if (isSignedIn) fetch('/api/onboarding', { method: 'PATCH' }).catch(() => {})
   }
-
-  const [statsBannerRef, statsBannerVisible] = useScrollReveal()
-  const [disclosuresRef, disclosuresVisible] = useScrollReveal()
 
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white, overflowX: "hidden", width: "100%" }}>
@@ -1015,17 +987,19 @@ useEffect(() => {
 
       {/* STATS BANNER */}
       <div style={{ background: `linear-gradient(135deg, #070C1A, ${S.navyMid})`, borderBottom: `1px solid rgba(212,175,55,0.2)` }}>
-        <div ref={statsBannerRef} style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px",
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px",
           display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}
-          className={`stats-banner-grid reveal-stagger${statsBannerVisible ? ' is-visible' : ''}`}>
+          className="stats-banner-grid">
           {[
-            { value: statsDisplay.filings.toLocaleString(), label: "Filings" },
-            { value: statsDisplay.trades.toLocaleString(), label: "Trades" },
-            { value: statsDisplay.representatives.toLocaleString(), label: "Representatives" },
-            { value: "Daily", label: "Updated" },
+            { value: stats?.filings ?? 0, label: "Filings" },
+            { value: stats?.trades ?? 0, label: "Trades" },
+            { value: stats?.representatives ?? 0, label: "Representatives" },
+            { value: null, label: "Updated" },
           ].map(({ value, label }) => (
             <div key={label} style={{ textAlign: "center", padding: "8px 4px" }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: S.gold, lineHeight: 1.1 }}>{value}</div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: S.gold, lineHeight: 1.1 }}>
+                {value === null ? "Daily" : <CountUp value={value} duration={1200} />}
+              </div>
               <div style={{ fontSize: 10, color: S.gray, textTransform: "uppercase", letterSpacing: 1, marginTop: 2 }}>{label}</div>
             </div>
           ))}
@@ -1058,8 +1032,9 @@ useEffect(() => {
               </select>
             </div>
             {loadingReps && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
-                {Array.from({length: 6}).map((_, i) => <SkeletonRepCard key={i} />)}
+              <div style={{ textAlign: "center", padding: "60px 0", color: S.gray }}>
+                <div className="pulse" style={{ fontSize: 40, marginBottom: 16 }}>🏛️</div>
+                <div style={{ fontSize: 16 }}>Loading your representatives…</div>
               </div>
             )}
             {(filterLevel === 'state' || filterLevel === 'all') && !civicAddress && (
@@ -1104,8 +1079,9 @@ useEffect(() => {
               </div>
             )}
             {loadingMunicipal && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
-                {Array.from({length: 3}).map((_, i) => <SkeletonRepCard key={i} />)}
+              <div style={{ textAlign: "center", padding: "40px 0", color: S.gray }}>
+                <div className="pulse" style={{ fontSize: 32, marginBottom: 12 }}>🏛️</div>
+                <div style={{ fontSize: 14 }}>Loading state legislators…</div>
               </div>
             )}
             {municipalError && (
@@ -1548,8 +1524,9 @@ useEffect(() => {
           {mapView === 'state' ? 'Congressional Districts' : 'Representatives'}
         </div>
         {loadingReps ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {Array.from({length: 4}).map((_, i) => <SkeletonRepCard key={i} />)}
+          <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+            <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+            Loading…
           </div>
         ) : (() => {
           const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
@@ -1636,7 +1613,7 @@ useEffect(() => {
           No recent disclosures — check back soon
         </div>
       ) : (
-        <div ref={disclosuresRef} className={`reveal-stagger${disclosuresVisible ? ' is-visible' : ''}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
           {feedData.trades.map((trade, i) => {
             const normalize = s => (s || '').toLowerCase().replace(/[^a-z]/g, '')
             const tn = normalize(trade.name)
@@ -1804,8 +1781,9 @@ useEffect(() => {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {loadingAlerts && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {Array.from({length: 4}).map((_, i) => <SkeletonLineItem key={i} wide />)}
+                <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+                  <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+                  Loading latest activity for tracked representatives…
                 </div>
               )}
               {!loadingAlerts && (() => {
@@ -2266,8 +2244,6 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [compareDataLoading, setCompareDataLoading] = useState(false)
   const [compareMode, setCompareMode] = useState(false)
 
-  const [overviewRef, overviewVisible] = useScrollReveal()
-
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
 
@@ -2499,7 +2475,6 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       </button>
 
       {/* HERO */}
-      <FadeIn delay={0}>
       <div style={{ background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, border: `1px solid ${S.border}`, borderRadius: 20, padding: 24, marginBottom: 20, position: "relative", overflow: "hidden" }}>
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -2545,7 +2520,6 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           </div>
         </div>
       </div>
-      </FadeIn>
 
       {/* COMPARE PANEL */}
       {compareMode && (() => {
@@ -2748,7 +2722,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── OVERVIEW ── */}
       {repTab === "overview" && (
-        <div ref={overviewRef} className={`slide-in mobile-stack reveal-stagger${overviewVisible ? ' is-visible' : ''}`} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minWidth: 0 }}>
+        <div className="slide-in mobile-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minWidth: 0 }}>
 
           {/* Wealth Change */}
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
@@ -2785,9 +2759,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 <div style={{ padding: "6px 10px", background: "rgba(178,34,52,0.1)", borderRadius: 6, textAlign: "center", fontSize: 13, color: "#FF6B6B", fontWeight: 700 }}>+{enr.pct}% · {fmt(enr.delta)} gained</div>
               </>
             ) : loadingTrades ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Array.from({length: 2}).map((_, i) => <SkeletonLineItem key={i} />)}
-              </div>
+              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
             ) : trades.length > 0 ? (
               <>
                 <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
@@ -2814,9 +2786,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 <a href="https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/" target="_blank" rel="noreferrer" style={{ color: S.gold }}>FollowTheMoney →</a>
               </div>
             ) : loadingDisclosures ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Array.from({length: 2}).map((_, i) => <SkeletonLineItem key={i} />)}
-              </div>
+              <div style={{ fontSize: 12, color: S.gray }}>Loading disclosures…</div>
             ) : disclosures?.filings?.length > 0 ? (
               <div>
                 <div style={{ fontSize: 12, color: S.grayLight, marginBottom: 6 }}>
@@ -2851,9 +2821,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Recent Votes</div>
             {loadingVotes ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Array.from({length: 3}).map((_, i) => <SkeletonLineItem key={i} />)}
-              </div>
+              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
             ) : votes.length > 0 ? (
               votes.slice(0, 3).map((v, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: 8, gap: 8 }}>
@@ -2877,9 +2845,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Active Legislation</div>
             {loadingDocket ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Array.from({length: 3}).map((_, i) => <SkeletonLineItem key={i} />)}
-              </div>
+              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
             ) : (liveDocket || []).length > 0 ? (
               (liveDocket || []).slice(0, 3).map((d, i) => (
                 <div key={i} style={{ marginBottom: 8, minWidth: 0 }}>
@@ -2936,8 +2902,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "votes" && (
         <div className="slide-in">
           {loadingVotes && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {Array.from({length: 5}).map((_, i) => <SkeletonLineItem key={i} wide />)}
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
+              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
+              Loading voting record…
             </div>
           )}
           {!loadingVotes && votes.length === 0 && (
@@ -3005,8 +2972,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "docket" && (
         <div className="slide-in">
           {loadingDocket && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {Array.from({length: 5}).map((_, i) => <SkeletonLineItem key={i} wide />)}
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
+              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
+              Loading legislative schedule from LegiScan…
             </div>
           )}
           {!loadingDocket && (isLive ? (liveDocket || []) : rep.docket).length === 0 ? (
@@ -3056,7 +3024,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
       {/* ── WEALTH & TRADES ── */}
       {repTab === "wealth" && (
-        <FadeIn><div>
+        <div className="slide-in">
 
           {/* ── State rep ── */}
           {rep.source === 'openstates' && (
@@ -3077,7 +3045,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               <>
                 {/* ── Net Worth Deep-Dive ── */}
                 {loadingFdNetWorth && (
-                  <SkeletonStatCard />
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 12 }}>Loading net worth history…</div>
                 )}
                 {!loadingFdNetWorth && (() => {
                   const fmtY = v => {
@@ -3194,7 +3162,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div style={{ padding: 18, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12, marginBottom: 14 }}>
                           <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>Net Worth ({history[0].year})</div>
                           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 26, color: S.gold }}>
-                            {fmtY(midpoints[0])}
+                            <CountUp value={Math.abs(midpoints[0])} format="currency" duration={1600} />
                           </div>
                           <div style={{ fontSize: 11, color: S.gray, marginTop: 6 }}>1 year of disclosure data available</div>
                         </div>
@@ -3205,14 +3173,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>When Entering Office</div>
                               <div style={{ fontSize: 11, color: S.gray, marginBottom: 4 }}>{entryYear}</div>
                               <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: S.gold, letterSpacing: -0.5 }}>
-                                {fmtY(entryWorth)}
+                                <CountUp value={Math.abs(entryWorth)} format="currency" duration={1600} />
                               </div>
                             </div>
                             <div style={{ padding: 16, background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 12 }}>
                               <div style={{ fontSize: 10, letterSpacing: 1.5, color: S.gray, textTransform: 'uppercase', marginBottom: 6 }}>Net Worth Today</div>
                               <div style={{ fontSize: 11, color: S.gray, marginBottom: 4 }}>{currentYear}</div>
                               <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: S.gold, letterSpacing: -0.5 }}>
-                                {fmtY(currentWorth)}
+                                <CountUp value={Math.abs(currentWorth)} format="currency" duration={1600} />
                               </div>
                             </div>
                           </div>
@@ -3220,10 +3188,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           {growthPct !== null && salaryTotal !== null && (
                             <div style={{ padding: '13px 16px', background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.22)`, borderRadius: 10, marginBottom: 14, fontSize: 13, color: S.grayLight, lineHeight: 1.6 }}>
                               <span style={{ color: growthAmt >= 0 ? '#4ade80' : '#f87171', fontWeight: 700 }}>
-                                {growthAmt >= 0 ? '+' : ''}{fmtY(growthAmt)} ({growthAmt >= 0 ? '+' : ''}{growthPct}%)
+                                {growthAmt >= 0 ? '+' : '-'}<CountUp value={Math.abs(growthAmt)} format="currency" duration={1600} />
+                                {' '}({growthAmt >= 0 ? '+' : '-'}<CountUp value={Math.abs(growthPct ?? 0)} duration={1600} />%)
                               </span>
                               {' '}while earning{' '}
-                              <span style={{ color: S.gold, fontWeight: 600 }}>{fmtY(salaryTotal)}</span>
+                              <span style={{ color: S.gold, fontWeight: 600 }}><CountUp value={Math.abs(salaryTotal)} format="currency" duration={1600} /></span>
                               {' '}in congressional salary ({currentYear - entryYear + 1} yrs × $174K)
                             </div>
                           )}
@@ -3265,9 +3234,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   return deepDiveContent
                 })()}
 
+                {/* Loading spinner while both sources are fetching */}
                 {(loadingTrades || loadingDisclosures) && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-                    {Array.from({length: 3}).map((_, i) => <SkeletonStatCard key={i} />)}
+                  <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
+                    <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
+                    Loading financial disclosure records…
                   </div>
                 )}
 
@@ -3519,17 +3490,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               </>
             )
           })()}
-        </div></FadeIn>
+        </div>
       )}
 
       {/* ── BIO & COMPARE ── */}
       {repTab === "bio" && (
-        <FadeIn><div>
+        <div className="slide-in">
           {loadingBio && (
-            <div style={{ padding: 22, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, marginBottom: 18 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {Array.from({length: 5}).map((_, i) => <SkeletonLineItem key={i} wide />)}
-              </div>
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
+              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
+              Loading member details…
             </div>
           )}
           {!loadingBio && (
@@ -3761,15 +3731,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               )}
             </>
           )}
-        </div></FadeIn>
+        </div>
       )}
 
       {/* ── TOWN HALL ── */}
       {repTab === "townhall" && (
         <div className="slide-in">
           {loadingTownHall ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {Array.from({length: 3}).map((_, i) => <SkeletonLineItem key={i} wide />)}
+            <div style={{ textAlign: 'center', padding: 48, color: S.gray, fontSize: 13 }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>🏛️</div>
+              Searching for upcoming events…
             </div>
           ) : (() => {
             const events = liveTownHall || []
