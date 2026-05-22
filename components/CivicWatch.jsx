@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
+import { SkeletonRepCard } from './SkeletonRepCard'
+import { SkeletonStatCard } from './SkeletonStatCard'
+import { SkeletonLineItem } from './SkeletonLineItem'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -1050,9 +1053,8 @@ useEffect(() => {
               </select>
             </div>
             {loadingReps && (
-              <div style={{ textAlign: "center", padding: "60px 0", color: S.gray }}>
-                <div className="pulse" style={{ fontSize: 40, marginBottom: 16 }}>🏛️</div>
-                <div style={{ fontSize: 16 }}>Loading your representatives…</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
+                {Array.from({length: 6}).map((_, i) => <SkeletonRepCard key={i} />)}
               </div>
             )}
             {(filterLevel === 'state' || filterLevel === 'all') && !civicAddress && (
@@ -1097,9 +1099,8 @@ useEffect(() => {
               </div>
             )}
             {loadingMunicipal && (
-              <div style={{ textAlign: "center", padding: "40px 0", color: S.gray }}>
-                <div className="pulse" style={{ fontSize: 32, marginBottom: 12 }}>🏛️</div>
-                <div style={{ fontSize: 14 }}>Loading state legislators…</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
+                {Array.from({length: 3}).map((_, i) => <SkeletonRepCard key={i} />)}
               </div>
             )}
             {municipalError && (
@@ -1542,9 +1543,8 @@ useEffect(() => {
           {mapView === 'state' ? 'Congressional Districts' : 'Representatives'}
         </div>
         {loadingReps ? (
-          <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
-            <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
-            Loading…
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {Array.from({length: 4}).map((_, i) => <SkeletonRepCard key={i} />)}
           </div>
         ) : (() => {
           const stateLabel = STATE_MAP_DATA.find(s => s.state === selectedState)?.label
@@ -1799,9 +1799,8 @@ useEffect(() => {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {loadingAlerts && (
-                <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
-                  <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
-                  Loading latest activity for tracked representatives…
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {Array.from({length: 4}).map((_, i) => <SkeletonLineItem key={i} wide />)}
                 </div>
               )}
               {!loadingAlerts && (() => {
@@ -2777,7 +2776,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 <div style={{ padding: "6px 10px", background: "rgba(178,34,52,0.1)", borderRadius: 6, textAlign: "center", fontSize: 13, color: "#FF6B6B", fontWeight: 700 }}>+{enr.pct}% · {fmt(enr.delta)} gained</div>
               </>
             ) : loadingTrades ? (
-              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Array.from({length: 2}).map((_, i) => <SkeletonLineItem key={i} />)}
+              </div>
             ) : trades.length > 0 ? (
               <>
                 <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
@@ -2804,7 +2805,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 <a href="https://www.followthemoney.org/research/institute-research/personal-financial-disclosures/" target="_blank" rel="noreferrer" style={{ color: S.gold }}>FollowTheMoney →</a>
               </div>
             ) : loadingDisclosures ? (
-              <div style={{ fontSize: 12, color: S.gray }}>Loading disclosures…</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Array.from({length: 2}).map((_, i) => <SkeletonLineItem key={i} />)}
+              </div>
             ) : disclosures?.filings?.length > 0 ? (
               <div>
                 <div style={{ fontSize: 12, color: S.grayLight, marginBottom: 6 }}>
@@ -2839,7 +2842,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Recent Votes</div>
             {loadingVotes ? (
-              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Array.from({length: 3}).map((_, i) => <SkeletonLineItem key={i} />)}
+              </div>
             ) : votes.length > 0 ? (
               votes.slice(0, 3).map((v, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: 8, gap: 8 }}>
@@ -2863,7 +2868,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           <div style={{ background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12, padding: 18 }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: "uppercase", marginBottom: 10 }}>Active Legislation</div>
             {loadingDocket ? (
-              <div style={{ fontSize: 12, color: S.gray }}>Loading…</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Array.from({length: 3}).map((_, i) => <SkeletonLineItem key={i} />)}
+              </div>
             ) : (liveDocket || []).length > 0 ? (
               (liveDocket || []).slice(0, 3).map((d, i) => (
                 <div key={i} style={{ marginBottom: 8, minWidth: 0 }}>
@@ -2920,9 +2927,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "votes" && (
         <div className="slide-in">
           {loadingVotes && (
-            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
-              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
-              Loading voting record…
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Array.from({length: 5}).map((_, i) => <SkeletonLineItem key={i} wide />)}
             </div>
           )}
           {!loadingVotes && votes.length === 0 && (
@@ -2990,9 +2996,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "docket" && (
         <div className="slide-in">
           {loadingDocket && (
-            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
-              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
-              Loading legislative schedule from LegiScan…
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Array.from({length: 5}).map((_, i) => <SkeletonLineItem key={i} wide />)}
             </div>
           )}
           {!loadingDocket && (isLive ? (liveDocket || []) : rep.docket).length === 0 ? (
@@ -3063,7 +3068,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               <>
                 {/* ── Net Worth Deep-Dive ── */}
                 {loadingFdNetWorth && (
-                  <div style={{ textAlign: 'center', padding: '20px 0', color: S.gray, fontSize: 12 }}>Loading net worth history…</div>
+                  <SkeletonStatCard />
                 )}
                 {!loadingFdNetWorth && (() => {
                   const fmtY = v => {
@@ -3251,11 +3256,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   return deepDiveContent
                 })()}
 
-                {/* Loading spinner while both sources are fetching */}
                 {(loadingTrades || loadingDisclosures) && (
-                  <div style={{ textAlign: 'center', padding: 32, color: S.gray }}>
-                    <div style={{ width: 28, height: 28, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 12px' }} />
-                    Loading financial disclosure records…
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+                    {Array.from({length: 3}).map((_, i) => <SkeletonStatCard key={i} />)}
                   </div>
                 )}
 
@@ -3514,9 +3517,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "bio" && (
         <div className="slide-in">
           {loadingBio && (
-            <div style={{ textAlign: 'center', padding: 48, color: S.gray }}>
-              <div style={{ width: 32, height: 32, border: `3px solid ${S.border}`, borderTopColor: S.gold, borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 14px' }} />
-              Loading member details…
+            <div style={{ padding: 22, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, marginBottom: 18 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {Array.from({length: 5}).map((_, i) => <SkeletonLineItem key={i} wide />)}
+              </div>
             </div>
           )}
           {!loadingBio && (
@@ -3755,9 +3759,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       {repTab === "townhall" && (
         <div className="slide-in">
           {loadingTownHall ? (
-            <div style={{ textAlign: 'center', padding: 48, color: S.gray, fontSize: 13 }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🏛️</div>
-              Searching for upcoming events…
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Array.from({length: 3}).map((_, i) => <SkeletonLineItem key={i} wide />)}
             </div>
           ) : (() => {
             const events = liveTownHall || []
