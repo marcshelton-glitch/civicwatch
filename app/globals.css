@@ -48,37 +48,57 @@ a {
   }
 }
 
-@keyframes scrollBounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(6px); }
+/* === Glassmorphism Card System === */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-@keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0.04) 25%,
-    rgba(255,255,255,0.10) 50%,
-    rgba(255,255,255,0.04) 75%
-  );
-  background-size: 800px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 6px;
+/* Stronger variant for hero/feature cards */
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-/* Scroll reveal — items stagger with CSS custom properties */
-.reveal-stagger > * {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+.glass-card-strong:hover {
+  border-color: rgba(255, 255, 255, 0.20);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
-.reveal-stagger.is-visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0ms; }
-.reveal-stagger.is-visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 80ms; }
-.reveal-stagger.is-visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 160ms; }
-.reveal-stagger.is-visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 240ms; }
-.reveal-stagger.is-visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 320ms; }
-.reveal-stagger.is-visible > *:nth-child(n+6) { opacity: 1; transform: none; transition-delay: 400ms; }
+
+/* Gradient border glow — colored glow variant */
+.glass-glow-blue {
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.3),
+    0 8px 32px rgba(59, 130, 246, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.glass-glow-red {
+  box-shadow:
+    0 0 0 1px rgba(239, 68, 68, 0.3),
+    0 8px 32px rgba(239, 68, 68, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.3);
+}
