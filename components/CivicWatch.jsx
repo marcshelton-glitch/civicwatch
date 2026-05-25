@@ -2258,6 +2258,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [loadingFdNetWorth, setLoadingFdNetWorth] = useState(false)
   const [nwHoverIdx, setNwHoverIdx] = useState(null)
   const [nwChartVisible, setNwChartVisible] = useState(false)
+  const [wikidataWorth, setWikidataWorth] = useState(null)
+  const [wikidataLoading, setWikidataLoading] = useState(false)
   const nwChartRef = useRef(null)
   const [compareQuery, setCompareQuery] = useState('')
   const [compareResults, setCompareResults] = useState([])
@@ -2301,6 +2303,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
     setLoadingDisclosures(false)
     setFdNetWorth(null); setFdNetWorthMeta(null); setLoadingFdNetWorth(false); setNwHoverIdx(null); setNwChartVisible(false)
+    setWikidataWorth(null); setWikidataLoading(false)
     setCompareQuery(''); setCompareResults([]); setCompareRep(null); setCompareData(null); setCompareDataLoading(false); setCompareMode(false)
   }, [rep.id])
 
@@ -2372,6 +2375,21 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     obs.observe(el)
     return () => obs.disconnect()
   }, [fdNetWorth])
+
+  useEffect(() => {
+    if (!fdNetWorth || fdNetWorth.length > 0) return
+    if (rep.source === 'openstates') return
+    const parts = (rep.name || '').split(', ')
+    const fullName = parts.length >= 2 ? `${parts[1].split(' ')[0]} ${parts[0]}` : rep.name || ''
+    if (!fullName) return
+    let cancelled = false
+    setWikidataLoading(true)
+    fetch(`/api/networth-wikidata?name=${encodeURIComponent(fullName)}`)
+      .then(r => r.json())
+      .then(d => { if (!cancelled) { setWikidataWorth(d); setWikidataLoading(false) } })
+      .catch(() => { if (!cancelled) setWikidataLoading(false) })
+    return () => { cancelled = true }
+  }, [rep.id, fdNetWorth])
 
   useEffect(() => {
     if (repTab === 'bio' && isLive && !liveBio && !loadingBio) {
@@ -3103,12 +3121,32 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   if (fdNetWorth === null) return null
                   if (fdNetWorth.length === 0) {
                     return (
-                      <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
-                        This dataset covers House member financial disclosures. Data may not be available for all representatives, particularly former members or those who filed before our coverage window.{' '}
-                        <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold, textDecoration: 'underline' }}>View House disclosures →</a>{' '}
-                        Senate members file through a separate system —{' '}
-                        <a href="https://efts.senate.gov/LATEST/search-index" target="_blank" rel="noreferrer" style={{ color: S.gold }}>view Senate disclosures →</a>
-                      </div>
+                      <>
+                        {wikidataLoading && (
+                          <div className="skeleton-shimmer" style={{ height: 80, borderRadius: 12, margin: '0 0 16px' }} />
+                        )}
+                        {!wikidataLoading && wikidataWorth?.netWorth != null && (
+                          <div style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${S.border}`, borderRadius: 12, padding: '20px 24px', marginBottom: 16 }}>
+                            <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 4 }}>Estimated Net Worth</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: S.gold }}>
+                              {wikidataWorth.netWorth >= 1e9
+                                ? `$${(wikidataWorth.netWorth / 1e9).toFixed(1)}B`
+                                : wikidataWorth.netWorth >= 1e6
+                                  ? `$${(wikidataWorth.netWorth / 1e6).toFixed(1)}M`
+                                  : `$${(wikidataWorth.netWorth / 1e3).toFixed(0)}K`}
+                            </div>
+                            {wikidataWorth.year && (
+                              <div style={{ fontSize: 12, color: S.gray, marginTop: 4 }}>Est. {wikidataWorth.year} · Source: Wikidata</div>
+                            )}
+                          </div>
+                        )}
+                        <div style={{ padding: '16px 20px', background: 'rgba(212,175,55,0.05)', border: `1px solid ${S.border}`, borderRadius: 10, marginBottom: 20, textAlign: 'center', fontSize: 12, color: S.gray }}>
+                          This dataset covers House member financial disclosures. Data may not be available for all representatives, particularly former members or those who filed before our coverage window.{' '}
+                          <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noreferrer" style={{ color: S.gold, textDecoration: 'underline' }}>View House disclosures →</a>{' '}
+                          Senate members file through a separate system —{' '}
+                          <a href="https://efts.senate.gov/LATEST/search-index" target="_blank" rel="noreferrer" style={{ color: S.gold }}>view Senate disclosures →</a>
+                        </div>
+                      </>
                     )
                   }
 

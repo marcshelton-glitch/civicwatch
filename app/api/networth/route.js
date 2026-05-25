@@ -57,7 +57,18 @@ export async function GET(request) {
       filing_date: row.created_at,
     }))
 
-  if (history.length === 0) return NextResponse.json({ history: [] })
+  if (history.length === 0) {
+    const { data: osData } = await supabase
+      .from('opensecrets_net_worth')
+      .select('*')
+      .eq('bioguide_id', bioguideId)
+      .order('cycle', { ascending: false })
+      .limit(10)
+    if (osData?.length) {
+      return NextResponse.json(osData.map(r => ({ ...r, source: 'opensecrets' })))
+    }
+    return NextResponse.json({ history: [] })
+  }
 
   const CONGRESSIONAL_SALARY = 174000
 
