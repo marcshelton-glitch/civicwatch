@@ -886,6 +886,9 @@ useEffect(() => {
         @keyframes typewriter { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
         .ai-line { animation: typewriter 0.4s ease forwards; opacity: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes nwLineReveal { from { stroke-dashoffset: 2000; } to { stroke-dashoffset: 0; } }
+        @keyframes nwAreaReveal { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes nwDotPop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
         ::-webkit-scrollbar { width:6px } ::-webkit-scrollbar-track { background:${S.navy} } ::-webkit-scrollbar-thumb { background:${S.navyMid}; border-radius:3px }
         @media (max-width: 768px) {
           .mobile-stack { grid-template-columns: 1fr !important; }
@@ -2254,6 +2257,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [fdNetWorthMeta, setFdNetWorthMeta] = useState(null)
   const [loadingFdNetWorth, setLoadingFdNetWorth] = useState(false)
   const [nwHoverIdx, setNwHoverIdx] = useState(null)
+  const [nwChartVisible, setNwChartVisible] = useState(false)
+  const nwChartRef = useRef(null)
   const [compareQuery, setCompareQuery] = useState('')
   const [compareResults, setCompareResults] = useState([])
   const [compareSearchLoading, setCompareSearchLoading] = useState(false)
@@ -2261,6 +2266,12 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [compareData, setCompareData] = useState(null)
   const [compareDataLoading, setCompareDataLoading] = useState(false)
   const [compareMode, setCompareMode] = useState(false)
+  const [heroScrollY, setHeroScrollY] = useState(0)
+  useEffect(() => {
+    const onScroll = () => setHeroScrollY(window.scrollY)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const partyAbbr = p => p === 'Democrat' ? 'D' : p === 'Republican' ? 'R' : p === 'Independent' ? 'I' : (p || 'I').charAt(0).toUpperCase()
   const actionWord = type => type === 'BUY' ? 'bought' : type === 'SELL' ? 'sold' : type === 'EXCHANGE' ? 'exchanged' : (type || '').toLowerCase()
@@ -2289,7 +2300,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
     setLoadingDisclosures(false)
-    setFdNetWorth(null); setFdNetWorthMeta(null); setLoadingFdNetWorth(false); setNwHoverIdx(null)
+    setFdNetWorth(null); setFdNetWorthMeta(null); setLoadingFdNetWorth(false); setNwHoverIdx(null); setNwChartVisible(false)
     setCompareQuery(''); setCompareResults([]); setCompareRep(null); setCompareData(null); setCompareDataLoading(false); setCompareMode(false)
   }, [rep.id])
 
@@ -2350,6 +2361,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       .finally(() => { if (!cancelled) setLoadingFdNetWorth(false) })
     return () => { cancelled = true }
   }, [repTab, rep.id])
+
+  useEffect(() => {
+    if (!fdNetWorth || fdNetWorth.length < 2) return
+    const el = nwChartRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setNwChartVisible(true); obs.disconnect() }
+    }, { threshold: 0.2 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [fdNetWorth])
 
   useEffect(() => {
     if (repTab === 'bio' && isLive && !liveBio && !loadingBio) {
@@ -2493,7 +2515,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       </button>
 
       {/* HERO */}
-      <div style={{ background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, border: `1px solid ${S.border}`, borderRadius: 20, padding: 24, marginBottom: 20, position: "relative", overflow: "hidden" }}>
+      <div style={{ border: `1px solid ${S.border}`, borderRadius: 20, padding: 24, marginBottom: 20, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -200, bottom: -200, left: 0, right: 0, background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, transform: `translateY(${heroScrollY * 0.3}px)`, willChange: "transform" }} />
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
           {rep.photo ? (
@@ -3121,7 +3144,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     const linePath = midpoints.map((v, i) => `${i === 0 ? 'M' : 'L'}${xS(i)},${yS(v)}`).join(' ')
                     const yTickVals = [0, 0.25, 0.5, 0.75, 1].map(t => yMin + t * (yMax - yMin))
                     return (
-                      <div style={{ marginBottom: 16, padding: '16px 16px 12px', background: '#0b1220', border: `1px solid ${S.border}`, borderRadius: 12 }}>
+                      <div ref={nwChartRef} style={{ marginBottom: 16, padding: '16px 16px 12px', background: '#0b1220', border: `1px solid ${S.border}`, borderRadius: 12 }}>
                         <div style={{ fontSize: 10, letterSpacing: 2, color: S.gray, textTransform: 'uppercase', marginBottom: 10 }}>Wealth Timeline</div>
                         <div style={{ position: 'relative' }}>
                           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
@@ -3131,8 +3154,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                 <text x={pad.l - 6} y={yS(v)} textAnchor="end" dominantBaseline="middle" fill="#556070" fontSize={9}>{fmtY(v)}</text>
                               </g>
                             ))}
-                            <path d={areaPath} fill="rgba(212,175,55,0.13)" />
-                            <path d={linePath} fill="none" stroke="#D4AF37" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                            <path d={areaPath} fill="rgba(212,175,55,0.13)"
+                              style={nwChartVisible
+                                ? { animation: 'nwAreaReveal 0.9s 0.15s ease-out forwards', opacity: 0 }
+                                : { opacity: 0 }} />
+                            <path d={linePath} fill="none" stroke="#D4AF37" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+                              style={nwChartVisible
+                                ? { strokeDasharray: 2000, strokeDashoffset: 2000, animation: 'nwLineReveal 1.2s ease-out forwards' }
+                                : { strokeDasharray: 2000, strokeDashoffset: 2000 }} />
                             {history.map((d, i) => (
                               <text key={i} x={xS(i)} y={H - 6} textAnchor="middle" fill="#556070" fontSize={9}>{d.year}</text>
                             ))}
@@ -3142,7 +3171,10 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                   onMouseEnter={() => setNwHoverIdx(i)} onMouseLeave={() => setNwHoverIdx(null)} />
                                 <circle cx={xS(i)} cy={yS(midpoints[i])} r={nwHoverIdx === i ? 5 : 3}
                                   fill={nwHoverIdx === i ? '#D4AF37' : '#0b1220'} stroke="#D4AF37"
-                                  strokeWidth={nwHoverIdx === i ? 2 : 1.5} style={{ pointerEvents: 'none' }} />
+                                  strokeWidth={nwHoverIdx === i ? 2 : 1.5}
+                                  style={nwChartVisible
+                                    ? { pointerEvents: 'none', animation: `nwDotPop 0.4s ${0.8 + i * 0.06}s ease-out forwards`, opacity: 0, transformOrigin: `${xS(i)}px ${yS(midpoints[i])}px` }
+                                    : { pointerEvents: 'none', opacity: 0 }} />
                               </g>
                             ))}
                           </svg>
