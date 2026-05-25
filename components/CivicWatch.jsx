@@ -2028,7 +2028,7 @@ useEffect(() => {
 
       {/* ── ONBOARDING MODAL ── */}
       {showOnboarding && (
-        <div className="onboarding-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(10,14,30,0.88)', backdropFilter: 'blur(8px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div className="onboarding-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(10,14,30,0.88)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div className="onboarding-card slide-in" style={{ maxWidth: 460, width: '100%', background: `linear-gradient(145deg, ${S.navyMid}, #0d1a3a)`, border: `1px solid ${S.border}`, borderRadius: 20, padding: '40px 32px 28px', position: 'relative' }}>
             <div className="star-pattern" style={{ position: 'absolute', inset: 0, opacity: 0.25, borderRadius: 'inherit', pointerEvents: 'none' }} />
 
@@ -3300,7 +3300,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div style={{ filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none' }}>
                           {deepDiveContent}
                         </div>
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', borderRadius: 12 }}>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
                           <div style={{ fontSize: 32 }}>🔒</div>
                           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
                             Net Worth Analysis · Pro Only
@@ -4347,7 +4347,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
             </p>
           </div>
           {/* Lock overlay */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.6)', backdropFilter: 'blur(2px)', borderRadius: 12 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.6)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
             <div style={{ fontSize: 28 }}>🔒</div>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Full Report · Pro Members Only</div>
             <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0 }}>
