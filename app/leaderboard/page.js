@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { TiltCard } from '../../components/TiltCard'
 
 const S = {
   navy: '#0A1628',
@@ -189,8 +190,8 @@ export default function LeaderboardPage() {
               const isTop3 = rank <= 3
 
               return (
+                <TiltCard key={rep.bioguide_id || i} style={{ width: '100%', borderRadius: 12 }}>
                 <button
-                  key={rep.bioguide_id || i}
                   onClick={() => rep.bioguide_id && router.push(`/dashboard?rep=${rep.bioguide_id}`)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
@@ -282,6 +283,7 @@ export default function LeaderboardPage() {
                     </div>
                   </div>
                 </button>
+                </TiltCard>
               )
             })}
           </div>
