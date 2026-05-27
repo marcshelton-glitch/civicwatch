@@ -62,11 +62,11 @@ const HOW_IT_WORKS = [
 ]
 
 const FALLBACK_TICKER = [
-  'Sen. Warren · NVDA BUY · $15,001–$50,000',
-  'Rep. Pelosi · AAPL BUY · $500,001–$1M',
-  'Sen. Tuberville · TSLA SELL · $50,001–$100,000',
-  'Rep. McCaul · MSFT BUY · $100,001–$250,000',
-  'Sen. Manchin · JPM SELL · $15,001–$50,000',
+  'Fetching live trade disclosures…',
+  'Loading STOCK Act activity…',
+  'Connecting to disclosure feed…',
+  'Live congressional trades loading…',
+  'Fetching recent activity…',
 ]
 
 function fmtTrade(t) {
