@@ -573,7 +573,7 @@ const markAllRead = () => {
     }, 1000)
   }
   const BIOGUIDE_RE = /^[A-Z]\d{6}$/
-  const [trackNudge, setTrackNudge] = useState(false)
+  const [showSignInToast, setShowSignInToast] = useState(false)
 
   const toggleTrack = (repOrId) => {
     const isFull = repOrId && typeof repOrId === 'object'
@@ -581,8 +581,8 @@ const markAllRead = () => {
     const isCurrentlyTracked = tracked.includes(id)
     setTracked(t => isCurrentlyTracked ? t.filter(x => x !== id) : [...t, id])
     if (!isSignedIn) {
-      setTrackNudge(true)
-      setTimeout(() => setTrackNudge(false), 3000)
+      setShowSignInToast(true)
+      setTimeout(() => setShowSignInToast(false), 3000)
       return
     }
     // Persist to Supabase for federal reps only (valid bioguide IDs)
@@ -649,22 +649,28 @@ const markAllRead = () => {
       .then(data => {
         if (!data.member) return
         const m = data.member
-        const terms = m.terms || []
-        const latestTerm = terms[terms.length - 1] || {}
-        const isSen = (latestTerm.chamber || '').toLowerCase().includes('senate')
+        const isSen = m.isSenator ?? false
         const nameParts = (m.name || '').split(', ')
         const displayName = nameParts.length >= 2
           ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}`
           : m.name || ''
         const nameSlug = displayName.toLowerCase()
           .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+        const termItems = m.terms?.item || []
+        const latestTerm = termItems[termItems.length - 1] || {}
+        const termDistrict = latestTerm.district
+        const computedDistrict = isSen
+          ? 'Statewide'
+          : (m.district && m.district !== 'Statewide')
+            ? m.district
+            : termDistrict ? `District ${termDistrict}` : 'Unknown District'
         setSelectedRep({
           id: m.bioguideId,
           name: m.name,
           title: isSen ? 'U.S. Senator' : 'U.S. Representative',
           party: m.party === 'Democratic' ? 'Democrat' : m.party || 'Unknown',
           state: m.state || '',
-          district: 'Statewide',
+          district: computedDistrict,
           level: 'federal',
           photo: `/api/rep-photo/${m.bioguideId}`,
           email: '',
@@ -686,8 +692,10 @@ const markAllRead = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-select the default rep once members load (public preview mode)
+  // Suppressed when a ?rep= URL param is present — the URL param handler takes priority.
   useEffect(() => {
     if (!defaultBioguideId || selectedRep || liveReps.length === 0) return
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('rep')) return
     const def = liveReps.find(r => r.id === defaultBioguideId)
     if (def) selectRep(def)
   }, [liveReps, defaultBioguideId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -714,7 +722,7 @@ useEffect(() => {
           return {
             id: r.bioguideId, name: r.name,
             title: isSen ? 'U.S. Senator' : 'U.S. Representative',
-            party: r.party === 'Democratic' ? 'Democrat' : r.party === 'Republican' ? 'Republican' : r.party||'Unknown', state: r.state||'', district: r.district||'Statewide',
+            party: r.party === 'Democratic' ? 'Democrat' : r.party === 'Republican' ? 'Republican' : r.party||'Unknown', state: r.state||'', district: isSen ? 'Statewide' : (r.district && r.district !== 'Statewide' ? r.district : 'Unknown District'),
             level: 'federal',
             photo: `/api/rep-photo/${r.bioguideId}`,
             email: '', phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
@@ -808,24 +816,14 @@ useEffect(() => {
 
   useEffect(() => {
     if (!stats) return
-    const keys = ['filings', 'trades', 'representatives']
-    const duration = 1000
-    const steps = 40
-    const interval = duration / steps
-    let step = 0
-    const timer = setInterval(() => {
-      step++
-      const t = step / steps
-      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
-      setStatsDisplay({
-        filings: Math.round(ease * Number(stats.filings || 0)),
-        trades: Math.round(ease * Number(stats.trades || 0)),
-        representatives: Math.round(ease * Number(stats.representatives || 0)),
-      })
-      if (step >= steps) clearInterval(timer)
-    }, interval)
-    return () => clearInterval(timer)
+    // Skip count-up animation — show final values immediately to avoid confusing mid-animation snapshots
+    setStatsDisplay({
+      filings: Number(stats.filings || 0),
+      trades: Number(stats.trades || 0),
+      representatives: Number(stats.representatives || 0),
+    })
   }, [stats])
+
 
   const handleSubscribe = async () => {
     try {
@@ -935,9 +933,10 @@ useEffect(() => {
         }
       `}</style>
 
-      {trackNudge && (
-        <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', background: S.navyLight, border: `1px solid ${S.border}`, color: S.offWhite, fontSize: 13, padding: '10px 20px', borderRadius: 20, zIndex: 9999, pointerEvents: 'none', whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-          Sign in to save your tracked reps across sessions.
+      {showSignInToast && (
+        <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', background: '#1a1a2e', color: '#fff', padding: '12px 20px', borderRadius: 8, zIndex: 9999, display: 'flex', gap: 12, alignItems: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+          <span>Sign in to save your tracked reps across sessions.</span>
+          <a href="/sign-in" style={{ color: '#C8A951', fontWeight: 600, textDecoration: 'none' }}>Sign In →</a>
         </div>
       )}
 
@@ -1037,6 +1036,11 @@ useEffect(() => {
             </div>
           ))}
         </div>
+        {activeTab === 'map' && zoomedState && (
+          <div style={{ textAlign: 'center', paddingBottom: 6, fontSize: 10, color: S.gold, letterSpacing: 1, textTransform: 'uppercase', opacity: 0.7 }}>
+            Showing {zoomedState.name} only — national totals above
+          </div>
+        )}
       </div>
       <style>{`
         @media (max-width: 600px) { .stats-banner-grid { grid-template-columns: repeat(2, 1fr) !important; } }
@@ -2561,8 +2565,18 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
               style={{ border: `4px solid ${S.gold}` }} />
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 4 }}>{rep.name}</div>
-            <div style={{ fontSize: 13, color: S.gold, marginBottom: 8 }}>{rep.title} · {rep.state} · {rep.district}</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span>{rep.name}</span>
+              <span className={`badge ${rep.party === 'Democrat' ? 'dem-badge' : rep.party === 'Republican' ? 'rep-badge' : rep.party === 'Independent' ? 'ind-badge' : rep.party === 'Green' ? 'green-badge' : 'rep-badge'}`} style={{ fontSize: 13, fontFamily: 'inherit', fontWeight: 700 }}>
+                {rep.party === 'Democrat' ? 'D' : rep.party === 'Republican' ? 'R' : rep.party === 'Independent' ? 'I' : rep.party === 'Green' ? 'G' : rep.party?.charAt(0) || '?'}
+              </span>
+            </div>
+            <div style={{ fontSize: 13, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.state} · {rep.district}</div>
+            <div style={{ marginBottom: 8 }}>
+              <span className={`badge ${rep.party === 'Democrat' ? 'dem-badge' : rep.party === 'Republican' ? 'rep-badge' : rep.party === 'Independent' ? 'ind-badge' : rep.party === 'Green' ? 'green-badge' : 'rep-badge'}`}>
+                {rep.party}
+              </span>
+            </div>
             <div style={{ display: "flex", gap: 14, fontSize: 12, color: S.grayLight, flexWrap: "wrap" }}>
               <span>🏛️ {rep.officeLocation}</span>
               <span className="rep-office-hours">🕐 {rep.officeHours}</span>
@@ -2981,8 +2995,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {!loadingVotes && votes.length === 0 && (
             <div style={{ textAlign: 'center', padding: 48 }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>⚖️</div>
-              <div style={{ fontSize: 14, color: S.gray, marginBottom: 8 }}>No vote records found for this member.</div>
-              <div style={{ fontSize: 12, color: S.gray }}>This member may be a state legislator or vote data is not yet available.</div>
+              <div style={{ fontSize: 14, color: S.gray, marginBottom: 8 }}>No recent vote records available.</div>
+              <div style={{ fontSize: 12, color: S.gray }}>Vote history may not be available for retired or inactive members.</div>
             </div>
           )}
           {!loadingVotes && votes.length > 0 && (
