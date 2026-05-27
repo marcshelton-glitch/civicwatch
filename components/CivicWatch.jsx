@@ -1146,7 +1146,7 @@ useEffect(() => {
                         {rep.photo ? (
                           <>
                             <Image src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
-                              onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
+                              onError={e => { const el = e.currentTarget; const direct = rep.id ? `https://bioguide.congress.gov/bioguide/photo/${rep.id[0]}/${rep.id}.jpg` : null; if (direct && !el.dataset.triedDirect) { el.dataset.triedDirect = '1'; el.src = direct } else { el.style.display = 'none'; el.nextSibling.style.display = 'block' } }} />
                             <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
                           </>
                         ) : (
@@ -2552,7 +2552,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
           {rep.photo ? (
             <>
               <Image src={rep.photo} alt={rep.name} width={90} height={90} style={{ borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
-                onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
+                onError={e => { const el = e.currentTarget; const direct = rep.id ? `https://bioguide.congress.gov/bioguide/photo/${rep.id[0]}/${rep.id}.jpg` : null; if (direct && !el.dataset.triedDirect) { el.dataset.triedDirect = '1'; el.src = direct } else { el.style.display = 'none'; el.nextSibling.style.display = 'block' } }} />
               <InitialsAvatar name={rep.name} party={rep.party} size={90}
                 style={{ display: 'none', border: `4px solid ${S.gold}` }} />
             </>
@@ -3132,6 +3132,35 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   // null = fetch hasn't run yet; [] = fetch ran but no data
                   if (fdNetWorth === null) return null
                   if (fdNetWorth.length === 0) {
+                    if (!isProProp) {
+                      return (
+                        <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', marginBottom: 4 }}>
+                          <div style={{ filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none', padding: 24, background: 'rgba(212,175,55,0.03)', border: `1px solid ${S.border}`, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ height: 12, background: 'rgba(255,255,255,0.08)', borderRadius: 4, width: '55%' }} />
+                            <div style={{ height: 90, background: 'rgba(212,175,55,0.08)', borderRadius: 10 }} />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                              <div style={{ height: 72, background: 'rgba(212,175,55,0.06)', borderRadius: 10 }} />
+                              <div style={{ height: 72, background: 'rgba(212,175,55,0.06)', borderRadius: 10 }} />
+                            </div>
+                            <div style={{ height: 10, background: 'rgba(255,255,255,0.08)', borderRadius: 4, width: '70%' }} />
+                          </div>
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
+                            <div style={{ fontSize: 32 }}>🔒</div>
+                            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
+                              Net Worth Analysis · Pro Only
+                            </div>
+                            <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0, lineHeight: 1.6 }}>
+                              Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
+                            </p>
+                            <button
+                              onClick={handleSubscribe}
+                              style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
+                              ★ Upgrade to Pro · $9.99/mo
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    }
                     return (
                       <>
                         {wikidataLoading && (
