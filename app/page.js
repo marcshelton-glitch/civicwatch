@@ -90,7 +90,17 @@ export default function LandingPage() {
   const [tradeCount, setTradeCount] = useState('5,000+')
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) router.replace('/dashboard')
+    const rep = new URLSearchParams(window.location.search).get('rep')
+    if (rep) {
+      router.replace(`/dashboard?rep=${rep}`)
+    }
+  }, [router])
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      const repParam = new URLSearchParams(window.location.search).get('rep')
+      router.replace(repParam ? `/dashboard?rep=${repParam}` : '/dashboard')
+    }
   }, [isLoaded, isSignedIn, router])
 
   useEffect(() => {
