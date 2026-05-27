@@ -1,4 +1,7 @@
+import { Inter } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import CookieBanner from '@/components/CookieBanner'
 import ScrollIndicator from '@/components/ScrollIndicator'
@@ -58,7 +61,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider signInFallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard">
-      <html lang="en">
+      <html lang="en" className={inter.variable}>
         <body>
           <ServiceWorkerRegistration />
           {children}
