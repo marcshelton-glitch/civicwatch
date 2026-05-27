@@ -410,6 +410,9 @@ export async function GET(request) {
       }
 
       // ── Primary: query fd_trades + fd_net_worth from Supabase in parallel ──
+      // dbNetWorthHistory is hoisted so the live fallback below can reuse it
+      // without a duplicate query.
+      let dbNetWorthHistory = []
       if (!isSenator && lastName) {
         const [{ data: dbTrades }, { data: dbNetWorth }] = await Promise.all([
           supabase
@@ -426,7 +429,7 @@ export async function GET(request) {
             .limit(20),
         ])
 
-        const netWorthHistory = (dbNetWorth || []).map(n => ({
+        dbNetWorthHistory = (dbNetWorth || []).map(n => ({
           year: n.report_year,
           assetsMin: n.assets_min,
           assetsMax: n.assets_max,
@@ -468,17 +471,11 @@ export async function GET(request) {
 
           return NextResponse.json({
             trades: allTrades, buys, sells, topTickers,
-            isSenator, disclosureUrl, source: 'db', netWorthHistory,
+            isSenator, disclosureUrl, source: 'db', netWorthHistory: dbNetWorthHistory,
           })
         }
-
-        // No trades in DB but may have net worth data
-        if (netWorthHistory.length > 0) {
-          return NextResponse.json({
-            trades: [], buys: 0, sells: 0, topTickers: [],
-            isSenator, disclosureUrl, source: 'db', netWorthHistory,
-          })
-        }
+        // No trades in fd_trades — fall through to live House Clerk fallback.
+        // dbNetWorthHistory is carried forward so it doesn't need to be re-queried.
       }
 
       // ── Fallback: live House Clerk endpoint ────────────────────────────────
@@ -521,9 +518,11 @@ export async function GET(request) {
         source: 'House Clerk — STOCK Act PTR',
       }))
 
-      // ── Net worth from Supabase (fallback path — no trades in DB) ────────────
-      let liveNetWorthHistory = []
-      if (lastName) {
+      // ── Net worth from Supabase (fallback path) ──────────────────────────────
+      // Reuse dbNetWorthHistory if it was already fetched above; only query for
+      // Senators (isSenator=true) or when lastName wasn't resolved (edge case).
+      let liveNetWorthHistory = dbNetWorthHistory
+      if (!liveNetWorthHistory.length && lastName) {
         const { data: nwData } = await supabase
           .from('fd_net_worth')
           .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
