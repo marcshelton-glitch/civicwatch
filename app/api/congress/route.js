@@ -55,6 +55,14 @@ function isRateLimited(userId) {
   return false
 }
 
+// ── Party overrides — corrects known Congress.gov upstream data errors ────────
+const PARTY_OVERRIDES = {
+  'K000401': 'Republican', // Kevin Kiley (CA-03) — Congress.gov erroneously lists as Independent (2026)
+}
+function resolveParty(bioguideId, rawParty) {
+  return PARTY_OVERRIDES[bioguideId] || rawParty || 'Unknown'
+}
+
 // ── Congress.gov fetch ────────────────────────────────────────────────────────
 async function cFetch(path) {
   if (!KEY) throw new Error('CONGRESS_API_KEY not configured')
@@ -195,7 +203,7 @@ export async function GET(request) {
         return {
           bioguideId: m.bioguideId,
           name: m.name,
-          party: m.partyName || 'Unknown',
+          party: resolveParty(m.bioguideId, m.partyName),
           state: m.state,
           district: m.district ? `District ${m.district}` : 'Statewide',
           chamber,
@@ -216,7 +224,7 @@ export async function GET(request) {
         member: {
           bioguideId: m.bioguideId,
           name: m.invertedOrderName || m.directOrderName,
-          party: m.partyHistory?.[0]?.partyName,
+          party: resolveParty(m.bioguideId, m.partyHistory?.[0]?.partyName),
           state: m.state,
           birthYear: m.birthYear,
           officialWebsiteUrl: m.officialWebsiteUrl,
@@ -783,7 +791,7 @@ export async function GET(request) {
         return {
           bioguideId: m.bioguideId,
           name: rawName,
-          party: m.partyName || 'Unknown',
+          party: resolveParty(m.bioguideId, m.partyName),
           state: m.state,
           district: m.district ? `District ${m.district}` : 'Statewide',
           chamber,
