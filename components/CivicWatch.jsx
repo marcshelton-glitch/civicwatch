@@ -4195,6 +4195,7 @@ Sincerely,
 
 function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp }) {
   const { user, isSignedIn } = useUser()
+  const { openSignIn } = useClerk()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
   const [preview, setPreview] = useState('')
   const [fullReport, setFullReport] = useState('')
@@ -4218,7 +4219,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
       const data = await res.json()
 
       if (!res.ok) {
-        setErrorMsg(data.error || 'Analysis failed.')
+        setErrorMsg(res.status === 429
+          ? 'Preview limit reached — upgrade to Pro for unlimited access.'
+          : (data.error || 'Analysis failed.'))
         setStatus('error')
         return
       }
@@ -4279,10 +4282,17 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
           <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
             Get a nonpartisan AI-generated accountability report on any member of Congress — voting record, stock trades, wealth trajectory, and peer standing.
           </p>
-          <a href="/pro"
-            style={{ padding: '13px 32px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-            Go Pro →
-          </a>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              onClick={() => openSignIn()}
+              style={{ padding: '13px 28px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
+              Sign in to preview →
+            </button>
+            <a href="/pro"
+              style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
+              Go Pro →
+            </a>
+          </div>
         </div>
       )
     }
