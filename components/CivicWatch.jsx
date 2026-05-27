@@ -573,12 +573,18 @@ const markAllRead = () => {
     }, 1000)
   }
   const BIOGUIDE_RE = /^[A-Z]\d{6}$/
+  const [trackNudge, setTrackNudge] = useState(false)
+
   const toggleTrack = (repOrId) => {
-    if (!isSignedIn) { openSignIn(); return }
     const isFull = repOrId && typeof repOrId === 'object'
     const id = isFull ? repOrId.id : repOrId
     const isCurrentlyTracked = tracked.includes(id)
     setTracked(t => isCurrentlyTracked ? t.filter(x => x !== id) : [...t, id])
+    if (!isSignedIn) {
+      setTrackNudge(true)
+      setTimeout(() => setTrackNudge(false), 3000)
+      return
+    }
     // Persist to Supabase for federal reps only (valid bioguide IDs)
     if (isFull && BIOGUIDE_RE.test(id)) {
       const lastName = (repOrId.name || '').split(',')[0].trim()
@@ -928,6 +934,12 @@ useEffect(() => {
           .compare-vs-mobile::before, .compare-vs-mobile::after { content: ''; flex: 1; height: 1px; background: rgba(212,175,55,0.3); }
         }
       `}</style>
+
+      {trackNudge && (
+        <div style={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', background: S.navyLight, border: `1px solid ${S.border}`, color: S.offWhite, fontSize: 13, padding: '10px 20px', borderRadius: 20, zIndex: 9999, pointerEvents: 'none', whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+          Sign in to save your tracked reps across sessions.
+        </div>
+      )}
 
       {/* HEADER */}
       <header style={{ background: `linear-gradient(135deg, #0A0E1E, ${S.navyMid})`, borderBottom: `2px solid ${S.gold}`, position: "sticky", top: 0, zIndex: 100 }}>
@@ -4182,11 +4194,12 @@ Sincerely,
 
 
 function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp }) {
-  const { user } = useUser()
+  const { user, isSignedIn } = useUser()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
   const [preview, setPreview] = useState('')
   const [fullReport, setFullReport] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [previewsUsed, setPreviewsUsed] = useState(0)
 
   // Prefer prop (from parent) so both stay in sync; fall back to local user read
   const isPro = isProProp ?? (user?.publicMetadata?.isPro === true)
@@ -4213,6 +4226,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
       if (mode === 'preview') {
         setPreview(data.text)
         setStatus('preview')
+        setPreviewsUsed(n => n + 1)
       } else {
         setFullReport(data.text)
         setStatus('full')
@@ -4227,6 +4241,35 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
   // ── IDLE ───────────────────────────────────────────────────────────────────
   if (status === 'idle') {
     if (!isPro) {
+      if (isSignedIn) {
+        const previewsLeft = Math.max(0, 3 - previewsUsed)
+        return (
+          <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
+            <div style={{ fontSize: 48 }}>🤖</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
+              AI Analysis Preview
+            </div>
+            <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
+              Get a brief nonpartisan AI preview of {rep.name.split(' ').pop()}&apos;s accountability record.
+              {previewsLeft > 0
+                ? ` You have ${previewsLeft} free preview${previewsLeft !== 1 ? 's' : ''} remaining this hour.`
+                : " You've used all 3 free previews for this hour."}
+            </p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button
+                onClick={() => runAnalysis('preview')}
+                disabled={previewsLeft === 0}
+                style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
+                Preview Analysis →
+              </button>
+              <a href="/pro"
+                style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
+                Go Pro →
+              </a>
+            </div>
+          </div>
+        )
+      }
       return (
         <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
           <div style={{ fontSize: 48 }}>🔒</div>
@@ -4358,12 +4401,6 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
                 onClick={() => runAnalysis('full')}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 Generate Full Report →
-              </button>
-            ) : isPro ? (
-              <button
-                onClick={handleBillingPortal}
-                style={{ padding: '11px 28px', background: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08))`, border: `1px solid ${S.gold}`, borderRadius: 10, color: S.gold, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5 }}>
-                ★ Manage Pro Subscription
               </button>
             ) : (
               <button
