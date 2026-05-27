@@ -205,7 +205,7 @@ export async function GET(request) {
           name: m.name,
           party: resolveParty(m.bioguideId, m.partyName),
           state: m.state,
-          district: m.district ? `District ${m.district}` : 'Statewide',
+          district: m.district ? `District ${m.district}` : latestTerm.district ? `District ${latestTerm.district}` : isSen ? 'Statewide' : 'Unknown District',
           chamber,
           isSenator: isSen,
           url: m.url,
@@ -220,12 +220,19 @@ export async function GET(request) {
     if (type === 'member') {
       const data = await cFetch(`/member/${bioguideId}`)
       const m = data.member
+      const termItems = m.terms?.item || []
+      const latestTerm = termItems[termItems.length - 1] || {}
+      const memberChamber = latestTerm.chamber || ''
+      const isSenator = memberChamber.toLowerCase().includes('senate')
       return NextResponse.json({
         member: {
           bioguideId: m.bioguideId,
           name: m.invertedOrderName || m.directOrderName,
           party: resolveParty(m.bioguideId, m.partyHistory?.[0]?.partyName),
           state: m.state,
+          district: !isSenator && (m.district || latestTerm.district) ? `District ${m.district || latestTerm.district}` : 'Statewide',
+          chamber: memberChamber,
+          isSenator,
           birthYear: m.birthYear,
           officialWebsiteUrl: m.officialWebsiteUrl,
           depiction: m.depiction?.imageUrl || null,
