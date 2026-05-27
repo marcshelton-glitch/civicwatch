@@ -41,6 +41,7 @@ function photoUrl(bioguideId) {
 
 
 function RepPhoto({ bioguideId, name, size = 52 }) {
+  const [tried, setTried] = useState(false)
   const [err, setErr] = useState(false)
   if (!bioguideId || err) {
     const initials = (name || '?').split(/[\s,]+/).filter(Boolean)
@@ -57,11 +58,14 @@ function RepPhoto({ bioguideId, name, size = 52 }) {
       </div>
     )
   }
+  const src = tried
+    ? `https://bioguide.congress.gov/bioguide/photo/${bioguideId[0]}/${bioguideId}.jpg`
+    : `/api/rep-photo/${bioguideId}`
   return (
     <img
-      src={`/api/rep-photo/${bioguideId}`}
+      src={src}
       alt={name}
-      onError={() => setErr(true)}
+      onError={() => { if (!tried) setTried(true); else setErr(true) }}
       style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, objectFit: 'cover', border: `2px solid ${S.border}` }}
     />
   )
@@ -138,6 +142,9 @@ export default function LeaderboardPage() {
           </h1>
           <p style={{ color: S.gray, fontSize: 14, margin: 0 }}>
             Representatives ranked by total periodic transaction reports filed
+          </p>
+          <p style={{ fontSize: 11, color: S.gray, margin: '8px auto 0', letterSpacing: 0.3 }}>
+            📊 Activity ranking only — counts STOCK Act PTRs filed, not net worth or wealth
           </p>
         </div>
 
