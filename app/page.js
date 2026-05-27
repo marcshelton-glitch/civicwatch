@@ -4,12 +4,6 @@ import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
-const STATS = [
-  { value: '$174K', label: 'Average congressional salary' },
-  { value: '$1.9M', label: 'Average member net worth' },
-  { value: '3,847', label: 'STOCK Act trades in 2024' },
-  { value: '535', label: 'Members tracked' },
-]
 
 const FEATURES = [
   {
@@ -93,10 +87,18 @@ export default function LandingPage() {
   const heroRef = useRef(null)
   const tickerRef = useRef(null)
   const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER.map(t => ({ text: t, isBuy: t.includes('BUY'), isSell: t.includes('SELL') })))
+  const [tradeCount, setTradeCount] = useState('5,000+')
 
   useEffect(() => {
     if (isLoaded && isSignedIn) router.replace('/dashboard')
   }, [isLoaded, isSignedIn, router])
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(d => { if (d.trades > 0) setTradeCount(d.trades.toLocaleString()) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/public-feed')
@@ -114,6 +116,13 @@ export default function LandingPage() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const STATS = [
+    { value: '$174K', label: 'Average congressional salary' },
+    { value: '$1.9M', label: 'Average member net worth' },
+    { value: tradeCount, label: 'STOCK Act Trades Tracked' },
+    { value: '535', label: 'Members tracked' },
+  ]
 
   return (
     <div style={{
