@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { auth, currentUser } from '@clerk/nextjs/server'
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -7,8 +8,20 @@ const getSupabase = () => createClient(
 )
 
 // GET /api/networth?bioguideId=P000197&lastName=Pelosi&state=CA
-// Net worth data is public record (House Clerk financial disclosures); no auth required.
+// Net worth deep-dive is a Pro feature — requires a valid Clerk session with isPro metadata.
 export async function GET(request) {
+  // ── Pro check ─────────────────────────────────────────────────────────────
+  const { userId } = await auth()
+  if (!userId) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+  const user = await currentUser()
+  const isPro = user?.publicMetadata?.isPro === true
+  if (!isPro) {
+    return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 })
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const { searchParams } = new URL(request.url)
   const bioguideId = (searchParams.get('bioguideId') || '').trim().toUpperCase()
   const lastName = (searchParams.get('lastName') || '').trim()
