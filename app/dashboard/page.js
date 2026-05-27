@@ -1,6 +1,18 @@
 'use client'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import CivicWatch from '@/components/CivicWatch'
 
+function DashboardContent() {
+  const searchParams = useSearchParams()
+  const repParam = searchParams.get('rep')
+  return <CivicWatch defaultBioguideId={repParam ? null : 'P000197'} defaultState="CA" />
+}
+
 export default function DashboardPage() {
-  return <CivicWatch defaultBioguideId="P000197" defaultState="CA" />
+  return (
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
+  )
 }
