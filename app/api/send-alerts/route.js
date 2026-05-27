@@ -13,7 +13,6 @@ const getSupabase = () => createClient(
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 function checkAuth(request) {
-  // Vercel cron sends: Authorization: Bearer <CRON_SECRET>
   const auth = request.headers.get('authorization')
   const expected = process.env.CRON_SECRET
   if (!expected) return false
@@ -52,52 +51,75 @@ async function runAlerts(request) {
     return NextResponse.json({ sent: 0, message: 'No tracked reps' })
   }
 
-  // ── 2. Determine new-filing window (25h to overlap the 24h cron cadence) ──
+  // ── 2. Fetch user preferences for alert filtering ─────────────────────────
+  const { data: allPrefs } = await supabase
+    .from('user_preferences')
+    .select('user_id, alert_trades, alert_networth, alert_legislation, alert_committees')
+
+  const prefsMap = {}
+  for (const p of allPrefs || []) {
+    prefsMap[p.user_id] = p
+  }
+
+  // ── 3. Determine new-filing window (25h to overlap the 24h cron cadence) ──
   const cutoff = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString()
 
-  // ── 3. Fetch new House PTR filings (fd_filings) ───────────────────────────
-  const { data: newHouseFilings } = await supabase
-    .from('fd_filings')
-    .select('doc_id, last_name, bioguide_id, filing_date, pdf_url, year')
-    .eq('filing_type', 'P')
-    .gt('created_at', cutoff)
-
-  // ── 4. Fetch new Senate filings (distinct filing_id from senate_trades) ───
-  const { data: newSenTrades } = await supabase
-    .from('senate_trades')
-    .select('filing_id, last_name, filing_date, ptr_url')
-    .gt('created_at', cutoff)
-
-  // Deduplicate senate trades by filing_id (one email entry per filing, not per trade)
-  const senFilingsMap = {}
-  for (const t of newSenTrades || []) {
-    if (!senFilingsMap[t.filing_id]) senFilingsMap[t.filing_id] = t
-  }
-  const newSenFilings = Object.values(senFilingsMap)
-
-  if ((newHouseFilings || []).length === 0 && newSenFilings.length === 0) {
-    return NextResponse.json({ sent: 0, message: 'No new filings in window' })
-  }
-
-  // ── 5. Group tracked reps by user_id ─────────────────────────────────────
+  // ── 4. Group tracked reps by user_id ─────────────────────────────────────
   const byUser = {}
   for (const row of allTracked) {
     if (!byUser[row.user_id]) byUser[row.user_id] = []
     byUser[row.user_id].push(row)
   }
 
-  // ── 6. Process each user ──────────────────────────────────────────────────
+  // ── 5. Run all alert types in parallel ───────────────────────────────────
+  const [tradesSent, networthSent, committeeSent, legislationSent] = await Promise.all([
+    sendTradeAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+    sendNetWorthAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+    sendCommitteeAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+    sendLegislationAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+  ])
+
+  const totalSent = tradesSent + networthSent + committeeSent + legislationSent
+  console.log(`send-alerts: done — trades:${tradesSent} networth:${networthSent} committee:${committeeSent} legislation:${legislationSent}`)
+  return NextResponse.json({ sent: totalSent, trades: tradesSent, networth: networthSent, committee: committeeSent, legislation: legislationSent })
+}
+
+// ── Trade alerts ──────────────────────────────────────────────────────────────
+async function sendTradeAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
+  // Fetch new House PTR filings
+  const { data: newHouseFilings } = await supabase
+    .from('fd_filings')
+    .select('doc_id, last_name, bioguide_id, filing_date, pdf_url, year')
+    .eq('filing_type', 'P')
+    .gt('created_at', cutoff)
+
+  // Fetch new Senate filings (distinct filing_id from senate_trades)
+  const { data: newSenTrades } = await supabase
+    .from('senate_trades')
+    .select('filing_id, last_name, filing_date, ptr_url')
+    .gt('created_at', cutoff)
+
+  const senFilingsMap = {}
+  for (const t of newSenTrades || []) {
+    if (!senFilingsMap[t.filing_id]) senFilingsMap[t.filing_id] = t
+  }
+  const newSenFilings = Object.values(senFilingsMap)
+
+  if ((newHouseFilings || []).length === 0 && newSenFilings.length === 0) return 0
+
   let sentCount = 0
 
   for (const [userId, trackedReps] of Object.entries(byUser)) {
-    // Find new filings for this user's tracked reps
+    // Respect alert_trades preference (default: true)
+    const userPrefs = prefsMap[userId]
+    if (userPrefs && userPrefs.alert_trades === false) continue
+
     const userNewFilings = []
 
     for (const rep of trackedReps) {
       const lastNameLower = (rep.last_name || '').toLowerCase()
 
       if (!rep.is_senator) {
-        // House: match by bioguide_id first, then last_name fallback
         const matches = (newHouseFilings || []).filter(f =>
           (f.bioguide_id && f.bioguide_id === rep.bioguide_id) ||
           (!f.bioguide_id && lastNameLower && f.last_name?.toLowerCase() === lastNameLower)
@@ -115,7 +137,6 @@ async function runAlerts(request) {
           })
         }
       } else {
-        // Senate: match by last_name
         if (!lastNameLower) continue
         const matches = newSenFilings.filter(f =>
           f.last_name?.toLowerCase() === lastNameLower
@@ -135,7 +156,6 @@ async function runAlerts(request) {
 
     if (userNewFilings.length === 0) continue
 
-    // ── 7. Filter out already-sent alerts ──────────────────────────────────
     const filingIds = userNewFilings.map(f => f.filingId)
     const { data: alreadySent } = await supabase
       .from('sent_alerts')
@@ -148,7 +168,6 @@ async function runAlerts(request) {
 
     if (toSend.length === 0) continue
 
-    // ── 8. Get user email from Clerk ───────────────────────────────────────
     let email, firstName
     try {
       const clerkUser = await clerk.users.getUser(userId)
@@ -161,13 +180,11 @@ async function runAlerts(request) {
 
     if (!email) continue
 
-    // ── 9. Send the email ──────────────────────────────────────────────────
-    const emailSent = await sendAlertEmail(email, firstName, toSend)
+    const emailSent = await sendTradeAlertEmail(email, firstName, toSend)
     if (!emailSent) continue
 
     sentCount++
 
-    // ── 10. Record sent alerts (UNIQUE constraint handles any races) ───────
     const records = toSend.map(f => ({
       user_id: userId,
       bioguide_id: f.bioguideId,
@@ -178,15 +195,118 @@ async function runAlerts(request) {
       .upsert(records, { onConflict: 'user_id,filing_id', ignoreDuplicates: true })
   }
 
-  console.log(`send-alerts: done — emailed ${sentCount} users`)
-  return NextResponse.json({ sent: sentCount })
+  return sentCount
 }
 
-// ── Email template ─────────────────────────────────────────────────────────────
-async function sendAlertEmail(email, firstName, filings) {
+// ── Net worth update alerts ───────────────────────────────────────────────────
+async function sendNetWorthAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
+  // Fetch new fd_net_worth rows since the cutoff window
+  const { data: newWorthRows } = await supabase
+    .from('fd_net_worth')
+    .select('bioguide_id, last_name, state_dst, report_year, net_worth_min, net_worth_max, created_at')
+    .gt('created_at', cutoff)
+
+  if (!newWorthRows || newWorthRows.length === 0) return 0
+
+  // Index new rows by bioguide_id
+  const newWorthByBioguide = {}
+  for (const row of newWorthRows) {
+    if (!row.bioguide_id) continue
+    if (!newWorthByBioguide[row.bioguide_id]) newWorthByBioguide[row.bioguide_id] = []
+    newWorthByBioguide[row.bioguide_id].push(row)
+  }
+
+  let sentCount = 0
+
+  for (const [userId, trackedReps] of Object.entries(byUser)) {
+    const userPrefs = prefsMap[userId]
+    if (userPrefs && userPrefs.alert_networth === false) continue
+
+    const userNewFilings = []
+
+    for (const rep of trackedReps) {
+      if (!rep.bioguide_id) continue
+      const rows = newWorthByBioguide[rep.bioguide_id] || []
+      for (const row of rows) {
+        userNewFilings.push({
+          filingId: `nw_${rep.bioguide_id}_${row.report_year}`,
+          repName: rep.rep_name || rep.last_name,
+          bioguideId: rep.bioguide_id,
+          reportYear: row.report_year,
+          netWorthMin: row.net_worth_min,
+          netWorthMax: row.net_worth_max,
+          filedAt: row.created_at,
+        })
+      }
+    }
+
+    if (userNewFilings.length === 0) continue
+
+    const filingIds = userNewFilings.map(f => f.filingId)
+    const { data: alreadySent } = await supabase
+      .from('sent_alerts')
+      .select('filing_id')
+      .eq('user_id', userId)
+      .in('filing_id', filingIds)
+
+    const sentIds = new Set((alreadySent || []).map(r => r.filing_id))
+    const toSend = userNewFilings.filter(f => !sentIds.has(f.filingId))
+
+    if (toSend.length === 0) continue
+
+    let email, firstName
+    try {
+      const clerkUser = await clerk.users.getUser(userId)
+      email = clerkUser.emailAddresses?.[0]?.emailAddress
+      firstName = clerkUser.firstName || ''
+    } catch (err) {
+      console.error(`send-alerts: Clerk lookup failed for ${userId}:`, err.message)
+      continue
+    }
+
+    if (!email) continue
+
+    const emailSent = await sendNetWorthAlertEmail(email, firstName, toSend)
+    if (!emailSent) continue
+
+    sentCount++
+
+    await supabase
+      .from('sent_alerts')
+      .upsert(
+        toSend.map(f => ({ user_id: userId, bioguide_id: f.bioguideId, filing_id: f.filingId })),
+        { onConflict: 'user_id,filing_id', ignoreDuplicates: true }
+      )
+  }
+
+  return sentCount
+}
+
+// ── Committee assignment alerts ───────────────────────────────────────────────
+// TODO: No committee_assignments table exists yet. Wire this up once a table with
+// columns (bioguide_id, committee_name, committee_code, assigned_at) is created.
+// Query would be:
+//   SELECT bioguide_id, committee_name, assigned_at FROM committee_assignments
+//   WHERE assigned_at > cutoff
+async function sendCommitteeAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
+  return 0
+}
+
+// ── Legislation alerts ────────────────────────────────────────────────────────
+// TODO: No rep-linked bill table exists. The legiscan_cache table is keyed by
+// request parameters, not by sponsoring rep, so we can't efficiently query it
+// by bioguide_id. Wire this up once a rep_legislation table is created with
+// columns (bioguide_id, bill_id, bill_title, sponsor_type, introduced_at).
+// Query would be:
+//   SELECT * FROM rep_legislation WHERE introduced_at > cutoff
+async function sendLegislationAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
+  return 0
+}
+
+// ── Email: trade disclosures ──────────────────────────────────────────────────
+async function sendTradeAlertEmail(email, firstName, filings) {
   if (!resend) return false
 
-  // Group filings by rep for cleaner layout
   const byRep = {}
   for (const f of filings) {
     if (!byRep[f.bioguideId]) byRep[f.bioguideId] = { repName: f.repName, chamber: f.chamber, filings: [] }
@@ -208,7 +328,6 @@ async function sendAlertEmail(email, firstName, filings) {
     }).join('')
 
     const civicUrl = `https://www.civicwatch.app?rep=${bioguideId}`
-
     return `
       <div style="margin-bottom:20px;padding:16px;background:rgba(27,42,107,0.4);border:1px solid rgba(212,175,55,0.2);border-radius:10px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -234,42 +353,95 @@ async function sendAlertEmail(email, firstName, filings) {
       from: 'CivicWatch <noreply@civicwatch.app>',
       to: email,
       subject: `🏛️ New trade disclosure${count > 1 ? 's' : ''} from your tracked representatives`,
-      html: `
-        <div style="font-family:Georgia,serif;background:#0A1628;color:#F8F9FF;padding:40px;max-width:560px;margin:0 auto;border-radius:16px;">
-          <div style="text-align:center;margin-bottom:28px;">
-            <span style="font-size:48px;">🏛️</span>
-            <h1 style="font-size:24px;font-weight:900;margin:12px 0 4px;letter-spacing:1px;">
-              CIVIC<span style="color:#D4AF37">WATCH</span>
-            </h1>
-            <p style="color:#8892A4;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0;">Your Representatives. Accountable.</p>
-          </div>
-
-          <div style="margin-bottom:24px;">
-            <h2 style="color:#D4AF37;font-size:18px;margin:0 0 6px;">New Trade Disclosures${greeting}</h2>
-            <p style="color:#CDD2E0;font-size:13px;line-height:1.7;margin:0;">${subtitle}</p>
-          </div>
-
-          ${repRows}
-
-          <div style="text-align:center;margin:28px 0 20px;">
-            <a href="https://www.civicwatch.app/dashboard"
-              style="display:inline-block;padding:12px 32px;background:#B22234;color:white;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:0.5px;">
-              View on CivicWatch →
-            </a>
-          </div>
-
-          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:20px 0;" />
-          <p style="color:#8892A4;font-size:11px;text-align:center;margin:0;line-height:1.8;">
-            You're receiving this because you tracked these representatives on CivicWatch.<br/>
-            Manage alerts in your <a href="https://www.civicwatch.app/dashboard" style="color:#D4AF37;">dashboard</a>
-            · <a href="mailto:support@civicwatch.app" style="color:#D4AF37;">support@civicwatch.app</a>
-          </p>
+      html: emailWrapper(`
+        <div style="margin-bottom:24px;">
+          <h2 style="color:#D4AF37;font-size:18px;margin:0 0 6px;">New Trade Disclosures${greeting}</h2>
+          <p style="color:#CDD2E0;font-size:13px;line-height:1.7;margin:0;">${subtitle}</p>
         </div>
-      `,
+        ${repRows}
+      `),
     })
     return true
   } catch (err) {
-    console.error('send-alerts: Resend error:', err.message)
+    console.error('send-alerts: Resend trade error:', err.message)
     return false
   }
+}
+
+// ── Email: net worth update ───────────────────────────────────────────────────
+async function sendNetWorthAlertEmail(email, firstName, filings) {
+  if (!resend) return false
+
+  const fmt = (n) => n == null ? 'N/A' : new Intl.NumberFormat('en-US', {
+    style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1,
+  }).format(n)
+
+  const rows = filings.map(f => {
+    const range = f.netWorthMax && f.netWorthMax !== f.netWorthMin
+      ? `${fmt(f.netWorthMin)} – ${fmt(f.netWorthMax)}`
+      : fmt(f.netWorthMin)
+    return `
+      <div style="margin-bottom:16px;padding:16px;background:rgba(27,42,107,0.4);border:1px solid rgba(212,175,55,0.2);border-radius:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:15px;font-weight:700;color:#F8F9FF;">${f.repName}</span>
+          <a href="https://www.civicwatch.app?rep=${f.bioguideId}" style="font-size:11px;color:#D4AF37;text-decoration:none;">View profile →</a>
+        </div>
+        <div style="font-size:13px;color:#CDD2E0;">
+          <span style="color:#8892A4;">FY ${f.reportYear} Net Worth: </span>
+          <strong style="color:#F8F9FF;">${range}</strong>
+        </div>
+      </div>`
+  }).join('')
+
+  const greeting = firstName ? `, ${firstName}` : ''
+  const repCount = new Set(filings.map(f => f.bioguideId)).size
+
+  try {
+    await resend.emails.send({
+      from: 'CivicWatch <noreply@civicwatch.app>',
+      to: email,
+      subject: `📊 New net worth filing${repCount > 1 ? 's' : ''} from your tracked representatives`,
+      html: emailWrapper(`
+        <div style="margin-bottom:24px;">
+          <h2 style="color:#D4AF37;font-size:18px;margin:0 0 6px;">Net Worth Updates${greeting}</h2>
+          <p style="color:#CDD2E0;font-size:13px;line-height:1.7;margin:0;">
+            New financial disclosure data is available for ${repCount === 1 ? '1 representative' : `${repCount} representatives`} you track.
+          </p>
+        </div>
+        ${rows}
+      `),
+    })
+    return true
+  } catch (err) {
+    console.error('send-alerts: Resend networth error:', err.message)
+    return false
+  }
+}
+
+// ── Shared email shell ────────────────────────────────────────────────────────
+function emailWrapper(body) {
+  return `
+    <div style="font-family:Georgia,serif;background:#0A1628;color:#F8F9FF;padding:40px;max-width:560px;margin:0 auto;border-radius:16px;">
+      <div style="text-align:center;margin-bottom:28px;">
+        <span style="font-size:48px;">🏛️</span>
+        <h1 style="font-size:24px;font-weight:900;margin:12px 0 4px;letter-spacing:1px;">
+          CIVIC<span style="color:#D4AF37">WATCH</span>
+        </h1>
+        <p style="color:#8892A4;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0;">Your Representatives. Accountable.</p>
+      </div>
+      ${body}
+      <div style="text-align:center;margin:28px 0 20px;">
+        <a href="https://www.civicwatch.app/dashboard"
+          style="display:inline-block;padding:12px 32px;background:#B22234;color:white;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:0.5px;">
+          View on CivicWatch →
+        </a>
+      </div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:20px 0;" />
+      <p style="color:#8892A4;font-size:11px;text-align:center;margin:0;line-height:1.8;">
+        You're receiving this because you tracked these representatives on CivicWatch.<br/>
+        Manage alerts in your <a href="https://www.civicwatch.app/dashboard" style="color:#D4AF37;">dashboard</a>
+        · <a href="mailto:support@civicwatch.app" style="color:#D4AF37;">support@civicwatch.app</a>
+      </p>
+    </div>
+  `
 }
