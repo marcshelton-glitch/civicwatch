@@ -6,7 +6,7 @@ import CivicWatch from '@/components/CivicWatch'
 function DashboardContent() {
   const searchParams = useSearchParams()
   const repParam = searchParams.get('rep')
-  return <CivicWatch defaultBioguideId={repParam ? null : 'K000395'} defaultState="CA" />
+  return <CivicWatch defaultBioguideId={repParam ? null : 'K000401'} defaultState="CA" />
 }
 
 export default function DashboardPage() {
