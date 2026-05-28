@@ -2537,14 +2537,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }
 
   const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "votes", label: "Votes" },
-    { id: "docket", label: "Active Legislation" },
-    { id: "wealth", label: "Wealth & Trades" },
-    { id: "bio", label: "Bio" },
-    { id: "townhall", label: "Town Hall" },
-    { id: "nonprofits", label: "🏦 Nonprofits" },
-    { id: "ai", label: "🤖 AI Analysis" },
+    { id: "overview", label: "Overview", short: "Overview" },
+    { id: "votes", label: "Votes", short: "Votes" },
+    { id: "docket", label: "Active Legislation", short: "Legislation" },
+    { id: "wealth", label: "Wealth & Trades", short: "Trades" },
+    { id: "bio", label: "Bio", short: "Bio" },
+    { id: "townhall", label: "Town Hall", short: "Town Hall" },
+    { id: "nonprofits", label: "🏦 Nonprofits", short: "🏦 NGOs" },
+    { id: "ai", label: "🤖 AI Analysis", short: "🤖 AI" },
   ]
 
   return (
@@ -2807,7 +2807,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
               onClick={() => setRepTab(t.id)}
               style={{ flex: 1, padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : S.cardBg, color: repTab === t.id ? "white" : S.gray, transition: "all 0.2s" }}>
-              {t.label}
+              <span className="tab-full">{t.label}</span>
+              <span className="tab-short">{t.short || t.label}</span>
             </button>
           ))}
         </div>
@@ -2816,7 +2817,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
               onClick={() => setRepTab(t.id)}
               style={{ flex: 1, padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : t.id === "ai" ? `rgba(212,175,55,0.08)` : S.cardBg, color: repTab === t.id ? "white" : t.id === "ai" ? S.gold : S.gray, transition: "all 0.2s" }}>
-              {t.label}
+              <span className="tab-full">{t.label}</span>
+              <span className="tab-short">{t.short || t.label}</span>
             </button>
           ))}
         </div>
