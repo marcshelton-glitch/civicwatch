@@ -63,6 +63,12 @@ function resolveParty(bioguideId, rawParty) {
   return PARTY_OVERRIDES[bioguideId] || rawParty || 'Unknown'
 }
 
+function formatDistrict(isSen, districtNum, termDistrictNum) {
+  if (isSen) return 'Statewide'
+  const d = districtNum != null ? districtNum : termDistrictNum
+  return d ? `District ${d}` : 'At-Large'
+}
+
 // ── Congress.gov fetch ────────────────────────────────────────────────────────
 async function cFetch(path) {
   if (!KEY) throw new Error('CONGRESS_API_KEY not configured')
@@ -205,7 +211,7 @@ export async function GET(request) {
           name: m.name,
           party: resolveParty(m.bioguideId, m.partyName),
           state: m.state,
-          district: m.district ? `District ${m.district}` : latestTerm.district ? `District ${latestTerm.district}` : isSen ? 'Statewide' : 'Unknown District',
+          district: formatDistrict(isSen, m.district, latestTerm.district),
           chamber,
           isSenator: isSen,
           url: m.url,
@@ -230,7 +236,7 @@ export async function GET(request) {
           name: m.invertedOrderName || m.directOrderName,
           party: resolveParty(m.bioguideId, m.partyHistory?.[0]?.partyName),
           state: m.state,
-          district: !isSenator && (m.district || latestTerm.district) ? `District ${m.district || latestTerm.district}` : 'Statewide',
+          district: formatDistrict(isSenator, m.district, latestTerm.district),
           chamber: memberChamber,
           isSenator,
           birthYear: m.birthYear,
@@ -404,6 +410,7 @@ export async function GET(request) {
 
         return NextResponse.json({
           trades: allSenTrades, buys, sells, topTickers,
+          filingsCount: allSenTrades.length,
           isSenator, disclosureUrl, source: allSenTrades.length > 0 ? 'db' : 'none',
           netWorthHistory: senateNetWorthHistory,
         })
@@ -413,8 +420,9 @@ export async function GET(request) {
       // dbNetWorthHistory is hoisted so the live fallback below can reuse it
       // without a duplicate query.
       let dbNetWorthHistory = []
+      let dbFilingsCount = 0
       if (!isSenator && lastName) {
-        const [{ data: dbTrades }, { data: dbNetWorth }] = await Promise.all([
+        const [{ data: dbTrades }, { data: dbNetWorth }, { count: filingsCount }] = await Promise.all([
           supabase
             .from('fd_trades')
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
@@ -427,7 +435,12 @@ export async function GET(request) {
             .ilike('last_name', lastName)
             .order('report_year', { ascending: false })
             .limit(20),
+          supabase
+            .from('fd_filings')
+            .select('*', { count: 'exact', head: true })
+            .ilike('last_name', lastName),
         ])
+        dbFilingsCount = filingsCount || 0
 
         dbNetWorthHistory = (dbNetWorth || []).map(n => ({
           year: n.report_year,
@@ -471,6 +484,7 @@ export async function GET(request) {
 
           return NextResponse.json({
             trades: allTrades, buys, sells, topTickers,
+            filingsCount: dbFilingsCount,
             isSenator, disclosureUrl, source: 'db', netWorthHistory: dbNetWorthHistory,
           })
         }
@@ -551,6 +565,7 @@ export async function GET(request) {
 
       return NextResponse.json({
         trades: allTrades, buys, sells, topTickers,
+        filingsCount: dbFilingsCount,
         isSenator, disclosureUrl,
         source: allTrades.length > 0 ? 'live' : 'none',
         netWorthHistory: liveNetWorthHistory,
@@ -799,7 +814,7 @@ export async function GET(request) {
           name: rawName,
           party: resolveParty(m.bioguideId, m.partyName),
           state: m.state,
-          district: m.district ? `District ${m.district}` : 'Statewide',
+          district: formatDistrict(chamber.toLowerCase().includes('senate'), m.district, latestTerm.district),
           chamber,
           isSenator: chamber.toLowerCase().includes('senate'),
           url: m.url,
