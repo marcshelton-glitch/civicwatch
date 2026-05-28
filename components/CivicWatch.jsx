@@ -2345,7 +2345,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if ((repTab === 'wealth' || repTab === 'overview') && isLive && !liveTrades && !loadingTrades) {
+    if ((repTab === 'wealth' || repTab === 'overview' || compareMode) && isLive && !liveTrades && !loadingTrades) {
       setLoadingTrades(true)
       fetch(`/api/congress?type=trades&bioguideId=${rep.id}`)
         .then(r => r.json())
@@ -2357,7 +2357,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         })
         .catch(() => { setLiveTrades([]); setLoadingTrades(false) })
     }
-  }, [repTab, rep.id])
+  }, [repTab, compareMode, rep.id])
 
   // Fetch House Clerk filing index for federal House members
   useEffect(() => {
@@ -2743,7 +2743,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   {
                     icon: '📊',
                     label: 'Total Trades',
-                    left: disclosures?.ptrCount != null ? String(disclosures.ptrCount) : liveTrades != null ? String(liveTrades.length) : '—',
+                    left: liveTrades != null ? String(liveTrades.length) : '—',
                     right: compareData != null ? String(compareData.filingsCount || compareData.trades?.length || 0) : '—',
                   },
                   {
