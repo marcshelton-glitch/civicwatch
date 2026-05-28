@@ -2417,7 +2417,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [rep.id, fdNetWorth])
 
   useEffect(() => {
-    if (repTab === 'bio' && isLive && !liveBio && !loadingBio) {
+    if ((repTab === 'bio' || compareMode) && isLive && !liveBio && !loadingBio) {
       setLoadingBio(true)
       Promise.all([
         fetch(`/api/congress?type=member&bioguideId=${rep.id}`).then(r => r.json()),
@@ -2430,7 +2430,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         setLoadingBio(false)
       }).catch(() => { setLoadingBio(false) })
     }
-  }, [repTab, rep.id])
+  }, [repTab, compareMode, rep.id])
 
   useEffect(() => {
     if (compareQuery.trim().length < 2) {
@@ -2463,7 +2463,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       setCompareData({
         bio: bioData.member || {},
         trades: tradesData.trades || [],
-        filingsCount: tradesData.filingsCount ?? tradesData.trades?.length ?? 0,
+        filingsCount: tradesData.filingsCount || tradesData.trades?.length || 0,
         topTickers: tradesData.topTickers || [],
         netWorthHistory: tradesData.netWorthHistory || [],
       })
@@ -2658,7 +2658,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                       const nameParts = (member.name || '').split(', ')
                       const displayName = nameParts.length >= 2 ? `${nameParts[1].split(' ')[0]} ${nameParts[0]}` : member.name || ''
                       const photo = `/api/rep-photo/${member.bioguideId}`
-                      const partyColor = member.party === 'Democrat' ? '#1565C0' : member.party === 'Republican' ? '#CC2020' : member.party === 'Independent' ? '#D4B800' : member.party === 'Green' ? '#22A05A' : '#334466'
+                      const partyColor = /^democrat/i.test(member.party) ? '#1565C0' : member.party === 'Republican' ? '#CC2020' : member.party === 'Independent' ? '#D4B800' : member.party === 'Green' ? '#22A05A' : '#334466'
                       return (
                         <div key={member.bioguideId}
                           onClick={() => { setCompareRep({ ...member, displayName, photo, partyColor }); setCompareQuery(''); setCompareResults([]) }}
@@ -2729,7 +2729,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     </div>
                     <div style={{ fontWeight: 700, fontSize: 13, color: S.offWhite, marginBottom: 3 }}>{compareRep.displayName}</div>
                     <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${compareRep.partyColor}22`, color: compareRep.partyColor, border: `1px solid ${compareRep.partyColor}44` }}>
-                      {compareRep.party === 'Democrat' ? 'D' : compareRep.party === 'Republican' ? 'R' : 'I'} · {compareRep.state}
+                      {/^democrat/i.test(compareRep.party) ? 'D' : compareRep.party === 'Republican' ? 'R' : 'I'} · {compareRep.state}
                     </span>
                   </div>
                 </div>
@@ -2743,8 +2743,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   {
                     icon: '📊',
                     label: 'Total Trades',
-                    left: liveTrades != null ? String(liveTrades.length) : '—',
-                    right: compareData != null ? String(compareData.filingsCount ?? compareData.trades?.length ?? 0) : '—',
+                    left: disclosures?.ptrCount != null ? String(disclosures.ptrCount) : liveTrades != null ? String(liveTrades.length) : '—',
+                    right: compareData != null ? String(compareData.filingsCount || compareData.trades?.length || 0) : '—',
                   },
                   {
                     icon: '🏛️',
