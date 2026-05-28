@@ -2801,14 +2801,25 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       })()}
 
       {/* TABS */}
-      <div className="rep-tabs-row" style={{ display: "flex", gap: 6, marginBottom: 20 }}>
-        {tabs.map(t => (
-          <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
-            onClick={() => setRepTab(t.id)}
-            style={{ padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : t.id === "ai" ? `rgba(212,175,55,0.08)` : S.cardBg, color: repTab === t.id ? "white" : t.id === "ai" ? S.gold : S.gray, transition: "all 0.2s", whiteSpace: "nowrap", flexShrink: 0, minWidth: "max-content" }}>
-            {t.label}
-          </button>
-        ))}
+      <div className="rep-tabs-row" style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          {tabs.slice(0, 4).map(t => (
+            <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
+              onClick={() => setRepTab(t.id)}
+              style={{ flex: 1, padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : S.cardBg, color: repTab === t.id ? "white" : S.gray, transition: "all 0.2s" }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {tabs.slice(4).map(t => (
+            <button key={t.id} className={`rep-tab ${repTab === t.id ? "active" : ""}`}
+              onClick={() => setRepTab(t.id)}
+              style={{ flex: 1, padding: "8px 14px", border: `1px solid ${repTab === t.id ? "transparent" : S.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, background: repTab === t.id ? S.red : t.id === "ai" ? `rgba(212,175,55,0.08)` : S.cardBg, color: repTab === t.id ? "white" : t.id === "ai" ? S.gold : S.gray, transition: "all 0.2s" }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── OVERVIEW ── */}
