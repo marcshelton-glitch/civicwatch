@@ -16,7 +16,7 @@ export async function GET() {
     Promise.all([
       supabase
         .from('fd_trades')
-        .select('last_name, ticker, asset_name, transaction_type, amount_str, transaction_date')
+        .select('first_name, last_name, ticker, asset_name, transaction_type, amount_str, transaction_date')
         .not('transaction_date', 'is', null)
         .not('asset_name', 'is', null)
         .order('transaction_date', { ascending: false })
@@ -42,7 +42,7 @@ export async function GET() {
   const { data: topWealth } = wealthRes
 
   const houseFeed = (houseTrades.data || []).map(t => ({
-    name: t.last_name || 'Member',
+    name: `${t.first_name || ''} ${t.last_name || ''}`.trim() || 'Member',
     ticker: t.ticker || null,
     asset: t.asset_name,
     type: t.transaction_type === 'Purchase' ? 'BUY'
