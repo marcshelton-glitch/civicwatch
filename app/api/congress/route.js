@@ -60,7 +60,8 @@ const PARTY_OVERRIDES = {
   'K000401': 'Republican', // Kevin Kiley (CA-03) — Congress.gov erroneously lists as Independent (2026)
 }
 function resolveParty(bioguideId, rawParty) {
-  return PARTY_OVERRIDES[bioguideId] || rawParty || 'Unknown'
+  const party = PARTY_OVERRIDES[bioguideId] || rawParty || 'Unknown'
+  return party === 'Democratic' ? 'Democrat' : party
 }
 
 function formatDistrict(isSen, districtNum, termDistrictNum) {
