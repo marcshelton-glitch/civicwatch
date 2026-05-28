@@ -347,6 +347,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   })
   const [prefsSaved, setPrefsSaved] = useState(false)
   const prefsSaveTimer = useRef(null)
+  const liveAlertsLoaded = useRef(false)
 
   // District drill-down state
   const [mapView, setMapView] = useState('national') // 'national' | 'state'
@@ -772,6 +773,8 @@ useEffect(() => {
 
   useEffect(() => {
     if (activeTab !== 'alerts') return
+    if (liveAlertsLoaded.current) return
+    liveAlertsLoaded.current = true
     const trackedLive = displayReps.filter(r => r.isLive && tracked.includes(r.id) && r.level === 'federal')
     if (trackedLive.length === 0) { setLiveAlerts([]); return }
     setLoadingAlerts(true)
@@ -914,9 +917,10 @@ useEffect(() => {
           .header-actions .header-username { display: none !important; }
           /* Rep detail hero: action buttons wrap to multiple rows on mobile */
           .rep-hero-actions { flex-basis: 100% !important; flex-wrap: wrap !important; flex-direction: row !important; }
-          /* Rep detail tab row: 2 rows of 4 on mobile */
-          .rep-tabs-row { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; overflow-x: visible !important; padding-bottom: 0 !important; }
-          .rep-tabs-row > button { flex: 0 0 25% !important; box-sizing: border-box !important; text-align: center !important; padding: 8px 4px !important; font-size: 10px !important; white-space: normal !important; min-width: 0 !important; }
+          /* Rep detail tab row: horizontally scrollable on mobile */
+          .rep-tabs-row { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; flex-wrap: nowrap !important; gap: 4px !important; padding-bottom: 4px !important; }
+          .rep-tabs-row::-webkit-scrollbar { display: none; }
+          .rep-tabs-row > button { flex: 0 0 auto !important; white-space: nowrap !important; padding: 8px 12px !important; font-size: 11px !important; min-width: 0 !important; }
           /* Hide office hours on mobile to save vertical space */
           .rep-office-hours { display: none !important; }
           /* Onboarding modal: full-screen on mobile */
@@ -1776,7 +1780,7 @@ useEffect(() => {
                   {[
                     { value: 'daily',   label: 'Daily digest',  hint: 'One email per day' },
                     { value: 'weekly',  label: 'Weekly digest', hint: 'Every Monday' },
-                    { value: 'instant', label: 'Instant',       hint: 'Same-day (checks run daily)' },
+                    { value: 'instant', label: 'Same-day',      hint: 'Same-day (checks run daily)' },
                   ].map(({ value, label, hint }) => {
                     const active = prefs.alert_frequency === value
                     return (
@@ -1796,18 +1800,21 @@ useEffect(() => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
                     { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)', tier: 'Free',    tierColor: '#2a9d4c', tierBg: 'rgba(42,157,76,0.12)' },
-                    { key: 'alert_committees',   label: 'Committee assignments',              tier: 'Sign In',  tierColor: '#5B9CFF', tierBg: 'rgba(91,156,255,0.12)' },
+                    { key: 'alert_committees',   label: 'Committee assignments',              tier: 'Sign In',  tierColor: '#5B9CFF', tierBg: 'rgba(91,156,255,0.12)', comingSoon: true },
                     { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)', tier: 'Pro', tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
-                    { key: 'alert_legislation',  label: 'Sponsored legislation',             tier: 'Pro',      tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
-                  ].map(({ key, label, tier, tierColor, tierBg }) => {
+                    { key: 'alert_legislation',  label: 'Sponsored legislation',             tier: 'Pro',      tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)', comingSoon: true },
+                  ].map(({ key, label, tier, tierColor, tierBg, comingSoon }) => {
                     const checked = prefs[key]
                     return (
-                      <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                        <div onClick={() => updatePref(key, !checked)}
-                          style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
+                      <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: comingSoon ? 'not-allowed' : 'pointer', opacity: comingSoon ? 0.55 : 1 }}>
+                        <div onClick={() => !comingSoon && updatePref(key, !checked)}
+                          style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: comingSoon ? 'not-allowed' : 'pointer' }}>
                           {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                         </div>
-                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray, flex: 1 }}>{label}</span>
+                        <span style={{ fontSize: 13, color: checked ? S.grayLight : S.gray, flex: 1 }}>
+                          {label}
+                          {comingSoon && <span style={{ fontSize: 10, color: S.gray, marginLeft: 6, fontStyle: 'italic' }}>(Coming Soon)</span>}
+                        </span>
                         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, padding: '2px 7px', borderRadius: 10, background: tierBg, color: tierColor, border: `1px solid ${tierColor}44`, flexShrink: 0 }}>{tier}</span>
                       </label>
                     )
@@ -2456,12 +2463,13 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       setCompareData({
         bio: bioData.member || {},
         trades: tradesData.trades || [],
+        filingsCount: tradesData.filingsCount ?? tradesData.trades?.length ?? 0,
         topTickers: tradesData.topTickers || [],
         netWorthHistory: tradesData.netWorthHistory || [],
       })
       setCompareDataLoading(false)
     }).catch(() => {
-      setCompareData({ bio: {}, trades: [], topTickers: [], netWorthHistory: [] })
+      setCompareData({ bio: {}, trades: [], filingsCount: 0, topTickers: [], netWorthHistory: [] })
       setCompareDataLoading(false)
     })
   }, [compareRep?.bioguideId])
@@ -2736,7 +2744,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                     icon: '📊',
                     label: 'Total Trades',
                     left: liveTrades != null ? String(liveTrades.length) : '—',
-                    right: compareData?.trades != null ? String(compareData.trades.length) : '—',
+                    right: compareData != null ? String(compareData.filingsCount ?? compareData.trades?.length ?? 0) : '—',
                   },
                   {
                     icon: '🏛️',
@@ -4425,6 +4433,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
             <span style={{ fontSize: 11, color: S.gold, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 600 }}>Gemini AI · Nonpartisan Analysis</span>
           </div>
           <p style={{ fontSize: 14, color: S.offWhite, lineHeight: 1.85, margin: 0 }}>{preview}</p>
+          <div style={{ fontSize: 11, color: '#6b7280', marginTop: 12, borderTop: '1px solid #1f2937', paddingTop: 8 }}>
+            Analysis generated by Google Gemini 2.5 Flash · For informational purposes only
+          </div>
         </div>
 
         {/* Blurred locked teaser */}
