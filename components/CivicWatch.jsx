@@ -663,11 +663,11 @@ const markAllRead = () => {
           ? 'Statewide'
           : (m.district && m.district !== 'Statewide')
             ? m.district
-            : termDistrict ? `District ${termDistrict}` : 'Unknown District'
+            : termDistrict ? `District ${termDistrict}` : 'At-Large'
         setSelectedRep({
           id: m.bioguideId,
           name: m.name,
-          title: isSen ? 'U.S. Senator' : 'U.S. Representative',
+          title: isSen ? 'U.S. Senator' : (termItems.length > 0 ? 'U.S. Representative' : 'Former Member of Congress'),
           party: m.party === 'Democratic' ? 'Democrat' : m.party || 'Unknown',
           state: m.state || '',
           district: computedDistrict,
@@ -722,7 +722,7 @@ useEffect(() => {
           return {
             id: r.bioguideId, name: r.name,
             title: isSen ? 'U.S. Senator' : 'U.S. Representative',
-            party: r.party === 'Democratic' ? 'Democrat' : r.party === 'Republican' ? 'Republican' : r.party||'Unknown', state: r.state||'', district: isSen ? 'Statewide' : (r.district && r.district !== 'Statewide' ? r.district : 'Unknown District'),
+            party: r.party === 'Democratic' ? 'Democrat' : r.party === 'Republican' ? 'Republican' : r.party||'Unknown', state: r.state||'', district: isSen ? 'Statewide' : (r.district && r.district !== 'Statewide' ? r.district : 'At-Large'),
             level: 'federal',
             photo: `/api/rep-photo/${r.bioguideId}`,
             email: '', phone: isSen ? '(202) 224-3121' : '(202) 225-3121',
@@ -2125,7 +2125,7 @@ useEffect(() => {
                       Track a Representative
                     </div>
                     <div style={{ fontSize: 13, color: S.gray, lineHeight: 1.7 }}>
-                      Get email alerts when your representatives make new trade disclosures. Tap the bell icon on any rep to start tracking.
+                      Get email alerts when your representatives make new trade disclosures. Tap the star icon ⭐ on any rep to start tracking.
                     </div>
                   </div>
                   {/* Visual hint */}
@@ -2167,7 +2167,7 @@ useEffect(() => {
             <a href="/press" style={{ color: S.gray, textDecoration: "none" }}>Press</a>
             <a href="/privacy" style={{ color: S.gray, textDecoration: "none" }}>Privacy Policy</a>
             <a href="/terms" style={{ color: S.gray, textDecoration: "none" }}>Terms of Service</a>
-            <a href="mailto:marcshelton@gmail.com" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
+            <a href="mailto:support@civicwatch.app" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
             <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion</a>
           </div>
           <div style={{ fontSize: 11, color: S.gray }}>Data sourced from <a href="https://congress.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Congress.gov</a>, <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>House Clerk STOCK Act Disclosures</a>, <a href="https://efts.senate.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Senate Financial Disclosures</a>, and <a href="https://legiscan.com" target="_blank" rel="noreferrer" style={{ color: S.gray }}>LegiScan LLC (CC BY 4.0)</a>.</div>
@@ -2285,6 +2285,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [compareDataLoading, setCompareDataLoading] = useState(false)
   const [compareMode, setCompareMode] = useState(false)
   const [heroScrollY, setHeroScrollY] = useState(0)
+  const [profilePhotoFailed, setProfilePhotoFailed] = useState(false)
+  useEffect(() => { setProfilePhotoFailed(false) }, [rep.id])
   useEffect(() => {
     const onScroll = () => setHeroScrollY(window.scrollY)
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -2529,7 +2531,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const tabs = [
     { id: "overview", label: "Overview" },
     { id: "votes", label: "Votes" },
-    { id: "docket", label: "Today's Docket" },
+    { id: "docket", label: "Active Legislation" },
     { id: "wealth", label: "Wealth & Trades" },
     { id: "bio", label: "Bio" },
     { id: "townhall", label: "Town Hall" },
@@ -2553,13 +2555,9 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         <div style={{ position: "absolute", top: -200, bottom: -200, left: 0, right: 0, background: `linear-gradient(135deg, rgba(27,42,107,0.8), rgba(10,14,30,0.95))`, transform: `translateY(${heroScrollY * 0.3}px)`, willChange: "transform" }} />
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
-          {rep.photo ? (
-            <>
-              <Image src={rep.photo} alt={rep.name} width={90} height={90} style={{ borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
-                onError={e => { const el = e.currentTarget; const direct = rep.id ? `https://bioguide.congress.gov/bioguide/photo/${rep.id[0]}/${rep.id}.jpg` : null; if (direct && !el.dataset.triedDirect) { el.dataset.triedDirect = '1'; el.src = direct } else { el.style.display = 'none'; el.nextSibling.style.display = 'block' } }} />
-              <InitialsAvatar name={rep.name} party={rep.party} size={90}
-                style={{ display: 'none', border: `4px solid ${S.gold}` }} />
-            </>
+          {(rep.photo && !profilePhotoFailed) ? (
+            <Image src={rep.photo} alt={rep.name} width={90} height={90} style={{ borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+              onError={e => { const el = e.currentTarget; const direct = rep.id ? `https://bioguide.congress.gov/bioguide/photo/${rep.id[0]}/${rep.id}.jpg` : null; if (direct && !el.dataset.triedDirect) { el.dataset.triedDirect = '1'; el.src = direct } else { setProfilePhotoFailed(true) } }} />
           ) : (
             <InitialsAvatar name={rep.name} party={rep.party} size={90}
               style={{ border: `4px solid ${S.gold}` }} />
@@ -2571,7 +2569,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 {rep.party === 'Democrat' ? 'D' : rep.party === 'Republican' ? 'R' : rep.party === 'Independent' ? 'I' : rep.party === 'Green' ? 'G' : rep.party?.charAt(0) || '?'}
               </span>
             </div>
-            <div style={{ fontSize: 13, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.state} · {rep.district}</div>
+            <div style={{ fontSize: 13, color: S.gold, marginBottom: 6 }}>{rep.title} · {rep.state}{rep.district && rep.district !== 'Statewide' ? ` · ${rep.district}` : ''}</div>
             <div style={{ marginBottom: 8 }}>
               <span className={`badge ${rep.party === 'Democrat' ? 'dem-badge' : rep.party === 'Republican' ? 'rep-badge' : rep.party === 'Independent' ? 'ind-badge' : rep.party === 'Green' ? 'green-badge' : 'rep-badge'}`}>
                 {rep.party}
@@ -2731,8 +2729,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   {
                     icon: '💰',
                     label: 'Est. Net Worth',
-                    left: (() => { const nw = netWorthHistory?.[0]; if (!nw) return 'N/A'; return fmt((nw.netWorthMin + nw.netWorthMax) / 2) })(),
-                    right: (() => { const nw = compareData?.netWorthHistory?.[0]; if (!nw) return 'N/A'; return fmt((nw.netWorthMin + nw.netWorthMax) / 2) })(),
+                    left: (() => { const nw = netWorthHistory?.[netWorthHistory.length - 1]; if (!nw) return 'N/A'; return fmt((nw.netWorthMin + nw.netWorthMax) / 2) })(),
+                    right: (() => { const nw = compareData?.netWorthHistory?.[compareData.netWorthHistory.length - 1]; if (!nw) return 'N/A'; return fmt((nw.netWorthMin + nw.netWorthMax) / 2) })(),
                   },
                   {
                     icon: '📊',
