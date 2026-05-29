@@ -187,7 +187,7 @@ export default function PressPage() {
               For interviews, data requests, screenshots, or any media inquiry, reach out directly:
             </p>
             <a
-              href="mailto:marcshelton@gmail.com"
+              href="mailto:support@civicwatch.app"
               className="press-email-btn"
               style={{
                 display: 'inline-block',
@@ -203,7 +203,7 @@ export default function PressPage() {
                 transition: 'background 0.2s',
               }}
             >
-              marcshelton@gmail.com
+              support@civicwatch.app
             </a>
           </section>
 
@@ -394,10 +394,10 @@ export default function PressPage() {
                 <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.7, fontWeight: 300 }}>
                   Logos, screenshots, and brand assets are available on request. Contact{' '}
                   <a
-                    href="mailto:marcshelton@gmail.com"
+                    href="mailto:support@civicwatch.app"
                     style={{ color: S.gold, textDecoration: 'none' }}
                   >
-                    marcshelton@gmail.com
+                    support@civicwatch.app
                   </a>{' '}
                   and we&rsquo;ll send everything you need.
                 </p>
@@ -445,7 +445,7 @@ export default function PressPage() {
             { href: '/privacy', label: 'Privacy Policy' },
             { href: '/terms', label: 'Terms of Service' },
             { href: '/data-deletion', label: 'Data Deletion' },
-            { href: 'mailto:marcshelton@gmail.com', label: 'Contact' },
+            { href: 'mailto:support@civicwatch.app', label: 'Contact' },
           ].map(l => (
             <Link
               key={l.href}
