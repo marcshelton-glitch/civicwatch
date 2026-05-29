@@ -2177,7 +2177,6 @@ useEffect(() => {
             <a href="/refund-policy" style={{ color: S.gray, textDecoration: "none" }}>Refund Policy</a>
             <a href="mailto:support@civicwatch.app" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
             <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion</a>
-            <a href="/refund-policy" style={{ color: S.gray, textDecoration: "none" }}>Refund Policy</a>
           </div>
           <div style={{ fontSize: 11, color: S.gray }}>Data sourced from <a href="https://congress.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Congress.gov</a>, <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>House Clerk STOCK Act Disclosures</a>, <a href="https://efts.senate.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Senate Financial Disclosures</a>, and <a href="https://legiscan.com" target="_blank" rel="noreferrer" style={{ color: S.gray }}>LegiScan LLC (CC BY 4.0)</a>.</div>
         </div>
