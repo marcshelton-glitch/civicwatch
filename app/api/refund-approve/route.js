@@ -1,135 +1,88 @@
-import { NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
-import { createClient } from '@supabase/supabase-js'
-import Stripe from 'stripe'
+import { auth, currentUser } from '@clerk/nextjs/server';
+import { createClient } from '@supabase/supabase-js';
+import Stripe from 'stripe';
+import { NextResponse } from 'next/server';
 
-const getSupabase = () => createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const getAdminEmails = () =>
-  (process.env.ADMIN_EMAILS || 'marcshelton@gmail.com')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase());
 
-async function isAdmin() {
-  const user = await currentUser()
-  if (!user) return false
-  const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase()
-  return email && getAdminEmails().includes(email)
-}
-
-// GET /api/refund-approve — list all refund requests (admin only)
-export async function GET() {
-  const { userId } = await auth()
-  if (!userId || !(await isAdmin())) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+export async function POST(req) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = getSupabase()
-  const { data, error } = await supabase
-    .from('refund_requests')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const user = await currentUser();
+  const email = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase() || '';
 
-  if (error) {
-    console.error('Supabase fetch error:', error)
-    return NextResponse.json({ error: 'Failed to fetch requests.' }, { status: 500 })
+  if (!ADMIN_EMAILS.includes(email)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  return NextResponse.json({ requests: data })
-}
-
-// POST /api/refund-approve — approve or deny a request (admin only)
-export async function POST(request) {
-  const { userId } = await auth()
-  if (!userId || !(await isAdmin())) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const user = await currentUser()
-  const reviewerEmail = user?.emailAddresses?.[0]?.emailAddress || userId
-
-  let body
+  let body;
   try {
-    body = await request.json()
+    body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { requestId, action, notes } = body
-  if (!requestId) return NextResponse.json({ error: 'requestId is required.' }, { status: 400 })
-  if (!['approve', 'deny'].includes(action)) {
-    return NextResponse.json({ error: 'action must be "approve" or "deny".' }, { status: 400 })
+  const { id, action, notes } = body;
+  if (!id || !action) {
+    return NextResponse.json({ error: 'Missing id or action' }, { status: 400 });
   }
-
-  const supabase = getSupabase()
 
   if (action === 'deny') {
-    const { error } = await supabase
-      .from('refund_requests')
-      .update({ status: 'denied', notes: notes || null, reviewed_by: reviewerEmail, reviewed_at: new Date().toISOString() })
-      .eq('id', requestId)
+    const { error } = await supabase.from('refund_requests').update({
+      status: 'denied',
+      notes: notes || null,
+      reviewed_by: email,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, action: 'denied' });
+  }
 
-    if (error) {
-      console.error('Supabase update error:', error)
-      return NextResponse.json({ error: 'Failed to update request.' }, { status: 500 })
+  if (action === 'approve') {
+    const { data: request, error: fetchErr } = await supabase
+      .from('refund_requests').select('*').eq('id', id).single();
+    if (fetchErr || !request) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true })
-  }
 
-  // action === 'approve'
-  const { data: refundReq, error: fetchError } = await supabase
-    .from('refund_requests')
-    .select('*')
-    .eq('id', requestId)
-    .single()
+    let stripeRefundId = null;
+    try {
+      const customers = await stripe.customers.list({ email: request.email, limit: 1 });
+      if (customers.data.length > 0) {
+        const customer = customers.data[0];
+        const invoices = await stripe.invoices.list({ customer: customer.id, limit: 1 });
+        if (invoices.data.length > 0 && invoices.data[0].payment_intent) {
+          const refund = await stripe.refunds.create({
+            payment_intent: invoices.data[0].payment_intent,
+          });
+          stripeRefundId = refund.id;
+        }
+      }
+    } catch (stripeErr) {
+      console.error('Stripe refund error:', stripeErr);
+      return NextResponse.json({ error: 'Stripe refund failed: ' + stripeErr.message }, { status: 500 });
+    }
 
-  if (fetchError || !refundReq) {
-    return NextResponse.json({ error: 'Refund request not found.' }, { status: 404 })
-  }
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
-  // Find Stripe customer by email
-  const customers = await stripe.customers.list({ email: refundReq.email, limit: 5 })
-  if (!customers.data.length) {
-    return NextResponse.json({ error: `No Stripe customer found for email: ${refundReq.email}` }, { status: 404 })
-  }
-  const customerId = customers.data[0].id
-
-  // Get latest invoice
-  const invoices = await stripe.invoices.list({ customer: customerId, limit: 1 })
-  if (!invoices.data.length) {
-    return NextResponse.json({ error: 'No invoices found for this customer.' }, { status: 404 })
-  }
-  const invoice = invoices.data[0]
-
-  if (!invoice.payment_intent) {
-    return NextResponse.json({ error: 'Invoice has no payment intent — may have been paid via credit or balance.' }, { status: 422 })
-  }
-
-  // Issue refund
-  const refund = await stripe.refunds.create({ payment_intent: invoice.payment_intent })
-
-  // Update Supabase
-  const { error: updateError } = await supabase
-    .from('refund_requests')
-    .update({
+    const { error: updateErr } = await supabase.from('refund_requests').update({
       status: 'approved',
       notes: notes || null,
-      stripe_refund_id: refund.id,
-      reviewed_by: reviewerEmail,
+      stripe_refund_id: stripeRefundId,
+      reviewed_by: email,
       reviewed_at: new Date().toISOString(),
-    })
-    .eq('id', requestId)
+    }).eq('id', id);
+    if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
 
-  if (updateError) {
-    console.error('Supabase update error after Stripe refund:', updateError)
-    // Refund already issued — log but don't fail the response
+    return NextResponse.json({ success: true, action: 'approved', stripe_refund_id: stripeRefundId });
   }
 
-  return NextResponse.json({ success: true, refundId: refund.id })
+  return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 }
