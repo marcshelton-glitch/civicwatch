@@ -1072,7 +1072,7 @@ useEffect(() => {
               <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}
                 style={{ padding: "10px 14px", background: S.navyMid, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13 }}>
                 <option value="all">All Levels</option>
-                <option value="federal">Federal</option>
+                <option value="federal">Congress</option>
                 <option value="state">State</option>
               </select>
               <select value={filterParty} onChange={e => setFilterParty(e.target.value)}
