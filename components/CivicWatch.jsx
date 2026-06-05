@@ -1807,7 +1807,7 @@ useEffect(() => {
                 <div style={{ fontSize: 11, color: S.grayLight, marginBottom: 8, fontWeight: 600 }}>Alert Types</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
-                    { key: 'alert_trades',      label: 'New trade disclosures (PTR filings)', tier: 'Free',    tierColor: '#2a9d4c', tierBg: 'rgba(42,157,76,0.12)' },
+                    { key: 'alert_trades',      label: 'New Trade Disclosures',              tier: 'Free',    tierColor: '#2a9d4c', tierBg: 'rgba(42,157,76,0.12)' },
                     { key: 'alert_committees',   label: 'Committee assignments',              tier: 'Sign In',  tierColor: '#5B9CFF', tierBg: 'rgba(91,156,255,0.12)', comingSoon: true },
                     { key: 'alert_networth',     label: 'Net worth updates (annual financial disclosures)', tier: 'Pro', tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)' },
                     { key: 'alert_legislation',  label: 'Sponsored legislation',             tier: 'Pro',      tierColor: S.gold, tierBg: 'rgba(212,175,55,0.12)', comingSoon: true },
