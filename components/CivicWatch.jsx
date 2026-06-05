@@ -3976,7 +3976,7 @@ Sincerely,
                   </a>
 
                   {/* Contact Form */}
-                  <a href={contactUrl || rep.website} target="_blank" rel="noreferrer"
+                  <a href={rep.contactForm || rep.website || '#'} target="_blank" rel="noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: 'rgba(91,156,255,0.08)', border: '1px solid rgba(91,156,255,0.3)', borderRadius: 12, textDecoration: 'none', color: 'inherit' }}>
                     <span style={{ fontSize: 26 }}>✉️</span>
                     <div style={{ flex: 1 }}>
