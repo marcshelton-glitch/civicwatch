@@ -4415,6 +4415,23 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
 
   // ── ERROR ──────────────────────────────────────────────────────────────────
   if (status === 'error') {
+    if (errorMsg === 'Unauthorized' || errorMsg === '__unauthorized__') {
+      return (
+        <div className="slide-in" style={{ textAlign: 'center', padding: '60px 24px' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+          <h3 style={{ fontSize: 22, fontWeight: 700, color: S.offWhite, marginBottom: 8 }}>AI Analysis is a Pro Feature</h3>
+          <p style={{ color: S.gray, marginBottom: 24, lineHeight: 1.6 }}>
+            Upgrade to CivicWatch Pro to unlock AI-powered analysis of your representative&apos;s voting patterns, trading behavior, and legislative priorities.
+          </p>
+          <a href="/pro"
+            style={{ background: '#4f6ef7', color: '#fff', borderRadius: 8,
+              padding: '12px 28px', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+              textDecoration: 'none', display: 'inline-block' }}>
+            Go Pro →
+          </a>
+        </div>
+      )
+    }
     return (
       <div className="slide-in" style={{ padding: 32, textAlign: 'center' }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
