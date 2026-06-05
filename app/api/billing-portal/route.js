@@ -30,7 +30,7 @@ export async function POST() {
       customer: customerId,
       return_url: `${appUrl}/dashboard`,
     })
-    return Response.json({ url: session.url })
+    return Response.json({ url: session.url }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (err) {
     console.error('Billing portal error:', err.message)
     return Response.json({ error: 'Failed to open billing portal' }, { status: 500 })

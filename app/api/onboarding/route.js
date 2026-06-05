@@ -11,5 +11,5 @@ export async function PATCH() {
     publicMetadata: { onboardingComplete: true },
   })
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'private, no-store' } })
 }

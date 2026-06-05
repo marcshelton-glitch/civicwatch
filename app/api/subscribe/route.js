@@ -67,7 +67,7 @@ export async function POST(request) {
       idempotencyKey: `checkout-${userId}-${Math.floor(Date.now() / 60000)}`,
     })
 
-    return Response.json({ url: session.url })
+    return Response.json({ url: session.url }, { headers: { 'Cache-Control': 'private, no-store' } })
 
   } catch (err) {
     console.error('Stripe checkout error:', err.message)

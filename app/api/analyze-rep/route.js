@@ -269,7 +269,7 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
       return Response.json({ error: 'AI analysis returned no content. Please try again.' }, { status: 500 })
     }
 
-    return Response.json({ text })
+    return Response.json({ text }, { headers: { 'Cache-Control': 'private, no-store' } })
 
   } catch (err) {
     console.error('AI API error:', err.message)

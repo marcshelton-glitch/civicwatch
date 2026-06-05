@@ -81,7 +81,7 @@ async function runAlerts(request) {
 
   const totalSent = tradesSent + networthSent + committeeSent + legislationSent
   console.log(`send-alerts: done — trades:${tradesSent} networth:${networthSent} committee:${committeeSent} legislation:${legislationSent}`)
-  return NextResponse.json({ sent: totalSent, trades: tradesSent, networth: networthSent, committee: committeeSent, legislation: legislationSent })
+  return NextResponse.json({ sent: totalSent, trades: tradesSent, networth: networthSent, committee: committeeSent, legislation: legislationSent }, { headers: { 'Cache-Control': 'private, no-store' } })
 }
 
 // ── Trade alerts ──────────────────────────────────────────────────────────────

@@ -217,7 +217,7 @@ export async function GET(request) {
       // Municipality info for fallback cards when Cicero has no data
       municipality: geoInfo,
       hasCiceroData: ciceroOfficials.length > 0,
-    })
+    }, { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' } })
   } catch (e) {
     console.error('Civic API error:', e.message)
     return NextResponse.json({ error: 'Could not look up address. Please try again.' }, { status: 500 })
