@@ -15,8 +15,8 @@ export const viewport = {
 }
 
 export const metadata = {
-  title: 'CivicWatch — Your Representatives, Accountable',
-  description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
+  title: 'CivicWatch — See What Congress Is Buying',
+  description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
   keywords: 'congress stock trades, representative financial disclosure, STOCK Act, congressional transparency, civicwatch',
   robots: { index: true, follow: true },
   manifest: '/manifest.json',
@@ -33,8 +33,8 @@ export const metadata = {
     apple: { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
   },
   openGraph: {
-    title: 'CivicWatch — Your Representatives, Accountable',
-    description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
+    title: 'CivicWatch — See What Congress Is Buying',
+    description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
     url: 'https://civicwatch.app',
     siteName: 'CivicWatch',
     images: [
@@ -42,15 +42,15 @@ export const metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'CivicWatch — Your Representatives, Accountable',
+        alt: 'CivicWatch — See What Congress Is Buying',
       },
     ],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CivicWatch — Your Representatives, Accountable',
-    description: 'Track your U.S. representatives\' stock trades, net worth, legislation, and more. Real transparency, in real time.',
+    title: 'CivicWatch — See What Congress Is Buying',
+    description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
     images: ['/og-image.png'],
   },
   verification: {
