@@ -187,11 +187,19 @@ export default function AboutPage() {
               maxWidth: 600,
             }}
           >
-            CivicWatch started with a simple question: if financial disclosure filings are
-            public record, why does finding them require a law degree and two hours of
-            government website navigation? We built this so anyone — not just journalists
-            or lobbyists — can see what their representatives are buying and selling in
-            seconds.
+            CivicWatch was built by a retired Marine Captain with 21 years of service and six combat tours — someone who has seen firsthand the cost of the decisions made in Washington. After returning home, the question that wouldn&apos;t leave was simple: who do our elected representatives actually work for?
+          </p>
+          <p
+            style={{
+              fontSize: 18,
+              color: S.gray,
+              lineHeight: 1.8,
+              fontWeight: 300,
+              maxWidth: 600,
+              marginTop: 16,
+            }}
+          >
+            The answer, it turned out, was hiding in plain sight — in financial disclosure filings, voting records, and campaign finance data that were technically public but practically inaccessible to ordinary Americans. CivicWatch was built to change that.
           </p>
         </header>
 
