@@ -102,6 +102,16 @@ function formatLeadershipRoles(leadership) {
   })
 }
 
+const partyColor = (party) => {
+  if (!party) return '#999'
+  const p = party.toLowerCase()
+  if (p.includes('democrat')) return '#1a6fc4'
+  if (p.includes('republican')) return '#c0392b'
+  if (p.includes('independent')) return '#f5a623'
+  if (p.includes('green')) return '#27ae60'
+  return '#999'
+}
+
 // ─── REMOVED: mock REPS data. Live data comes from Congress API. ──────────────
 const REPS = []
 
@@ -1147,8 +1157,7 @@ useEffect(() => {
                 const isTracked = tracked.includes(rep.id)
                 return (
                   <div key={rep.id} className="rep-card glass-card-strong"
-                    style={{ borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: rep.party === "Democrat" ? "#1565C0" : rep.party === "Republican" ? "#CC2020" : rep.party === "Independent" ? "#D4B800" : rep.party === "Green" ? "#22A05A" : "#334466" }} />
+                    style={{ borderRadius: 16, padding: 20, cursor: "pointer", transition: "all 0.3s", position: "relative", overflow: "hidden", borderTop: `4px solid ${partyColor(rep.party)}` }}>
                     <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                       <div style={{ position: "relative" }}>
                         {rep.photo ? (
@@ -1227,8 +1236,7 @@ useEffect(() => {
                         : S.gold
                       return (
                         <div key={rep.id} className="rep-card glass-card-strong"
-                          style={{ borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rep.party === 'Democrat' ? '#1565C0' : rep.party === 'Republican' ? '#CC2020' : rep.party === 'Independent' ? '#D4B800' : rep.party === 'Green' ? '#22A05A' : '#334466' }} />
+                          style={{ borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden', borderTop: `4px solid ${partyColor(rep.party)}` }}>
                           <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                             <div style={{ position: 'relative' }}>
                               {rep.photo
