@@ -42,12 +42,14 @@ export async function GET(request) {
         photo: `/api/rep-photo/${m.bioguideId}`,
       }))
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       members,
       state,
       stateFull: stateMap[state] || state,
       total: members.length,
-      source: 'live'
+      source: 'live',
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=60' },
     })
 
   } catch (err) {

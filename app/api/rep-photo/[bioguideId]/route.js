@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
     return new Response(buffer, {
       headers: {
         'Content-Type': 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=3600',
       },
     })
   } catch {

@@ -78,9 +78,13 @@ export async function GET(request) {
       .order('cycle', { ascending: false })
       .limit(10)
     if (osData?.length) {
-      return NextResponse.json(osData.map(r => ({ ...r, source: 'opensecrets' })))
+      return NextResponse.json(osData.map(r => ({ ...r, source: 'opensecrets' })), {
+        headers: { 'Cache-Control': 'private, no-store' },
+      })
     }
-    return NextResponse.json({ history: [] })
+    return NextResponse.json({ history: [] }, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
   }
 
   const CONGRESSIONAL_SALARY = 174000
@@ -104,5 +108,7 @@ export async function GET(request) {
     growth_pct: growthPct,
     salary_total: salaryTotal,
     categories: null,
+  }, {
+    headers: { 'Cache-Control': 'private, no-store' },
   })
 }

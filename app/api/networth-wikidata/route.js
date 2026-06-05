@@ -9,7 +9,7 @@ async function apiFetch(url, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: controller.signal });
+    const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: controller.signal, next: { revalidate: 1800 } });
     return res.json();
   } finally {
     clearTimeout(timer);
@@ -100,7 +100,9 @@ export async function GET(req) {
       const amount = parseFloat(top.netWorth?.value);
       const year = top.pointInTime?.value ? new Date(top.pointInTime.value).getFullYear() : null;
       if (!isNaN(amount)) {
-        return NextResponse.json({ netWorth: amount, year, label: top.personLabel?.value, source: 'wikidata-p2218' });
+        return NextResponse.json({ netWorth: amount, year, label: top.personLabel?.value, source: 'wikidata-p2218' }, {
+        headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=60' },
+      });
       }
     }
 
@@ -109,11 +111,15 @@ export async function GET(req) {
     if (qid) {
       const netWorth = await getNetWorthFromWikipedia(qid).catch(() => null);
       if (netWorth) {
-        return NextResponse.json({ netWorth, source: 'wikipedia', qid });
+        return NextResponse.json({ netWorth, source: 'wikipedia', qid }, {
+          headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=60' },
+        });
       }
     }
 
-    return NextResponse.json({ netWorth: null, source: 'wikidata' });
+    return NextResponse.json({ netWorth: null, source: 'wikidata' }, {
+      headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=60' },
+    });
   } catch (e) {
     return NextResponse.json({ netWorth: null, source: 'wikidata', error: e.message });
   }

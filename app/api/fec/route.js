@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server"
 
-export const dynamic = "force-dynamic"
-
 const FEC_IDS = {
   "S001150": { fecId: "S8CA00282", name: "Adam Schiff" },
   "P000145": { fecId: "S4CA00265", name: "Alex Padilla" },
@@ -23,5 +21,7 @@ export async function GET(request) {
     fecUrl: fecId ? "https://www.fec.gov/data/candidate/" + fecId + "/" : "https://www.fec.gov/data/candidates/?q=" + encodeURIComponent(name),
     fecSearchUrl: "https://www.fec.gov/data/candidates/?q=" + encodeURIComponent(name),
     source: "static"
+  }, {
+    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=60' },
   })
 }

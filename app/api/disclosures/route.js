@@ -98,5 +98,7 @@ export async function GET(request) {
     ptrCount:    filings.filter(f => f.isPtr).length,
     annualCount: filings.filter(f => f.isAnnual).length,
     memberName:  filings[0] ? `${filings[0].firstName} ${filings[0].lastName}` : null,
+  }, {
+    headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
   })
 }

@@ -41,6 +41,7 @@ export async function GET(request) {
   for (const url of endpoints) {
     try {
       const res = await fetch(url, {
+        next: { revalidate: 86400 },
         signal: AbortSignal.timeout(10000),
         headers: { 'User-Agent': 'CivicWatch/1.0' },
       })
@@ -60,7 +61,9 @@ export async function GET(request) {
         })),
       }
       cache.set(fips, normalized)
-      return Response.json(normalized)
+      return Response.json(normalized, {
+        headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=3600' },
+      })
     } catch (err) {
       console.error('[district-boundaries] endpoint failed:', err.message)
     }

@@ -119,6 +119,8 @@ export async function GET(request) {
       total: organizations.length,
       query: { name, lastName, state },
       attribution: 'IRS 990 filings via ProPublica Nonprofit Explorer',
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=60' },
     })
   } catch (e) {
     console.error('Nonprofits API error:', e.message)

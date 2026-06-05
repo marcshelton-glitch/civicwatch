@@ -218,7 +218,9 @@ export async function GET() {
       delete rep._first
     }
 
-    return NextResponse.json(sorted)
+    return NextResponse.json(sorted, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
+    })
   } catch (err) {
     console.error('Leaderboard error:', err.message)
     return NextResponse.json({ error: 'Failed to fetch leaderboard' }, { status: 500 })

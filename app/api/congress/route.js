@@ -175,7 +175,9 @@ export async function GET(request) {
     const bioguideTypes = ['member', 'votes', 'trades', 'sponsored', 'committees', 'townhall']
     if (bioguideTypes.includes(type) && !BIOGUIDE_RE.test(bioguideId)) {
       if (type === 'trades') {
-        return NextResponse.json({ trades: [], source: 'state', message: 'State legislators file disclosures at the state level, not via the federal STOCK Act.' })
+        return NextResponse.json({ trades: [], source: 'state', message: 'State legislators file disclosures at the state level, not via the federal STOCK Act.' }, {
+          headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=60' },
+        })
       }
       if (type === 'townhall') {
         return NextResponse.json({ events: [], officialEventsUrl: null, googleSearchUrl: null, source: 'state' })
@@ -220,7 +222,9 @@ export async function GET(request) {
           depiction: m.depiction?.imageUrl || null,
         }
       })
-      return NextResponse.json({ members, source: 'live' })
+      return NextResponse.json({ members, source: 'live' }, {
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=60' },
+      })
     }
 
     // ── member ────────────────────────────────────────────────────────────
@@ -247,6 +251,8 @@ export async function GET(request) {
           terms: m.terms || [],
         },
         source: 'live',
+      }, {
+        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=60' },
       })
     }
 
@@ -330,7 +336,9 @@ export async function GET(request) {
         })
 
         if (votes.length > 0) {
-          return NextResponse.json({ votes, source: 'govtrack', memberName: match?.name || searchName })
+          return NextResponse.json({ votes, source: 'govtrack', memberName: match?.name || searchName }, {
+          headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=60' },
+        })
         }
       } catch (e) {
         console.error('GovTrack votes error:', e.message)
@@ -338,7 +346,9 @@ export async function GET(request) {
 
       // Fallback: Congress.gov member sponsored-legislation as proxy for activity
       // (Congress.gov has no per-member vote history endpoint)
-      return NextResponse.json({ votes: [], source: 'none' })
+      return NextResponse.json({ votes: [], source: 'none' }, {
+        headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=60' },
+      })
     }
 
     // ── trades ────────────────────────────────────────────────────────────
@@ -414,6 +424,8 @@ export async function GET(request) {
           filingsCount: allSenTrades.length,
           isSenator, disclosureUrl, source: allSenTrades.length > 0 ? 'db' : 'none',
           netWorthHistory: senateNetWorthHistory,
+        }, {
+          headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
         })
       }
 
@@ -487,6 +499,8 @@ export async function GET(request) {
             trades: allTrades, buys, sells, topTickers,
             filingsCount: dbFilingsCount,
             isSenator, disclosureUrl, source: 'db', netWorthHistory: dbNetWorthHistory,
+          }, {
+            headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
           })
         }
         // No trades in fd_trades — fall through to live House Clerk fallback.

@@ -33,6 +33,8 @@ export async function GET() {
     alert_networth: true,
     alert_legislation: false,
     alert_committees: false,
+  }, {
+    headers: { 'Cache-Control': 'private, no-store' },
   })
 }
 

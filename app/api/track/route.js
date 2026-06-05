@@ -25,7 +25,9 @@ export async function GET() {
     return NextResponse.json({ tracked: [] })
   }
 
-  return NextResponse.json({ tracked: (data || []).map(r => r.bioguide_id) })
+  return NextResponse.json({ tracked: (data || []).map(r => r.bioguide_id) }, {
+    headers: { 'Cache-Control': 'private, no-store' },
+  })
 }
 
 // POST /api/track — add or remove a tracked rep
