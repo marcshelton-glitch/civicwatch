@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
             <p style={P}>We use the information we collect to:</p>
             <ul style={{ paddingLeft: 22, margin: 0 }}>
               <li style={LI}>Create and manage your account.</li>
-              <li style={LI}>Provide and improve CivicWatch features, including tracked representatives, poll results, and personalized civic alerts.</li>
+              <li style={LI}>Provide and improve CivicWatch features, including tracked representatives, poll results, personalized civic alerts, and AI-powered accountability analysis powered by Google Gemini.</li>
               <li style={LI}>Process subscription payments and send billing receipts.</li>
               <li style={LI}>Send service-related emails, including account notifications, security alerts, and (if you opt in) civic updates.</li>
               <li style={LI}>Detect, investigate, and prevent fraud and abuse.</li>
@@ -146,7 +146,53 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <div>
-            <h2 style={H2}>8. Security</h2>
+  <h2 style={H2}>8. California Privacy Rights (CCPA)</h2>
+  <p style={P}>
+    If you are a California resident, the California Consumer Privacy Act (CCPA) grants you
+    additional rights regarding your personal information.
+  </p>
+  <p style={P}><strong style={{ color: S.white }}>We do not sell your personal information.</strong> We do not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration.</p>
+  <p style={P}>As a California resident, you have the right to:</p>
+  <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
+    <li style={LI}><strong style={{ color: S.white }}>Know</strong> what personal information we collect, use, disclose, and sell about you.</li>
+    <li style={LI}><strong style={{ color: S.white }}>Delete</strong> personal information we have collected from you, subject to certain exceptions.</li>
+    <li style={LI}><strong style={{ color: S.white }}>Correct</strong> inaccurate personal information we maintain about you.</li>
+    <li style={LI}><strong style={{ color: S.white }}>Opt out</strong> of the sale or sharing of your personal information (we do not sell data, but you may still make this request).</li>
+    <li style={LI}><strong style={{ color: S.white }}>Non-discrimination</strong> — we will not discriminate against you for exercising any CCPA rights.</li>
+  </ul>
+  <p style={P}>
+    To exercise your California privacy rights, email us at{' '}
+    <a href="mailto:support@civicwatch.app" className="priv-link">support@civicwatch.app</a>{' '}
+    with the subject line &quot;CCPA Request&quot; or visit our{' '}
+    <Link href="/data-deletion" className="priv-link">Data Deletion page</Link>.
+    We will respond within 45 days as required by law.
+  </p>
+</div>
+
+<div>
+  <h2 style={H2}>9. International Users and GDPR</h2>
+  <p style={P}>
+    CivicWatch is operated from the United States. If you access CivicWatch from outside the United States,
+    please be aware that your information may be transferred to, stored, and processed in the United States.
+  </p>
+  <p style={P}>
+    Where European data protection law (GDPR) applies, we process your personal information on the following legal bases:
+  </p>
+  <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
+    <li style={LI}><strong style={{ color: S.white }}>Contract performance</strong> — to create and manage your account and provide the CivicWatch service you signed up for.</li>
+    <li style={LI}><strong style={{ color: S.white }}>Legitimate interests</strong> — to improve our service, prevent fraud, and ensure security, where these interests are not overridden by your rights.</li>
+    <li style={LI}><strong style={{ color: S.white }}>Legal obligation</strong> — to comply with applicable laws and regulations.</li>
+    <li style={LI}><strong style={{ color: S.white }}>Consent</strong> — for optional communications such as marketing emails, which you may withdraw at any time.</li>
+  </ul>
+  <p style={P}>
+    If you are in the European Economic Area, you also have the right to lodge a complaint with your local data protection authority.
+    To exercise any GDPR rights, contact us at{' '}
+    <a href="mailto:support@civicwatch.app" className="priv-link">support@civicwatch.app</a>.
+  </p>
+</div>
+
+          <div>
+            <h2 style={H2}>10. Security</h2>
             <p style={P}>
               We use industry-standard technical and organizational measures to protect your information, including TLS
               encryption in transit, encryption at rest for sensitive data, and strict access controls. No system is 100%
@@ -155,7 +201,7 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <div>
-            <h2 style={H2}>9. Children&apos;s Privacy</h2>
+            <h2 style={H2}>11. Children&apos;s Privacy</h2>
             <p style={P}>
               CivicWatch is not directed to children under 13. We do not knowingly collect personal information from children
               under 13. If you believe a child has provided us with personal information, please contact us and we will delete it.
@@ -163,7 +209,7 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <div>
-            <h2 style={H2}>10. Changes to This Policy</h2>
+            <h2 style={H2}>12. Changes to This Policy</h2>
             <p style={P}>
               We may update this Privacy Policy from time to time. When we do, we will revise the &quot;Last updated&quot; date
               at the top of this page. If the changes are material, we will notify you by email or through a notice in the app.
@@ -171,7 +217,7 @@ export default function PrivacyPolicyPage() {
           </div>
 
           <div>
-            <h2 style={H2}>11. Contact Us</h2>
+            <h2 style={H2}>13. Contact Us</h2>
             <p style={P}>
               If you have questions about this Privacy Policy or our data practices, contact us at{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="priv-link">{CONTACT_EMAIL}</a>.
