@@ -124,6 +124,23 @@ async function legiScanFetch(op, params = {}) {
   return payload
 }
 
+// ── Bill type → congress.gov URL path segment ────────────────────────────────
+const BILL_TYPE_PATH = {
+  'hr':      'house-bill',
+  's':       'senate-bill',
+  'hjres':   'house-joint-resolution',
+  'sjres':   'senate-joint-resolution',
+  'hconres': 'house-concurrent-resolution',
+  'sconres': 'senate-concurrent-resolution',
+  'hres':    'house-resolution',
+  'sres':    'senate-resolution',
+}
+function billPageUrl(type, congress, number) {
+  if (!type || !congress || !number) return null
+  const path = BILL_TYPE_PATH[type.toLowerCase()] || type.toLowerCase()
+  return `https://www.congress.gov/bill/${congress}th-congress/${path}/${number}`
+}
+
 // ── State map ─────────────────────────────────────────────────────────────────
 const STATE_ABBR_TO_FULL = {
   'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California',
@@ -612,7 +629,7 @@ export async function GET(request) {
           number: `${b.type}${b.number}`,
           title: b.title,
           congress: b.congress,
-          url: b.url,
+          url: billPageUrl(b.type, b.congress, b.number),
           latestAction: b.latestAction?.text,
           latestActionDate: b.latestAction?.actionDate,
           policyArea: b.policyArea?.name,
@@ -641,7 +658,7 @@ export async function GET(request) {
               : b.latestAction.text?.toLowerCase().includes('enrolled') ? 3
               : 1)
             : 1,
-          url: b.url || `https://www.congress.gov/bill/${b.congress}th-congress/${b.type?.toLowerCase().replace('hconres','house-concurrent-resolution').replace('hjres','house-joint-resolution').replace('hr','house-bill').replace('s','senate-bill').replace('sconres','senate-concurrent-resolution').replace('sjres','senate-joint-resolution')}/${b.number}`,
+          url: billPageUrl(b.type, b.congress, b.number),
           role,
           policyArea: b.policyArea?.name || '',
         })

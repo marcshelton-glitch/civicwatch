@@ -22,7 +22,14 @@ export default function ScrollIndicator() {
   if (!visible) return null;
 
   return (
-    <button
+    <>
+      <style>{`
+        @keyframes scrollBounce {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(5px); }
+        }
+      `}</style>
+      <button
       onClick={() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
       aria-label="Scroll down for more"
       style={{
@@ -48,5 +55,6 @@ export default function ScrollIndicator() {
         <path d="M3 6l6 6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     </button>
+    </>
   );
 }
