@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { generateImage } from '@/lib/airbrush'
 
 const cache = new Map()
