@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { generateImage } from '@/lib/airbrush'
 
+const FALLBACK = 'https://civicwatch.app/og-image.png'
 const cache = new Map()
 
 function buildPrompt(type, name, party, state) {
@@ -23,7 +24,7 @@ function cacheKey(params) {
 
 export async function GET(request) {
   if (!process.env.NEXT_PUBLIC_OG_IMAGE_ENABLED) {
-    return Response.json({ imageUrl: null, cached: false })
+    return Response.redirect(FALLBACK, 302)
   }
 
   const { searchParams } = new URL(request.url)
@@ -34,7 +35,7 @@ export async function GET(request) {
 
   const key = cacheKey({ type, name, party, state })
   if (cache.has(key)) {
-    return Response.json({ imageUrl: cache.get(key), cached: true })
+    return Response.redirect(cache.get(key), 302)
   }
 
   try {
@@ -45,9 +46,9 @@ export async function GET(request) {
       negativePrompt: 'text, letters, words, watermark, logo, ugly, distorted, low quality',
     })
     cache.set(key, imageUrl)
-    return Response.json({ imageUrl, cached: false })
+    return Response.redirect(imageUrl, 302)
   } catch (err) {
     console.error('[og-image] generation failed:', err)
-    return Response.json({ error: err.message }, { status: 500 })
+    return Response.redirect(FALLBACK, 302)
   }
 }
