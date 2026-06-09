@@ -8,6 +8,7 @@ export const metadata = {
       'CivicWatch exists because transparency is the foundation of democracy. Learn about our mission, data sources, and the STOCK Act.',
     url: 'https://civicwatch.app/about',
     siteName: 'CivicWatch',
+    images: [{ url: '/api/og-image?type=home', width: 1200, height: 630 }],
   },
 }
 

@@ -40,10 +40,10 @@ export const metadata = {
     siteName: 'CivicWatch',
     images: [
       {
-        url: '/api/og',
+        url: '/api/og-image?type=home',
         width: 1200,
         height: 630,
-        alt: 'CivicWatch — 8,700 stock trades by Congress last year',
+        alt: 'CivicWatch — Track Congressional Stock Trades in Real Time',
       },
     ],
     type: 'website',
@@ -52,7 +52,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'CivicWatch — Track Congressional Stock Trades in Real Time',
     description: 'Your representatives trade stocks, cast votes, and build wealth while serving you. See exactly what they\'re doing.',
-    images: ['/api/og'],
+    images: ['/api/og-image?type=home'],
   },
   verification: {
     google: 'dYkgYgk80Pl5OyCxB9q6Co6daeeKR2vJ4I06N8Sd5Js',
