@@ -142,6 +142,45 @@ const AMENDMENTS = [
   { num: 26, title: "Voting Age Lowered to 18 (1971)", original: "The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged on account of age.", plain: "Citizens 18 and older have the right to vote." },
 ]
 
+const DECLARATION_SECTIONS = [
+  {
+    id: "preamble",
+    title: "Preamble",
+    original: "When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation.",
+    plain: "When a people must break free from the government ruling them, they owe the world an explanation for why."
+  },
+  {
+    id: "self-evident",
+    title: "Self-Evident Truths",
+    original: "We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness. — That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, — That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government...",
+    plain: "All people are created equal with rights that cannot be taken away — life, liberty, and the pursuit of happiness. Governments exist to protect those rights, and when they don't, the people have the right to change or overthrow them."
+  },
+  {
+    id: "grievances",
+    title: "List of Grievances Against the King",
+    original: "He has refused his Assent to Laws, the most wholesome and necessary for the public good... He has forbidden his Governors to pass Laws of immediate and pressing importance... He has dissolved Representative Houses repeatedly, for opposing with manly firmness his invasions on the rights of the people... He has obstructed the Administration of Justice... He has kept among us, in times of peace, Standing Armies... He has imposed Taxes on us without our Consent... He has deprived us in many cases, of the benefits of Trial by Jury...",
+    plain: "The colonists list 27 specific abuses by King George III: blocking laws, dissolving legislatures, keeping military troops among civilians in peacetime, taxing without consent, denying jury trials, and more."
+  },
+  {
+    id: "attempts",
+    title: "Appeals to the British People and King",
+    original: "In every stage of these Oppressions We have Petitioned for Redress in the most humble terms: Our repeated Petitions have been answered only by repeated injury. A Prince, whose character is thus marked by every act which may define a Tyrant, is unfit to be the ruler of a free people... We have warned them from time to time of attempts by their legislature to extend an unwarrantable jurisdiction over us...",
+    plain: "The colonists repeatedly asked the king to fix these wrongs and were ignored every time. They also warned the British people, who failed to act. A ruler who acts like a tyrant is unfit to govern a free people."
+  },
+  {
+    id: "declaration",
+    title: "The Declaration",
+    original: "We, therefore, the Representatives of the united States of America, in General Congress, Assembled, appealing to the Supreme Judge of the world for the rectitude of our intentions, do, in the Name, and by Authority of the good People of these Colonies, solemnly publish and declare, That these United Colonies are, and of Right ought to be Free and Independent States; that they are Absolved from all Allegiance to the British Crown, and that all political connection between them and the State of Great Britain, is and ought to be totally dissolved...",
+    plain: "Therefore, the representatives of the United States declare that these colonies are free and independent states, no longer part of Great Britain. They are dissolved from all loyalty to the British Crown and have full power to make war, make peace, form alliances, and do all other things that free nations do."
+  },
+  {
+    id: "pledge",
+    title: "The Signers' Pledge",
+    original: "And for the support of this Declaration, with a firm reliance on the protection of divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor.",
+    plain: "The 56 signers pledged everything — their lives, their wealth, and their reputations — to this cause. Many risked death by signing."
+  },
+]
+
 const STATE_MAP_DATA = [
   { state: "WA", x: 68,  y: 52,  label: "Washington" },
   { state: "OR", x: 62,  y: 98,  label: "Oregon" },
@@ -973,6 +1012,7 @@ useEffect(() => {
               { id: "alerts", label: `Alerts${unreadCount > 0 ? ` (${unreadCount})` : ""}` },
               { id: "search", label: "Search" },
               { id: "constitution", label: "Constitution" },
+              { id: "declaration", label: "Declaration" },
             ].map(tab => (
               <button key={tab.id} className={`nav-btn ${activeTab === tab.id ? "active" : ""}`}
                 onClick={() => { setActiveTab(tab.id); clearRep() }}
@@ -2053,6 +2093,51 @@ useEffect(() => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* DECLARATION OF INDEPENDENCE */}
+        {activeTab === "declaration" && (
+          <div className="slide-in">
+            <SectionHeader title="The Declaration of Independence" subtitle="Adopted July 4, 1776 — the founding document that proclaimed the thirteen colonies free from British rule." />
+
+            {/* Header image */}
+            <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, border: `1px solid ${S.border}` }}>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/United_States_Declaration_of_Independence.jpg/960px-United_States_Declaration_of_Independence.jpg"
+                alt="Declaration of Independence"
+                referrerPolicy="no-referrer"
+                style={{ width: "100%", maxHeight: 260, objectFit: "cover", objectPosition: "top", display: "block" }}
+              />
+            </div>
+
+            {/* Intro */}
+            <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, marginBottom: 24, padding: "16px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+              The Declaration of Independence was adopted by the Second Continental Congress on July 4, 1776. Written primarily by Thomas Jefferson, it announced and explained the separation of the thirteen American colonies from Great Britain. It remains one of the most influential documents in world history.
+            </p>
+
+            {/* Archive link */}
+            <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+              <a href="https://www.archives.gov/founding-docs/declaration" target="_blank" rel="noreferrer"
+                style={{ padding: "8px 18px", background: `rgba(212,175,55,0.1)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+                📜 National Archives
+              </a>
+            </div>
+
+            {/* Sections */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {DECLARATION_SECTIONS.map(sec => (
+                <ConstitutionCard key={sec.id} title={sec.title} plain={sec.plain} original={sec.original} S={S} />
+              ))}
+            </div>
+
+            {/* Signers callout */}
+            <div style={{ marginTop: 28, padding: "18px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 14, color: S.gold, marginBottom: 8 }}>56 Signers</div>
+              <p style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.7, margin: 0 }}>
+                Fifty-six delegates to the Continental Congress signed the Declaration between August 2 and November 4, 1776. The signers represented all thirteen original colonies. John Hancock, as President of Congress, signed first with a notably large signature. By signing, each man risked being charged with treason against the British Crown — a crime punishable by death.
+              </p>
+            </div>
           </div>
         )}
       </main>
