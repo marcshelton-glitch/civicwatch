@@ -90,6 +90,7 @@ async function legiScanFetch(op, params = {}) {
     .from('legiscan_cache')
     .select('data, change_hash, fetched_at')
     .eq('key', cacheKey)
+    .abortSignal(AbortSignal.timeout(8000))
     .single()
 
   const qs = new URLSearchParams({ key: LEGISCAN_KEY, op, ...params }).toString()
@@ -119,7 +120,7 @@ async function legiScanFetch(op, params = {}) {
   await supabase.from('legiscan_cache').upsert(
     { key: cacheKey, data: payload, change_hash: changeHash, fetched_at: new Date().toISOString() },
     { onConflict: 'key' }
-  )
+  ).abortSignal(AbortSignal.timeout(8000))
 
   return payload
 }
@@ -397,13 +398,15 @@ export async function GET(request) {
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, filing_id, year, ptr_url')
             .ilike('last_name', lastName)
             .order('transaction_date', { ascending: false })
-            .limit(50),
+            .limit(50)
+            .abortSignal(AbortSignal.timeout(8000)),
           supabase
             .from('fd_net_worth')
             .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
             .ilike('last_name', lastName)
             .order('report_year', { ascending: false })
-            .limit(20),
+            .limit(20)
+            .abortSignal(AbortSignal.timeout(8000)),
         ])
 
         const senateNetWorthHistory = (dbNetWorth || []).map(n => ({
@@ -458,17 +461,20 @@ export async function GET(request) {
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
             .ilike('last_name', lastName)
             .order('transaction_date', { ascending: false })
-            .limit(50),
+            .limit(50)
+            .abortSignal(AbortSignal.timeout(8000)),
           supabase
             .from('fd_net_worth')
             .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
             .ilike('last_name', lastName)
             .order('report_year', { ascending: false })
-            .limit(20),
+            .limit(20)
+            .abortSignal(AbortSignal.timeout(8000)),
           supabase
             .from('fd_filings')
             .select('*', { count: 'exact', head: true })
-            .ilike('last_name', lastName),
+            .ilike('last_name', lastName)
+            .abortSignal(AbortSignal.timeout(8000)),
         ])
         dbFilingsCount = filingsCount || 0
 
@@ -575,6 +581,7 @@ export async function GET(request) {
           .ilike('last_name', lastName)
           .order('report_year', { ascending: false })
           .limit(20)
+          .abortSignal(AbortSignal.timeout(8000))
         liveNetWorthHistory = (nwData || []).map(n => ({
           year: n.report_year,
           assetsMin: n.assets_min,
