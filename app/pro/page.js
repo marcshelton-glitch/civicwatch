@@ -373,7 +373,9 @@ export default function ProPage() {
         <div style={{ marginBottom: 12 }}>
           <Link href="/dashboard" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Dashboard</Link>
           <Link href="/privacy" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Privacy</Link>
-          <Link href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms</Link>
+          <Link href="/terms" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Terms</Link>
+          <Link href="/refund-policy" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Refund Policy</Link>
+          <Link href="/privacy#ccpa" style={{ color: S.gray, textDecoration: 'none' }}>Do Not Sell My Personal Information</Link>
         </div>
         <div>© {new Date().getFullYear()} CivicWatch · For informational purposes only · Not legal or financial advice</div>
       </footer>

@@ -320,6 +320,8 @@ export default function TermsPage() {
         <div style={{ display: 'flex', gap: 20, justifyContent: 'center', fontSize: 12, color: S.gray }}>
           <a href="/privacy" style={{ color: S.gray, textDecoration: 'none' }}>Privacy Policy</a>
           <a href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms of Service</a>
+          <a href="/refund-policy" style={{ color: S.gray, textDecoration: 'none' }}>Refund Policy</a>
+          <a href="/privacy#ccpa" style={{ color: S.gray, textDecoration: 'none' }}>Do Not Sell My Personal Information</a>
           <a href="mailto:legal@civicwatch.com" style={{ color: S.gray, textDecoration: 'none' }}>Contact</a>
         </div>
       </footer>

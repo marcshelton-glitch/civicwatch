@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
 
-          <div>
+          <div id="ccpa">
   <h2 style={H2}>8. California Privacy Rights (CCPA)</h2>
   <p style={P}>
     If you are a California resident, the California Consumer Privacy Act (CCPA) grants you
@@ -169,7 +169,7 @@ export default function PrivacyPolicyPage() {
   </p>
 </div>
 
-<div>
+<div id="gdpr">
   <h2 style={H2}>9. International Users and GDPR</h2>
   <p style={P}>
     CivicWatch is operated from the United States. If you access CivicWatch from outside the United States,
@@ -231,6 +231,10 @@ export default function PrivacyPolicyPage() {
           <Link href="/terms" className="priv-footer-link">Terms of Service</Link>
           {' · '}
           <Link href="/data-deletion" className="priv-footer-link">Data Deletion</Link>
+          {' · '}
+          <Link href="/refund-policy" className="priv-footer-link">Refund Policy</Link>
+          {' · '}
+          <Link href="/privacy#ccpa" className="priv-footer-link">Do Not Sell My Personal Information</Link>
         </footer>
       </main>
     </div>

@@ -159,6 +159,8 @@ export default function DataDeletionPage() {
           <Link href="/privacy" className="del-footer-link">Privacy Policy</Link>
           {' · '}
           <Link href="/terms" className="del-footer-link">Terms of Service</Link>
+          {' · '}
+          <Link href="/privacy#ccpa" className="del-footer-link">Do Not Sell My Personal Information</Link>
         </footer>
       </main>
     </div>

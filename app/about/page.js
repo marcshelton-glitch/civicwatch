@@ -665,6 +665,8 @@ export default function AboutPage() {
             { href: '/privacy', label: 'Privacy Policy' },
             { href: '/terms', label: 'Terms of Service' },
             { href: '/data-deletion', label: 'Data Deletion' },
+            { href: '/refund-policy', label: 'Refund Policy' },
+            { href: '/privacy#ccpa', label: 'Do Not Sell My Personal Information' },
             { href: 'mailto:support@civicwatch.app', label: 'Contact' },
           ].map(l => (
             <Link

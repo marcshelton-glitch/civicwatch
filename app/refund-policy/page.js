@@ -135,6 +135,7 @@ export default function RefundPolicyPage() {
           <a href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms of Service</a>
           <a href="/refund-policy" style={{ color: S.gold, textDecoration: 'none' }}>Refund Policy</a>
           <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: S.gray, textDecoration: 'none' }}>Contact</a>
+          <a href="/privacy#ccpa" style={{ color: S.gray, textDecoration: 'none' }}>Do Not Sell My Personal Information</a>
         </div>
       </footer>
     </div>
