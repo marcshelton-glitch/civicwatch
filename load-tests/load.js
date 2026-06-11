@@ -32,6 +32,7 @@ const ROUTES = [
 ];
 
 export default function () {
+  http.setResponseCallback(http.expectedStatuses({ min: 200, max: 399 }, 401, 403));
   for (const route of ROUTES) {
     const opts = { headers, redirects: 5, tags: { name: route.name } };
 
