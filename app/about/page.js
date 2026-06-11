@@ -220,7 +220,6 @@ export default function AboutPage() {
               Our Mission
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.9, color: S.grayLight, fontWeight: 300 }}>
-              CivicWatch exists because transparency is the foundation of democracy.
               Members of Congress make laws that affect every American — and they trade
               stocks based on information the rest of us don&rsquo;t have. We built
               CivicWatch to make their financial activity visible, searchable, and
