@@ -1,0 +1,1710 @@
+[15:02:53] === PHASE 3: NET WORTH (limit=100) ===
+[15:02:53] === PHASE 3: NET WORTH (limit=100) ===
+[15:02:53] --- Networth run #1 ---
+[15:02:53] --- Networth run #1 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2011] WOLFGANG, DONNA K. (8208251)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208251.pdf".
+  [2011] WOLANIN, BARBARA (8208723)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208723.pdf".
+  [2011] WILLIAMS, KIMBERLY C. (8207484)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207484.pdf".
+  [2011] WILLIAMS, CHRISTOPHER J. (8206705)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206705.pdf".
+  [2011] WHITENER, JEANETTE P. (8206316)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206316.pdf".
+  [2011] WHITE, STANLEY V. (8206783)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206783.pdf".
+  [2011] WEINHAGEN, ROBERT F. (8206782)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206782.pdf".
+  [2011] WATSON, BRAD E. (8206781)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206781.pdf".
+  [2011] WATKINS, KERRY A. (8205227)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205227.pdf".
+  [2011] WATKINS, DAVID (8206787)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206787.pdf".
+  [2011] WAGNER, JOHN F. (8206718)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206718.pdf".
+  [2011] VILLANO, PETER (8208828)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208828.pdf".
+  [2011] UGONE, RUSSELL A. (8207763)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207763.pdf".
+  [2011] TORUNO, MIGUEL J. (8205557)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205557.pdf".
+  [2011] TERRY, GREGORY ADAM (8206780)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206780.pdf".
+  [2011] TERRY, GREGORY ADAM (8206779)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206779.pdf".
+  [2011] SURUMA, ASKIA M. (8206777)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206777.pdf".
+  [2011] SULLIVAN, ADAM J. (8208746)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208746.pdf".
+  [2011] STEWART, ROBERT W. (8207008)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207008.pdf".
+  [2011] SHAH, DIMPLE R. (8206776)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206776.pdf".
+  [2011] SERAFINO, NINA MARIA (8207483)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207483.pdf".
+  [2011] SCHWAGER, DANIEL A. (8205101)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205101.pdf".
+  [2011] SANGER, ANNE L. (8204551)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204551.pdf".
+  [2011] SALTSMAN, JOHN B. (9102151)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102151.pdf".
+  [2011] ROGIN, JOSHUA A. (8205058)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205058.pdf".
+  [2011] ROBINSON, ROBERT W. (8207872)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207872.pdf".
+  [2011] REIDY, DIANNE M. (8204550)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204550.pdf".
+  [2011] REED, MICHAEL J. (8204697)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204697.pdf".
+  [2011] PURPURO, LAWRENCE (8206775)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206775.pdf".
+  [2011] PINTO, LISA (8206704)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206704.pdf".
+  [2011] PELLER, JULIE R. (8209181)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209181.pdf".
+  [2011] PEED, LAURA S. (8206774)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206774.pdf".
+  [2011] PEARCE, KRISANN (8216298)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8216298.pdf".
+  [2011] OZANNE, LARRY J. (8205057)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205057.pdf".
+  [2011] NISHIOKI, SCOTT H. (8205555)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205555.pdf".
+  [2011] NASH, PARTICK M. (8209077)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209077.pdf".
+  [2011] NANCE, ROBERT MILTON (8206773)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206773.pdf".
+  [2011] MURPHY, CHRISTOPHER K. (8207806)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207806.pdf".
+  [2011] MULLEN, SUZANNE N. (8204873)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204873.pdf".
+  [2011] MITCHELL, JAMES T. (8205122)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205122.pdf".
+  [2011] MERCHANT, ELAINE A. (8208722)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208722.pdf".
+  [2011] MCKEOWN, JOSEPH (8204628)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204628.pdf".
+  [2011] MCFAUL, DANIEL F. (8207593)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financiaCivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2011] WOLFGANG, DONNA K. (8208251)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208251.pdf".
+  [2011] WOLANIN, BARBARA (8208723)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208723.pdf".
+  [2011] WILLIAMS, KIMBERLY C. (8207484)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207484.pdf".
+  [2011] WILLIAMS, CHRISTOPHER J. (8206705)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206705.pdf".
+  [2011] WHITENER, JEANETTE P. (8206316)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206316.pdf".
+  [2011] WHITE, STANLEY V. (8206783)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206783.pdf".
+  [2011] WEINHAGEN, ROBERT F. (8206782)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206782.pdf".
+  [2011] WATSON, BRAD E. (8206781)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206781.pdf".
+  [2011] WATKINS, KERRY A. (8205227)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205227.pdf".
+  [2011] WATKINS, DAVID (8206787)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206787.pdf".
+  [2011] WAGNER, JOHN F. (8206718)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206718.pdf".
+  [2011] VILLANO, PETER (8208828)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208828.pdf".
+  [2011] UGONE, RUSSELL A. (8207763)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207763.pdf".
+  [2011] TORUNO, MIGUEL J. (8205557)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205557.pdf".
+  [2011] TERRY, GREGORY ADAM (8206780)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206780.pdf".
+  [2011] TERRY, GREGORY ADAM (8206779)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206779.pdf".
+  [2011] SURUMA, ASKIA M. (8206777)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206777.pdf".
+  [2011] SULLIVAN, ADAM J. (8208746)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208746.pdf".
+  [2011] STEWART, ROBERT W. (8207008)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207008.pdf".
+  [2011] SHAH, DIMPLE R. (8206776)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206776.pdf".
+  [2011] SERAFINO, NINA MARIA (8207483)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207483.pdf".
+  [2011] SCHWAGER, DANIEL A. (8205101)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205101.pdf".
+  [2011] SANGER, ANNE L. (8204551)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204551.pdf".
+  [2011] SALTSMAN, JOHN B. (9102151)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102151.pdf".
+  [2011] ROGIN, JOSHUA A. (8205058)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205058.pdf".
+  [2011] ROBINSON, ROBERT W. (8207872)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207872.pdf".
+  [2011] REIDY, DIANNE M. (8204550)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204550.pdf".
+  [2011] REED, MICHAEL J. (8204697)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204697.pdf".
+  [2011] PURPURO, LAWRENCE (8206775)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206775.pdf".
+  [2011] PINTO, LISA (8206704)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206704.pdf".
+  [2011] PELLER, JULIE R. (8209181)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209181.pdf".
+  [2011] PEED, LAURA S. (8206774)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206774.pdf".
+  [2011] PEARCE, KRISANN (8216298)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8216298.pdf".
+  [2011] OZANNE, LARRY J. (8205057)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205057.pdf".
+  [2011] NISHIOKI, SCOTT H. (8205555)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205555.pdf".
+  [2011] NASH, PARTICK M. (8209077)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209077.pdf".
+  [2011] NANCE, ROBERT MILTON (8206773)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206773.pdf".
+  [2011] MURPHY, CHRISTOPHER K. (8207806)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207806.pdf".
+  [2011] MULLEN, SUZANNE N. (8204873)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204873.pdf".
+  [2011] MITCHELL, JAMES T. (8205122)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205122.pdf".
+  [2011] MERCHANT, ELAINE A. (8208722)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208722.pdf".
+  [2011] MCKEOWN, JOSEPH (8204628)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204628.pdf".
+  [2011] MCFAUL, DANIEL F. (8207593)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207593.pdf".
+  [2011] MCCOY, DOMINIQUE M. (8205121)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205121.pdf".
+  [2011] MCCARTHY, DAVID J. (8210750)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8210750.pdf".
+  [2011] ADEDEJI, ADEBAYO M. (8206784)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206784.pdf".
+  [2011] AIKEN, TIMOTHY B. (8206604)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206604.pdf".
+  [2011] ALLEN, JOSEPH M. (8206759)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206759.pdf".
+  [2011] ANSLEY, STEPHEN P. (8206760)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206760.pdf".
+  [2011] ANSLEY, STEPHEN P. (8209034)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209034.pdf".
+  [2011] AXSON, SHARON P. (8206761)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206761.pdf".
+  [2011] BAKER, TIMOTHY R. (8206762)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206762.pdf".
+  [2011] BERKOWITZ, PAUL H. (8209245)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209245.pdf".
+  [2011] BLOOMQUIST, MICHAEL D. (8208211)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208211.pdf".
+  [2011] BLYTH, JONATHAN (9102123)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102123.pdf".
+  [2011] BONYUN, SEAN C. (9100419)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9100419.pdf".
+  [2011] BOYLE, KEVIN J. (8206764)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206764.pdf".
+  [2011] BRENNAN, KEVIN (8204549)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204549.pdf".
+  [2011] BUCHANAN, MICHAEL D. (8205119)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205119.pdf".
+  [2011] CANTY, LEEKWAME (8209371)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209371.pdf".
+  [2011] CARRINGTON, WILLIAM J. (8206701)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206701.pdf".
+  [2011] CASWELL, WENDY S. (8214595)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8214595.pdf".
+  [2011] DELGADO, PATRICIA C. (8208721)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208721.pdf".
+  [2011] DUFFY, MARY ROSE (8208744)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208744.pdf".
+  [2011] DUKE, ANDREW (9102168)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102168.pdf".
+  [2011] ECKSTEIN, MATHEW A. (8204973)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204973.pdf".
+  [2011] ECKSTEIN, MATHEW A. (8209529)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209529.pdf".
+  [2011] ELLIS, LAUREN N. (8209012)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209012.pdf".
+  [2011] EVANS, JOSEPH E. (8206785)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206785.pdf".
+  [2011] FACEY, NATHAN A. (8206786)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206786.pdf".
+  [2011] FASTEAU, JAMIE P. (8205050)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205050.pdf".
+  [2011] FEDDEMAN, EDWARD G. (8205098)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205098.pdf".
+  [2011] FEDDEMAN, EDWARD G. (8205120)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205120.pdf".
+  [2011] GARCIA, FRANK (8204723)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204723.pdf".
+  [2011] GAST, SCOTT (8208314)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208314.pdf".
+  [2011] GEFFROY, SARAH R. (9102124)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102124.pdf".
+  [2011] GIBBS, FRANK (8206702)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206702.pdf".
+  [2011] GODDARD, RICHARD (8207922)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207922.pdf".
+  [2011] GOLDING, HEIDI L. (8205099)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205099.pdf".
+  [2011] GRAMS, RODNEY D. (8206766)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206766.pdf".
+  [2011] GREEN, MITCHELL (9107899)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9107899.pdf".
+  [2011] GREENWALT, WILLIAM C. (8206768)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206768.pdf".
+  [2011] GUILLEN, JOSE (8204690)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204690.pdf".
+  [2011] HADLEY, MARK P. (9114010)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9114010.pdf".
+  [2011] HANRAHAN, THOMAS K. (8206769)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206769.pdf".
+  [2011] HARRISON, RANDOLPH (8206767)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206767.pdf".
+  [2011] HARRISON, TODD R. (8204580)... FAILED — Unexpected server response (404) while l-pdfs/2011/8207593.pdf".
+  [2011] MCCOY, DOMINIQUE M. (8205121)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205121.pdf".
+  [2011] MCCARTHY, DAVID J. (8210750)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8210750.pdf".
+  [2011] ADEDEJI, ADEBAYO M. (8206784)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206784.pdf".
+  [2011] AIKEN, TIMOTHY B. (8206604)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206604.pdf".
+  [2011] ALLEN, JOSEPH M. (8206759)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206759.pdf".
+  [2011] ANSLEY, STEPHEN P. (8206760)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206760.pdf".
+  [2011] ANSLEY, STEPHEN P. (8209034)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209034.pdf".
+  [2011] AXSON, SHARON P. (8206761)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206761.pdf".
+  [2011] BAKER, TIMOTHY R. (8206762)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206762.pdf".
+  [2011] BERKOWITZ, PAUL H. (8209245)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209245.pdf".
+  [2011] BLOOMQUIST, MICHAEL D. (8208211)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208211.pdf".
+  [2011] BLYTH, JONATHAN (9102123)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102123.pdf".
+  [2011] BONYUN, SEAN C. (9100419)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9100419.pdf".
+  [2011] BOYLE, KEVIN J. (8206764)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206764.pdf".
+  [2011] BRENNAN, KEVIN (8204549)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204549.pdf".
+  [2011] BUCHANAN, MICHAEL D. (8205119)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205119.pdf".
+  [2011] CANTY, LEEKWAME (8209371)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209371.pdf".
+  [2011] CARRINGTON, WILLIAM J. (8206701)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206701.pdf".
+  [2011] CASWELL, WENDY S. (8214595)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8214595.pdf".
+  [2011] DELGADO, PATRICIA C. (8208721)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208721.pdf".
+  [2011] DUFFY, MARY ROSE (8208744)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208744.pdf".
+  [2011] DUKE, ANDREW (9102168)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102168.pdf".
+  [2011] ECKSTEIN, MATHEW A. (8204973)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204973.pdf".
+  [2011] ECKSTEIN, MATHEW A. (8209529)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209529.pdf".
+  [2011] ELLIS, LAUREN N. (8209012)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209012.pdf".
+  [2011] EVANS, JOSEPH E. (8206785)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206785.pdf".
+  [2011] FACEY, NATHAN A. (8206786)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206786.pdf".
+  [2011] FASTEAU, JAMIE P. (8205050)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205050.pdf".
+  [2011] FEDDEMAN, EDWARD G. (8205098)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205098.pdf".
+  [2011] FEDDEMAN, EDWARD G. (8205120)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205120.pdf".
+  [2011] GARCIA, FRANK (8204723)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204723.pdf".
+  [2011] GAST, SCOTT (8208314)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208314.pdf".
+  [2011] GEFFROY, SARAH R. (9102124)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9102124.pdf".
+  [2011] GIBBS, FRANK (8206702)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206702.pdf".
+  [2011] GODDARD, RICHARD (8207922)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207922.pdf".
+  [2011] GOLDING, HEIDI L. (8205099)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205099.pdf".
+  [2011] GRAMS, RODNEY D. (8206766)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206766.pdf".
+  [2011] GREEN, MITCHELL (9107899)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9107899.pdf".
+  [2011] GREENWALT, WILLIAM C. (8206768)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206768.pdf".
+  [2011] GUILLEN, JOSE (8204690)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204690.pdf".
+  [2011] HADLEY, MARK P. (9114010)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9114010.pdf".
+  [2011] HANRAHAN, THOMAS K. (8206769)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206769.pdf".
+  [2011] HARRISON, RANDOLPH (8206767)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206767.pdf".
+  [2011] HARRISON, TODD R. (8204580)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204580.pdf".
+  [2011] HART, ELIZABETH A. (8208929)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208929.pdf".
+  [2011] HEARNE, JEAN P. (8206513)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206513.pdf".
+  [2011] HOFFMAN, MARJORIE (8208745)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208745.pdf".
+  [2011] HOWARD, ADAM R. (8207895)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207895.pdf".
+  [2011] HURCKES, JEROME R. (8206771)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206771.pdf".
+  [2011] JONES, CLINTON C. (8206772)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206772.pdf".
+  [2011] KLING, JEFFREY R. (9109638)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9109638.pdf".
+  [2011] KREBS, THOMAS L. (8207871)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207871.pdf".
+  [2011] KUGAJEVSKY, ALEXANDER V. (8204826)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204826.pdf".
+  [2011] LEFFINGWELL, MATTHEW L. (8209343)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209343.pdf".
+  [2011] LEWIS, CHARLES E. (8204583)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204583.pdf".
+  [2011] LEWIS, LUCILLE M. (8205100)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205100.pdf".
+  [2011] LITTLE, CATHERINE (8210403)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8210403.pdf".
+
+Done — OK: 0, No data: 0, Failed: 100
+retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204580.pdf".
+  [2011] HART, ELIZABETH A. (8208929)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208929.pdf".
+  [2011] HEARNE, JEAN P. (8206513)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206513.pdf".
+  [2011] HOFFMAN, MARJORIE (8208745)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208745.pdf".
+  [2011] HOWARD, ADAM R. (8207895)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207895.pdf".
+  [2011] HURCKES, JEROME R. (8206771)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206771.pdf".
+  [2011] JONES, CLINTON C. (8206772)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206772.pdf".
+  [2011] KLING, JEFFREY R. (9109638)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/9109638.pdf".
+  [2011] KREBS, THOMAS L. (8207871)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8207871.pdf".
+  [2011] KUGAJEVSKY, ALEXANDER V. (8204826)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204826.pdf".
+  [2011] LEFFINGWELL, MATTHEW L. (8209343)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209343.pdf".
+  [2011] LEWIS, CHARLES E. (8204583)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204583.pdf".
+  [2011] LEWIS, LUCILLE M. (8205100)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205100.pdf".
+  [2011] LITTLE, CATHERINE (8210403)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8210403.pdf".
+
+Done — OK: 0, No data: 0, Failed: 100
+[15:04:06] --- Networth run #2 ---
+[15:04:06] --- Networth run #2 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2011] LYNCH, CAROLINE G. (8206359)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206359.pdf".
+  [2011] LYTTON, ALABERT G. (8210404)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8210404.pdf".
+  [2011] MAGEE, RICHARD E. (8204584)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204584.pdf".
+  [2011] MCCARTHY, DAVID J. (8206514)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206514.pdf".
+  [2011] AKIN, W. TODD (8203404)... no totals found (likely scanned PDF)
+  [2011] ANDREWS, ROBERT E. (8203258)... no totals found (likely scanned PDF)
+  [2011] AUSTRIA, STEVE (8203436)... no totals found (likely scanned PDF)
+  [2011] BACHUS, SPENCER (8203069)... no totals found (likely scanned PDF)
+  [2011] BACHUS, SPENCER (8204064)... no totals found (likely scanned PDF)
+  [2011] BARLETTA, LOU (8203259)... no totals found (likely scanned PDF)
+  [2011] BASS, CHARLES F. (8203465)... no totals found (likely scanned PDF)
+  [2011] BASS, KAREN (8204945)... no totals found (likely scanned PDF)
+  [2011] BEATTY, JOYCE (8209582)... no totals found (likely scanned PDF)
+  [2011] BECERRA, XAVIER (8206378)... no totals found (likely scanned PDF)
+  [2011] BENISHEK, DAN (8203349)... no totals found (likely scanned PDF)
+  [2011] BERG, RICK (8206310)... no totals found (likely scanned PDF)
+  [2011] BONNER, JO (8205059)... no totals found (likely scanned PDF)
+  [2011] BOREN, DAN (8206657)... no totals found (likely scanned PDF)
+  [2011] BRALEY, BRUCE L. (8203044)... no totals found (likely scanned PDF)
+  [2011] BRIDENSTINE, JAMES FREDERICK (8209600)... no totals found (likely scanned PDF)
+  [2011] BROUN, PAUL C. (8213740)... no totals found (likely scanned PDF)
+  [2011] BROWN, CORRINE (8203405)... no totals found (likely scanned PDF)
+  [2011] BROWN, CORRINE (8203360)... no totals found (likely scanned PDF)
+  [2011] BUCHANAN, VERN (8203947)... no totals found (likely scanned PDF)
+  [2011] BURGESS, MICHAEL C. (8206296)... no totals found (likely scanned PDF)
+  [2011] BUTTERFIELD, G. K. (8203643)... no totals found (likely scanned PDF)
+  [2011] CAMP, DAVE (8214686)... no totals found (likely scanned PDF)
+  [2011] CANSECO, FRANCISCO R. (8208303)... no totals found (likely scanned PDF)
+  [2011] CANTOR, ERIC (8204773)... no totals found (likely scanned PDF)
+  [2011] CAPITO, SHELLEY MOORE (8202484)... no totals found (likely scanned PDF)
+  [2011] CAPITO, SHELLEY MOORE (8203005)... no totals found (likely scanned PDF)
+  [2011] CAPUANO, MICHAEL E. (8203037)... no totals found (likely scanned PDF)
+  [2011] CARDOZA, DENNIS A. (8206504)... no totals found (likely scanned PDF)
+  [2011] CARDOZA, DENNIS A. (8208825)... no totals found (likely scanned PDF)
+  [2011] CARNAHAN, RUSS (8203261)... no totals found (likely scanned PDF)
+  [2011] CARSON, ANDRE (8203104)... no totals found (likely scanned PDF)
+  [2011] CASSIDY, BILL (8204199)... no totals found (likely scanned PDF)
+  [2011] CASTOR, KATHY (8203045)... no totals found (likely scanned PDF)
+  [2011] CHU, JUDY (8205087)... no totals found (likely scanned PDF)
+  [2011] CHU, JUDY (8202805)... no totals found (likely scanned PDF)
+  [2011] CLEAVER, EMANUEL (8205086)... no totals found (likely scanned PDF)
+  [2011] CLYBURN, JAMES E. (8204822)... no totals found (likely scanned PDF)
+  [2011] COBLE, HOWARD (8204092)... no totals found (likely scanned PDF)
+  [2011] COBLE, HOWARD (8203262)... no totals found (likely scanned PDF)
+  [2011] COLE, TOM (8202806)... no totals found (likely scanned PDF)
+  [2011] COSTA, JIM (8202807)... no totals found (likely scanned PDF)
+  [2011] COSTA, JIM (8203406)... no totals found (likely scanned PDF)
+  [2011] CRENSHAW, ANDER (8203195)... no totals found (likely scanned PDF)
+  [2011] CUELLAR, HENRY (8205088)... no totals found (likely scanned PDF)
+  [2011] DEFAZIO, PETER A. (8203138)... no totals found (likely scanned PDF)
+  [2011] DEUTCH, THEODORE E. (8205091)... no totals found (likely scanned PDF)
+  [2011] DINGELL, JOHN D. (8205089)... no totals found (likely scanned PDF)
+  [2011] DREIER, DAVID (8206505)... no totals found (likely scanned PDF)
+  [2011] DREIER, DAVID (8204018)... no totals found (likely scanned PDF)
+  [2011] DUCKWORTH, L. TAMMY (8209066)... no totals found (likely scanned PDF)
+  [2011] DUFFY, SEAN P. (8203139)... no totals found (likely scanned PDF)
+  [2011] ENGEL, ELIOT L. (8203302)... no totals found (likely scanned PDF)
+  [2011] FARENTHOLD, BLAKE (8203734)... no totals found (likely scanned PDF)
+  [2011] FITZPATRICK, MICHAEL G. (8204337)... no totals found (likely scanned PDF)
+  [2011] FLEISCHMANN, CHARLES J. "CHUCK" (8203407)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203407.pdf".
+  [2011] FLEISCHMANN, CHARLES J. "CHUCK" (8203408)... no totals found (likely scanned PDF)
+  [2011] FLEMING, JOHN (8204174)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204174.pdf".
+  [2011] FORBES, J. RANDY (8203409)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203409.pdf".
+  [2011] FOSTER, G. WILLIAM (BILL) (8209583)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209583.pdf".
+  [2011] FRANK, BARNEY (8203169)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203169.pdf".
+  [2011] GARDNER, CORY (8204823)... no totals found (likely scanned PDF)
+  [2011] GARRETT, SCOTT (8203263)... no totals found (likely scanned PDF)
+  [2011] GIBBS, BOB (8202811)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8202811.pdf".
+  [2011] GIBBS, BOB (8203041)... no totals found (likely scanned PDF)
+  [2011] GOSAR, PAUL A. (8204836)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204836.pdf".
+  [2011] GRANGER, KAY (8203713)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203713.pdf".
+  [2011] GRAVES, TOM (8205090)... no totals found (likely scanned PDF)
+  [2011] GUINTA, FRANK C. (8203717)... no totals found (likely scanned PDF)
+  [2011] HANABUSA, COLLEEN W. (8202812)... no totals found (likely scanned PDF)
+  [2011] HANNA, RICHARD L. (8204510)... no totals found (likely scanned PDF)
+  [2011] HARTZLER, VICKY (8205092)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205092.pdf".
+  [2011] HAYWORTH, NAN A. S. (8203141)... no totals found (likely scanned PDF)
+  [2011] HAYWORTH, NAN A. S. (8205226)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205226.pdf".
+  [2011] HELLER, DEAN (8203170)... no totals found (likely scanned PDF)
+  [2011] HERNANDEZ, JOSE M. (8208453)... no totals found (likely scanned PDF)
+  [2011] HIRONO, MAZIE K. (9102118)... no totals found (likely scanned PDF)
+  [2011] HOLT, RUSH D. (8203264)... no totals found (likely scanned PDF)
+  [2011] HOYER, STENY H. (9102119)... no totals found (likely scanned PDF)
+  [2011] HUIZENGA, BILL (8203718)... no totals found (likely scanned PDF)
+  [2011] HULTGREN, RANDY (8203171)... no totals found (likely scanned PDF)
+  [2011] JACKSON LEE, SHELIA (8204176)... no totals found (likely scanned PDF)
+  [2011] JOHNSON, EDDIE CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2011] LYNCH, CAROLINE G. (8206359)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206359.pdf".
+  [2011] LYTTON, ALABERT G. (8210404)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8210404.pdf".
+  [2011] MAGEE, RICHARD E. (8204584)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204584.pdf".
+  [2011] MCCARTHY, DAVID J. (8206514)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206514.pdf".
+  [2011] AKIN, W. TODD (8203404)... no totals found (likely scanned PDF)
+  [2011] ANDREWS, ROBERT E. (8203258)... no totals found (likely scanned PDF)
+  [2011] AUSTRIA, STEVE (8203436)... no totals found (likely scanned PDF)
+  [2011] BACHUS, SPENCER (8203069)... no totals found (likely scanned PDF)
+  [2011] BACHUS, SPENCER (8204064)... no totals found (likely scanned PDF)
+  [2011] BARLETTA, LOU (8203259)... no totals found (likely scanned PDF)
+  [2011] BASS, CHARLES F. (8203465)... no totals found (likely scanned PDF)
+  [2011] BASS, KAREN (8204945)... no totals found (likely scanned PDF)
+  [2011] BEATTY, JOYCE (8209582)... no totals found (likely scanned PDF)
+  [2011] BECERRA, XAVIER (8206378)... no totals found (likely scanned PDF)
+  [2011] BENISHEK, DAN (8203349)... no totals found (likely scanned PDF)
+  [2011] BERG, RICK (8206310)... no totals found (likely scanned PDF)
+  [2011] BONNER, JO (8205059)... no totals found (likely scanned PDF)
+  [2011] BOREN, DAN (8206657)... no totals found (likely scanned PDF)
+  [2011] BRALEY, BRUCE L. (8203044)... no totals found (likely scanned PDF)
+  [2011] BRIDENSTINE, JAMES FREDERICK (8209600)... no totals found (likely scanned PDF)
+  [2011] BROUN, PAUL C. (8213740)... no totals found (likely scanned PDF)
+  [2011] BROWN, CORRINE (8203405)... no totals found (likely scanned PDF)
+  [2011] BROWN, CORRINE (8203360)... no totals found (likely scanned PDF)
+  [2011] BUCHANAN, VERN (8203947)... no totals found (likely scanned PDF)
+  [2011] BURGESS, MICHAEL C. (8206296)... no totals found (likely scanned PDF)
+  [2011] BUTTERFIELD, G. K. (8203643)... no totals found (likely scanned PDF)
+  [2011] CAMP, DAVE (8214686)... no totals found (likely scanned PDF)
+  [2011] CANSECO, FRANCISCO R. (8208303)... no totals found (likely scanned PDF)
+  [2011] CANTOR, ERIC (8204773)... no totals found (likely scanned PDF)
+  [2011] CAPITO, SHELLEY MOORE (8202484)... no totals found (likely scanned PDF)
+  [2011] CAPITO, SHELLEY MOORE (8203005)... no totals found (likely scanned PDF)
+  [2011] CAPUANO, MICHAEL E. (8203037)... no totals found (likely scanned PDF)
+  [2011] CARDOZA, DENNIS A. (8206504)... no totals found (likely scanned PDF)
+  [2011] CARDOZA, DENNIS A. (8208825)... no totals found (likely scanned PDF)
+  [2011] CARNAHAN, RUSS (8203261)... no totals found (likely scanned PDF)
+  [2011] CARSON, ANDRE (8203104)... no totals found (likely scanned PDF)
+  [2011] CASSIDY, BILL (8204199)... no totals found (likely scanned PDF)
+  [2011] CASTOR, KATHY (8203045)... no totals found (likely scanned PDF)
+  [2011] CHU, JUDY (8205087)... no totals found (likely scanned PDF)
+  [2011] CHU, JUDY (8202805)... no totals found (likely scanned PDF)
+  [2011] CLEAVER, EMANUEL (8205086)... no totals found (likely scanned PDF)
+  [2011] CLYBURN, JAMES E. (8204822)... no totals found (likely scanned PDF)
+  [2011] COBLE, HOWARD (8204092)... no totals found (likely scanned PDF)
+  [2011] COBLE, HOWARD (8203262)... no totals found (likely scanned PDF)
+  [2011] COLE, TOM (8202806)... no totals found (likely scanned PDF)
+  [2011] COSTA, JIM (8202807)... no totals found (likely scanned PDF)
+  [2011] COSTA, JIM (8203406)... no totals found (likely scanned PDF)
+  [2011] CRENSHAW, ANDER (8203195)... no totals found (likely scanned PDF)
+  [2011] CUELLAR, HENRY (8205088)... no totals found (likely scanned PDF)
+  [2011] DEFAZIO, PETER A. (8203138)... no totals found (likely scanned PDF)
+  [2011] DEUTCH, THEODORE E. (8205091)... no totals found (likely scanned PDF)
+  [2011] DINGELL, JOHN D. (8205089)... no totals found (likely scanned PDF)
+  [2011] DREIER, DAVID (8206505)... no totals found (likely scanned PDF)
+  [2011] DREIER, DAVID (8204018)... no totals found (likely scanned PDF)
+  [2011] DUCKWORTH, L. TAMMY (8209066)... no totals found (likely scanned PDF)
+  [2011] DUFFY, SEAN P. (8203139)... no totals found (likely scanned PDF)
+  [2011] ENGEL, ELIOT L. (8203302)... no totals found (likely scanned PDF)
+  [2011] FARENTHOLD, BLAKE (8203734)... no totals found (likely scanned PDF)
+  [2011] FITZPATRICK, MICHAEL G. (8204337)... no totals found (likely scanned PDF)
+  [2011] FLEISCHMANN, CHARLES J. "CHUCK" (8203407)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203407.pdf".
+  [2011] FLEISCHMANN, CHARLES J. "CHUCK" (8203408)... no totals found (likely scanned PDF)
+  [2011] FLEMING, JOHN (8204174)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204174.pdf".
+  [2011] FORBES, J. RANDY (8203409)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203409.pdf".
+  [2011] FOSTER, G. WILLIAM (BILL) (8209583)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8209583.pdf".
+  [2011] FRANK, BARNEY (8203169)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203169.pdf".
+  [2011] GARDNER, CORY (8204823)... no totals found (likely scanned PDF)
+  [2011] GARRETT, SCOTT (8203263)... no totals found (likely scanned PDF)
+  [2011] GIBBS, BOB (8202811)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8202811.pdf".
+  [2011] GIBBS, BOB (8203041)... no totals found (likely scanned PDF)
+  [2011] GOSAR, PAUL A. (8204836)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204836.pdf".
+  [2011] GRANGER, KAY (8203713)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203713.pdf".
+  [2011] GRAVES, TOM (8205090)... no totals found (likely scanned PDF)
+  [2011] GUINTA, FRANK C. (8203717)... no totals found (likely scanned PDF)
+  [2011] HANABUSA, COLLEEN W. (8202812)... no totals found (likely scanned PDF)
+  [2011] HANNA, RICHARD L. (8204510)... no totals found (likely scanned PDF)
+  [2011] HARTZLER, VICKY (8205092)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205092.pdf".
+  [2011] HAYWORTH, NAN A. S. (8203141)... no totals found (likely scanned PDF)
+  [2011] HAYWORTH, NAN A. S. (8205226)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205226.pdf".
+  [2011] HELLER, DEAN (8203170)... no totals found (likely scanned PDF)
+  [2011] HERNANDEZ, JOSE M. (8208453)... no totals found (likely scanned PDF)
+  [2011] HIRONO, MAZIE K. (9102118)... no totals found (likely scanned PDF)
+  [2011] HOLT, RUSH D. (8203264)... no totals found (likely scanned PDF)
+  [2011] HOYER, STENY H. (9102119)... no totals found (likely scanned PDF)
+  [2011] HUIZENGA, BILL (8203718)... no totals found (likely scanned PDF)
+  [2011] HULTGREN, RANDY (8203171)... no totals found (likely scanned PDF)
+  [2011] JACKSON LEE, SHELIA (8204176)... no totals found (likely scanned PDF)
+  [2011] JOHNSON, EDDIE BERNICE (8204870)... no totals found (likely scanned PDF)
+  [2011] JOHNSON, HENRY C. "HANK" (8203238)... no totals found (likely scanned PDF)
+  [2011] JONES, WALTER B. (8204247)... no totals found (likely scanned PDF)
+  [2011] JONES, WALTER B. (9109908)... no totals found (likely scanned PDF)
+  [2011] LAMBORN, DOUG (8203811)... no totals found (likely scanned PDF)
+  [2011] LANCE, LEONARD (8206590)... no totals found (likely scanned PDF)
+  [2011] LIPINSKI, DANIEL (8202928)... no totals found (likely scanned PDF)
+  [2011] LOBIONDO, FRANK A. (8203346)... no totals found (likely scanned PDF)
+  [2011] LOBIONDO, FRANK A. (8206491)... no totals found (likely scanned PDF)
+  [2011] LONG, BILLY (8203265)... no totals found (likely scanned PDF)
+  [2011] LOWEY, NITA M. (8203172)... no totals found (likely scanned PDF)
+  [2011] LUCAS, FRANK D. (9102120)... no totals found (likely scanned PDF)
+  [2011] LUJAN, BEN RAY (8205125)... no totals found (likely scanned PDF)
+  [2011] LUNGREN, DANIEL E. (8203983)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 86, Failed: 14
+BERNICE (8204870)... no totals found (likely scanned PDF)
+  [2011] JOHNSON, HENRY C. "HANK" (8203238)... no totals found (likely scanned PDF)
+  [2011] JONES, WALTER B. (8204247)... no totals found (likely scanned PDF)
+  [2011] JONES, WALTER B. (9109908)... no totals found (likely scanned PDF)
+  [2011] LAMBORN, DOUG (8203811)... no totals found (likely scanned PDF)
+  [2011] LANCE, LEONARD (8206590)... no totals found (likely scanned PDF)
+  [2011] LIPINSKI, DANIEL (8202928)... no totals found (likely scanned PDF)
+  [2011] LOBIONDO, FRANK A. (8203346)... no totals found (likely scanned PDF)
+  [2011] LOBIONDO, FRANK A. (8206491)... no totals found (likely scanned PDF)
+  [2011] LONG, BILLY (8203265)... no totals found (likely scanned PDF)
+  [2011] LOWEY, NITA M. (8203172)... no totals found (likely scanned PDF)
+  [2011] LUCAS, FRANK D. (9102120)... no totals found (likely scanned PDF)
+  [2011] LUJAN, BEN RAY (8205125)... no totals found (likely scanned PDF)
+  [2011] LUNGREN, DANIEL E. (8203983)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 86, Failed: 14
+[15:05:21] --- Networth run #3 ---
+[15:05:21] --- Networth run #3 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2011] MORAN, JAMES P. (8203735)... no totals found (likely scanned PDF)
+  [2011] MULVANEY, MICK (8203437)... no totals found (likely scanned PDF)
+  [2011] MURPHY, CHRISTOPHER S. (8203359)... no totals found (likely scanned PDF)
+  [2011] MYRICK, SUE WILKINS (8206222)... no totals found (likely scanned PDF)
+  [2011] NADLER, JERROLD (8203985)... no totals found (likely scanned PDF)
+  [2011] OLVER, JOHN W. (9102121)... no totals found (likely scanned PDF)
+  [2011] OLVER, JOHN W. (8206506)... no totals found (likely scanned PDF)
+  [2011] PASCRELL, BILL (8203140)... no totals found (likely scanned PDF)
+  [2011] PASTOR, ED (8202686)... no totals found (likely scanned PDF)
+  [2011] PETERS, GARY C. (8203266)... no totals found (likely scanned PDF)
+  [2011] PETERS, GARY C. (8212678)... no totals found (likely scanned PDF)
+  [2011] PETERSON, COLLIN C. (8203102)... no totals found (likely scanned PDF)
+  [2011] PIERLUISI, PEDRO R. (8203352)... no totals found (likely scanned PDF)
+  [2011] POMPEO, MIKE (8203268)... no totals found (likely scanned PDF)
+  [2011] RANGEL, CHARLES B. (8209052)... no totals found (likely scanned PDF)
+  [2011] REHBERG, DENNY (8203142)... no totals found (likely scanned PDF)
+  [2011] REICHERT, DAVID G. (8202994)... no totals found (likely scanned PDF)
+  [2011] RENACCI, JAMES B. (8206194)... no totals found (likely scanned PDF)
+  [2011] RICHARDSON, LAURA (8203894)... no totals found (likely scanned PDF)
+  [2011] RICHARDSON, LAURA (8203776)... no totals found (likely scanned PDF)
+  [2011] RIGELL, E. SCOTT (8203269)... no totals found (likely scanned PDF)
+  [2011] ROBERTI, DANIEL FRANCIS (8208532)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208532.pdf".
+  [2011] ROBY, MARTHA (8204546)... no totals found (likely scanned PDF)
+  [2011] ROONEY, THOMAS J. (8203984)... no totals found (likely scanned PDF)
+  [2011] ROTHMAN, STEVEN R. (8205094)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205094.pdf".
+  [2011] RUNYAN, JON (8205127)... no totals found (likely scanned PDF)
+  [2011] RUNYAN, JON (8204019)... no totals found (likely scanned PDF)
+  [2011] RYAN, PAUL (8204200)... no totals found (likely scanned PDF)
+  [2011] RYAN, PAUL (8206195)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206195.pdf".
+  [2011] SANCHEZ, LINDA T. (8206196)... no totals found (likely scanned PDF)
+  [2011] SCALISE, STEVE (8203174)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203174.pdf".
+  [2011] SCHILLING, ROBERT T. (8202738)... no totals found (likely scanned PDF)
+  [2011] SCHMIDT, JEAN (8204496)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204496.pdf".
+  [2011] SCHOCK, AARON (8202740)... no totals found (likely scanned PDF)
+  [2011] SCHWEIKERT, DAVID (8203176)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203176.pdf".
+  [2011] SCOTT, ROBERT C. "BOBBY" (8214687)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8214687.pdf".
+  [2011] SCOTT, TIM (8204175)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204175.pdf".
+  [2011] SENSENBRENNER, F. JAMES (8203143)... no totals found (likely scanned PDF)
+  [2011] SHULER, HEATH (8204249)... no totals found (likely scanned PDF)
+  [2011] SHUSTER, BILL (8204173)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204173.pdf".
+  [2011] SIMPSON, MICHAEL K. (8202754)... no totals found (likely scanned PDF)
+  [2011] SLAUGHTER, LOUISE MCINTOSH (8203144)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203144.pdf".
+  [2011] SMITH, LAMAR (8203353)... no totals found (likely scanned PDF)
+  [2011] SPEIER, JACKIE (8204889)... no totals found (likely scanned PDF)
+  [2011] STEWART, CHRIS (8206778)... no totals found (likely scanned PDF)
+  [2011] STIVERS, STEVE (8203945)... no totals found (likely scanned PDF)
+  [2011] STUTZMAN, MARLIN A. (8204312)... no totals found (likely scanned PDF)
+  [2011] STUTZMAN, MARLIN A. (8213253)... no totals found (likely scanned PDF)
+  [2011] TERRY, LEE (8203827)... no totals found (likely scanned PDF)
+  [2011] TERRY, LEE (8203438)... no totals found (likely scanned PDF)
+  [2011] VAN HOLLEN, CHRIS (8203118)... no totals found (likely scanned PDF)
+  [2011] WALBERG, TIM (8203357)... no totals found (likely scanned PDF)
+  [2011] WALZ, TIMOTHY J. (8203439)... no totals found (likely scanned PDF)
+  [2011] WASSERMAN SCHULTZ, DEBBIE (8205095)... no totals found (likely scanned PDF)
+  [2011] WATERS, MAXINE (8203356)... no totals found (likely scanned PDF)
+  [2011] WATT, MELVIN L. (8203043)... no totals found (likely scanned PDF)
+  [2011] WELCH, PETER (8205126)... no totals found (likely scanned PDF)
+  [2011] WEST, ALLEN B. (8204871)... no totals found (likely scanned PDF)
+  [2011] WEST, ALLEN B. (8206591)... no totals found (likely scanned PDF)
+  [2011] WESTMORELAND, LYNN A. (8208719)... no totals found (likely scanned PDF)
+  [2011] WILSON, FREDERICA S. (8203932)... no totals found (likely scanned PDF)
+  [2011] WILSON, FREDERICA S. (8204338)... no totals found (likely scanned PDF)
+  [2011] WILSON, JOE (8202995)... no totals found (likely scanned PDF)
+  [2011] WITTMAN, ROBERT J. (8202795)... no totals found (likely scanned PDF)
+  [2011] YOUNG, TODD C. (8203589)... no totals found (likely scanned PDF)
+  [2011] LYNCH, STEPHEN F. (8206192)... no totals found (likely scanned PDF)
+  [2011] MATHESON, JIM (8203410)... no totals found (likely scanned PDF)
+  [2011] MCCLINTOCK, TOM (8206193)... no totals found (likely scanned PDF)
+  [2011] MCKINLEY, DAVID B. (8205093)... no totals found (likely scanned PDF)
+  [2011] MCKINLEY, DAVID B. (8203946)... no totals found (likely scanned PDF)
+  [2011] MCKINLEY, DAVID B. (9102213)... no totals found (likely scanned PDF)
+  [2011] MCLEOD, GLORIA NEGRETE (8210300)... no totals found (likely scanned PDF)
+  [2011] MCMORRIS RODGERS, CATHY (8203120)... no totals found (likely scanned PDF)
+  [2011] MILLER, BRAD (8204248)... no totals found (likely scanned PDF)
+  [2010] CASTLE, MICHAEL N. (9100021)... no totals found (likely scanned PDF)
+  [2010] CASTLE, MICHAEL N. (8148746)... no totals found (likely scanned PDF)
+  [2010] CHU, JUDY (8202923)... no totals found (likely scanned PDF)
+  [2010] CHU, JUDY (8148188)... no totals found (likely scanned PDF)
+  [2010] CLEAVER, EMANUEL (8148185)... no totals found (likely scanned PDF)
+  [2010] CLEAVER, EMANUEL (8205085)... no totals found (likely scanned PDF)
+  [2010] CLYBURN, JAMES E. (8148649)... no totals found (likely scanned PDF)
+  [2010] CLYBURN, JAMES E. (8200132)... no totals found (likely scanned PDF)
+  [2010] COFFMAN, MIKE (8148929)... no totals found (likely scanned PDF)
+  [2010] COHEN, STEVE (8148184)... no totals found (likely scanned PDF)
+  [2010] COHEN, STEVE (8203099)... no totals found (likely scanned PDF)
+  [2010] COLE, TOM (8147605)... no totals found (likely scanned PDF)
+  [2010] CONAWAY, K. MICHAEL (8148468)... no totals found (likely scanned PDF)
+  [2010] CONYERS, JOHN (8200073)... no totals found (likely scanned PDF)
+  [2010] COSTA, JIM (8148445)... no totals found (likely scanned PDF)
+  [2010] CUELLAR, HENRY (8147641)... no totals found (likely scanned PDF)
+  [2010] DAHLKEMPER, KATHLEEN A. (8149206)... no totals found (likely scanned PDF)
+  [2010] DAVIS, SUSAN A. (8148189)... no totals found (likely scanned PDFCivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2011] MORAN, JAMES P. (8203735)... no totals found (likely scanned PDF)
+  [2011] MULVANEY, MICK (8203437)... no totals found (likely scanned PDF)
+  [2011] MURPHY, CHRISTOPHER S. (8203359)... no totals found (likely scanned PDF)
+  [2011] MYRICK, SUE WILKINS (8206222)... no totals found (likely scanned PDF)
+  [2011] NADLER, JERROLD (8203985)... no totals found (likely scanned PDF)
+  [2011] OLVER, JOHN W. (9102121)... no totals found (likely scanned PDF)
+  [2011] OLVER, JOHN W. (8206506)... no totals found (likely scanned PDF)
+  [2011] PASCRELL, BILL (8203140)... no totals found (likely scanned PDF)
+  [2011] PASTOR, ED (8202686)... no totals found (likely scanned PDF)
+  [2011] PETERS, GARY C. (8203266)... no totals found (likely scanned PDF)
+  [2011] PETERS, GARY C. (8212678)... no totals found (likely scanned PDF)
+  [2011] PETERSON, COLLIN C. (8203102)... no totals found (likely scanned PDF)
+  [2011] PIERLUISI, PEDRO R. (8203352)... no totals found (likely scanned PDF)
+  [2011] POMPEO, MIKE (8203268)... no totals found (likely scanned PDF)
+  [2011] RANGEL, CHARLES B. (8209052)... no totals found (likely scanned PDF)
+  [2011] REHBERG, DENNY (8203142)... no totals found (likely scanned PDF)
+  [2011] REICHERT, DAVID G. (8202994)... no totals found (likely scanned PDF)
+  [2011] RENACCI, JAMES B. (8206194)... no totals found (likely scanned PDF)
+  [2011] RICHARDSON, LAURA (8203894)... no totals found (likely scanned PDF)
+  [2011] RICHARDSON, LAURA (8203776)... no totals found (likely scanned PDF)
+  [2011] RIGELL, E. SCOTT (8203269)... no totals found (likely scanned PDF)
+  [2011] ROBERTI, DANIEL FRANCIS (8208532)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8208532.pdf".
+  [2011] ROBY, MARTHA (8204546)... no totals found (likely scanned PDF)
+  [2011] ROONEY, THOMAS J. (8203984)... no totals found (likely scanned PDF)
+  [2011] ROTHMAN, STEVEN R. (8205094)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8205094.pdf".
+  [2011] RUNYAN, JON (8205127)... no totals found (likely scanned PDF)
+  [2011] RUNYAN, JON (8204019)... no totals found (likely scanned PDF)
+  [2011] RYAN, PAUL (8204200)... no totals found (likely scanned PDF)
+  [2011] RYAN, PAUL (8206195)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8206195.pdf".
+  [2011] SANCHEZ, LINDA T. (8206196)... no totals found (likely scanned PDF)
+  [2011] SCALISE, STEVE (8203174)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203174.pdf".
+  [2011] SCHILLING, ROBERT T. (8202738)... no totals found (likely scanned PDF)
+  [2011] SCHMIDT, JEAN (8204496)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204496.pdf".
+  [2011] SCHOCK, AARON (8202740)... no totals found (likely scanned PDF)
+  [2011] SCHWEIKERT, DAVID (8203176)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203176.pdf".
+  [2011] SCOTT, ROBERT C. "BOBBY" (8214687)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8214687.pdf".
+  [2011] SCOTT, TIM (8204175)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204175.pdf".
+  [2011] SENSENBRENNER, F. JAMES (8203143)... no totals found (likely scanned PDF)
+  [2011] SHULER, HEATH (8204249)... no totals found (likely scanned PDF)
+  [2011] SHUSTER, BILL (8204173)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8204173.pdf".
+  [2011] SIMPSON, MICHAEL K. (8202754)... no totals found (likely scanned PDF)
+  [2011] SLAUGHTER, LOUISE MCINTOSH (8203144)... FAILED — Unexpected server response (403) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2011/8203144.pdf".
+  [2011] SMITH, LAMAR (8203353)... no totals found (likely scanned PDF)
+  [2011] SPEIER, JACKIE (8204889)... no totals found (likely scanned PDF)
+  [2011] STEWART, CHRIS (8206778)... no totals found (likely scanned PDF)
+  [2011] STIVERS, STEVE (8203945)... no totals found (likely scanned PDF)
+  [2011] STUTZMAN, MARLIN A. (8204312)... no totals found (likely scanned PDF)
+  [2011] STUTZMAN, MARLIN A. (8213253)... no totals found (likely scanned PDF)
+  [2011] TERRY, LEE (8203827)... no totals found (likely scanned PDF)
+  [2011] TERRY, LEE (8203438)... no totals found (likely scanned PDF)
+  [2011] VAN HOLLEN, CHRIS (8203118)... no totals found (likely scanned PDF)
+  [2011] WALBERG, TIM (8203357)... no totals found (likely scanned PDF)
+  [2011] WALZ, TIMOTHY J. (8203439)... no totals found (likely scanned PDF)
+  [2011] WASSERMAN SCHULTZ, DEBBIE (8205095)... no totals found (likely scanned PDF)
+  [2011] WATERS, MAXINE (8203356)... no totals found (likely scanned PDF)
+  [2011] WATT, MELVIN L. (8203043)... no totals found (likely scanned PDF)
+  [2011] WELCH, PETER (8205126)... no totals found (likely scanned PDF)
+  [2011] WEST, ALLEN B. (8204871)... no totals found (likely scanned PDF)
+  [2011] WEST, ALLEN B. (8206591)... no totals found (likely scanned PDF)
+  [2011] WESTMORELAND, LYNN A. (8208719)... no totals found (likely scanned PDF)
+  [2011] WILSON, FREDERICA S. (8203932)... no totals found (likely scanned PDF)
+  [2011] WILSON, FREDERICA S. (8204338)... no totals found (likely scanned PDF)
+  [2011] WILSON, JOE (8202995)... no totals found (likely scanned PDF)
+  [2011] WITTMAN, ROBERT J. (8202795)... no totals found (likely scanned PDF)
+  [2011] YOUNG, TODD C. (8203589)... no totals found (likely scanned PDF)
+  [2011] LYNCH, STEPHEN F. (8206192)... no totals found (likely scanned PDF)
+  [2011] MATHESON, JIM (8203410)... no totals found (likely scanned PDF)
+  [2011] MCCLINTOCK, TOM (8206193)... no totals found (likely scanned PDF)
+  [2011] MCKINLEY, DAVID B. (8205093)... no totals found (likely scanned PDF)
+  [2011] MCKINLEY, DAVID B. (8203946)... no totals found (likely scanned PDF)
+  [2011] MCKINLEY, DAVID B. (9102213)... no totals found (likely scanned PDF)
+  [2011] MCLEOD, GLORIA NEGRETE (8210300)... no totals found (likely scanned PDF)
+  [2011] MCMORRIS RODGERS, CATHY (8203120)... no totals found (likely scanned PDF)
+  [2011] MILLER, BRAD (8204248)... no totals found (likely scanned PDF)
+  [2010] CASTLE, MICHAEL N. (9100021)... no totals found (likely scanned PDF)
+  [2010] CASTLE, MICHAEL N. (8148746)... no totals found (likely scanned PDF)
+  [2010] CHU, JUDY (8202923)... no totals found (likely scanned PDF)
+  [2010] CHU, JUDY (8148188)... no totals found (likely scanned PDF)
+  [2010] CLEAVER, EMANUEL (8148185)... no totals found (likely scanned PDF)
+  [2010] CLEAVER, EMANUEL (8205085)... no totals found (likely scanned PDF)
+  [2010] CLYBURN, JAMES E. (8148649)... no totals found (likely scanned PDF)
+  [2010] CLYBURN, JAMES E. (8200132)... no totals found (likely scanned PDF)
+  [2010] COFFMAN, MIKE (8148929)... no totals found (likely scanned PDF)
+  [2010] COHEN, STEVE (8148184)... no totals found (likely scanned PDF)
+  [2010] COHEN, STEVE (8203099)... no totals found (likely scanned PDF)
+  [2010] COLE, TOM (8147605)... no totals found (likely scanned PDF)
+  [2010] CONAWAY, K. MICHAEL (8148468)... no totals found (likely scanned PDF)
+  [2010] CONYERS, JOHN (8200073)... no totals found (likely scanned PDF)
+  [2010] COSTA, JIM (8148445)... no totals found (likely scanned PDF)
+  [2010] CUELLAR, HENRY (8147641)... no totals found (likely scanned PDF)
+  [2010] DAHLKEMPER, KATHLEEN A. (8149206)... no totals found (likely scanned PDF)
+  [2010] DAVIS, SUSAN A. (8148189)... no totals found (likely scanned PDF)
+  [2010] DEFAZIO, PETER A. (8148162)... no totals found (likely scanned PDF)
+  [2010] DELAURO, ROSA (8147209)... no totals found (likely scanned PDF)
+  [2010] DEUTCH, THEODORE E. (8148300)... no totals found (likely scanned PDF)
+  [2010] DEUTCH, THEODORE E. (8148447)... no totals found (likely scanned PDF)
+  [2010] DOGGETT, LLOYD (8203315)... no totals found (likely scanned PDF)
+  [2010] DOLD, ROBERT J. (8203199)... no totals found (likely scanned PDF)
+  [2010] DONNELLY, JOE (9100148)... no totals found (likely scanned PDF)
+  [2010] DREIER, DAVID (8203715)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 90, Failed: 10
+)
+  [2010] DEFAZIO, PETER A. (8148162)... no totals found (likely scanned PDF)
+  [2010] DELAURO, ROSA (8147209)... no totals found (likely scanned PDF)
+  [2010] DEUTCH, THEODORE E. (8148300)... no totals found (likely scanned PDF)
+  [2010] DEUTCH, THEODORE E. (8148447)... no totals found (likely scanned PDF)
+  [2010] DOGGETT, LLOYD (8203315)... no totals found (likely scanned PDF)
+  [2010] DOLD, ROBERT J. (8203199)... no totals found (likely scanned PDF)
+  [2010] DONNELLY, JOE (9100148)... no totals found (likely scanned PDF)
+  [2010] DREIER, DAVID (8203715)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 90, Failed: 10
+[15:06:38] --- Networth run #4 ---
+[15:06:38] --- Networth run #4 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2010] PAULSON, JUDY K. (8204948)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8204948.pdf".
+  [2010] MILLER, SCOTT E. (8210066)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8210066.pdf".
+  [2010] MCFAUL, DANIEL F. (8207592)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8207592.pdf".
+  [2010] KLING, JEFFREY R. (9109639)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/9109639.pdf".
+  [2010] HANRAHAN, THOMAS K. (8206757)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8206757.pdf".
+  [2010] CASSIL, DAN (8205097)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8205097.pdf".
+  [2010] YARMUTH, JOHN A. (8148955)... no totals found (likely scanned PDF)
+  [2010] YARMUTH, JOHN A. (8147492)... no totals found (likely scanned PDF)
+  [2010] WU, DAVID (8148028)... no totals found (likely scanned PDF)
+  [2010] WITTMAN, ROBERT J. (8149289)... no totals found (likely scanned PDF)
+  [2010] WILSON, JOE (8147611)... no totals found (likely scanned PDF)
+  [2010] WILSON, CHARLES A. (8147990)... no totals found (likely scanned PDF)
+  [2010] WILSON, CHARLES A. (8147840)... no totals found (likely scanned PDF)
+  [2010] WHITFIELD, ED (8147485)... no totals found (likely scanned PDF)
+  [2010] WESTMORELAND, LYNN A. (8148931)... no totals found (likely scanned PDF)
+  [2010] WEST, ALLEN B. (8203342)... no totals found (likely scanned PDF)
+  [2010] WAXMAN, HENRY A. (8147949)... no totals found (likely scanned PDF)
+  [2010] DRIEHAUS, STEVE (8147638)... no totals found (likely scanned PDF)
+  [2010] EHLERS, VERNON J. (8148533)... no totals found (likely scanned PDF)
+  [2010] ELLISON, KEITH (8147890)... no totals found (likely scanned PDF)
+  [2010] FALEOMAVAEGA, ENI F. H. (8203200)... no totals found (likely scanned PDF)
+  [2010] FARR, SAM (8147982)... no totals found (likely scanned PDF)
+  [2010] FATTAH, CHAKA (8147983)... no totals found (likely scanned PDF)
+  [2010] FOXX, VIRGINIA (8148823)... no totals found (likely scanned PDF)
+  [2010] FRANK, BARNEY (8148022)... no totals found (likely scanned PDF)
+  [2010] FRANK, BARNEY (8148132)... no totals found (likely scanned PDF)
+  [2010] GARAMENDI, JOHN (8149296)... no totals found (likely scanned PDF)
+  [2010] GARAMENDI, JOHN (8149312)... no totals found (likely scanned PDF)
+  [2010] GARRETT, SCOTT (8148190)... no totals found (likely scanned PDF)
+  [2010] GIFFORDS, GABRIELLE (8147242)... no totals found (likely scanned PDF)
+  [2010] GORDON, BART (8149074)... no totals found (likely scanned PDF)
+  [2010] GRAYSON, ALAN (8200031)... no totals found (likely scanned PDF)
+  [2010] GREEN, AL (8149029)... no totals found (likely scanned PDF)
+  [2010] GRIFFITH, PARKER (8149180)... no totals found (likely scanned PDF)
+  [2010] GRIJALVA, RAUL M. (9100186)... no totals found (likely scanned PDF)
+  [2010] GRIJALVA, RAUL M. (8148882)... no totals found (likely scanned PDF)
+  [2010] GUTHRIE, BRETT (8148747)... no totals found (likely scanned PDF)
+  [2010] HALL, RALPH M. (8203813)... no totals found (likely scanned PDF)
+  [2010] HALVORSON, DEBORAH L. (8147985)... no totals found (likely scanned PDF)
+  [2010] HEINRICH, MARTIN (8147891)... no totals found (likely scanned PDF)
+  [2010] HENSARLING, JEB (8149258)... no totals found (likely scanned PDF)
+  [2010] HILL, BARON P. (8148650)... no totals found (likely scanned PDF)
+  [2010] HILL, BARON P. (8149112)... no totals found (likely scanned PDF)
+  [2010] HIMES, JAMES A. (8149090)... no totals found (likely scanned PDF)
+  [2010] HODES, PAUL W. (8148748)... no totals found (likely scanned PDF)
+  [2010] HOLT, RUSH D. (8148765)... no totals found (likely scanned PDF)
+  [2010] JACKSON LEE, SHEILA (8200057)... no totals found (likely scanned PDF)
+  [2010] JOHNSON, EDDIE BERNICE (8149259)... no totals found (likely scanned PDF)
+  [2010] JOHNSON, EDDIE BERNICE (8148074)... no totals found (likely scanned PDF)
+  [2010] JOHNSON, SAM (8148301)... no totals found (likely scanned PDF)
+  [2010] JONES, WALTER B. (8200054)... no totals found (likely scanned PDF)
+  [2010] JONES, WALTER B. (9109909)... no totals found (likely scanned PDF)
+  [2010] JORDAN, JIM (8147868)... no totals found (likely scanned PDF)
+  [2010] KILROY, MARY JO (8148824)... no totals found (likely scanned PDF)
+  [2010] KINGSTON, JACK (8148164)... no totals found (likely scanned PDF)
+  [2010] KRATOVIL, FRANK (8148766)... no totals found (likely scanned PDF)
+  [2010] LAMBORN, DOUG (8147948)... no totals found (likely scanned PDF)
+  [2010] LANCE, LEONARD (8148302)... no totals found (likely scanned PDF)
+  [2010] LATHAM, TOM (8149075)... no totals found (likely scanned PDF)
+  [2010] LEE, CHRISTOPHER JOHN (8147841)... no totals found (likely scanned PDF)
+  [2010] LOEBSACK, DAVID (8147892)... no totals found (likely scanned PDF)
+  [2010] LOWEY, NITA M. (8203166)... no totals found (likely scanned PDF)
+  [2010] LUMMIS, CYNTHIA M. (8148995)... no totals found (likely scanned PDF)
+  [2010] MARCHANT, KENNY (8200160)... no totals found (likely scanned PDF)
+  [2010] MARSHALL, JIM (8149091)... no totals found (likely scanned PDF)
+  [2010] MCCAUL, MICHAEL T. (8148956)... no totals found (likely scanned PDF)
+  [2010] MCCLINTOCK, TOM (8206191)... no totals found (likely scanned PDF)
+  [2010] MCCLINTOCK, TOM (8148303)... no totals found (likely scanned PDF)
+  [2010] MCCOLLUM, BETTY (8148024)... no totals found (likely scanned PDF)
+  [2010] MCCOLLUM, BETTY (8148245)... no totals found (likely scanned PDF)
+  [2010] MCCOTTER, THADDEUS G. (9100149)... no totals found (likely scanned PDF)
+  [2010] MCCOTTER, THADDEUS G. (8148377)... no totals found (likely scanned PDF)
+  [2010] MCHENRY, PATRICK T. (8147607)... no totals found (likely scanned PDF)
+  [2010] MEEKS, GREGORY W. (8203201)... no totals found (likely scanned PDF)
+  [2010] MELANCON, CHARLIE (8148320)... no totals found (likely scanned PDF)
+  [2010] MILLER, BRAD (8200281)... no totals found (likely scanned PDF)
+  [2010] MILLER, JEFF (8147893)... no totals found (likely scanned PDF)
+  [2010] MINNICK, WALT (8147352)... no totals found (likely scanned PDF)
+  [2010] MOORE, DENNIS (8148470)... no totals found (likely scanned PDF)
+  [2010] MOORE, GWEN (8147609)... no totals found (likely scanned PDF)
+  [2010] MORAN, JAMES P. (8148647)... no totals found (likely scanned PDF)
+  [2010] MURPHY, PATRICK J. (8147361)... no totals found (likely scanned PDF)
+  [2010] MURPHY, PATRICK J. (8148102)... no totals found (likely scanned PDF)
+  [2010] MURPHY, SCOTT (8200058)... no totals found (likely scanned PDF)
+  [2010] MURPHY, SCOTT (8200431)... no totals found (likely scanned PDF)
+  [2010] MURPHY, TIM (8147986)... no totals found (likely scanned PDF)
+  [2010] MYRICK, SUE WILKINS (8148193)... no totals found (likely scanned PDF)
+  [2010] OBERSTAR, JAMES L. (8147869)... no totals found (likely scanned PDF)
+  [2010] ORTIZ, SOLOMON P. (8149207)... no totals found (likely scanned PDF)
+  [2010] OWENS, WILLIAM L. (8148304)... no totals found (likely scanned PDF)
+  [2010] PASCRELL, BILL (8148194)... no totals found (likely scanned PDF)
+  [2010] PAUL, RON (8203202)... no totals found (likely scanned PDF)
+  [2010] PAYNE, DONALD M. (8147381)... no totals found (likely scanned PDF)
+  [2010] PELOSI, NANCY (8147383)... no totals found (likely scanned PDF)
+  [2010] PETERS, GARY C. (8148321)... no totals found (likely scanned PDF)
+  [2010] PETERS, GARY C. (8203257)... no totals found (likely scanned PDF)
+  [2010] PETERS, GARY C. (8212677)... no totals found (likely scanned PDF)
+  [2010] PETRI, THOMAS E. (8148966)... no totals found (likely scanned PDF)
+  [2010] PINGREE, CHELLIECivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2010] PAULSON, JUDY K. (8204948)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8204948.pdf".
+  [2010] MILLER, SCOTT E. (8210066)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8210066.pdf".
+  [2010] MCFAUL, DANIEL F. (8207592)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8207592.pdf".
+  [2010] KLING, JEFFREY R. (9109639)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/9109639.pdf".
+  [2010] HANRAHAN, THOMAS K. (8206757)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8206757.pdf".
+  [2010] CASSIL, DAN (8205097)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2010/8205097.pdf".
+  [2010] YARMUTH, JOHN A. (8148955)... no totals found (likely scanned PDF)
+  [2010] YARMUTH, JOHN A. (8147492)... no totals found (likely scanned PDF)
+  [2010] WU, DAVID (8148028)... no totals found (likely scanned PDF)
+  [2010] WITTMAN, ROBERT J. (8149289)... no totals found (likely scanned PDF)
+  [2010] WILSON, JOE (8147611)... no totals found (likely scanned PDF)
+  [2010] WILSON, CHARLES A. (8147990)... no totals found (likely scanned PDF)
+  [2010] WILSON, CHARLES A. (8147840)... no totals found (likely scanned PDF)
+  [2010] WHITFIELD, ED (8147485)... no totals found (likely scanned PDF)
+  [2010] WESTMORELAND, LYNN A. (8148931)... no totals found (likely scanned PDF)
+  [2010] WEST, ALLEN B. (8203342)... no totals found (likely scanned PDF)
+  [2010] WAXMAN, HENRY A. (8147949)... no totals found (likely scanned PDF)
+  [2010] DRIEHAUS, STEVE (8147638)... no totals found (likely scanned PDF)
+  [2010] EHLERS, VERNON J. (8148533)... no totals found (likely scanned PDF)
+  [2010] ELLISON, KEITH (8147890)... no totals found (likely scanned PDF)
+  [2010] FALEOMAVAEGA, ENI F. H. (8203200)... no totals found (likely scanned PDF)
+  [2010] FARR, SAM (8147982)... no totals found (likely scanned PDF)
+  [2010] FATTAH, CHAKA (8147983)... no totals found (likely scanned PDF)
+  [2010] FOXX, VIRGINIA (8148823)... no totals found (likely scanned PDF)
+  [2010] FRANK, BARNEY (8148022)... no totals found (likely scanned PDF)
+  [2010] FRANK, BARNEY (8148132)... no totals found (likely scanned PDF)
+  [2010] GARAMENDI, JOHN (8149296)... no totals found (likely scanned PDF)
+  [2010] GARAMENDI, JOHN (8149312)... no totals found (likely scanned PDF)
+  [2010] GARRETT, SCOTT (8148190)... no totals found (likely scanned PDF)
+  [2010] GIFFORDS, GABRIELLE (8147242)... no totals found (likely scanned PDF)
+  [2010] GORDON, BART (8149074)... no totals found (likely scanned PDF)
+  [2010] GRAYSON, ALAN (8200031)... no totals found (likely scanned PDF)
+  [2010] GREEN, AL (8149029)... no totals found (likely scanned PDF)
+  [2010] GRIFFITH, PARKER (8149180)... no totals found (likely scanned PDF)
+  [2010] GRIJALVA, RAUL M. (9100186)... no totals found (likely scanned PDF)
+  [2010] GRIJALVA, RAUL M. (8148882)... no totals found (likely scanned PDF)
+  [2010] GUTHRIE, BRETT (8148747)... no totals found (likely scanned PDF)
+  [2010] HALL, RALPH M. (8203813)... no totals found (likely scanned PDF)
+  [2010] HALVORSON, DEBORAH L. (8147985)... no totals found (likely scanned PDF)
+  [2010] HEINRICH, MARTIN (8147891)... no totals found (likely scanned PDF)
+  [2010] HENSARLING, JEB (8149258)... no totals found (likely scanned PDF)
+  [2010] HILL, BARON P. (8148650)... no totals found (likely scanned PDF)
+  [2010] HILL, BARON P. (8149112)... no totals found (likely scanned PDF)
+  [2010] HIMES, JAMES A. (8149090)... no totals found (likely scanned PDF)
+  [2010] HODES, PAUL W. (8148748)... no totals found (likely scanned PDF)
+  [2010] HOLT, RUSH D. (8148765)... no totals found (likely scanned PDF)
+  [2010] JACKSON LEE, SHEILA (8200057)... no totals found (likely scanned PDF)
+  [2010] JOHNSON, EDDIE BERNICE (8149259)... no totals found (likely scanned PDF)
+  [2010] JOHNSON, EDDIE BERNICE (8148074)... no totals found (likely scanned PDF)
+  [2010] JOHNSON, SAM (8148301)... no totals found (likely scanned PDF)
+  [2010] JONES, WALTER B. (8200054)... no totals found (likely scanned PDF)
+  [2010] JONES, WALTER B. (9109909)... no totals found (likely scanned PDF)
+  [2010] JORDAN, JIM (8147868)... no totals found (likely scanned PDF)
+  [2010] KILROY, MARY JO (8148824)... no totals found (likely scanned PDF)
+  [2010] KINGSTON, JACK (8148164)... no totals found (likely scanned PDF)
+  [2010] KRATOVIL, FRANK (8148766)... no totals found (likely scanned PDF)
+  [2010] LAMBORN, DOUG (8147948)... no totals found (likely scanned PDF)
+  [2010] LANCE, LEONARD (8148302)... no totals found (likely scanned PDF)
+  [2010] LATHAM, TOM (8149075)... no totals found (likely scanned PDF)
+  [2010] LEE, CHRISTOPHER JOHN (8147841)... no totals found (likely scanned PDF)
+  [2010] LOEBSACK, DAVID (8147892)... no totals found (likely scanned PDF)
+  [2010] LOWEY, NITA M. (8203166)... no totals found (likely scanned PDF)
+  [2010] LUMMIS, CYNTHIA M. (8148995)... no totals found (likely scanned PDF)
+  [2010] MARCHANT, KENNY (8200160)... no totals found (likely scanned PDF)
+  [2010] MARSHALL, JIM (8149091)... no totals found (likely scanned PDF)
+  [2010] MCCAUL, MICHAEL T. (8148956)... no totals found (likely scanned PDF)
+  [2010] MCCLINTOCK, TOM (8206191)... no totals found (likely scanned PDF)
+  [2010] MCCLINTOCK, TOM (8148303)... no totals found (likely scanned PDF)
+  [2010] MCCOLLUM, BETTY (8148024)... no totals found (likely scanned PDF)
+  [2010] MCCOLLUM, BETTY (8148245)... no totals found (likely scanned PDF)
+  [2010] MCCOTTER, THADDEUS G. (9100149)... no totals found (likely scanned PDF)
+  [2010] MCCOTTER, THADDEUS G. (8148377)... no totals found (likely scanned PDF)
+  [2010] MCHENRY, PATRICK T. (8147607)... no totals found (likely scanned PDF)
+  [2010] MEEKS, GREGORY W. (8203201)... no totals found (likely scanned PDF)
+  [2010] MELANCON, CHARLIE (8148320)... no totals found (likely scanned PDF)
+  [2010] MILLER, BRAD (8200281)... no totals found (likely scanned PDF)
+  [2010] MILLER, JEFF (8147893)... no totals found (likely scanned PDF)
+  [2010] MINNICK, WALT (8147352)... no totals found (likely scanned PDF)
+  [2010] MOORE, DENNIS (8148470)... no totals found (likely scanned PDF)
+  [2010] MOORE, GWEN (8147609)... no totals found (likely scanned PDF)
+  [2010] MORAN, JAMES P. (8148647)... no totals found (likely scanned PDF)
+  [2010] MURPHY, PATRICK J. (8147361)... no totals found (likely scanned PDF)
+  [2010] MURPHY, PATRICK J. (8148102)... no totals found (likely scanned PDF)
+  [2010] MURPHY, SCOTT (8200058)... no totals found (likely scanned PDF)
+  [2010] MURPHY, SCOTT (8200431)... no totals found (likely scanned PDF)
+  [2010] MURPHY, TIM (8147986)... no totals found (likely scanned PDF)
+  [2010] MYRICK, SUE WILKINS (8148193)... no totals found (likely scanned PDF)
+  [2010] OBERSTAR, JAMES L. (8147869)... no totals found (likely scanned PDF)
+  [2010] ORTIZ, SOLOMON P. (8149207)... no totals found (likely scanned PDF)
+  [2010] OWENS, WILLIAM L. (8148304)... no totals found (likely scanned PDF)
+  [2010] PASCRELL, BILL (8148194)... no totals found (likely scanned PDF)
+  [2010] PAUL, RON (8203202)... no totals found (likely scanned PDF)
+  [2010] PAYNE, DONALD M. (8147381)... no totals found (likely scanned PDF)
+  [2010] PELOSI, NANCY (8147383)... no totals found (likely scanned PDF)
+  [2010] PETERS, GARY C. (8148321)... no totals found (likely scanned PDF)
+  [2010] PETERS, GARY C. (8203257)... no totals found (likely scanned PDF)
+  [2010] PETERS, GARY C. (8212677)... no totals found (likely scanned PDF)
+  [2010] PETRI, THOMAS E. (8148966)... no totals found (likely scanned PDF)
+  [2010] PINGREE, CHELLIE (8200084)... no totals found (likely scanned PDF)
+  [2010] PITTS, JOSEPH R. (8148883)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 94, Failed: 6
+ (8200084)... no totals found (likely scanned PDF)
+  [2010] PITTS, JOSEPH R. (8148883)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 94, Failed: 6
+[15:08:13] --- Networth run #5 ---
+[15:08:13] --- Networth run #5 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2010] WATT, MELVIN L. (8148602)... no totals found (likely scanned PDF)
+  [2010] VISCLOSKY, PETER J. (8148214)... no totals found (likely scanned PDF)
+  [2010] UPTON, FRED (8203100)... no totals found (likely scanned PDF)
+  [2010] UPTON, FRED (8200584)... no totals found (likely scanned PDF)
+  [2010] TOWNS, EDOLPHUS (8148451)... no totals found (likely scanned PDF)
+  [2010] TOWNS, EDOLPHUS (8149076)... no totals found (likely scanned PDF)
+  [2010] TITUS, DINA (8148720)... no totals found (likely scanned PDF)
+  [2010] TITUS, DINA (8148198)... no totals found (likely scanned PDF)
+  [2010] TIERNEY, JOHN F. (8148182)... no totals found (likely scanned PDF)
+  [2010] TIBERI, PATRICK J. (8203137)... no totals found (likely scanned PDF)
+  [2010] THOMPSON, GLENN (8147467)... no totals found (likely scanned PDF)
+  [2010] POE, TED (8147978)... no totals found (likely scanned PDF)
+  [2010] PRICE, TOM (8149092)... no totals found (likely scanned PDF)
+  [2010] RANGEL, CHARLES B. (8209051)... no totals found (likely scanned PDF)
+  [2010] REHBERG, DENNY (8148195)... no totals found (likely scanned PDF)
+  [2010] RICHMOND, CEDRIC L. (8203341)... no totals found (likely scanned PDF)
+  [2010] RODRIGUEZ, CIRO D. (8148025)... no totals found (likely scanned PDF)
+  [2010] ROE, DAVID P. (8147895)... no totals found (likely scanned PDF)
+  [2010] ROONEY, THOMAS J. (8147411)... no totals found (likely scanned PDF)
+  [2010] ROTHMAN, STEVEN R. (8200655)... no totals found (likely scanned PDF)
+  [2010] ROYBAL-ALLARD, LUCILLE (8148026)... no totals found (likely scanned PDF)
+  [2010] RUPPERSBERGER, C.A. DUTCH (8149030)... no totals found (likely scanned PDF)
+  [2010] RYAN, PAUL (8147417)... no totals found (likely scanned PDF)
+  [2010] SABLAN, GREGORIO KILILI C. (8148103)... no totals found (likely scanned PDF)
+  [2010] SANCHEZ, LINDA T. (8200657)... no totals found (likely scanned PDF)
+  [2010] SCALISE, STEVE (8147896)... no totals found (likely scanned PDF)
+  [2010] SCHAKOWSKY, JANICE D. (9100150)... no totals found (likely scanned PDF)
+  [2010] SCHMIDT, JEAN (8148213)... no totals found (likely scanned PDF)
+  [2010] SCHOCK, AARON (9105481)... no totals found (likely scanned PDF)
+  [2010] SCHWARTZ, ALLYSON Y. (8147870)... no totals found (likely scanned PDF)
+  [2010] SCOTT, ROBERT C. "BOBBY" (8148075)... no totals found (likely scanned PDF)
+  [2010] SENSENBRENNER, F. JAMES (8147979)... no totals found (likely scanned PDF)
+  [2010] SESSIONS, PETE (9100151)... no totals found (likely scanned PDF)
+  [2010] SESTAK, JOE (8147988)... no totals found (likely scanned PDF)
+  [2010] SEWELL, TERRYCINA ANDREA (8209496)... no totals found (likely scanned PDF)
+  [2010] SHADEGG, JOHN (8147439)... no totals found (likely scanned PDF)
+  [2010] SHULER, HEATH (8203714)... no totals found (likely scanned PDF)
+  [2010] SHUSTER, BILL (8148269)... no totals found (likely scanned PDF)
+  [2010] SIMPSON, MICHAEL K. (8147922)... no totals found (likely scanned PDF)
+  [2010] SIMPSON, MICHAEL K. (8147989)... no totals found (likely scanned PDF)
+  [2010] SMITH, ADRIAN (8147876)... no totals found (likely scanned PDF)
+  [2010] SPRATT, JOHN M. (8148870)... no totals found (likely scanned PDF)
+  [2010] TANNER, JOHN S. (8148601)... no totals found (likely scanned PDF)
+  [2010] TANNER, JOHN S. (8149025)... no totals found (likely scanned PDF)
+  [2010] TAYLOR, GENE (8147872)... no totals found (likely scanned PDF)
+  [2010] TEAGUE, HARRY (8147460)... no totals found (likely scanned PDF)
+  [2010] TEAGUE, HARRY (8148930)... no totals found (likely scanned PDF)
+  [2010] TERRY, LEE (8148815)... no totals found (likely scanned PDF)
+  [2010] ALTMIRE, JASON (8147970)... no totals found (likely scanned PDF)
+  [2010] BACHUS, SPENCER (8204063)... no totals found (likely scanned PDF)
+  [2010] BAIRD, BRIAN (8147604)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8148020)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8148021)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8148467)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8203010)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8147867)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8147879)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8147981)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8148073)... no totals found (likely scanned PDF)
+  [2010] BILIRAKIS, GUS M. (9100147)... no totals found (likely scanned PDF)
+  [2010] BLUMENAUER, EARL (9100193)... no totals found (likely scanned PDF)
+  [2010] BOCCIERI, JOHN A. (8148023)... no totals found (likely scanned PDF)
+  [2010] BOUCHER, RICK (8146772)... no totals found (likely scanned PDF)
+  [2010] BOYD, ALLEN (8148183)... no totals found (likely scanned PDF)
+  [2010] BRADY, ROBERT A. (8206426)... no totals found (likely scanned PDF)
+  [2010] BRIGHT, BOBBY (8200053)... no totals found (likely scanned PDF)
+  [2010] BROOKS, MO (8203335)... no totals found (likely scanned PDF)
+  [2010] BROUN, PAUL C. (8213739)... no totals found (likely scanned PDF)
+  [2010] BUCHANAN, VERN (8203971)... no totals found (likely scanned PDF)
+  [2010] BUTTERFIELD, G. K. (8147119)... no totals found (likely scanned PDF)
+  [2010] CANTOR, ERIC (8204772)... no totals found (likely scanned PDF)
+  [2010] CARNEY, CHRISTOPHER P. (8148376)... no totals found (likely scanned PDF)
+  [2009] MCFAUL, DANIEL F. (8207591)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2009/8207591.pdf".
+  [2009] KLING, JEFFREY R. (9109640)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2009/9109640.pdf".
+  [2009] HANRAHAN, THOMAS K. (8206758)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2009/8206758.pdf".
+  [2009] DEGETTE, DIANA (8142997)... no totals found (likely scanned PDF)
+  [2009] DELAHUNT, WILLIAM D. (8142472)... no totals found (likely scanned PDF)
+  [2009] DENT, CHARLES W. (8148443)... no totals found (likely scanned PDF)
+  [2009] DOGGETT, LLOYD (8144325)... no totals found (likely scanned PDF)
+  [2009] DOGGETT, LLOYD (8143536)... no totals found (likely scanned PDF)
+  [2009] DREIER, DAVID (8147887)... no totals found (likely scanned PDF)
+  [2009] GINGREY, PHIL (8142912)... no totals found (likely scanned PDF)
+  [2009] DRIEHAUS, STEVE (8143490)... no totals found (likely scanned PDF)
+  [2009] DUNCAN, JOHN J. (8142067)... no totals found (likely scanned PDF)
+  [2009] ELLISON, KEITH (8143447)... no totals found (likely scanned PDF)
+  [2009] ENGEL, ELIOT L. (8142831)... no totals found (likely scanned PDF)
+  [2009] FALEOMAVAEGA, ENI F. H. (8142832)... no totals found (likely scanned PDF)
+  [2009] FALLIN, MARY (8147821)... no totals found (likely scanned PDF)
+  [2009] FARR, SAM (8142998)... no totals found (likely scanned PDF)
+  [2009] FATTAH, CHAKA (8142473)... no totals found (likely scanned PDF)
+  [2009] FORTENBERRY, JEFF (8143280)... no totals found (likely scanned PDF)
+  [2009] FOSTER, BILL (8147612)... no totals found (likely scanned PDF)
+  [2009] FOXX, VIRGINIA (8143978)... no totals found (likely scanned PDF)
+  [2009] FRANK, BARNEY (8140650)... no totals found (likely scanned PDF)
+  [2009] GRAVES, SAM (8142068)... no totals found (likely scanned PDF)
+  [2009] GRAYSON, ALAN (9107973)... no totals found (likely scanned PDF)
+  [2009] GRAYSON, ALAN (9107974)... no totals found (likely scanned PDF)
+  [2009] GRIFFITH, PARKER (8143421)... no totals found (likely scanned PDF)
+  [2009] GUTIERREZ, LUIS V. (8143979)... no totals found (likely scanned PDF)
+  [2009] HASTINGS, DOC (8144326)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 97, Failed: 3
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2010] WATT, MELVIN L. (8148602)... no totals found (likely scanned PDF)
+  [2010] VISCLOSKY, PETER J. (8148214)... no totals found (likely scanned PDF)
+  [2010] UPTON, FRED (8203100)... no totals found (likely scanned PDF)
+  [2010] UPTON, FRED (8200584)... no totals found (likely scanned PDF)
+  [2010] TOWNS, EDOLPHUS (8148451)... no totals found (likely scanned PDF)
+  [2010] TOWNS, EDOLPHUS (8149076)... no totals found (likely scanned PDF)
+  [2010] TITUS, DINA (8148720)... no totals found (likely scanned PDF)
+  [2010] TITUS, DINA (8148198)... no totals found (likely scanned PDF)
+  [2010] TIERNEY, JOHN F. (8148182)... no totals found (likely scanned PDF)
+  [2010] TIBERI, PATRICK J. (8203137)... no totals found (likely scanned PDF)
+  [2010] THOMPSON, GLENN (8147467)... no totals found (likely scanned PDF)
+  [2010] POE, TED (8147978)... no totals found (likely scanned PDF)
+  [2010] PRICE, TOM (8149092)... no totals found (likely scanned PDF)
+  [2010] RANGEL, CHARLES B. (8209051)... no totals found (likely scanned PDF)
+  [2010] REHBERG, DENNY (8148195)... no totals found (likely scanned PDF)
+  [2010] RICHMOND, CEDRIC L. (8203341)... no totals found (likely scanned PDF)
+  [2010] RODRIGUEZ, CIRO D. (8148025)... no totals found (likely scanned PDF)
+  [2010] ROE, DAVID P. (8147895)... no totals found (likely scanned PDF)
+  [2010] ROONEY, THOMAS J. (8147411)... no totals found (likely scanned PDF)
+  [2010] ROTHMAN, STEVEN R. (8200655)... no totals found (likely scanned PDF)
+  [2010] ROYBAL-ALLARD, LUCILLE (8148026)... no totals found (likely scanned PDF)
+  [2010] RUPPERSBERGER, C.A. DUTCH (8149030)... no totals found (likely scanned PDF)
+  [2010] RYAN, PAUL (8147417)... no totals found (likely scanned PDF)
+  [2010] SABLAN, GREGORIO KILILI C. (8148103)... no totals found (likely scanned PDF)
+  [2010] SANCHEZ, LINDA T. (8200657)... no totals found (likely scanned PDF)
+  [2010] SCALISE, STEVE (8147896)... no totals found (likely scanned PDF)
+  [2010] SCHAKOWSKY, JANICE D. (9100150)... no totals found (likely scanned PDF)
+  [2010] SCHMIDT, JEAN (8148213)... no totals found (likely scanned PDF)
+  [2010] SCHOCK, AARON (9105481)... no totals found (likely scanned PDF)
+  [2010] SCHWARTZ, ALLYSON Y. (8147870)... no totals found (likely scanned PDF)
+  [2010] SCOTT, ROBERT C. "BOBBY" (8148075)... no totals found (likely scanned PDF)
+  [2010] SENSENBRENNER, F. JAMES (8147979)... no totals found (likely scanned PDF)
+  [2010] SESSIONS, PETE (9100151)... no totals found (likely scanned PDF)
+  [2010] SESTAK, JOE (8147988)... no totals found (likely scanned PDF)
+  [2010] SEWELL, TERRYCINA ANDREA (8209496)... no totals found (likely scanned PDF)
+  [2010] SHADEGG, JOHN (8147439)... no totals found (likely scanned PDF)
+  [2010] SHULER, HEATH (8203714)... no totals found (likely scanned PDF)
+  [2010] SHUSTER, BILL (8148269)... no totals found (likely scanned PDF)
+  [2010] SIMPSON, MICHAEL K. (8147922)... no totals found (likely scanned PDF)
+  [2010] SIMPSON, MICHAEL K. (8147989)... no totals found (likely scanned PDF)
+  [2010] SMITH, ADRIAN (8147876)... no totals found (likely scanned PDF)
+  [2010] SPRATT, JOHN M. (8148870)... no totals found (likely scanned PDF)
+  [2010] TANNER, JOHN S. (8148601)... no totals found (likely scanned PDF)
+  [2010] TANNER, JOHN S. (8149025)... no totals found (likely scanned PDF)
+  [2010] TAYLOR, GENE (8147872)... no totals found (likely scanned PDF)
+  [2010] TEAGUE, HARRY (8147460)... no totals found (likely scanned PDF)
+  [2010] TEAGUE, HARRY (8148930)... no totals found (likely scanned PDF)
+  [2010] TERRY, LEE (8148815)... no totals found (likely scanned PDF)
+  [2010] ALTMIRE, JASON (8147970)... no totals found (likely scanned PDF)
+  [2010] BACHUS, SPENCER (8204063)... no totals found (likely scanned PDF)
+  [2010] BAIRD, BRIAN (8147604)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8148020)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8148021)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8148467)... no totals found (likely scanned PDF)
+  [2010] BIGGERT, JUDY (8203010)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8147867)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8147879)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8147981)... no totals found (likely scanned PDF)
+  [2010] BILBRAY, BRIAN P. (8148073)... no totals found (likely scanned PDF)
+  [2010] BILIRAKIS, GUS M. (9100147)... no totals found (likely scanned PDF)
+  [2010] BLUMENAUER, EARL (9100193)... no totals found (likely scanned PDF)
+  [2010] BOCCIERI, JOHN A. (8148023)... no totals found (likely scanned PDF)
+  [2010] BOUCHER, RICK (8146772)... no totals found (likely scanned PDF)
+  [2010] BOYD, ALLEN (8148183)... no totals found (likely scanned PDF)
+  [2010] BRADY, ROBERT A. (8206426)... no totals found (likely scanned PDF)
+  [2010] BRIGHT, BOBBY (8200053)... no totals found (likely scanned PDF)
+  [2010] BROOKS, MO (8203335)... no totals found (likely scanned PDF)
+  [2010] BROUN, PAUL C. (8213739)... no totals found (likely scanned PDF)
+  [2010] BUCHANAN, VERN (8203971)... no totals found (likely scanned PDF)
+  [2010] BUTTERFIELD, G. K. (8147119)... no totals found (likely scanned PDF)
+  [2010] CANTOR, ERIC (8204772)... no totals found (likely scanned PDF)
+  [2010] CARNEY, CHRISTOPHER P. (8148376)... no totals found (likely scanned PDF)
+  [2009] MCFAUL, DANIEL F. (8207591)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2009/8207591.pdf".
+  [2009] KLING, JEFFREY R. (9109640)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2009/9109640.pdf".
+  [2009] HANRAHAN, THOMAS K. (8206758)... FAILED — Unexpected server response (404) while retrieving PDF "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2009/8206758.pdf".
+  [2009] DEGETTE, DIANA (8142997)... no totals found (likely scanned PDF)
+  [2009] DELAHUNT, WILLIAM D. (8142472)... no totals found (likely scanned PDF)
+  [2009] DENT, CHARLES W. (8148443)... no totals found (likely scanned PDF)
+  [2009] DOGGETT, LLOYD (8144325)... no totals found (likely scanned PDF)
+  [2009] DOGGETT, LLOYD (8143536)... no totals found (likely scanned PDF)
+  [2009] DREIER, DAVID (8147887)... no totals found (likely scanned PDF)
+  [2009] GINGREY, PHIL (8142912)... no totals found (likely scanned PDF)
+  [2009] DRIEHAUS, STEVE (8143490)... no totals found (likely scanned PDF)
+  [2009] DUNCAN, JOHN J. (8142067)... no totals found (likely scanned PDF)
+  [2009] ELLISON, KEITH (8143447)... no totals found (likely scanned PDF)
+  [2009] ENGEL, ELIOT L. (8142831)... no totals found (likely scanned PDF)
+  [2009] FALEOMAVAEGA, ENI F. H. (8142832)... no totals found (likely scanned PDF)
+  [2009] FALLIN, MARY (8147821)... no totals found (likely scanned PDF)
+  [2009] FARR, SAM (8142998)... no totals found (likely scanned PDF)
+  [2009] FATTAH, CHAKA (8142473)... no totals found (likely scanned PDF)
+  [2009] FORTENBERRY, JEFF (8143280)... no totals found (likely scanned PDF)
+  [2009] FOSTER, BILL (8147612)... no totals found (likely scanned PDF)
+  [2009] FOXX, VIRGINIA (8143978)... no totals found (likely scanned PDF)
+  [2009] FRANK, BARNEY (8140650)... no totals found (likely scanned PDF)
+  [2009] GRAVES, SAM (8142068)... no totals found (likely scanned PDF)
+  [2009] GRAYSON, ALAN (9107973)... no totals found (likely scanned PDF)
+  [2009] GRAYSON, ALAN (9107974)... no totals found (likely scanned PDF)
+  [2009] GRIFFITH, PARKER (8143421)... no totals found (likely scanned PDF)
+  [2009] GUTIERREZ, LUIS V. (8143979)... no totals found (likely scanned PDF)
+  [2009] HASTINGS, DOC (8144326)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 97, Failed: 3
+[15:09:34] --- Networth run #6 ---
+[15:09:34] --- Networth run #6 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2009] YOUNG, DON (8142075)... no totals found (likely scanned PDF)
+  [2009] WOOLSEY, LYNN C. (8144445)... no totals found (likely scanned PDF)
+  [2009] WITTMAN, ROBERT J. (8142917)... no totals found (likely scanned PDF)
+  [2009] WILSON, JOE (8143059)... no totals found (likely scanned PDF)
+  [2009] WHITFIELD, ED (8142727)... no totals found (likely scanned PDF)
+  [2009] WEINER, ANTHONY D. (8147866)... no totals found (likely scanned PDF)
+  [2009] WAXMAN, HENRY A. (8143058)... no totals found (likely scanned PDF)
+  [2009] WATSON, DIANE E. (8143537)... no totals found (likely scanned PDF)
+  [2009] TSONGAS, NIKI (8142799)... no totals found (likely scanned PDF)
+  [2009] TITUS, DINA (8143595)... no totals found (likely scanned PDF)
+  [2009] TIBERI, PATRICK J. (8144346)... no totals found (likely scanned PDF)
+  [2009] TIAHRT, TODD (8142915)... no totals found (likely scanned PDF)
+  [2009] THOMPSON, GLENN (8143448)... no totals found (likely scanned PDF)
+  [2009] TERRY, LEE (8144345)... no totals found (likely scanned PDF)
+  [2009] TERRY, LEE (8142073)... no totals found (likely scanned PDF)
+  [2009] TEAGUE, HARRY (8144328)... no totals found (likely scanned PDF)
+  [2009] TEAGUE, HARRY (8144444)... no totals found (likely scanned PDF)
+  [2009] SMITH, ADRIAN (8140600)... no totals found (likely scanned PDF)
+  [2009] SLAUGHTER, LOUISE MCINTOSH (8143664)... no totals found (likely scanned PDF)
+  [2009] SESSIONS, PETE (8143663)... no totals found (likely scanned PDF)
+  [2009] SESSIONS, PETE (8140591)... no totals found (likely scanned PDF)
+  [2009] SCHOCK, AARON (9105479)... no totals found (likely scanned PDF)
+  [2009] SANCHEZ, LORETTA (8143002)... no totals found (likely scanned PDF)
+  [2009] SANCHEZ, LINDA T. (8143944)... no totals found (likely scanned PDF)
+  [2009] ROS-LEHTINEN, ILEANA (8143730)... no totals found (likely scanned PDF)
+  [2009] HERSETH SANDLIN, STEPHANIE (8143788)... no totals found (likely scanned PDF)
+  [2009] HINCHEY, MAURICE D. (8143037)... no totals found (likely scanned PDF)
+  [2009] HINOJOSA, RUBEN (8142725)... no totals found (likely scanned PDF)
+  [2009] JOHNSON, EDDIE BERNICE (8142913)... no totals found (likely scanned PDF)
+  [2009] JOHNSON, HENRY C. "HANK" (8142475)... no totals found (likely scanned PDF)
+  [2009] JONES, WALTER B. (8143422)... no totals found (likely scanned PDF)
+  [2009] JONES, WALTER B. (9109910)... no totals found (likely scanned PDF)
+  [2009] KILROY, MARY JO (8144220)... no totals found (likely scanned PDF)
+  [2009] KIND, RON (8142069)... no totals found (likely scanned PDF)
+  [2009] KOSMAS, SUZANNE M. (8143260)... no totals found (likely scanned PDF)
+  [2009] LANCE, LEONARD (8143885)... no totals found (likely scanned PDF)
+  [2009] LEE, CHRISTOPHER JOHN (8142834)... no totals found (likely scanned PDF)
+  [2009] LEE, CHRISTOPHER JOHN (8143786)... no totals found (likely scanned PDF)
+  [2009] LEWIS, JOHN (8143886)... no totals found (likely scanned PDF)
+  [2009] LIPINSKI, DANIEL (8142919)... no totals found (likely scanned PDF)
+  [2009] LOFGREN, ZOE (8147819)... no totals found (likely scanned PDF)
+  [2009] LOFGREN, ZOE (8143186)... no totals found (likely scanned PDF)
+  [2009] LOWEY, NITA M. (8203165)... no totals found (likely scanned PDF)
+  [2009] MARSHALL, JIM (8143116)... no totals found (likely scanned PDF)
+  [2009] MASSA, ERIC J. J. (8143932)... no totals found (likely scanned PDF)
+  [2009] MCCAUL, MICHAEL T. (8148954)... no totals found (likely scanned PDF)
+  [2009] MCCOLLUM, BETTY (8143971)... no totals found (likely scanned PDF)
+  [2009] MCCOLLUM, BETTY (8148244)... no totals found (likely scanned PDF)
+  [2009] MCDERMOTT, JIM (8143145)... no totals found (likely scanned PDF)
+  [2009] MCDERMOTT, JIM (8143278)... no totals found (likely scanned PDF)
+  [2009] MCKEON, HOWARD P. "BUCK" (8143093)... no totals found (likely scanned PDF)
+  [2009] MCMORRIS RODGERS, CATHY (8147614)... no totals found (likely scanned PDF)
+  [2009] MCMORRIS RODGERS, CATHY (8143787)... no totals found (likely scanned PDF)
+  [2009] MCMORRIS RODGERS, CATHY (8143887)... no totals found (likely scanned PDF)
+  [2009] MCNERNEY, JERRY (8144329)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8140331)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8147877)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8147888)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8149341)... no totals found (likely scanned PDF)
+  [2009] MILLER, BRAD (8143866)... no totals found (likely scanned PDF)
+  [2009] MINNICK, WALT (8143837)... no totals found (likely scanned PDF)
+  [2009] MITCHELL, HARRY E. (8144443)... no totals found (likely scanned PDF)
+  [2009] MOORE, GWEN (8142835)... no totals found (likely scanned PDF)
+  [2009] MURPHY, TIM (8142836)... no totals found (likely scanned PDF)
+  [2009] MYRICK, SUE WILKINS (8142957)... no totals found (likely scanned PDF)
+  [2009] NAPOLITANO, GRACE F. (8142798)... no totals found (likely scanned PDF)
+  [2009] NEAL, RICHARD E. (8142921)... no totals found (likely scanned PDF)
+  [2009] OLSON, PETE (8143865)... no totals found (likely scanned PDF)
+  [2009] PASTOR, ED (8144298)... no totals found (likely scanned PDF)
+  [2009] PAUL, RON (8147613)... no totals found (likely scanned PDF)
+  [2009] PELOSI, NANCY (8142737)... no totals found (likely scanned PDF)
+  [2009] PENCE, MIKE (8144327)... no totals found (likely scanned PDF)
+  [2009] PETERS, GARY C. (8213701)... no totals found (likely scanned PDF)
+  [2009] PETERS, GARY C. (8203256)... no totals found (likely scanned PDF)
+  [2009] PETERS, GARY C. (8212676)... no totals found (likely scanned PDF)
+  [2009] POSEY, BILL (8143343)... no totals found (likely scanned PDF)
+  [2009] PRICE, TOM (8143864)... no totals found (likely scanned PDF)
+  [2009] PUTNAM, ADAM H. (8142070)... no totals found (likely scanned PDF)
+  [2009] RAHALL, NICK J. (8143000)... no totals found (likely scanned PDF)
+  [2009] RANGEL, CHARLES B. (8143189)... no totals found (likely scanned PDF)
+  [2009] RANGEL, CHARLES B. (8209050)... no totals found (likely scanned PDF)
+  [2009] RODRIGUEZ, CIRO D. (8143001)... no totals found (likely scanned PDF)
+  [2009] ROGERS, MIKE (8143737)... no totals found (likely scanned PDF)
+  [2009] ROSKAM, PETER J. (8143489)... no totals found (likely scanned PDF)
+  [2009] ABERCROMBIE, NEIL (8142909)... no totals found (likely scanned PDF)
+  [2009] ACKERMAN, GARY L. (8143056)... no totals found (likely scanned PDF)
+  [2009] ACKERMAN, GARY L. (8143701)... no totals found (likely scanned PDF)
+  [2009] ADERHOLT, ROBERT B. (8143571)... no totals found (likely scanned PDF)
+  [2009] ADLER, JOHN H. (8143279)... no totals found (likely scanned PDF)
+  [2009] AKIN, W. TODD (8143342)... no totals found (likely scanned PDF)
+  [2009] ARCURI, MICHAEL A. (8147820)... no totals found (likely scanned PDF)
+  [2009] BACA, JOE (8142910)... no totals found (likely scanned PDF)
+  [2009] BACHUS, SPENCER (8142781)... no totals found (likely scanned PDF)
+  [2009] BERKLEY, SHELLEY (8140088)... no totals found (likely scanned PDF)
+  [2009] BERKLEY, SHELLEY (8144196)... no totals found (likely scanned PDF)
+  [2009] BERMAN, HOWARD L. (8143702)... no totals found (likely scanned PDF)
+  [2009] BERRY, MARION (8142726)... no totals found (likely scanned PDF)
+  [2009] BERRY, MARION (8142830)... no totals found (likely scanned PDF)
+  [2009] BERRY, MARION (8142470)... no totals found (likely scanned PDF)
+  [2009] BIGGERT, JUDY (8142061)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 100, Failed: 0
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2009] YOUNG, DON (8142075)... no totals found (likely scanned PDF)
+  [2009] WOOLSEY, LYNN C. (8144445)... no totals found (likely scanned PDF)
+  [2009] WITTMAN, ROBERT J. (8142917)... no totals found (likely scanned PDF)
+  [2009] WILSON, JOE (8143059)... no totals found (likely scanned PDF)
+  [2009] WHITFIELD, ED (8142727)... no totals found (likely scanned PDF)
+  [2009] WEINER, ANTHONY D. (8147866)... no totals found (likely scanned PDF)
+  [2009] WAXMAN, HENRY A. (8143058)... no totals found (likely scanned PDF)
+  [2009] WATSON, DIANE E. (8143537)... no totals found (likely scanned PDF)
+  [2009] TSONGAS, NIKI (8142799)... no totals found (likely scanned PDF)
+  [2009] TITUS, DINA (8143595)... no totals found (likely scanned PDF)
+  [2009] TIBERI, PATRICK J. (8144346)... no totals found (likely scanned PDF)
+  [2009] TIAHRT, TODD (8142915)... no totals found (likely scanned PDF)
+  [2009] THOMPSON, GLENN (8143448)... no totals found (likely scanned PDF)
+  [2009] TERRY, LEE (8144345)... no totals found (likely scanned PDF)
+  [2009] TERRY, LEE (8142073)... no totals found (likely scanned PDF)
+  [2009] TEAGUE, HARRY (8144328)... no totals found (likely scanned PDF)
+  [2009] TEAGUE, HARRY (8144444)... no totals found (likely scanned PDF)
+  [2009] SMITH, ADRIAN (8140600)... no totals found (likely scanned PDF)
+  [2009] SLAUGHTER, LOUISE MCINTOSH (8143664)... no totals found (likely scanned PDF)
+  [2009] SESSIONS, PETE (8143663)... no totals found (likely scanned PDF)
+  [2009] SESSIONS, PETE (8140591)... no totals found (likely scanned PDF)
+  [2009] SCHOCK, AARON (9105479)... no totals found (likely scanned PDF)
+  [2009] SANCHEZ, LORETTA (8143002)... no totals found (likely scanned PDF)
+  [2009] SANCHEZ, LINDA T. (8143944)... no totals found (likely scanned PDF)
+  [2009] ROS-LEHTINEN, ILEANA (8143730)... no totals found (likely scanned PDF)
+  [2009] HERSETH SANDLIN, STEPHANIE (8143788)... no totals found (likely scanned PDF)
+  [2009] HINCHEY, MAURICE D. (8143037)... no totals found (likely scanned PDF)
+  [2009] HINOJOSA, RUBEN (8142725)... no totals found (likely scanned PDF)
+  [2009] JOHNSON, EDDIE BERNICE (8142913)... no totals found (likely scanned PDF)
+  [2009] JOHNSON, HENRY C. "HANK" (8142475)... no totals found (likely scanned PDF)
+  [2009] JONES, WALTER B. (8143422)... no totals found (likely scanned PDF)
+  [2009] JONES, WALTER B. (9109910)... no totals found (likely scanned PDF)
+  [2009] KILROY, MARY JO (8144220)... no totals found (likely scanned PDF)
+  [2009] KIND, RON (8142069)... no totals found (likely scanned PDF)
+  [2009] KOSMAS, SUZANNE M. (8143260)... no totals found (likely scanned PDF)
+  [2009] LANCE, LEONARD (8143885)... no totals found (likely scanned PDF)
+  [2009] LEE, CHRISTOPHER JOHN (8142834)... no totals found (likely scanned PDF)
+  [2009] LEE, CHRISTOPHER JOHN (8143786)... no totals found (likely scanned PDF)
+  [2009] LEWIS, JOHN (8143886)... no totals found (likely scanned PDF)
+  [2009] LIPINSKI, DANIEL (8142919)... no totals found (likely scanned PDF)
+  [2009] LOFGREN, ZOE (8147819)... no totals found (likely scanned PDF)
+  [2009] LOFGREN, ZOE (8143186)... no totals found (likely scanned PDF)
+  [2009] LOWEY, NITA M. (8203165)... no totals found (likely scanned PDF)
+  [2009] MARSHALL, JIM (8143116)... no totals found (likely scanned PDF)
+  [2009] MASSA, ERIC J. J. (8143932)... no totals found (likely scanned PDF)
+  [2009] MCCAUL, MICHAEL T. (8148954)... no totals found (likely scanned PDF)
+  [2009] MCCOLLUM, BETTY (8143971)... no totals found (likely scanned PDF)
+  [2009] MCCOLLUM, BETTY (8148244)... no totals found (likely scanned PDF)
+  [2009] MCDERMOTT, JIM (8143145)... no totals found (likely scanned PDF)
+  [2009] MCDERMOTT, JIM (8143278)... no totals found (likely scanned PDF)
+  [2009] MCKEON, HOWARD P. "BUCK" (8143093)... no totals found (likely scanned PDF)
+  [2009] MCMORRIS RODGERS, CATHY (8147614)... no totals found (likely scanned PDF)
+  [2009] MCMORRIS RODGERS, CATHY (8143787)... no totals found (likely scanned PDF)
+  [2009] MCMORRIS RODGERS, CATHY (8143887)... no totals found (likely scanned PDF)
+  [2009] MCNERNEY, JERRY (8144329)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8140331)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8147877)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8147888)... no totals found (likely scanned PDF)
+  [2009] MEEKS, GREGORY W. (8149341)... no totals found (likely scanned PDF)
+  [2009] MILLER, BRAD (8143866)... no totals found (likely scanned PDF)
+  [2009] MINNICK, WALT (8143837)... no totals found (likely scanned PDF)
+  [2009] MITCHELL, HARRY E. (8144443)... no totals found (likely scanned PDF)
+  [2009] MOORE, GWEN (8142835)... no totals found (likely scanned PDF)
+  [2009] MURPHY, TIM (8142836)... no totals found (likely scanned PDF)
+  [2009] MYRICK, SUE WILKINS (8142957)... no totals found (likely scanned PDF)
+  [2009] NAPOLITANO, GRACE F. (8142798)... no totals found (likely scanned PDF)
+  [2009] NEAL, RICHARD E. (8142921)... no totals found (likely scanned PDF)
+  [2009] OLSON, PETE (8143865)... no totals found (likely scanned PDF)
+  [2009] PASTOR, ED (8144298)... no totals found (likely scanned PDF)
+  [2009] PAUL, RON (8147613)... no totals found (likely scanned PDF)
+  [2009] PELOSI, NANCY (8142737)... no totals found (likely scanned PDF)
+  [2009] PENCE, MIKE (8144327)... no totals found (likely scanned PDF)
+  [2009] PETERS, GARY C. (8213701)... no totals found (likely scanned PDF)
+  [2009] PETERS, GARY C. (8203256)... no totals found (likely scanned PDF)
+  [2009] PETERS, GARY C. (8212676)... no totals found (likely scanned PDF)
+  [2009] POSEY, BILL (8143343)... no totals found (likely scanned PDF)
+  [2009] PRICE, TOM (8143864)... no totals found (likely scanned PDF)
+  [2009] PUTNAM, ADAM H. (8142070)... no totals found (likely scanned PDF)
+  [2009] RAHALL, NICK J. (8143000)... no totals found (likely scanned PDF)
+  [2009] RANGEL, CHARLES B. (8143189)... no totals found (likely scanned PDF)
+  [2009] RANGEL, CHARLES B. (8209050)... no totals found (likely scanned PDF)
+  [2009] RODRIGUEZ, CIRO D. (8143001)... no totals found (likely scanned PDF)
+  [2009] ROGERS, MIKE (8143737)... no totals found (likely scanned PDF)
+  [2009] ROSKAM, PETER J. (8143489)... no totals found (likely scanned PDF)
+  [2009] ABERCROMBIE, NEIL (8142909)... no totals found (likely scanned PDF)
+  [2009] ACKERMAN, GARY L. (8143056)... no totals found (likely scanned PDF)
+  [2009] ACKERMAN, GARY L. (8143701)... no totals found (likely scanned PDF)
+  [2009] ADERHOLT, ROBERT B. (8143571)... no totals found (likely scanned PDF)
+  [2009] ADLER, JOHN H. (8143279)... no totals found (likely scanned PDF)
+  [2009] AKIN, W. TODD (8143342)... no totals found (likely scanned PDF)
+  [2009] ARCURI, MICHAEL A. (8147820)... no totals found (likely scanned PDF)
+  [2009] BACA, JOE (8142910)... no totals found (likely scanned PDF)
+  [2009] BACHUS, SPENCER (8142781)... no totals found (likely scanned PDF)
+  [2009] BERKLEY, SHELLEY (8140088)... no totals found (likely scanned PDF)
+  [2009] BERKLEY, SHELLEY (8144196)... no totals found (likely scanned PDF)
+  [2009] BERMAN, HOWARD L. (8143702)... no totals found (likely scanned PDF)
+  [2009] BERRY, MARION (8142726)... no totals found (likely scanned PDF)
+  [2009] BERRY, MARION (8142830)... no totals found (likely scanned PDF)
+  [2009] BERRY, MARION (8142470)... no totals found (likely scanned PDF)
+  [2009] BIGGERT, JUDY (8142061)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 100, Failed: 0
+[15:10:51] --- Networth run #7 ---
+[15:10:51] --- Networth run #7 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2009] DEFAZIO, PETER A. (8143344)... no totals found (likely scanned PDF)
+  [2009] DEAL, NATHAN (8143867)... no totals found (likely scanned PDF)
+  [2009] DEAL, NATHAN (8143977)... no totals found (likely scanned PDF)
+  [2009] DAVIS, SUSAN A. (8142724)... no totals found (likely scanned PDF)
+  [2009] DAVIS, DANNY K. (8143970)... no totals found (likely scanned PDF)
+  [2009] CUMMINGS, ELIJAH E. (8142642)... no totals found (likely scanned PDF)
+  [2009] CRENSHAW, ANDER (8142784)... no totals found (likely scanned PDF)
+  [2009] COSTA, JIM (8144304)... no totals found (likely scanned PDF)
+  [2009] CONYERS, JOHN (8142954)... no totals found (likely scanned PDF)
+  [2009] CONYERS, JOHN (8144131)... no totals found (likely scanned PDF)
+  [2009] COLE, TOM (8144344)... no totals found (likely scanned PDF)
+  [2009] COHEN, STEVE (8144442)... no totals found (likely scanned PDF)
+  [2009] COHEN, STEVE (8142797)... no totals found (likely scanned PDF)
+  [2009] CLEAVER, EMANUEL (8143488)... no totals found (likely scanned PDF)
+  [2009] BILBRAY, BRIAN P. (8200583)... no totals found (likely scanned PDF)
+  [2009] BILIRAKIS, GUS M. (8144303)... no totals found (likely scanned PDF)
+  [2009] BISHOP, TIMOTHY H. (8142062)... no totals found (likely scanned PDF)
+  [2009] BOCCIERI, JOHN A. (8144343)... no totals found (likely scanned PDF)
+  [2009] BONNER, JO (8143036)... no totals found (likely scanned PDF)
+  [2009] BOUSTANY, CHARLES W. (8142471)... no totals found (likely scanned PDF)
+  [2009] BOYD, ALLEN (8144441)... no totals found (likely scanned PDF)
+  [2009] BRADY, KEVIN (8143835)... no totals found (likely scanned PDF)
+  [2009] BRIGHT, BOBBY (8143594)... no totals found (likely scanned PDF)
+  [2009] BROUN, PAUL C. (8213738)... no totals found (likely scanned PDF)
+  [2009] BROUN, PAUL C. (8143942)... no totals found (likely scanned PDF)
+  [2009] BROWN, HENRY E. (8143735)... no totals found (likely scanned PDF)
+  [2009] BROWN-WAITE, GINNY (8142911)... no totals found (likely scanned PDF)
+  [2009] BUCHANAN, VERN (8207465)... no totals found (likely scanned PDF)
+  [2009] BUTTERFIELD, G. K. (8142791)... no totals found (likely scanned PDF)
+  [2009] CAO, ANH "JOSEPH" (8144273)... no totals found (likely scanned PDF)
+  [2009] CAPUANO, MICHAEL E. (8142918)... no totals found (likely scanned PDF)
+  [2009] CARNAHAN, RUSS (8142065)... no totals found (likely scanned PDF)
+  [2009] CARTER, JOHN R. (8142760)... no totals found (likely scanned PDF)
+  [2009] CARTER, JOHN R. (8143535)... no totals found (likely scanned PDF)
+  [2009] CHILDERS, TRAVIS W. (8143736)... no totals found (likely scanned PDF)
+  [2009] CHRISTENSEN, DONNA M. (8142066)... no totals found (likely scanned PDF)
+  [2009] CLARKE, YVETTE D. (8143320)... no totals found (likely scanned PDF)
+  [2009] CLARKE, YVETTE D. (8143913)... no totals found (likely scanned PDF)
+  [2009] CLEAVER, EMANUEL (8140137)... no totals found (likely scanned PDF)
+  [2008] MACK, CONNIE (8139591)... no totals found (likely scanned PDF)
+  [2008] MCCOLLUM, BETTY (8138015)... no totals found (likely scanned PDF)
+  [2008] MCCOLLUM, BETTY (8135919)... no totals found (likely scanned PDF)
+  [2008] MCHUGH, JOHN M. (8135926)... no totals found (likely scanned PDF)
+  [2008] MCNERNEY, JERRY (8138016)... no totals found (likely scanned PDF)
+  [2008] MCNERNEY, JERRY (8135929)... no totals found (likely scanned PDF)
+  [2008] MILLER, CANDICE S. (8138792)... no totals found (likely scanned PDF)
+  [2008] MILLER, GEORGE (8138981)... no totals found (likely scanned PDF)
+  [2008] MURTHA, JOHN P. (8139243)... no totals found (likely scanned PDF)
+  [2008] MYRICK, SUE WILKINS (8139553)... no totals found (likely scanned PDF)
+  [2008] NORTON, ELEANOR HOLMES (8138710)... no totals found (likely scanned PDF)
+  [2008] PASTOR, ED (8138017)... no totals found (likely scanned PDF)
+  [2008] PAUL, RON (8138642)... no totals found (likely scanned PDF)
+  [2008] PAYNE, DONALD M. (8138643)... no totals found (likely scanned PDF)
+  [2008] PETERS, GARY (8213689)... no totals found (likely scanned PDF)
+  [2008] PETERSON, JOHN E. (8138898)... no totals found (likely scanned PDF)
+  [2008] PORTER, JON C. (8138793)... no totals found (likely scanned PDF)
+  [2008] PRICE, TOM (8138832)... no totals found (likely scanned PDF)
+  [2008] PRYCE, DEBORAH (8138644)... no totals found (likely scanned PDF)
+  [2008] RAMSTAD, JIM (8138206)... no totals found (likely scanned PDF)
+  [2008] RANGEL, CHARLES B. (8143141)... no totals found (likely scanned PDF)
+  [2008] RANGEL, CHARLES B. (8209049)... no totals found (likely scanned PDF)
+  [2008] REGULA, RALPH (8138794)... no totals found (likely scanned PDF)
+  [2008] REICHERT, DAVID G. (8135745)... no totals found (likely scanned PDF)
+  [2008] RICHARDSON, LAURA (8138332)... no totals found (likely scanned PDF)
+  [2008] RICHARDSON, LAURA (8138795)... no totals found (likely scanned PDF)
+  [2008] RODRIGUEZ, CIRO D. (8138765)... no totals found (likely scanned PDF)
+  [2008] ROTHMAN, STEVEN R. (8144342)... no totals found (likely scanned PDF)
+  [2008] RUPPERSBERGER, C. A. DUTCH (8140043)... no totals found (likely scanned PDF)
+  [2008] RYAN, TIM (8138019)... no totals found (likely scanned PDF)
+  [2008] SALI, BILL (8138834)... no totals found (likely scanned PDF)
+  [2008] SANCHEZ, LINDA T. (8138796)... no totals found (likely scanned PDF)
+  [2008] SANCHEZ, LORETTA (8200552)... no totals found (likely scanned PDF)
+  [2008] SARBANES, JOHN P. (8138899)... no totals found (likely scanned PDF)
+  [2008] SCALISE, STEVE (8139554)... no totals found (likely scanned PDF)
+  [2008] SCOTT, DAVID (8138645)... no totals found (likely scanned PDF)
+  [2008] SCOTT, ROBERT C. "BOBBY" (8140044)... no totals found (likely scanned PDF)
+  [2008] SHULER, HEATH (8139691)... no totals found (likely scanned PDF)
+  [2008] SMITH, LAMAR (8138501)... no totals found (likely scanned PDF)
+  [2008] SMITH, LAMAR (8138805)... no totals found (likely scanned PDF)
+  [2008] SOLIS, HILDA L. (8139645)... no totals found (likely scanned PDF)
+  [2008] SPACE, ZACHARY T. (8140045)... no totals found (likely scanned PDF)
+  [2008] STARK, FORTNEY PETE (8135796)... no totals found (likely scanned PDF)
+  [2008] STUPAK, BART (8138500)... no totals found (likely scanned PDF)
+  [2008] SULLIVAN, JOHN (8135800)... no totals found (likely scanned PDF)
+  [2008] THOMPSON, BENNIE G. (8138797)... no totals found (likely scanned PDF)
+  [2008] TIBERI, PATRICK J. (8138502)... no totals found (likely scanned PDF)
+  [2008] TOWNS, EDOLPHUS (8138836)... no totals found (likely scanned PDF)
+  [2008] UDALL, MARK (8138837)... no totals found (likely scanned PDF)
+  [2008] VAN HOLLEN, CHRIS (8138806)... no totals found (likely scanned PDF)
+  [2008] WATERS, MAXINE (8143142)... no totals found (likely scanned PDF)
+  [2008] WATSON, DIANE E. (8138768)... no totals found (likely scanned PDF)
+  [2008] WATT, MELVIN L. (8143728)... no totals found (likely scanned PDF)
+  [2008] WATT, MELVIN L. (8139555)... no totals found (likely scanned PDF)
+  [2008] WAXMAN, HENRY A. (8138207)... no totals found (likely scanned PDF)
+  [2008] YARMUTH, JOHN A. (8138334)... no totals found (likely scanned PDF)
+  [2008] YARMUTH, JOHN A. (8143699)... no totals found (likely scanned PDF)
+  [2008] YOUNG, DON (8216053)... no totals found (likely scanned PDF)
+  [2008] ADERHOLT, ROBERT B. (8139590)... no totals found (likely scanned PDF)
+  [2008] ALTMIRE, JASON (8139862)... no totals found (likely scanned PDF)
+  [2008] BACA, JOE (8138827)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 100, Failed: 0
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 100 Annual FD filings...
+
+  [2009] DEFAZIO, PETER A. (8143344)... no totals found (likely scanned PDF)
+  [2009] DEAL, NATHAN (8143867)... no totals found (likely scanned PDF)
+  [2009] DEAL, NATHAN (8143977)... no totals found (likely scanned PDF)
+  [2009] DAVIS, SUSAN A. (8142724)... no totals found (likely scanned PDF)
+  [2009] DAVIS, DANNY K. (8143970)... no totals found (likely scanned PDF)
+  [2009] CUMMINGS, ELIJAH E. (8142642)... no totals found (likely scanned PDF)
+  [2009] CRENSHAW, ANDER (8142784)... no totals found (likely scanned PDF)
+  [2009] COSTA, JIM (8144304)... no totals found (likely scanned PDF)
+  [2009] CONYERS, JOHN (8142954)... no totals found (likely scanned PDF)
+  [2009] CONYERS, JOHN (8144131)... no totals found (likely scanned PDF)
+  [2009] COLE, TOM (8144344)... no totals found (likely scanned PDF)
+  [2009] COHEN, STEVE (8144442)... no totals found (likely scanned PDF)
+  [2009] COHEN, STEVE (8142797)... no totals found (likely scanned PDF)
+  [2009] CLEAVER, EMANUEL (8143488)... no totals found (likely scanned PDF)
+  [2009] BILBRAY, BRIAN P. (8200583)... no totals found (likely scanned PDF)
+  [2009] BILIRAKIS, GUS M. (8144303)... no totals found (likely scanned PDF)
+  [2009] BISHOP, TIMOTHY H. (8142062)... no totals found (likely scanned PDF)
+  [2009] BOCCIERI, JOHN A. (8144343)... no totals found (likely scanned PDF)
+  [2009] BONNER, JO (8143036)... no totals found (likely scanned PDF)
+  [2009] BOUSTANY, CHARLES W. (8142471)... no totals found (likely scanned PDF)
+  [2009] BOYD, ALLEN (8144441)... no totals found (likely scanned PDF)
+  [2009] BRADY, KEVIN (8143835)... no totals found (likely scanned PDF)
+  [2009] BRIGHT, BOBBY (8143594)... no totals found (likely scanned PDF)
+  [2009] BROUN, PAUL C. (8213738)... no totals found (likely scanned PDF)
+  [2009] BROUN, PAUL C. (8143942)... no totals found (likely scanned PDF)
+  [2009] BROWN, HENRY E. (8143735)... no totals found (likely scanned PDF)
+  [2009] BROWN-WAITE, GINNY (8142911)... no totals found (likely scanned PDF)
+  [2009] BUCHANAN, VERN (8207465)... no totals found (likely scanned PDF)
+  [2009] BUTTERFIELD, G. K. (8142791)... no totals found (likely scanned PDF)
+  [2009] CAO, ANH "JOSEPH" (8144273)... no totals found (likely scanned PDF)
+  [2009] CAPUANO, MICHAEL E. (8142918)... no totals found (likely scanned PDF)
+  [2009] CARNAHAN, RUSS (8142065)... no totals found (likely scanned PDF)
+  [2009] CARTER, JOHN R. (8142760)... no totals found (likely scanned PDF)
+  [2009] CARTER, JOHN R. (8143535)... no totals found (likely scanned PDF)
+  [2009] CHILDERS, TRAVIS W. (8143736)... no totals found (likely scanned PDF)
+  [2009] CHRISTENSEN, DONNA M. (8142066)... no totals found (likely scanned PDF)
+  [2009] CLARKE, YVETTE D. (8143320)... no totals found (likely scanned PDF)
+  [2009] CLARKE, YVETTE D. (8143913)... no totals found (likely scanned PDF)
+  [2009] CLEAVER, EMANUEL (8140137)... no totals found (likely scanned PDF)
+  [2008] MACK, CONNIE (8139591)... no totals found (likely scanned PDF)
+  [2008] MCCOLLUM, BETTY (8138015)... no totals found (likely scanned PDF)
+  [2008] MCCOLLUM, BETTY (8135919)... no totals found (likely scanned PDF)
+  [2008] MCHUGH, JOHN M. (8135926)... no totals found (likely scanned PDF)
+  [2008] MCNERNEY, JERRY (8138016)... no totals found (likely scanned PDF)
+  [2008] MCNERNEY, JERRY (8135929)... no totals found (likely scanned PDF)
+  [2008] MILLER, CANDICE S. (8138792)... no totals found (likely scanned PDF)
+  [2008] MILLER, GEORGE (8138981)... no totals found (likely scanned PDF)
+  [2008] MURTHA, JOHN P. (8139243)... no totals found (likely scanned PDF)
+  [2008] MYRICK, SUE WILKINS (8139553)... no totals found (likely scanned PDF)
+  [2008] NORTON, ELEANOR HOLMES (8138710)... no totals found (likely scanned PDF)
+  [2008] PASTOR, ED (8138017)... no totals found (likely scanned PDF)
+  [2008] PAUL, RON (8138642)... no totals found (likely scanned PDF)
+  [2008] PAYNE, DONALD M. (8138643)... no totals found (likely scanned PDF)
+  [2008] PETERS, GARY (8213689)... no totals found (likely scanned PDF)
+  [2008] PETERSON, JOHN E. (8138898)... no totals found (likely scanned PDF)
+  [2008] PORTER, JON C. (8138793)... no totals found (likely scanned PDF)
+  [2008] PRICE, TOM (8138832)... no totals found (likely scanned PDF)
+  [2008] PRYCE, DEBORAH (8138644)... no totals found (likely scanned PDF)
+  [2008] RAMSTAD, JIM (8138206)... no totals found (likely scanned PDF)
+  [2008] RANGEL, CHARLES B. (8143141)... no totals found (likely scanned PDF)
+  [2008] RANGEL, CHARLES B. (8209049)... no totals found (likely scanned PDF)
+  [2008] REGULA, RALPH (8138794)... no totals found (likely scanned PDF)
+  [2008] REICHERT, DAVID G. (8135745)... no totals found (likely scanned PDF)
+  [2008] RICHARDSON, LAURA (8138332)... no totals found (likely scanned PDF)
+  [2008] RICHARDSON, LAURA (8138795)... no totals found (likely scanned PDF)
+  [2008] RODRIGUEZ, CIRO D. (8138765)... no totals found (likely scanned PDF)
+  [2008] ROTHMAN, STEVEN R. (8144342)... no totals found (likely scanned PDF)
+  [2008] RUPPERSBERGER, C. A. DUTCH (8140043)... no totals found (likely scanned PDF)
+  [2008] RYAN, TIM (8138019)... no totals found (likely scanned PDF)
+  [2008] SALI, BILL (8138834)... no totals found (likely scanned PDF)
+  [2008] SANCHEZ, LINDA T. (8138796)... no totals found (likely scanned PDF)
+  [2008] SANCHEZ, LORETTA (8200552)... no totals found (likely scanned PDF)
+  [2008] SARBANES, JOHN P. (8138899)... no totals found (likely scanned PDF)
+  [2008] SCALISE, STEVE (8139554)... no totals found (likely scanned PDF)
+  [2008] SCOTT, DAVID (8138645)... no totals found (likely scanned PDF)
+  [2008] SCOTT, ROBERT C. "BOBBY" (8140044)... no totals found (likely scanned PDF)
+  [2008] SHULER, HEATH (8139691)... no totals found (likely scanned PDF)
+  [2008] SMITH, LAMAR (8138501)... no totals found (likely scanned PDF)
+  [2008] SMITH, LAMAR (8138805)... no totals found (likely scanned PDF)
+  [2008] SOLIS, HILDA L. (8139645)... no totals found (likely scanned PDF)
+  [2008] SPACE, ZACHARY T. (8140045)... no totals found (likely scanned PDF)
+  [2008] STARK, FORTNEY PETE (8135796)... no totals found (likely scanned PDF)
+  [2008] STUPAK, BART (8138500)... no totals found (likely scanned PDF)
+  [2008] SULLIVAN, JOHN (8135800)... no totals found (likely scanned PDF)
+  [2008] THOMPSON, BENNIE G. (8138797)... no totals found (likely scanned PDF)
+  [2008] TIBERI, PATRICK J. (8138502)... no totals found (likely scanned PDF)
+  [2008] TOWNS, EDOLPHUS (8138836)... no totals found (likely scanned PDF)
+  [2008] UDALL, MARK (8138837)... no totals found (likely scanned PDF)
+  [2008] VAN HOLLEN, CHRIS (8138806)... no totals found (likely scanned PDF)
+  [2008] WATERS, MAXINE (8143142)... no totals found (likely scanned PDF)
+  [2008] WATSON, DIANE E. (8138768)... no totals found (likely scanned PDF)
+  [2008] WATT, MELVIN L. (8143728)... no totals found (likely scanned PDF)
+  [2008] WATT, MELVIN L. (8139555)... no totals found (likely scanned PDF)
+  [2008] WAXMAN, HENRY A. (8138207)... no totals found (likely scanned PDF)
+  [2008] YARMUTH, JOHN A. (8138334)... no totals found (likely scanned PDF)
+  [2008] YARMUTH, JOHN A. (8143699)... no totals found (likely scanned PDF)
+  [2008] YOUNG, DON (8216053)... no totals found (likely scanned PDF)
+  [2008] ADERHOLT, ROBERT B. (8139590)... no totals found (likely scanned PDF)
+  [2008] ALTMIRE, JASON (8139862)... no totals found (likely scanned PDF)
+  [2008] BACA, JOE (8138827)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 100, Failed: 0
+[15:12:03] --- Networth run #8 ---
+[15:12:03] --- Networth run #8 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 79 Annual FD filings...
+
+  [2008] LOFGREN, ZOE (8140042)... no totals found (likely scanned PDF)
+  [2008] LEWIS, JOHN (8139948)... no totals found (likely scanned PDF)
+  [2008] LEE, BARBARA (8140041)... no totals found (likely scanned PDF)
+  [2008] BAIRD, BRIAN (8138985)... no totals found (likely scanned PDF)
+  [2008] BARTLETT, ROSCOE G. (8138784)... no totals found (likely scanned PDF)
+  [2008] BARTLETT, ROSCOE G. (8140036)... no totals found (likely scanned PDF)
+  [2008] BARTLETT, ROSCOE G. (8138977)... no totals found (likely scanned PDF)
+  [2008] BARTON, JOE (8138935)... no totals found (likely scanned PDF)
+  [2008] BONO MACK, MARY (8139224)... no totals found (likely scanned PDF)
+  [2008] BRALEY, BRUCE L. (8139763)... no totals found (likely scanned PDF)
+  [2008] BROUN, PAUL C. (8143941)... no totals found (likely scanned PDF)
+  [2008] BROWN-WAITE, GINNY (8138801)... no totals found (likely scanned PDF)
+  [2008] BUCHANAN, VERN (8203943)... no totals found (likely scanned PDF)
+  [2008] BUCHANAN, VERN (8203942)... no totals found (likely scanned PDF)
+  [2008] BUCHANAN, VERN (8207464)... no totals found (likely scanned PDF)
+  [2008] BURGESS, MICHAEL C. (8138936)... no totals found (likely scanned PDF)
+  [2008] CAPPS, LOIS (8140037)... no totals found (likely scanned PDF)
+  [2008] CAPUANO, MICHAEL E. (8138828)... no totals found (likely scanned PDF)
+  [2008] CARTER, JOHN R. (8143534)... no totals found (likely scanned PDF)
+  [2008] CARTER, JOHN R. (8138279)... no totals found (likely scanned PDF)
+  [2008] CARTER, JOHN R. (8138974)... no totals found (likely scanned PDF)
+  [2008] CASTLE, MICHAEL N. (8139573)... no totals found (likely scanned PDF)
+  [2008] CLARKE, YVETTE D. (8138888)... no totals found (likely scanned PDF)
+  [2008] CLEAVER, EMANUEL (8143487)... no totals found (likely scanned PDF)
+  [2008] COHEN, STEVE (8138203)... no totals found (likely scanned PDF)
+  [2008] COHEN, STEVE (8138938)... no totals found (likely scanned PDF)
+  [2008] COOPER, JIM (8138978)... no totals found (likely scanned PDF)
+  [2008] COOPER, JIM (8139493)... no totals found (likely scanned PDF)
+  [2008] COSTA, JIM (8139882)... no totals found (likely scanned PDF)
+  [2008] CUBIN, BARBARA (8138010)... no totals found (likely scanned PDF)
+  [2008] CUELLAR, HENRY (8138708)... no totals found (likely scanned PDF)
+  [2008] DAVIS, LINCOLN (8138979)... no totals found (likely scanned PDF)
+  [2008] DEAL, NATHAN (8138890)... no totals found (likely scanned PDF)
+  [2008] DEGETTE, DIANA (8138802)... no totals found (likely scanned PDF)
+  [2008] DEGETTE, DIANA (8138803)... no totals found (likely scanned PDF)
+  [2008] DELAURO, ROSA L. (8138804)... no totals found (likely scanned PDF)
+  [2008] DONNELLY, JOE (8206295)... no totals found (likely scanned PDF)
+  [2008] DRAKE, THELMA D. (8139053)... no totals found (likely scanned PDF)
+  [2008] ESHOO, ANNA G. (8135709)... no totals found (likely scanned PDF)
+  [2008] EVERETT, TERRY (8138625)... no totals found (likely scanned PDF)
+  [2008] FARR, SAM (8138829)... no totals found (likely scanned PDF)
+  [2008] FATTAH, CHAKA (8138830)... no totals found (likely scanned PDF)
+  [2008] FLAKE, JEFF (8140038)... no totals found (likely scanned PDF)
+  [2008] FORTUNO, LUIS G. (8138011)... no totals found (likely scanned PDF)
+  [2008] GALLEGLY, ELTON (8135728)... no totals found (likely scanned PDF)
+  [2008] GARRETT, SCOTT (8138712)... no totals found (likely scanned PDF)
+  [2008] GERLACH, JIM (8138764)... no totals found (likely scanned PDF)
+  [2008] GIFFORDS, GABRIELLE (8139574)... no totals found (likely scanned PDF)
+  [2008] GILCHREST, WAYNE T. (8138892)... no totals found (likely scanned PDF)
+  [2008] GINGREY, PHIL (8139055)... no totals found (likely scanned PDF)
+  [2008] GINGREY, PHIL (8139206)... no totals found (likely scanned PDF)
+  [2008] GINGREY, PHIL (8142908)... no totals found (likely scanned PDF)
+  [2008] GUTIERREZ, LUIS V. (8208302)... no totals found (likely scanned PDF)
+  [2008] HALL, JOHN J. (8139244)... no totals found (likely scanned PDF)
+  [2008] HARMAN, JANE (8138788)... no totals found (likely scanned PDF)
+  [2008] HARMAN, JANE (8140039)... no totals found (likely scanned PDF)
+  [2008] HEINRICH, MARTIN (9110829)... no totals found (likely scanned PDF)
+  [2008] HELLER, DEAN (8139318)... no totals found (likely scanned PDF)
+  [2008] HENSARLING, JEB (8138894)... no totals found (likely scanned PDF)
+  [2008] HILL, BARON P. (8139282)... no totals found (likely scanned PDF)
+  [2008] HINCHEY, MAURICE D. (8139374)... no totals found (likely scanned PDF)
+  [2008] HONDA, MICHAEL M. (8140040)... no totals found (likely scanned PDF)
+  [2008] HOOLEY, DARLENE (8135864)... no totals found (likely scanned PDF)
+  [2008] HOOLEY, DARLENE (8139919)... no totals found (likely scanned PDF)
+  [2008] HULSHOF, KENNY C. (8138282)... no totals found (likely scanned PDF)
+  [2008] HUNTER, DUNCAN (8138329)... no totals found (likely scanned PDF)
+  [2008] ISSA, DARRELL E. (8138790)... no totals found (likely scanned PDF)
+  [2008] JACKSON, JESSE L. (8139606)... no totals found (likely scanned PDF)
+  [2008] JEFFERSON, WILLIAM J. (8138709)... no totals found (likely scanned PDF)
+  [2008] JONES, WALTER B. (9109911)... no totals found (likely scanned PDF)
+  [2008] JORDAN, JIM (8138641)... no totals found (likely scanned PDF)
+  [2008] KANJORSKI, PAUL E. (8138895)... no totals found (likely scanned PDF)
+  [2008] KING, PETER T. (8138301)... no totals found (likely scanned PDF)
+  [2008] KNOLLENBERG, JOE (8138980)... no totals found (likely scanned PDF)
+  [2008] LAHOOD, RAY (8138831)... no totals found (likely scanned PDF)
+  [2008] LAMBORN, DOUG (8138791)... no totals found (likely scanned PDF)
+  [2008] LAMBORN, DOUG (8138746)... no totals found (likely scanned PDF)
+  [2008] LANGEVIN, JAMES R. (8140010)... no totals found (likely scanned PDF)
+  [2008] LANGEVIN, JAMES R. (8149143)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 79, Failed: 0
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 79 Annual FD filings...
+
+  [2008] LOFGREN, ZOE (8140042)... no totals found (likely scanned PDF)
+  [2008] LEWIS, JOHN (8139948)... no totals found (likely scanned PDF)
+  [2008] LEE, BARBARA (8140041)... no totals found (likely scanned PDF)
+  [2008] BAIRD, BRIAN (8138985)... no totals found (likely scanned PDF)
+  [2008] BARTLETT, ROSCOE G. (8138784)... no totals found (likely scanned PDF)
+  [2008] BARTLETT, ROSCOE G. (8140036)... no totals found (likely scanned PDF)
+  [2008] BARTLETT, ROSCOE G. (8138977)... no totals found (likely scanned PDF)
+  [2008] BARTON, JOE (8138935)... no totals found (likely scanned PDF)
+  [2008] BONO MACK, MARY (8139224)... no totals found (likely scanned PDF)
+  [2008] BRALEY, BRUCE L. (8139763)... no totals found (likely scanned PDF)
+  [2008] BROUN, PAUL C. (8143941)... no totals found (likely scanned PDF)
+  [2008] BROWN-WAITE, GINNY (8138801)... no totals found (likely scanned PDF)
+  [2008] BUCHANAN, VERN (8203943)... no totals found (likely scanned PDF)
+  [2008] BUCHANAN, VERN (8203942)... no totals found (likely scanned PDF)
+  [2008] BUCHANAN, VERN (8207464)... no totals found (likely scanned PDF)
+  [2008] BURGESS, MICHAEL C. (8138936)... no totals found (likely scanned PDF)
+  [2008] CAPPS, LOIS (8140037)... no totals found (likely scanned PDF)
+  [2008] CAPUANO, MICHAEL E. (8138828)... no totals found (likely scanned PDF)
+  [2008] CARTER, JOHN R. (8143534)... no totals found (likely scanned PDF)
+  [2008] CARTER, JOHN R. (8138279)... no totals found (likely scanned PDF)
+  [2008] CARTER, JOHN R. (8138974)... no totals found (likely scanned PDF)
+  [2008] CASTLE, MICHAEL N. (8139573)... no totals found (likely scanned PDF)
+  [2008] CLARKE, YVETTE D. (8138888)... no totals found (likely scanned PDF)
+  [2008] CLEAVER, EMANUEL (8143487)... no totals found (likely scanned PDF)
+  [2008] COHEN, STEVE (8138203)... no totals found (likely scanned PDF)
+  [2008] COHEN, STEVE (8138938)... no totals found (likely scanned PDF)
+  [2008] COOPER, JIM (8138978)... no totals found (likely scanned PDF)
+  [2008] COOPER, JIM (8139493)... no totals found (likely scanned PDF)
+  [2008] COSTA, JIM (8139882)... no totals found (likely scanned PDF)
+  [2008] CUBIN, BARBARA (8138010)... no totals found (likely scanned PDF)
+  [2008] CUELLAR, HENRY (8138708)... no totals found (likely scanned PDF)
+  [2008] DAVIS, LINCOLN (8138979)... no totals found (likely scanned PDF)
+  [2008] DEAL, NATHAN (8138890)... no totals found (likely scanned PDF)
+  [2008] DEGETTE, DIANA (8138802)... no totals found (likely scanned PDF)
+  [2008] DEGETTE, DIANA (8138803)... no totals found (likely scanned PDF)
+  [2008] DELAURO, ROSA L. (8138804)... no totals found (likely scanned PDF)
+  [2008] DONNELLY, JOE (8206295)... no totals found (likely scanned PDF)
+  [2008] DRAKE, THELMA D. (8139053)... no totals found (likely scanned PDF)
+  [2008] ESHOO, ANNA G. (8135709)... no totals found (likely scanned PDF)
+  [2008] EVERETT, TERRY (8138625)... no totals found (likely scanned PDF)
+  [2008] FARR, SAM (8138829)... no totals found (likely scanned PDF)
+  [2008] FATTAH, CHAKA (8138830)... no totals found (likely scanned PDF)
+  [2008] FLAKE, JEFF (8140038)... no totals found (likely scanned PDF)
+  [2008] FORTUNO, LUIS G. (8138011)... no totals found (likely scanned PDF)
+  [2008] GALLEGLY, ELTON (8135728)... no totals found (likely scanned PDF)
+  [2008] GARRETT, SCOTT (8138712)... no totals found (likely scanned PDF)
+  [2008] GERLACH, JIM (8138764)... no totals found (likely scanned PDF)
+  [2008] GIFFORDS, GABRIELLE (8139574)... no totals found (likely scanned PDF)
+  [2008] GILCHREST, WAYNE T. (8138892)... no totals found (likely scanned PDF)
+  [2008] GINGREY, PHIL (8139055)... no totals found (likely scanned PDF)
+  [2008] GINGREY, PHIL (8139206)... no totals found (likely scanned PDF)
+  [2008] GINGREY, PHIL (8142908)... no totals found (likely scanned PDF)
+  [2008] GUTIERREZ, LUIS V. (8208302)... no totals found (likely scanned PDF)
+  [2008] HALL, JOHN J. (8139244)... no totals found (likely scanned PDF)
+  [2008] HARMAN, JANE (8138788)... no totals found (likely scanned PDF)
+  [2008] HARMAN, JANE (8140039)... no totals found (likely scanned PDF)
+  [2008] HEINRICH, MARTIN (9110829)... no totals found (likely scanned PDF)
+  [2008] HELLER, DEAN (8139318)... no totals found (likely scanned PDF)
+  [2008] HENSARLING, JEB (8138894)... no totals found (likely scanned PDF)
+  [2008] HILL, BARON P. (8139282)... no totals found (likely scanned PDF)
+  [2008] HINCHEY, MAURICE D. (8139374)... no totals found (likely scanned PDF)
+  [2008] HONDA, MICHAEL M. (8140040)... no totals found (likely scanned PDF)
+  [2008] HOOLEY, DARLENE (8135864)... no totals found (likely scanned PDF)
+  [2008] HOOLEY, DARLENE (8139919)... no totals found (likely scanned PDF)
+  [2008] HULSHOF, KENNY C. (8138282)... no totals found (likely scanned PDF)
+  [2008] HUNTER, DUNCAN (8138329)... no totals found (likely scanned PDF)
+  [2008] ISSA, DARRELL E. (8138790)... no totals found (likely scanned PDF)
+  [2008] JACKSON, JESSE L. (8139606)... no totals found (likely scanned PDF)
+  [2008] JEFFERSON, WILLIAM J. (8138709)... no totals found (likely scanned PDF)
+  [2008] JONES, WALTER B. (9109911)... no totals found (likely scanned PDF)
+  [2008] JORDAN, JIM (8138641)... no totals found (likely scanned PDF)
+  [2008] KANJORSKI, PAUL E. (8138895)... no totals found (likely scanned PDF)
+  [2008] KING, PETER T. (8138301)... no totals found (likely scanned PDF)
+  [2008] KNOLLENBERG, JOE (8138980)... no totals found (likely scanned PDF)
+  [2008] LAHOOD, RAY (8138831)... no totals found (likely scanned PDF)
+  [2008] LAMBORN, DOUG (8138791)... no totals found (likely scanned PDF)
+  [2008] LAMBORN, DOUG (8138746)... no totals found (likely scanned PDF)
+  [2008] LANGEVIN, JAMES R. (8140010)... no totals found (likely scanned PDF)
+  [2008] LANGEVIN, JAMES R. (8149143)... no totals found (likely scanned PDF)
+
+Done — OK: 0, No data: 79, Failed: 0
+[15:13:02] --- Networth run #9 ---
+[15:13:02] --- Networth run #9 ---
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 0 Annual FD filings...
+
+
+Done — OK: 0, No data: 0, Failed: 0
+CivicWatch Financial Disclosure Ingestion — Phase: networth limit: 100
+Supabase: ✓
+
+Processing 0 Annual FD filings...
+
+
+Done — OK: 0, No data: 0, Failed: 0
+[15:13:03] Phase 3 complete (0 remaining).
+[15:13:03] Phase 3 complete (0 remaining).
+[15:13:03] 
+[15:13:03] 
+[15:13:03] === ALL INGESTION COMPLETE ===
+[15:13:03] === ALL INGESTION COMPLETE ===

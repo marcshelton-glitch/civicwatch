@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import webpush from 'web-push'
 
 export const runtime = 'nodejs'
 
@@ -12,11 +13,63 @@ const getSupabase = () => createClient(
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
+// ── Web push setup ────────────────────────────────────────────────────────────
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || 'mailto:support@civicwatch.app',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  )
+}
+
+async function sendPushToUser(supabase, userId, payload) {
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) return
+
+  const { data: subs } = await supabase
+    .from('push_subscriptions')
+    .select('endpoint, p256dh, auth')
+    .eq('user_id', userId)
+
+  if (!subs?.length) return
+
+  await Promise.allSettled(subs.map(sub =>
+    webpush.sendNotification(
+      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+      JSON.stringify(payload)
+    ).catch(err => {
+      if (err.statusCode === 410) {
+        // Subscription expired — clean it up
+        supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
+      }
+    })
+  ))
+}
+
+// ── Cron rate limiter — prevents more than 5 manual triggers per hour ─────────
+const cronRateMap = new Map()
+function isCronRateLimited() {
+  const now = Date.now()
+  const WINDOW_MS = 60 * 60 * 1000
+  const MAX = 5
+  const entry = cronRateMap.get('cron') || { count: 0, windowStart: now }
+  if (now - entry.windowStart > WINDOW_MS) {
+    cronRateMap.set('cron', { count: 1, windowStart: now })
+    return false
+  }
+  if (entry.count >= MAX) return true
+  entry.count++
+  cronRateMap.set('cron', entry)
+  return false
+}
+
+// CRON_SECRET must be a 32+ character random string set in Vercel env vars
 function checkAuth(request) {
-  const auth = request.headers.get('authorization')
-  const expected = process.env.CRON_SECRET
-  if (!expected) return false
-  return auth === `Bearer ${expected}`
+  // Vercel sets Authorization: Bearer <CRON_SECRET> for cron jobs
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) return false
+  if (authHeader === `Bearer ${cronSecret}`) return true
+  return false
 }
 
 // GET — called by Vercel cron scheduler
@@ -32,6 +85,15 @@ export async function POST(request) {
 async function runAlerts(request) {
   if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (isCronRateLimited()) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
+  // Log a warning when called from non-production Vercel environments
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
+    console.warn('send-alerts: called from non-production environment:', process.env.VERCEL_ENV)
   }
 
   const supabase = getSupabase()
@@ -185,6 +247,15 @@ async function sendTradeAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
 
     sentCount++
 
+    // Send web push alongside email
+    const repNames = [...new Set(toSend.map(f => f.repName))].join(', ')
+    await sendPushToUser(supabase, userId, {
+      title: 'New trade disclosure',
+      body: `${repNames} filed a new trade disclosure`,
+      url: toSend[0]?.bioguideId ? `/?rep=${toSend[0].bioguideId}` : '/',
+      tag: 'trade-alert',
+    })
+
     const records = toSend.map(f => ({
       user_id: userId,
       bioguide_id: f.bioguideId,
@@ -270,6 +341,15 @@ async function sendNetWorthAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
     if (!emailSent) continue
 
     sentCount++
+
+    // Send web push alongside email
+    const nwRepNames = [...new Set(toSend.map(f => f.repName))].join(', ')
+    await sendPushToUser(supabase, userId, {
+      title: 'Net worth update',
+      body: `New financial disclosure data for ${nwRepNames}`,
+      url: toSend[0]?.bioguideId ? `/?rep=${toSend[0].bioguideId}` : '/',
+      tag: 'networth-alert',
+    })
 
     await supabase
       .from('sent_alerts')

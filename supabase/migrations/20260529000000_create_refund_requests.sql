@@ -14,5 +14,7 @@ CREATE TABLE IF NOT EXISTS refund_requests (
   reviewed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- RLS: Only service role can insert/update
 ALTER TABLE refund_requests ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "service_role_all" ON refund_requests FOR ALL TO service_role USING (true) WITH CHECK (true);

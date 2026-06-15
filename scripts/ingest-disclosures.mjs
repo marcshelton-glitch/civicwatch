@@ -310,8 +310,10 @@ async function runTradesPhase() {
       const transactions = parsePTRTransactions(text)
 
       if (transactions.length > 0) {
-        const rows = transactions.map(t => ({
+        const rows = transactions.map((t, idx) => ({
           doc_id:           filing.doc_id,
+          // Stable natural key for dedup: filing + position within the filing
+          transaction_id:   `${filing.doc_id}:${idx}:${(t.ticker || t.asset_name || '').slice(0, 20)}`,
           last_name:        filing.last_name,
           first_name:       filing.first_name,
           state_dst:        filing.state_dst,
@@ -326,7 +328,9 @@ async function runTradesPhase() {
           amount_max:       t.amount_max,
           amount_str:       sanitize(t.amount_str),
         }))
-        const { error: insErr } = await supabase.from('fd_trades').insert(rows)
+        const { error: insErr } = await supabase
+          .from('fd_trades')
+          .upsert(rows, { onConflict: 'doc_id,transaction_id', ignoreDuplicates: true })
         if (insErr) throw new Error(insErr.message)
         console.log(`${transactions.length} trades`)
         ok++
@@ -371,7 +375,7 @@ async function runNetWorthPhase() {
       const { assetsMin, assetsMax, liabMin, liabMax, nwMin, nwMax } = parseNetWorthText(text)
 
       if (assetsMin !== null || nwMin !== null) {
-        const { error: insErr } = await supabase.from('fd_net_worth').insert({
+        const { error: insErr } = await supabase.from('fd_net_worth').upsert({
           doc_id:          filing.doc_id,
           last_name:       filing.last_name,
           first_name:      filing.first_name,
@@ -384,7 +388,7 @@ async function runNetWorthPhase() {
           liabilities_max: liabMax,
           net_worth_min:   nwMin,
           net_worth_max:   nwMax,
-        })
+        }, { onConflict: 'bioguide_id,report_year', ignoreDuplicates: true })
         if (insErr) throw new Error(insErr.message)
         const nwStr = nwMin ? `NW $${(nwMin/1e6).toFixed(1)}M–$${((nwMax||nwMin)/1e6).toFixed(1)}M` : 'assets only'
         console.log(nwStr)

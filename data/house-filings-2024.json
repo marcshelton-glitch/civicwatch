@@ -1,0 +1,875 @@
+[
+  {
+    "doc_id": "10074498",
+    "last_name": "Auchincloss",
+    "first_name": "Jake",
+    "state_dst": "MA04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10074498.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072753",
+    "last_name": "Balderson",
+    "first_name": "Troy",
+    "state_dst": "OH12",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072753.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062537",
+    "last_name": "Barca",
+    "first_name": "Peter",
+    "state_dst": "WI01",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062537.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072580",
+    "last_name": "Biggs",
+    "first_name": "Sheri",
+    "state_dst": "SC03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072580.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072601",
+    "last_name": "Biggs",
+    "first_name": "Sheri",
+    "state_dst": "SC03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072601.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10075262",
+    "last_name": "Boebert",
+    "first_name": "Lauren",
+    "state_dst": "CO03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10075262.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062878",
+    "last_name": "Bronke",
+    "first_name": "James Victor",
+    "state_dst": "MI05",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062878.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072756",
+    "last_name": "Bynum",
+    "first_name": "Janelle",
+    "state_dst": "OR05",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072756.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10071974",
+    "last_name": "Conaway",
+    "first_name": "Herb",
+    "state_dst": "NJ03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10071974.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10064601",
+    "last_name": "Cooke",
+    "first_name": "Rebecca",
+    "state_dst": "WI03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10064601.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10059152",
+    "last_name": "Corvi",
+    "first_name": "Steven J.",
+    "state_dst": "RI02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10059152.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072187",
+    "last_name": "Crockett",
+    "first_name": "Jasmine",
+    "state_dst": "TX30",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072187.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062376",
+    "last_name": "Davis",
+    "first_name": "Thomas Eugene",
+    "state_dst": "TN04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062376.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062900",
+    "last_name": "DeSpain",
+    "first_name": "Monique",
+    "state_dst": "OR04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062900.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10056935",
+    "last_name": "Devoe",
+    "first_name": "Marion",
+    "state_dst": "VA10",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10056935.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10057008",
+    "last_name": "Devoe",
+    "first_name": "Marion",
+    "state_dst": "VA10",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10057008.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10063000",
+    "last_name": "Dunn",
+    "first_name": "Maria",
+    "state_dst": "TX18",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10063000.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062183",
+    "last_name": "Ekpete Kama",
+    "first_name": "Uloma",
+    "state_dst": "LA02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062183.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062185",
+    "last_name": "Ekpete Kama",
+    "first_name": "Uloma",
+    "state_dst": "LA02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062185.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062210",
+    "last_name": "Ekpete Kama",
+    "first_name": "Uloma",
+    "state_dst": "LA02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062210.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062610",
+    "last_name": "Ekpete Kama",
+    "first_name": "Uloma",
+    "state_dst": "LA02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062610.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072675",
+    "last_name": "Elfreth",
+    "first_name": "Sarah Kelly",
+    "state_dst": "MD03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072675.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10063073",
+    "last_name": "Enoch",
+    "first_name": "Vanessa",
+    "state_dst": "OH08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10063073.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10078407",
+    "last_name": "Enoch",
+    "first_name": "Vanessa L Dr",
+    "state_dst": "OH08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10078407.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10070337",
+    "last_name": "Evans",
+    "first_name": "Dwight",
+    "state_dst": "PA03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10070337.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10077900",
+    "last_name": "Evans",
+    "first_name": "Timothy Gabriel Joseph",
+    "state_dst": "CO08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10077900.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10073219",
+    "last_name": "Feenstra",
+    "first_name": "Randall",
+    "state_dst": "IA04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10073219.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10069053",
+    "last_name": "Fields",
+    "first_name": "Cleo",
+    "state_dst": "LA06",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10069053.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10075765",
+    "last_name": "Fields",
+    "first_name": "Cleo",
+    "state_dst": "LA06",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10075765.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10075772",
+    "last_name": "Fields",
+    "first_name": "Cleo",
+    "state_dst": "LA06",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10075772.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "9115694",
+    "last_name": "Fleischmann",
+    "first_name": "Charles J. \"Chuck\"",
+    "state_dst": "TN03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/9115694.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062168",
+    "last_name": "Franzese",
+    "first_name": "Daniel John",
+    "state_dst": "FL22",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062168.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10076422",
+    "last_name": "Friedman",
+    "first_name": "Laura",
+    "state_dst": "CA30",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10076422.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10076423",
+    "last_name": "Friedman",
+    "first_name": "Laura",
+    "state_dst": "CA30",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10076423.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062393",
+    "last_name": "Ghanim",
+    "first_name": "Ahmed",
+    "state_dst": "MI11",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062393.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072780",
+    "last_name": "Gillen",
+    "first_name": "Laura",
+    "state_dst": "NY04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072780.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072616",
+    "last_name": "Goldman",
+    "first_name": "Craig",
+    "state_dst": "TX12",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072616.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072617",
+    "last_name": "Goldman",
+    "first_name": "Craig",
+    "state_dst": "TX12",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072617.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "9115722",
+    "last_name": "Gooden",
+    "first_name": "Lance",
+    "state_dst": "TX05",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/9115722.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062866",
+    "last_name": "Goodlander",
+    "first_name": "Maggie",
+    "state_dst": "NH02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062866.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10077953",
+    "last_name": "Goodlander",
+    "first_name": "Maggie",
+    "state_dst": "NH02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10077953.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062339",
+    "last_name": "Hamilton",
+    "first_name": "Cameron",
+    "state_dst": "VA07",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062339.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10077893",
+    "last_name": "Harder",
+    "first_name": "Josh",
+    "state_dst": "CA09",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10077893.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10071617",
+    "last_name": "Haridopolos",
+    "first_name": "Mike",
+    "state_dst": "FL08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10071617.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061875",
+    "last_name": "Hensel",
+    "first_name": "Bentley Foster",
+    "state_dst": "VA08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061875.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10068864",
+    "last_name": "Hernandez Rivera",
+    "first_name": "Pablo Jose",
+    "state_dst": "PR00",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10068864.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10058837",
+    "last_name": "Houlahan",
+    "first_name": "Stephen William",
+    "state_dst": "CA48",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10058837.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10074593",
+    "last_name": "Huffman",
+    "first_name": "Jared",
+    "state_dst": "CA02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10074593.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10076787",
+    "last_name": "Hurd",
+    "first_name": "Jeffrey",
+    "state_dst": "CO03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10076787.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072219",
+    "last_name": "James",
+    "first_name": "John",
+    "state_dst": "MI10",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072219.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10073119",
+    "last_name": "Jasser",
+    "first_name": "M. Zuhdi",
+    "state_dst": "AZ04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10073119.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10074399",
+    "last_name": "Jayapal",
+    "first_name": "Pramila",
+    "state_dst": "WA07",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10074399.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10063185",
+    "last_name": "Jones",
+    "first_name": "Mondaire",
+    "state_dst": "NY17",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10063185.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061969",
+    "last_name": "Joshi",
+    "first_name": "Janak",
+    "state_dst": "CO08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061969.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10056743",
+    "last_name": "Kelly",
+    "first_name": "Durand Todd",
+    "state_dst": "KY06",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10056743.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072048",
+    "last_name": "Kelly",
+    "first_name": "Robin",
+    "state_dst": "IL02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072048.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "8221318",
+    "last_name": "Khanna",
+    "first_name": "Rohit",
+    "state_dst": "CA17",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/8221318.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072940",
+    "last_name": "Kim",
+    "first_name": "Young",
+    "state_dst": "CA40",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072940.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10056710",
+    "last_name": "Kirkland",
+    "first_name": "Kyle R.",
+    "state_dst": "CA20",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10056710.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062091",
+    "last_name": "Kucinich",
+    "first_name": "Dennis",
+    "state_dst": "OH07",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062091.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072697",
+    "last_name": "Letlow",
+    "first_name": "Julia",
+    "state_dst": "LA05",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072697.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10067895",
+    "last_name": "Liccardo",
+    "first_name": "Sam T.",
+    "state_dst": "CA16",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10067895.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072768",
+    "last_name": "Liccardo",
+    "first_name": "Sam T.",
+    "state_dst": "CA16",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072768.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061936",
+    "last_name": "Lopez",
+    "first_name": "Greg",
+    "state_dst": "CO04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061936.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "8221255",
+    "last_name": "Matsui",
+    "first_name": "Doris O.",
+    "state_dst": "CA07",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/8221255.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10056627",
+    "last_name": "McGowan",
+    "first_name": "Angelynn Brooke",
+    "state_dst": "NC10",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10056627.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10075001",
+    "last_name": "Miller",
+    "first_name": "Adam Clay",
+    "state_dst": "OH15",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10075001.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10071825",
+    "last_name": "Min",
+    "first_name": "Dave",
+    "state_dst": "CA47",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10071825.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10071812",
+    "last_name": "Moore",
+    "first_name": "Tim",
+    "state_dst": "NC14",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10071812.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10076901",
+    "last_name": "Moore",
+    "first_name": "Tim",
+    "state_dst": "NC14",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10076901.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10071767",
+    "last_name": "Morrison",
+    "first_name": "Kelly Louise",
+    "state_dst": "MN03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10071767.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062512",
+    "last_name": "Morse",
+    "first_name": "Andrea S.",
+    "state_dst": "NY11",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062512.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10077383",
+    "last_name": "Murphy",
+    "first_name": "Greg Francis",
+    "state_dst": "NC03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10077383.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061982",
+    "last_name": "Murphy",
+    "first_name": "Michael Anthony",
+    "state_dst": "PA04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061982.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "8221139",
+    "last_name": "Nadler",
+    "first_name": "Jerrold",
+    "state_dst": "NY12",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/8221139.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10068340",
+    "last_name": "Olszewski",
+    "first_name": "Johnny Anthony",
+    "state_dst": "MD02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10068340.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10075947",
+    "last_name": "Olszewski",
+    "first_name": "Johnny Anthony",
+    "state_dst": "MD02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10075947.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10075946",
+    "last_name": "Olszewski",
+    "first_name": "Johnny Anthony",
+    "state_dst": "MD02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10075946.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10073338",
+    "last_name": "Omar",
+    "first_name": "Ilhan",
+    "state_dst": "MN05",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10073338.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10068928",
+    "last_name": "Pou",
+    "first_name": "Nelida",
+    "state_dst": "NJ09",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10068928.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072490",
+    "last_name": "Pressley",
+    "first_name": "Ayanna",
+    "state_dst": "MA07",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072490.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "9115578",
+    "last_name": "Raskin",
+    "first_name": "Jamie",
+    "state_dst": "MD08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/9115578.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062882",
+    "last_name": "Schultz",
+    "first_name": "Jennifer",
+    "state_dst": "MN08",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062882.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10078225",
+    "last_name": "Scott",
+    "first_name": "Robert C. \"Bobby\"",
+    "state_dst": "VA03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10078225.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10074475",
+    "last_name": "Sessions",
+    "first_name": "Pete",
+    "state_dst": "TX17",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10074475.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061844",
+    "last_name": "Shankland",
+    "first_name": "Katrina",
+    "state_dst": "WI03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061844.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061230",
+    "last_name": "Sitka",
+    "first_name": "John",
+    "state_dst": "VA03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061230.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10060357",
+    "last_name": "Stamper",
+    "first_name": "Katy L.",
+    "state_dst": "GA11",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10060357.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10076139",
+    "last_name": "Thompson",
+    "first_name": "Bennie G.",
+    "state_dst": "MS02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10076139.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10074547",
+    "last_name": "Torres",
+    "first_name": "Ritchie John",
+    "state_dst": "NY15",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10074547.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10072462",
+    "last_name": "Tran",
+    "first_name": "Derek",
+    "state_dst": "CA45",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10072462.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10061846",
+    "last_name": "Vera",
+    "first_name": "Lalo",
+    "state_dst": "IN01",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10061846.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10062916",
+    "last_name": "Williams",
+    "first_name": "Lily Tang",
+    "state_dst": "NH02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10062916.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "9115558",
+    "last_name": "Wilson",
+    "first_name": "Joe",
+    "state_dst": "SC02",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/9115558.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "9115568",
+    "last_name": "Womack",
+    "first_name": "Steve",
+    "state_dst": "AR03",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/9115568.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10060900",
+    "last_name": "Xiong",
+    "first_name": "May Lor",
+    "state_dst": "MN04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10060900.pdf",
+    "bioguide_id": null
+  },
+  {
+    "doc_id": "10056687",
+    "last_name": "Yu",
+    "first_name": "Peter",
+    "state_dst": "CO04",
+    "year": 2024,
+    "pdf_url": "https://disclosures-clerk.house.gov/public_disc/financial-pdfs/2024/10056687.pdf",
+    "bioguide_id": null
+  }
+]

@@ -3,12 +3,45 @@ import { createClient } from '@supabase/supabase-js'
 
 export const revalidate = 300 // 5-minute edge cache
 
+// ── IP-based rate limiter ─────────────────────────────────────────────────────
+const feedRateMap = new Map()
+const FEED_WINDOW_MS = 60_000
+const FEED_MAX_CALLS = 30
+
+function cleanupFeedRateMap() {
+  const now = Date.now()
+  for (const [key, entry] of feedRateMap.entries()) {
+    if (now - entry.windowStart > FEED_WINDOW_MS * 2) feedRateMap.delete(key)
+  }
+}
+setInterval(cleanupFeedRateMap, 5 * 60_000)
+
+function isFeedRateLimited(ip) {
+  const now = Date.now()
+  const entry = feedRateMap.get(ip) || { count: 0, windowStart: now }
+  if (now - entry.windowStart > FEED_WINDOW_MS) {
+    feedRateMap.set(ip, { count: 1, windowStart: now })
+    return false
+  }
+  if (entry.count >= FEED_MAX_CALLS) return true
+  entry.count++
+  feedRateMap.set(ip, entry)
+  return false
+}
+
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-export async function GET() {
+export async function GET(request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'anonymous'
+  if (isFeedRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const supabase = getSupabase()
 
   const [tradesRes, wealthRes] = await Promise.all([

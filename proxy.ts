@@ -31,12 +31,14 @@ const isPublicRoute = createRouteMatcher([
   '/api/leaderboard(.*)',
   '/api/networth(.*)',
   '/api/og-image(.*)',
+  '/api/health(.*)',
 ])
 
 // Only Stripe checkout and billing portal require authentication at middleware level
 const isProtectedApiRoute = createRouteMatcher([
   '/api/subscribe(.*)',
   '/api/billing-portal(.*)',
+  '/api/push-subscribe(.*)',
 ])
 
 export default clerkMiddleware(async (auth, request) => {

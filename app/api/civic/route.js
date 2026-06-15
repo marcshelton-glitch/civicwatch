@@ -1,6 +1,32 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 
+// ── IP-based rate limiter ─────────────────────────────────────────────────────
+const civicRateMap = new Map()
+const CIVIC_WINDOW_MS = 60_000
+const CIVIC_MAX_CALLS = 20
+
+function cleanupCivicRateMap() {
+  const now = Date.now()
+  for (const [key, entry] of civicRateMap.entries()) {
+    if (now - entry.windowStart > CIVIC_WINDOW_MS * 2) civicRateMap.delete(key)
+  }
+}
+setInterval(cleanupCivicRateMap, 5 * 60_000)
+
+function isCivicRateLimited(ip) {
+  const now = Date.now()
+  const entry = civicRateMap.get(ip) || { count: 0, windowStart: now }
+  if (now - entry.windowStart > CIVIC_WINDOW_MS) {
+    civicRateMap.set(ip, { count: 1, windowStart: now })
+    return false
+  }
+  if (entry.count >= CIVIC_MAX_CALLS) return true
+  entry.count++
+  civicRateMap.set(ip, entry)
+  return false
+}
+
 const OPENSTATES_API_KEY = process.env.OPENSTATES_API_KEY
 const CICERO_API_KEY     = process.env.CICERO_API_KEY   // get free key at cicerodata.com (2,500 req/mo)
 
@@ -156,6 +182,13 @@ async function getStateReps(lat, lng) {
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 export async function GET(request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'anonymous'
+  if (isCivicRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -217,7 +250,7 @@ export async function GET(request) {
       // Municipality info for fallback cards when Cicero has no data
       municipality: geoInfo,
       hasCiceroData: ciceroOfficials.length > 0,
-    }, { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' } })
+    }, { headers: { 'Cache-Control': 'public, s-maxage=86400' } })
   } catch (e) {
     console.error('Civic API error:', e.message)
     return NextResponse.json({ error: 'Could not look up address. Please try again.' }, { status: 500 })

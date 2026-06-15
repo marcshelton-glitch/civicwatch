@@ -47,6 +47,32 @@ const getSupabase = () => createClient(
 
 const CONGRESS_BASE = 'https://api.congress.gov/v3'
 
+// ── IP-based rate limiter (10 req/min — each cold-start makes multiple API calls) ─
+const lbRateMap = new Map()
+const LB_WINDOW_MS = 60_000
+const LB_MAX_CALLS = 10
+
+function cleanupLbRateMap() {
+  const now = Date.now()
+  for (const [key, entry] of lbRateMap.entries()) {
+    if (now - entry.windowStart > LB_WINDOW_MS * 2) lbRateMap.delete(key)
+  }
+}
+setInterval(cleanupLbRateMap, 5 * 60_000)
+
+function isLbRateLimited(ip) {
+  const now = Date.now()
+  const entry = lbRateMap.get(ip) || { count: 0, windowStart: now }
+  if (now - entry.windowStart > LB_WINDOW_MS) {
+    lbRateMap.set(ip, { count: 1, windowStart: now })
+    return false
+  }
+  if (entry.count >= LB_MAX_CALLS) return true
+  entry.count++
+  lbRateMap.set(ip, entry)
+  return false
+}
+
 function parseMemberPage(json) {
   const byId = {}
   const byName = {}
@@ -72,7 +98,7 @@ async function fetchMemberPartyPage(offset, currentOnly) {
   try {
     const currentParam = currentOnly ? '&currentMember=true' : ''
     const url = `${CONGRESS_BASE}/member?format=json&limit=250&offset=${offset}${currentParam}&api_key=${key}`
-    const res = await fetch(url, { next: { revalidate: 21600 } })
+    const res = await fetch(url, { next: { revalidate: 21600 }, signal: AbortSignal.timeout(8000) })
     if (!res.ok) return { byId: {}, byName: {} }
     return parseMemberPage(await res.json())
   } catch {
@@ -86,7 +112,7 @@ async function fetchMemberById(bioguideId) {
   if (!key || !bioguideId) return null
   try {
     const url = `${CONGRESS_BASE}/member/${bioguideId}?format=json&api_key=${key}`
-    const res = await fetch(url, { next: { revalidate: 21600 } })
+    const res = await fetch(url, { next: { revalidate: 21600 }, signal: AbortSignal.timeout(8000) })
     if (!res.ok) return null
     const json = await res.json()
     const m = json.member
@@ -100,7 +126,14 @@ async function fetchMemberById(bioguideId) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'anonymous'
+  if (isLbRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   try {
     const supabase = getSupabase()
 
@@ -110,6 +143,7 @@ export async function GET() {
       .from('fd_filings')
       .select('bioguide_id, last_name, first_name, state_dst, filing_date')
       .eq('filing_type', 'P')
+      .abortSignal(AbortSignal.timeout(8000))
 
     if (qErr) throw new Error(qErr.message)
 

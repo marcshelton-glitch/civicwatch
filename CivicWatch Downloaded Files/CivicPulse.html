@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicPulse — Know Your Representatives</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1B2764;
+  --navy-dark: #0D1640;
+  --navy-light: #2D3E8C;
+  --red: #B22234;
+  --red-light: #FFF0F1;
+  --red-mid: #E8384D;
+  --gold: #C9A84C;
+  --gold-light: #FFF8E7;
+  --white: #FFFFFF;
+  --off-white: #F7F8FC;
+  --surface: #EEF1FA;
+  --border: #D4D9ED;
+  --border-light: #E8ECF5;
+  --text: #1a1f3a;
+  --text-mid: #4a5072;
+  --text-light: #8891b8;
+  --green: #1a7a4a;
+  --green-light: #e8f7ef;
+  --orange: #d4530a;
+  --orange-light: #fff3ec;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Source Sans 3', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+h1,h2,h3,h4 { font-family: 'Playfair Display', serif; }
+button { cursor: pointer; font-family: 'Source Sans 3', sans-serif; }
+input { font-family: 'Source Sans 3', sans-serif; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, var(--navy-light) 100%);
+  color: white;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(27,39,100,0.4);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: var(--red);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.logo h1 { font-size: 22px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+.logo span { font-size: 11px; color: rgba(255,255,255,0.6); font-family: 'Source Sans 3', sans-serif; font-weight: 400; display: block; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.notif-btn {
+  position: relative;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.notif-btn:hover { background: rgba(255,255,255,0.18); }
+.notif-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--red-mid);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--navy);
+}
+.subscribe-btn {
+  background: var(--red);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  transition: background 0.2s, transform 0.1s;
+}
+.subscribe-btn:hover { background: var(--red-mid); transform: translateY(-1px); }
+.nav-tabs {
+  display: flex;
+  padding: 0 24px;
+  gap: 2px;
+}
+.nav-tab {
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: rgba(255,255,255,0.9); }
+.nav-tab.active { color: white; border-bottom-color: var(--gold); }
+
+/* MAIN CONTENT */
+.main { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+
+/* AVATAR */
+.avatar {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  font-family: 'Playfair Display', serif;
+  overflow: hidden;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.badge-dem { background: #dbeafe; color: #1d4ed8; }
+.badge-rep { background: #fee2e2; color: #b91c1c; }
+.badge-non { background: #f3f4f6; color: #4b5563; }
+.badge-federal { background: var(--navy); color: white; }
+.badge-state { background: #6366f1; color: white; }
+.badge-municipal { background: var(--green); color: white; }
+.badge-yea { background: var(--green-light); color: var(--green); }
+.badge-nay { background: var(--red-light); color: var(--red); }
+.badge-signed { background: #ede9fe; color: #5b21b6; }
+.badge-new { background: var(--red); color: white; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+/* REP CARDS */
+.reps-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.search-box {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 14px;
+  gap: 8px;
+  height: 40px;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  flex: 1;
+  background: transparent;
+}
+.filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  background: white;
+  border: 1.5px solid var(--border);
+  color: var(--text-mid);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.filter-btn:hover { border-color: var(--navy); color: var(--navy); }
+.filter-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+
+.reps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.rep-card {
+  background: white;
+  border: 1.5px solid var(--border-light);
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.rep-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.rep-card.federal::before { background: var(--navy); }
+.rep-card.state::before { background: #6366f1; }
+.rep-card.municipal::before { background: var(--green); }
+.rep-card:hover { border-color: var(--navy); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(27,39,100,0.12); }
+.rep-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.rep-card-info { flex: 1; }
+.rep-card-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
+.rep-card-info p { font-size: 12px; color: var(--text-mid); }
+.rep-card-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.rep-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+.track-btn {
+  flex: 1;
+  padding: 7px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid;
+  transition: all 0.2s;
+}
+.track-btn.tracked { background: var(--navy); border-color: var(--navy); color: white; }
+.track-btn.untracked { background: white; border-color: var(--border); color: var(--text-mid); }
+.track-btn.untracked:hover { border-color: var(--navy); color: var(--navy); }
+.contact-btn-small {
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--text-mid);
+  display: flex; align-items: center; gap: 4px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.contact-btn-small:hover { border-color: var(--navy); color: var(--navy); }
+
+/* NET WORTH */
+.nw-bar-wrapper { margin: 8px 0; }
+.nw-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+.nw-bar-track { background: var(--border-light); border-radius: 4px; height: 8px; position: relative; overflow: visible; }
+.nw-bar-before { background: var(--text-light); height: 100%; border-radius: 4px; }
+.nw-bar-after { background: var(--gold); height: 100%; border-radius: 4px; position: absolute; top: 0; left: 0; }
+.nw-enrichment { display: inline-flex; align-items: center; gap: 4px; background: var(--gold-light); border: 1px solid var(--gold); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: #8a6820; margin-top: 4px; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,15,40,0.65);
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+.modal {
+  background: white;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 820px;
+  margin: auto;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(10,15,40,0.35);
+}
+.modal-header {
+  background: linear-gradient(135deg, var(--navy-dark), var(--navy));
+  color: white;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.25); }
+.modal-rep-info h2 { font-size: 24px; color: white; margin-bottom: 4px; }
+.modal-rep-info p { font-size: 14px; color: rgba(255,255,255,0.75); }
+.modal-contact-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.modal-contact-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  color: white;
+  background: rgba(255,255,255,0.12);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.modal-contact-btn:hover { background: rgba(255,255,255,0.22); }
+.modal-contact-btn.red { background: var(--red); border-color: var(--red-mid); }
+.modal-contact-btn.red:hover { background: var(--red-mid); }
+
+.modal-tabs { display: flex; border-bottom: 1.5px solid var(--border-light); padding: 0 24px; background: white; }
+.modal-tab {
+  background: none;
+  border: none;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-light);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.modal-tab:hover { color: var(--navy); }
+.modal-tab.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 600; }
+
+.modal-body { padding: 24px; max-height: 520px; overflow-y: auto; }
+
+/* INFO ROWS */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.info-card { background: var(--off-white); border-radius: 10px; padding: 14px; }
+.info-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 4px; font-weight: 600; }
+.info-card-value { font-size: 14px; color: var(--text); font-weight: 500; }
+
+/* VOTING TABLE */
+.vote-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vote-table th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-light); }
+.vote-table td { padding: 10px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+.vote-table tr:last-child td { border-bottom: none; }
+.vote-table tr:hover td { background: var(--off-white); }
+.bill-link { color: var(--navy); font-weight: 600; text-decoration: none; }
+.bill-link:hover { text-decoration: underline; }
+.outcome-pass { color: var(--green); font-weight: 600; }
+.outcome-fail { color: var(--red); font-weight: 600; }
+
+/* TRADE TABLE */
+.trade-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.trade-buy { background: var(--green-light); color: var(--green); }
+.trade-sell { background: var(--red-light); color: var(--red); }
+.crypto-tag { background: #fdf4ff; color: #7c3aed; border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: 600; }
+.stock-tag { background: #eff6ff; color: #1d4ed8; border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: 600; }
+
+/* CONSTITUTION */
+.constitution-controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.toggle-group { display: flex; background: var(--border-light); border-radius: 8px; padding: 3px; gap: 2px; }
+.toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mid);
+  transition: all 0.2s;
+}
+.toggle-btn.active { background: white; color: var(--navy); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.const-item { background: white; border: 1.5px solid var(--border-light); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+.const-item-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 12px;
+}
+.const-item-header:hover { background: var(--off-white); }
+.const-item-header h3 { font-size: 15px; font-weight: 700; color: var(--navy); flex: 1; }
+.const-item-year { font-size: 12px; color: var(--text-light); background: var(--surface); padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.const-item-body { padding: 0 18px 18px; font-size: 14px; line-height: 1.7; color: var(--text-mid); border-top: 1px solid var(--border-light); margin-top: 0; padding-top: 14px; }
+.const-original { font-family: Georgia, serif; font-style: italic; color: #555; font-size: 13px; line-height: 1.8; }
+
+/* TRACK MY REP */
+.notif-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px;
+  background: white;
+  border: 1.5px solid var(--border-light);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.notif-item.unread { border-left: 3px solid var(--navy); background: #f8f9ff; }
+.notif-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.notif-vote { background: #e0e7ff; }
+.notif-trade { background: var(--gold-light); }
+.notif-town { background: var(--green-light); }
+.notif-msg { font-size: 14px; color: var(--text); margin-bottom: 2px; }
+.notif-date { font-size: 12px; color: var(--text-light); }
+
+/* TOWN HALL */
+.event-card { background: white; border: 1.5px solid var(--border-light); border-radius: 12px; padding: 16px; display: flex; gap: 14px; margin-bottom: 12px; }
+.event-date-box { background: var(--navy); color: white; border-radius: 8px; padding: 8px 12px; text-align: center; min-width: 52px; }
+.event-date-box .month { font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.event-date-box .day { font-size: 22px; font-weight: 700; font-family: 'Playfair Display', serif; line-height: 1; }
+.event-info h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.event-info p { font-size: 13px; color: var(--text-mid); }
+.event-type-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-top: 6px; }
+.virtual { background: #ede9fe; color: #6d28d9; }
+.in-person { background: var(--green-light); color: var(--green); }
+
+/* POLL */
+.poll-option {
+  background: white;
+  border: 1.5px solid var(--border-light);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.poll-option:hover:not(.voted) { border-color: var(--navy); }
+.poll-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--surface); z-index: 0; transition: width 0.5s; }
+.poll-content { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; }
+.poll-option.voted { cursor: default; }
+.poll-option.winner { border-color: var(--navy); }
+.poll-bar-pct { font-size: 13px; font-weight: 700; color: var(--navy); }
+
+/* MAP */
+.map-section { background: white; border: 1.5px solid var(--border-light); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+.map-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.state-grid { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.state-row { display: flex; gap: 4px; justify-content: center; }
+.state-btn {
+  width: 34px; height: 34px;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-mid);
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.2px;
+}
+.state-btn:hover { background: var(--surface); border-color: var(--navy); color: var(--navy); }
+.state-btn.selected { background: var(--navy); border-color: var(--navy-dark); color: white; }
+
+/* SECTION TITLES */
+.section-title { font-size: 20px; color: var(--navy); margin-bottom: 6px; }
+.section-subtitle { font-size: 14px; color: var(--text-light); margin-bottom: 20px; }
+
+/* COMPARE */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.issue-row { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--border-light); }
+.issue-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: var(--text-light); }
+.issue-val { font-size: 13px; color: var(--text); }
+
+/* SUBSCRIPTION */
+.sub-section { background: linear-gradient(135deg, var(--navy-dark), var(--navy)); color: white; border-radius: 16px; padding: 32px; text-align: center; margin-top: 40px; }
+.sub-section h2 { font-size: 28px; color: white; margin-bottom: 8px; }
+.sub-section p { color: rgba(255,255,255,0.75); font-size: 15px; margin-bottom: 24px; }
+.plan-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.plan-card { background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align: left; }
+.plan-card.featured { background: rgba(255,255,255,0.15); border-color: var(--gold); }
+.plan-name { font-size: 14px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; }
+.plan-price { font-size: 32px; font-weight: 700; font-family: 'Playfair Display', serif; color: white; margin: 4px 0; }
+.plan-price span { font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.6); }
+.plan-features { list-style: none; margin-top: 12px; }
+.plan-features li { font-size: 13px; color: rgba(255,255,255,0.8); padding: 3px 0; }
+.plan-features li::before { content: "✓ "; color: var(--gold); font-weight: 700; }
+.cta-btn { background: var(--red); color: white; border: none; padding: 14px 32px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.cta-btn:hover { background: var(--red-mid); transform: translateY(-2px); }
+
+/* DOCKET */
+.docket-item { background: white; border: 1.5px solid var(--border-light); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; }
+.docket-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex-shrink: 0; margin-top: 5px; }
+.docket-info h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.docket-info p { font-size: 12px; color: var(--text-light); }
+.docket-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #fff8e7; color: #92600a; margin-top: 4px; }
+
+/* EMPTY STATE */
+.empty { text-align: center; padding: 40px; color: var(--text-light); }
+.empty-icon { font-size: 40px; margin-bottom: 10px; }
+
+/* FOOTER STAR BANNER */
+.star-banner { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--red); color: white; font-size: 12px; font-weight: 600; letter-spacing: 1px; }
+
+@media (max-width: 600px) {
+  .header-top { padding: 10px 14px; }
+  .main { padding: 16px 12px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .modal { margin: 0; border-radius: 14px 14px 0 0; align-self: flex-end; }
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .reps-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+/* ===================== DATA ===================== */
+
+const REPS = [
+  {
+    id: 1,
+    name: "Alex Padilla",
+    title: "U.S. Senator",
+    level: "federal", party: "Democrat", state: "CA", district: "Statewide",
+    email: "senator@padilla.senate.gov", phone: "(202) 224-3553",
+    website: "https://www.padilla.senate.gov",
+    officeHours: "Mon–Fri 9am–5pm PT",
+    officeLocation: "112 Hart Senate Office Building, Washington D.C. 20510",
+    bio: "Alex Padilla was appointed to the U.S. Senate in January 2021 by Gov. Gavin Newsom after Kamala Harris became Vice President — becoming the first Latino U.S. Senator from California. Born and raised in Pacoima, CA, he holds a mechanical engineering degree from MIT. Previously served as California Secretary of State (2015–2021) and LA City Councilmember.",
+    termStart: 2021,
+    netWorthBefore: 1200000,
+    netWorthCurrent: 3800000,
+    votingRecord: [
+      { bill:"S.1", name:"For the People Act", vote:"Yea", outcome:"Passed Senate", date:"2021-06-22", pass:true, link:"https://www.congress.gov/bill/117th-congress/senate-bill/1" },
+      { bill:"HR.3684", name:"Infrastructure Investment & Jobs Act", vote:"Yea", outcome:"Became Law", date:"2021-08-10", pass:true, link:"https://www.congress.gov/bill/117th-congress/house-bill/3684" },
+      { bill:"S.4486", name:"Inflation Reduction Act", vote:"Yea", outcome:"Became Law", date:"2022-08-07", pass:true, link:"https://www.congress.gov/bill/117th-congress/senate-bill/4486" },
+      { bill:"S.2938", name:"Bipartisan Safer Communities Act", vote:"Yea", outcome:"Became Law", date:"2022-06-23", pass:true, link:"https://www.congress.gov/bill/117th-congress/senate-bill/2938" },
+      { bill:"S.4361", name:"CHIPS and Science Act", vote:"Yea", outcome:"Became Law", date:"2022-07-27", pass:true, link:"https://www.congress.gov/bill/117th-congress/senate-bill/4361" },
+    ],
+    trades: [
+      { date:"2022-03-15", asset:"NVDA", type:"Buy", amount:"$15,001–$50,000", assetType:"Stock" },
+      { date:"2022-06-08", asset:"MSFT", type:"Buy", amount:"$1,001–$15,000", assetType:"Stock" },
+      { date:"2023-01-22", asset:"BTC", type:"Sell", amount:"$1,001–$15,000", assetType:"Crypto" },
+      { date:"2023-09-14", asset:"AAPL", type:"Buy", amount:"$15,001–$50,000", assetType:"Stock" },
+      { date:"2024-02-03", asset:"ETH", type:"Buy", amount:"$1,001–$15,000", assetType:"Crypto" },
+    ],
+    docket: [
+      { date:"Mar 28", item:"S.2891 – Climate Infrastructure Act", status:"Committee Hearing", link:"#" },
+      { date:"Apr 2", item:"S.3012 – Housing Affordability Act", status:"Floor Vote Scheduled", link:"#" },
+    ],
+    townHall: [
+      { date:"2026-04-15", title:"Community Town Hall – Los Angeles", location:"LA Convention Center, Hall B", type:"In-Person" },
+      { date:"2026-04-28", title:"Virtual Constituent Forum", location:"Zoom Webinar (register online)", type:"Virtual" },
+    ],
+    peers: [2],
+    keyIssues: { Immigration:"Path to citizenship for all undocumented residents", Climate:"Green New Deal co-sponsor, net-zero by 2050", Healthcare:"Medicare expansion and drug price negotiation", Economy:"Progressive taxation, union workers' rights" }
+  },
+  {
+    id: 2,
+    name: "Adam Schiff",
+    title: "U.S. Senator",
+    level: "federal", party: "Democrat", state: "CA", district: "Statewide",
+    email: "senator@schiff.senate.gov", phone: "(202) 224-3841",
+    website: "https://www.schiff.senate.gov",
+    officeHours: "Mon–Fri 9am–5pm PT",
+    officeLocation: "327 Russell Senate Office Building, Washington D.C. 20510",
+    bio: "Adam Schiff was elected to the U.S. Senate in November 2024 after serving 12 terms in the House representing California's 30th district. He is known for his role as lead House impeachment manager (2020) and chair of the House Intelligence Committee. A former federal prosecutor, Schiff earned his law degree from Harvard.",
+    termStart: 2025,
+    netWorthBefore: 800000,
+    netWorthCurrent: 2100000,
+    votingRecord: [
+      { bill:"HR.3684", name:"Infrastructure Investment & Jobs Act", vote:"Yea", outcome:"Became Law", date:"2021-11-05", pass:true, link:"https://www.congress.gov/bill/117th-congress/house-bill/3684" },
+      { bill:"HR.5376", name:"Build Back Better Act", vote:"Yea", outcome:"Failed Senate", date:"2021-11-19", pass:false, link:"https://www.congress.gov/bill/117th-congress/house-bill/5376" },
+      { bill:"HR.1808", name:"Assault Weapons Ban of 2022", vote:"Yea", outcome:"Failed Senate", date:"2022-07-29", pass:false, link:"#" },
+      { bill:"HR.4521", name:"America COMPETES Act", vote:"Yea", outcome:"Passed House", date:"2022-02-04", pass:true, link:"#" },
+    ],
+    trades: [
+      { date:"2021-09-22", asset:"AMZN", type:"Buy", amount:"$15,001–$50,000", assetType:"Stock" },
+      { date:"2022-11-30", asset:"ETH", type:"Buy", amount:"$1,001–$15,000", assetType:"Crypto" },
+      { date:"2023-07-11", asset:"GOOGL", type:"Sell", amount:"$15,001–$50,000", assetType:"Stock" },
+    ],
+    docket: [
+      { date:"Mar 30", item:"S.1980 – AI Safety Regulation Act", status:"Subcommittee Review", link:"#" },
+      { date:"Apr 3", item:"S.2241 – Privacy Protection Act", status:"Markup Session", link:"#" },
+    ],
+    townHall: [
+      { date:"2026-04-10", title:"San Fernando Valley Community Forum", location:"Van Nuys City Hall, Council Chambers", type:"In-Person" },
+    ],
+    peers: [1],
+    keyIssues: { Immigration:"DACA protection and asylum reform", Climate:"Carbon pricing advocate", Healthcare:"ACA expansion, mental health parity", Economy:"Corporate accountability and antitrust enforcement" }
+  },
+  {
+    id: 3,
+    name: "Mark Takano",
+    title: "U.S. Representative (CA-39)",
+    level: "federal", party: "Democrat", state: "CA", district: "CA-39",
+    email: "contact@takano.house.gov", phone: "(202) 225-2305",
+    website: "https://takano.house.gov",
+    officeHours: "Mon–Fri 8:30am–5pm PT",
+    officeLocation: "420 Cannon House Office Bldg, Washington D.C. 20515 | 3403 10th St, Riverside CA 92501",
+    bio: "Mark Takano has represented California's 39th Congressional District (formerly 41st) since 2013. He is the first openly gay person of color elected to Congress. A former high school English teacher and Riverside Community College Board Trustee, Takano serves on the House Veterans' Affairs Committee and Education & Labor Committee.",
+    termStart: 2013,
+    netWorthBefore: 95000,
+    netWorthCurrent: 520000,
+    votingRecord: [
+      { bill:"HR.3684", name:"Infrastructure Investment & Jobs Act", vote:"Yea", outcome:"Became Law", date:"2021-11-05", pass:true, link:"https://www.congress.gov/bill/117th-congress/house-bill/3684" },
+      { bill:"HR.5376", name:"Build Back Better Act", vote:"Yea", outcome:"Failed Senate", date:"2021-11-19", pass:false, link:"https://www.congress.gov/bill/117th-congress/house-bill/5376" },
+      { bill:"HR.19", name:"Veterans Benefits Improvement Act", vote:"Yea", outcome:"Became Law", date:"2021-07-14", pass:true, link:"#" },
+      { bill:"HR.4521", name:"America COMPETES Act", vote:"Yea", outcome:"Passed House", date:"2022-02-04", pass:true, link:"#" },
+      { bill:"HR.7521", name:"CAIVETS Housing Assistance Act", vote:"Yea", outcome:"Passed House", date:"2024-03-18", pass:true, link:"#" },
+    ],
+    trades: [],
+    docket: [
+      { date:"Mar 29", item:"HR.7821 – Veterans Housing Act", status:"Committee Markup", link:"#" },
+      { date:"Apr 4", item:"HR.8102 – Teacher Salary Equity Act", status:"Subcommittee Hearing", link:"#" },
+    ],
+    townHall: [
+      { date:"2026-04-05", title:"Riverside District Town Hall", location:"Riverside City Hall, Council Chambers", type:"In-Person" },
+      { date:"2026-04-19", title:"Moreno Valley Community Forum", location:"Moreno Valley Conference Center, 14075 Frederick St", type:"In-Person" },
+    ],
+    peers: [1, 2],
+    keyIssues: { Immigration:"Comprehensive immigration reform", Climate:"Clean energy jobs for the Inland Empire", Healthcare:"Veterans healthcare expansion, ACA support", Economy:"Labor rights, living wage legislation" }
+  },
+  {
+    id: 4,
+    name: "Gavin Newsom",
+    title: "Governor of California",
+    level: "state", party: "Democrat", state: "CA", district: "Statewide",
+    email: "governor@ca.gov", phone: "(916) 445-2841",
+    website: "https://www.gov.ca.gov",
+    officeHours: "Mon–Fri 8am–5pm PT",
+    officeLocation: "1303 10th Street, Suite 1173, Sacramento CA 95814",
+    bio: "Gavin Newsom has served as California's 40th Governor since January 2019. Previously Lt. Governor (2011–2019) and Mayor of San Francisco (2004–2011). He survived a recall election in 2021 with 62% voting against recall, and was re-elected in 2022 with 59% of the vote. Known for aggressive progressive policies.",
+    termStart: 2019,
+    netWorthBefore: 5200000,
+    netWorthCurrent: 11800000,
+    votingRecord: [
+      { bill:"AB-32", name:"California Climate Commitment (100% clean grid by 2045)", vote:"Signed", outcome:"Enacted", date:"2022-09-16", pass:true, link:"#" },
+      { bill:"SB-10", name:"Criminal Justice Reform – Bail Elimination", vote:"Signed", outcome:"Enacted", date:"2021-08-31", pass:true, link:"#" },
+      { bill:"AB-257", name:"FAST Recovery Act (fast food wages)", vote:"Signed", outcome:"Enacted", date:"2022-09-05", pass:true, link:"#" },
+      { bill:"SB-1047", name:"Safe and Secure Innovation for Frontier AI Models Act", vote:"Vetoed", outcome:"Vetoed", date:"2024-09-29", pass:false, link:"#" },
+    ],
+    trades: [
+      { date:"2021-06-12", asset:"TSLA", type:"Buy", amount:"$50,001–$100,000", assetType:"Stock" },
+      { date:"2022-03-01", asset:"GS", type:"Sell", amount:"$15,001–$50,000", assetType:"Stock" },
+      { date:"2023-05-18", asset:"BRK.B", type:"Buy", amount:"$100,001–$250,000", assetType:"Stock" },
+    ],
+    docket: [
+      { date:"Apr 1", item:"AB-1234 – Universal Basic Income Pilot (Stockton Model)", status:"Awaiting Signature", link:"#" },
+      { date:"Apr 5", item:"SB-789 – Statewide Housing Compact", status:"Senate Third Reading", link:"#" },
+    ],
+    townHall: [
+      { date:"2026-05-01", title:"Statewide Press Conference & Q&A", location:"State Capitol, Sacramento CA", type:"In-Person" },
+    ],
+    peers: [1, 2],
+    keyIssues: { Immigration:"Sanctuary state, immigration legal services fund", Climate:"100% clean electricity by 2035, ICE vehicle ban by 2035", Healthcare:"Push for universal single-payer, Medi-Cal expansion", Economy:"Minimum wage increases, gig worker protections" }
+  },
+  {
+    id: 5,
+    name: "Ulises Cabrera",
+    title: "Mayor of Moreno Valley",
+    level: "municipal", party: "Nonpartisan", state: "CA", district: "Moreno Valley",
+    email: "mayor@moval.org", phone: "(951) 413-3000",
+    website: "https://www.moval.org/city-government/city-officials/mayor",
+    officeHours: "Tue–Thu 9am–4pm PT",
+    officeLocation: "14177 Frederick St, Moreno Valley CA 92552",
+    bio: "Ulises Cabrera serves as Mayor of Moreno Valley, representing one of the fastest-growing cities in the Inland Empire with over 215,000 residents. He focuses on economic development, public safety, warehouse industry balance, and infrastructure improvements. Previously served on the Planning Commission.",
+    termStart: 2022,
+    netWorthBefore: 320000,
+    netWorthCurrent: 480000,
+    votingRecord: [
+      { bill:"Res. 2023-12", name:"Amazon Warehouse Development Moratorium", vote:"Nay", outcome:"Failed 3–2", date:"2023-04-11", pass:false, link:"#" },
+      { bill:"Ord. 944", name:"Rent Stabilization Ordinance", vote:"Yea", outcome:"Passed 4–1", date:"2023-07-25", pass:true, link:"#" },
+      { bill:"Res. 2024-05", name:"Police-Community Liaison Program", vote:"Yea", outcome:"Passed 5–0", date:"2024-02-13", pass:true, link:"#" },
+      { bill:"Ord. 961", name:"Small Business Development Incentive", vote:"Yea", outcome:"Passed 4–1", date:"2024-08-06", pass:true, link:"#" },
+    ],
+    trades: [],
+    docket: [
+      { date:"Apr 14", item:"SR-60 Corridor Development Plan – EIR Review", status:"Public Comment Period", link:"#" },
+      { date:"Apr 22", item:"FY2026–27 City Budget Adoption", status:"Council Workshop", link:"#" },
+    ],
+    townHall: [
+      { date:"2026-04-08", title:"City Council Open Forum", location:"City Hall Council Chambers, 14177 Frederick St", type:"In-Person" },
+      { date:"2026-04-22", title:"District 1 Community Night Out", location:"Sunnymead Community Park, Pavilion A", type:"In-Person" },
+    ],
+    peers: [],
+    keyIssues: { Immigration:"Local non-enforcement, DACA community support", Climate:"Tree canopy expansion program, solar incentives", Healthcare:"Community health clinics, mobile health outreach", Economy:"Warehouse-residential balance, small business grants" }
+  }
+];
+
+const ARTICLES = [
+  { id:"a1", title:"Article I — The Legislature", original:"All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives. The House of Representatives shall be composed of Members chosen every second Year by the People of the several States...", plain:"Congress — made up of the Senate and House of Representatives — is the only branch that can make federal laws. House members represent specific districts based on population and serve 2-year terms. Each state has exactly 2 senators serving 6-year terms. Congress has power to tax, spend money, regulate commerce, declare war, and make all laws necessary to carry out these powers. The Constitution describes exactly what Congress can and cannot do." },
+  { id:"a2", title:"Article II — The Executive", original:"The executive Power shall be vested in a President of the United States of America. He shall hold his Office during the Term of four Years, and together with the Vice President chosen for the same term...", plain:"The President heads the executive branch, serving 4-year terms and eligible for one re-election. The President commands the military, makes treaties (needing Senate approval), appoints federal judges and cabinet members, and must faithfully execute federal laws. If the President dies or is unable to serve, the Vice President takes over. The Electoral College — not a direct popular vote — formally elects the President." },
+  { id:"a3", title:"Article III — The Judiciary", original:"The judicial Power of the United States, shall be vested in one supreme Court, and in such inferior Courts as the Congress may from time to time ordain and establish. The Judges, both of the supreme and inferior Courts, shall hold their Offices during good Behaviour...", plain:"The Supreme Court and lower federal courts interpret federal law and the Constitution. Federal judges serve for life (as long as they behave well) — protecting them from political pressure. The Supreme Court has the final word on whether laws are constitutional. Congress cannot reduce judges' salaries. Treason is specifically defined to prevent abuse of treason charges against political opponents." },
+  { id:"a4", title:"Article IV — The States", original:"Full Faith and Credit shall be given in each State to the public Acts, Records, and judicial Proceedings of every other State. And the Congress may by general Laws prescribe the Manner in which such Acts, Records and Proceedings shall be proved...", plain:"States must respect each other's laws and court decisions. A driver's license from one state is valid in all states. Citizens of one state have the same basic rights when they travel to other states. Congress can admit new states. The federal government guarantees every state a democratic form of government and protection from foreign invasion or domestic violence." },
+  { id:"a5", title:"Article V — Amendments", original:"The Congress, whenever two thirds of both Houses shall deem it necessary, shall propose Amendments to this Constitution, or, on the Application of the Legislatures of two thirds of the several States, shall call a Convention for proposing Amendments...", plain:"The Constitution can be changed, but it's deliberately difficult. Amendments need approval by 2/3 of both House and Senate, then ratification by 3/4 of states (38 states). Alternatively, 2/3 of state legislatures can call a constitutional convention. This makes the Constitution stable but allows it to evolve when there is broad national consensus for change." },
+  { id:"a6", title:"Article VI — Supremacy Clause", original:"This Constitution, and the Laws of the United States which shall be made in Pursuance thereof; and all Treaties made, or which shall be made, under the Authority of the United States, shall be the supreme Law of the Land...", plain:"The Constitution is the highest law in America — it overrides any conflicting state law or constitution. Federal law is supreme over state law. All government officials — from city council members to U.S. senators — must swear to support the Constitution. No religious test can ever be required for any public office in the United States." },
+  { id:"a7", title:"Article VII — Ratification", original:"The Ratification of the Conventions of nine States, shall be sufficient for the Establishment of this Constitution between the States so ratifying the Same.", plain:"The Constitution became effective when 9 of the 13 original states ratified (voted to approve) it. New Hampshire became the 9th state on June 21, 1788. All 13 states eventually ratified it. Rhode Island was last in May 1790." },
+];
+
+const AMENDMENTS = [
+  { num:"1st", title:"Freedom of Religion, Speech, Press, Assembly & Petition", year:1791, original:"Congress shall make no law respecting an establishment of religion, or prohibiting the free exercise thereof; or abridging the freedom of speech, or of the press; or the right of the people peaceably to assemble, and to petition the Government for a redress of grievances.", plain:"The government cannot create an official religion or favor one religion over others. You can practice any religion — or no religion — freely. You have the right to say and write what you believe, even if the government disagrees. You can gather peacefully and ask the government to fix problems." },
+  { num:"2nd", title:"Right to Keep and Bear Arms", year:1791, original:"A well regulated Militia, being necessary to the security of a free State, the right of the people to keep and bear Arms, shall not be infringed.", plain:"The Supreme Court (District of Columbia v. Heller, 2008) interpreted this as an individual right to own firearms for lawful purposes like self-defense in the home. However, some regulations — background checks, restrictions on certain weapons — are considered permissible." },
+  { num:"4th", title:"Protection from Unreasonable Search & Seizure", year:1791, original:"The right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures, shall not be violated, and no Warrants shall issue, but upon probable cause...", plain:"Police generally need a court-issued warrant to search your home or belongings. The warrant must describe exactly what's being searched and why. Evidence obtained through illegal searches usually cannot be used against you in court (the 'exclusionary rule')." },
+  { num:"5th", title:"Rights of the Accused — Due Process & Property", year:1791, original:"No person shall be held to answer for a capital, or otherwise infamous crime, unless on a presentment or indictment of a Grand Jury... nor shall any person be subject for the same offence to be twice put in jeopardy of life or limb...", plain:"You can't be tried for a serious crime without a grand jury. You can't be tried twice for the same crime (double jeopardy). You don't have to testify against yourself ('pleading the Fifth'). You can't be punished without due process of law. The government can't take your property without fair payment." },
+  { num:"6th", title:"Right to a Speedy, Fair Trial", year:1791, original:"In all criminal prosecutions, the accused shall enjoy the right to a speedy and public trial, by an impartial jury of the State and district wherein the crime shall have been committed...", plain:"If accused of a crime, you have the right to: a fast public trial, an impartial jury from your area, to know the charges, to confront witnesses against you, to call your own witnesses, and to have a lawyer represent you." },
+  { num:"8th", title:"No Cruel and Unusual Punishment", year:1791, original:"Excessive bail shall not be required, nor excessive fines imposed, nor cruel and unusual punishments inflicted.", plain:"Bail before trial must be reasonable relative to the offense. Fines can't be disproportionate. Punishment can't be cruel or unusual — this has been used to challenge certain execution methods and prison conditions." },
+  { num:"13th", title:"Abolition of Slavery", year:1865, original:"Neither slavery nor involuntary servitude, except as a punishment for crime whereof the party shall have been duly convicted, shall exist within the United States, or any place subject to their jurisdiction.", plain:"Slavery and forced labor are illegal everywhere in the United States, except as punishment for a criminal conviction. This was ratified after the Civil War ended, formally abolishing the institution that had existed since the nation's founding." },
+  { num:"14th", title:"Equal Protection & Citizenship Rights", year:1868, original:"All persons born or naturalized in the United States and subject to the jurisdiction thereof, are citizens of the United States and of the State wherein they reside. No State shall make or enforce any law which shall abridge the privileges or immunities of citizens...", plain:"Everyone born in the US is automatically a citizen (birthright citizenship). States cannot take away your rights without due process. All citizens must be treated equally under the law (Equal Protection). This amendment has been used to apply most Bill of Rights protections to state governments." },
+  { num:"15th", title:"Voting Rights — Race", year:1870, original:"The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.", plain:"No American can be denied the right to vote because of their race, color, or whether they were formerly enslaved. This was passed after the Civil War but was systematically undermined by states for decades until the Voting Rights Act of 1965." },
+  { num:"19th", title:"Voting Rights — Women", year:1920, original:"The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of sex.", plain:"All American women gained the constitutional right to vote. This was the culmination of over 70 years of women's suffrage activism. The US was the 18th country to grant women full voting rights." },
+  { num:"22nd", title:"Presidential Term Limits", year:1951, original:"No person shall be elected to the office of the President more than twice, and no person who has held the office of President, or acted as President, for more than two years of a term to which some other person was elected President shall be elected to the office of the President more than once.", plain:"A President can only be elected twice, serving a maximum of 8 years (or 10 if they served part of another president's term). This was passed after FDR served four terms — the only president to do so." },
+  { num:"26th", title:"Voting Age Lowered to 18", year:1971, original:"The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged by the United States or by any State on account of age.", plain:"All U.S. citizens 18 and older have the right to vote. This was passed largely in response to Vietnam War-era arguments: if 18-year-olds could be drafted and die for their country, they should be able to vote for the leaders who make those decisions." },
+];
+
+const STATE_GRID = [
+  [null,null,null,null,null,null,null,null,null,null,"ME"],
+  [null,"WA","MT","ND","MN","WI","MI",null,null,"VT","NH"],
+  [null,"OR","ID","SD","NE","IA","IL","IN","OH","PA","NY"],
+  ["CA","NV","WY","CO","KS","MO","KY","WV","VA","MD","NJ"],
+  [null,"AZ","NM","OK","AR","TN","NC","SC",null,"DE",null],
+  [null,null,"TX","LA","MS","AL","GA",null,null,null,null],
+  [null,null,null,null,"FL",null,null,null,"HI","AK",null],
+];
+
+/* ===================== HELPERS ===================== */
+
+function fmt(n) {
+  if (n >= 1000000) return "$" + (n/1000000).toFixed(1) + "M";
+  if (n >= 1000) return "$" + Math.round(n/1000) + "K";
+  return "$" + n;
+}
+
+function Avatar({ name, size = 44 }) {
+  const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  const colors = [
+    ["#1B2764","#7b8fd4"],["#B22234","#e88a90"],["#1a7a4a","#7bcda1"],
+    ["#5b21b6","#c4b5fd"],["#92600a","#fbbf24"],
+  ];
+  const [bg, fg] = colors[name.charCodeAt(0) % colors.length];
+  return (
+    <div className="avatar" style={{width:size,height:size,background:bg,color:fg,fontSize:size*0.36}}>
+      {initials}
+    </div>
+  );
+}
+
+function Badge({ text, cls }) {
+  return <span className={"badge " + cls}>{text}</span>;
+}
+
+function levelBadge(level) {
+  const map = { federal:"badge-federal", state:"badge-state", municipal:"badge-municipal" };
+  return <Badge text={level} cls={map[level]} />;
+}
+
+function partyBadge(party) {
+  const map = { Democrat:"badge-dem", Republican:"badge-rep", Nonpartisan:"badge-non" };
+  return <Badge text={party} cls={map[party]||"badge-non"} />;
+}
+
+/* ===================== NET WORTH BAR ===================== */
+
+function NetWorthBar({ before, after, name }) {
+  const max = after * 1.1;
+  const pctBefore = Math.round((before/max)*100);
+  const pctAfter = Math.round((after/max)*100);
+  const enrichment = after - before;
+  const pctChange = Math.round(((after-before)/before)*100);
+  return (
+    <div className="nw-bar-wrapper">
+      <div className="nw-bar-label"><span>Est. before taking office</span><span>{fmt(before)}</span></div>
+      <div className="nw-bar-track" style={{marginBottom:6}}>
+        <div className="nw-bar-before" style={{width:pctBefore+"%"}}></div>
+      </div>
+      <div className="nw-bar-label"><span>Est. current net worth</span><span>{fmt(after)}</span></div>
+      <div className="nw-bar-track">
+        <div className="nw-bar-after" style={{width:pctAfter+"%"}}></div>
+      </div>
+      <div className="nw-enrichment">↑ {fmt(enrichment)} gain while in office (+{pctChange}%)</div>
+      <p style={{fontSize:11,color:"var(--text-light)",marginTop:6}}>
+        * Estimates based on mandatory public financial disclosure filings. Actual net worth may differ.
+      </p>
+    </div>
+  );
+}
+
+/* ===================== STATE MAP ===================== */
+
+function StateMap({ selected, onSelect }) {
+  return (
+    <div className="map-section">
+      <div className="map-title">🗺 Select a State to Filter Representatives</div>
+      <div className="state-grid">
+        {STATE_GRID.map((row, ri) => (
+          <div className="state-row" key={ri}>
+            {row.map((st, ci) => st ? (
+              <button
+                key={ci}
+                className={"state-btn" + (selected===st?" selected":"")}
+                onClick={()=>onSelect(st===selected?null:st)}
+                title={st}
+              >{st}</button>
+            ) : (
+              <div key={ci} style={{width:34,height:34}}></div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {selected && (
+        <p style={{textAlign:"center",marginTop:10,fontSize:12,color:"var(--text-mid)"}}>
+          Showing representatives for <strong>{selected}</strong> — <button onClick={()=>onSelect(null)} style={{background:"none",border:"none",color:"var(--navy)",cursor:"pointer",fontWeight:600,fontSize:12}}>clear filter</button>
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ===================== REP DETAIL TABS ===================== */
+
+function ProfileTab({ rep, allReps }) {
+  const peers = rep.peers.map(id => allReps.find(r=>r.id===id)).filter(Boolean);
+  return (
+    <div>
+      <div className="info-grid">
+        <div className="info-card"><div className="info-card-label">Office Hours</div><div className="info-card-value">{rep.officeHours}</div></div>
+        <div className="info-card"><div className="info-card-label">In Office Since</div><div className="info-card-value">{rep.termStart}</div></div>
+        <div className="info-card" style={{gridColumn:"1/-1"}}><div className="info-card-label">Office Location</div><div className="info-card-value">{rep.officeLocation}</div></div>
+      </div>
+      <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",marginBottom:8}}>Biography</h3>
+      <p style={{fontSize:14,lineHeight:1.75,color:"var(--text-mid)",marginBottom:20}}>{rep.bio}</p>
+
+      <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",marginBottom:10}}>Key Policy Positions</h3>
+      <div style={{marginBottom:20}}>
+        {Object.entries(rep.keyIssues).map(([issue, stance]) => (
+          <div className="issue-row" key={issue}>
+            <div className="issue-label">{issue}</div>
+            <div className="issue-val">{stance}</div>
+          </div>
+        ))}
+      </div>
+
+      {peers.length > 0 && (
+        <>
+          <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",marginBottom:10}}>Compare with Direct Peers</h3>
+          <div className="compare-grid">
+            {[rep, ...peers].map(r => (
+              <div key={r.id} style={{background:"var(--off-white)",borderRadius:10,padding:14,border: r.id===rep.id?"2px solid var(--navy)":"1.5px solid var(--border-light)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                  <Avatar name={r.name} size={32}/>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:13}}>{r.name}</div>
+                    <div style={{fontSize:11,color:"var(--text-light)"}}>{r.title}</div>
+                  </div>
+                </div>
+                {Object.entries(r.keyIssues).map(([issue, stance]) => (
+                  <div key={issue} style={{marginBottom:6}}>
+                    <div style={{fontSize:10,textTransform:"uppercase",letterSpacing:"0.5px",fontWeight:700,color:"var(--text-light)"}}>{issue}</div>
+                    <div style={{fontSize:12,color:"var(--text)"}}>{stance}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function VotingTab({ rep }) {
+  return (
+    <div>
+      <p style={{fontSize:13,color:"var(--text-light)",marginBottom:14}}>
+        Showing {rep.votingRecord.length} recorded votes. Data sourced from official congressional and state records.
+      </p>
+      <div style={{overflowX:"auto"}}>
+        <table className="vote-table">
+          <thead>
+            <tr>
+              <th>Bill</th>
+              <th>Name</th>
+              <th>Vote</th>
+              <th>Outcome</th>
+              <th>Date</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rep.votingRecord.map((v,i) => (
+              <tr key={i}>
+                <td style={{fontWeight:700,color:"var(--navy)",whiteSpace:"nowrap"}}>{v.bill}</td>
+                <td>{v.name}</td>
+                <td><span className={"badge " + (v.vote==="Yea"||v.vote==="Signed"?"badge-yea":"badge-nay")}>{v.vote}</span></td>
+                <td className={v.pass?"outcome-pass":"outcome-fail"}>{v.outcome}</td>
+                <td style={{whiteSpace:"nowrap",color:"var(--text-light)"}}>{v.date}</td>
+                <td><a href={v.link} target="_blank" rel="noopener" className="bill-link">↗</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function FinancialTab({ rep }) {
+  return (
+    <div>
+      <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",marginBottom:12}}>Net Worth Comparison</h3>
+      <NetWorthBar before={rep.netWorthBefore} after={rep.netWorthCurrent} name={rep.name} />
+
+      <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",margin:"20px 0 12px"}}>
+        Stock & Crypto Trade Disclosures (STOCK Act)
+      </h3>
+      {rep.trades.length === 0 ? (
+        <div className="empty"><div className="empty-icon">✅</div><p>No trade disclosures on record for this representative.</p></div>
+      ) : (
+        <>
+          <p style={{fontSize:12,color:"var(--text-light)",marginBottom:10}}>
+            All amounts are reported in the ranges required by federal STOCK Act disclosure rules. Legislators must report within 30–45 days of trade.
+          </p>
+          <div style={{overflowX:"auto"}}>
+            <table className="vote-table">
+              <thead>
+                <tr><th>Date</th><th>Asset</th><th>Type</th><th>Amount Range</th><th>Asset Class</th></tr>
+              </thead>
+              <tbody>
+                {rep.trades.map((t,i) => (
+                  <tr key={i}>
+                    <td style={{whiteSpace:"nowrap",color:"var(--text-light)"}}>{t.date}</td>
+                    <td style={{fontWeight:700}}>{t.asset}</td>
+                    <td><span className={"trade-tag " + (t.type==="Buy"?"trade-buy":"trade-sell")}>{t.type}</span></td>
+                    <td>{t.amount}</td>
+                    <td><span className={t.assetType==="Crypto"?"crypto-tag":"stock-tag"}>{t.assetType}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DocketTab({ rep }) {
+  return (
+    <div>
+      <p style={{fontSize:13,color:"var(--text-light)",marginBottom:14}}>
+        Upcoming and active legislative items on {rep.name}'s docket. Data reflects congress.gov and state legislative portals.
+      </p>
+      {rep.docket.length === 0 ? (
+        <div className="empty"><div className="empty-icon">📋</div><p>No docket items currently scheduled.</p></div>
+      ) : rep.docket.map((d,i) => (
+        <div className="docket-item" key={i}>
+          <div className="docket-dot"></div>
+          <div className="docket-info">
+            <h4>{d.item}</h4>
+            <p>Scheduled: {d.date}</p>
+            <span className="docket-status">{d.status}</span>
+          </div>
+          <a href={d.link} target="_blank" rel="noopener" style={{marginLeft:"auto",color:"var(--navy)",fontSize:13,fontWeight:600,textDecoration:"none",whiteSpace:"nowrap"}}>View ↗</a>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TownHallTab({ rep, pollVotes, onVote, hasVoted }) {
+  const total = Object.values(pollVotes).reduce((a,b)=>a+b,0);
+  const issues = [
+    { key:"housing", label:"Affordable Housing Crisis" },
+    { key:"traffic", label:"Traffic & Public Transit" },
+    { key:"jobs", label:"Local Jobs & Economy" },
+    { key:"environment", label:"Air Quality & Environment" },
+  ];
+  const maxVotes = Math.max(...Object.values(pollVotes));
+  return (
+    <div>
+      <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",marginBottom:12}}>Upcoming Public Events</h3>
+      {rep.townHall.length === 0 ? (
+        <div className="empty"><div className="empty-icon">📅</div><p>No upcoming public events scheduled.</p></div>
+      ) : rep.townHall.map((e,i) => {
+        const d = new Date(e.date);
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        return (
+          <div className="event-card" key={i}>
+            <div className="event-date-box">
+              <div className="month">{months[d.getMonth()]}</div>
+              <div className="day">{d.getDate()}</div>
+            </div>
+            <div className="event-info">
+              <h4>{e.title}</h4>
+              <p>📍 {e.location}</p>
+              <span className={"event-type-tag " + (e.type==="Virtual"?"virtual":"in-person")}>{e.type}</span>
+            </div>
+          </div>
+        );
+      })}
+
+      <h3 style={{fontSize:14,fontWeight:700,color:"var(--navy)",margin:"20px 0 8px"}}>
+        Community Priority Poll
+      </h3>
+      <p style={{fontSize:13,color:"var(--text-light)",marginBottom:12}}>
+        What issue should {rep.name.split(" ")[1]} prioritize? Cast your vote below. ({total} votes total)
+      </p>
+      {issues.map(issue => {
+        const votes = pollVotes[issue.key];
+        const pct = total > 0 ? Math.round((votes/total)*100) : 0;
+        const isWinner = votes === maxVotes;
+        return (
+          <div
+            key={issue.key}
+            className={"poll-option" + (hasVoted?" voted":"") + (isWinner&&hasVoted?" winner":"")}
+            onClick={()=>onVote(issue.key)}
+          >
+            <div className="poll-fill" style={{width:hasVoted?pct+"%":"0%",background:isWinner?"var(--light-blue)":"var(--surface)"}}></div>
+            <div className="poll-content">
+              <span style={{fontSize:14,fontWeight:hasVoted&&isWinner?700:500}}>{issue.label}</span>
+              {hasVoted && <span className="poll-bar-pct">{pct}%</span>}
+            </div>
+          </div>
+        );
+      })}
+      {!hasVoted && <p style={{fontSize:11,color:"var(--text-light)",marginTop:6}}>Click an issue to cast your vote.</p>}
+    </div>
+  );
+}
+
+/* ===================== REP DETAIL MODAL ===================== */
+
+function RepDetail({ rep, onClose, tracked, onTrack, allReps, pollVotes, onVote, hasVoted }) {
+  const [tab, setTab] = useState("profile");
+  const tabs = ["profile","voting","financial","docket","townhall"];
+  const tabLabels = { profile:"Profile", voting:"Voting Record", financial:"Financial", docket:"Docket", townhall:"Town Hall" };
+
+  return (
+    <div className="modal-overlay" onClick={e=>{if(e.target.className==="modal-overlay")onClose()}}>
+      <div className="modal">
+        <div className="modal-header">
+          <Avatar name={rep.name} size={60} />
+          <div className="modal-rep-info" style={{flex:1}}>
+            <h2>{rep.name}</h2>
+            <p>{rep.title} · {rep.district||rep.state}</p>
+            <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+              {levelBadge(rep.level)}
+              {partyBadge(rep.party)}
+              <span style={{fontSize:12,color:"rgba(255,255,255,0.6)"}}>In office since {rep.termStart}</span>
+            </div>
+            <div className="modal-contact-row">
+              <a href={"mailto:"+rep.email} className="modal-contact-btn red">✉ Email</a>
+              <a href={"tel:"+rep.phone.replace(/\D/g,"")} className="modal-contact-btn">📞 {rep.phone}</a>
+              <a href={rep.website} target="_blank" rel="noopener" className="modal-contact-btn">🌐 Website</a>
+              <button className={"track-btn "+(tracked?"tracked":"untracked")} onClick={()=>onTrack(rep.id)} style={{padding:"7px 14px",fontSize:12}}>
+                {tracked?"✓ Tracking":"+ Track"}
+              </button>
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="modal-tabs">
+          {tabs.map(t => (
+            <button key={t} className={"modal-tab"+(tab===t?" active":"")} onClick={()=>setTab(t)}>
+              {tabLabels[t]}
+            </button>
+          ))}
+        </div>
+
+        <div className="modal-body">
+          {tab==="profile" && <ProfileTab rep={rep} allReps={allReps} />}
+          {tab==="voting" && <VotingTab rep={rep} />}
+          {tab==="financial" && <FinancialTab rep={rep} />}
+          {tab==="docket" && <DocketTab rep={rep} />}
+          {tab==="townhall" && <TownHallTab rep={rep} pollVotes={pollVotes} onVote={onVote} hasVoted={hasVoted} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== REP CARD ===================== */
+
+function RepCard({ rep, onClick, tracked, onTrack }) {
+  return (
+    <div className={"rep-card " + rep.level} onClick={onClick}>
+      <div className="rep-card-header">
+        <Avatar name={rep.name} size={48} />
+        <div className="rep-card-info">
+          <h3>{rep.name}</h3>
+          <p>{rep.title}</p>
+          <p style={{fontSize:11,color:"var(--text-light)"}}>{rep.district||rep.state} · Since {rep.termStart}</p>
+        </div>
+      </div>
+      <div className="rep-card-badges">
+        {levelBadge(rep.level)}
+        {partyBadge(rep.party)}
+      </div>
+      <div style={{display:"flex",gap:10,fontSize:12,color:"var(--text-light)"}}>
+        <span>🗳 {rep.votingRecord.length} votes on record</span>
+        {rep.trades.length>0 && <span>📈 {rep.trades.length} disclosures</span>}
+      </div>
+      <div className="rep-card-actions" onClick={e=>e.stopPropagation()}>
+        <button className={"track-btn " + (tracked?"tracked":"untracked")} onClick={()=>onTrack(rep.id)}>
+          {tracked ? "✓ Tracking" : "+ Track Rep"}
+        </button>
+        <a href={"mailto:"+rep.email} className="contact-btn-small" onClick={e=>e.stopPropagation()}>✉</a>
+        <a href={"tel:"+rep.phone.replace(/\D/g,"")} className="contact-btn-small" onClick={e=>e.stopPropagation()}>📞</a>
+        <a href={rep.website} target="_blank" rel="noopener" className="contact-btn-small" onClick={e=>e.stopPropagation()}>🌐</a>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== CONSTITUTION VIEW ===================== */
+
+function ConstitutionView() {
+  const [section, setSection] = useState("articles");
+  const [mode, setMode] = useState("plain");
+  const [open, setOpen] = useState(null);
+  const items = section === "articles" ? ARTICLES : AMENDMENTS;
+
+  return (
+    <div>
+      <h2 className="section-title">The United States Constitution</h2>
+      <p className="section-subtitle">Read the founding document that governs American democracy — in original text or plain English.</p>
+      <div className="constitution-controls">
+        <div className="toggle-group">
+          <button className={"toggle-btn"+(section==="articles"?" active":"")} onClick={()=>{setSection("articles");setOpen(null)}}>Articles (I–VII)</button>
+          <button className={"toggle-btn"+(section==="amendments"?" active":"")} onClick={()=>{setSection("amendments");setOpen(null)}}>Amendments (27)</button>
+        </div>
+        <div className="toggle-group">
+          <button className={"toggle-btn"+(mode==="plain"?" active":"")} onClick={()=>setMode("plain")}>Plain English</button>
+          <button className={"toggle-btn"+(mode==="original"?" active":"")} onClick={()=>setMode("original")}>Original Text</button>
+        </div>
+        <a href="https://www.archives.gov/founding-docs/constitution" target="_blank" rel="noopener"
+          style={{fontSize:13,color:"var(--navy)",fontWeight:600,textDecoration:"none",marginLeft:"auto"}}>
+          View Official Document ↗
+        </a>
+      </div>
+      {items.map(item => (
+        <div className="const-item" key={item.id||item.num}>
+          <div className="const-item-header" onClick={()=>setOpen(open===item.id||open===item.num?null:item.id||item.num)}>
+            <h3>
+              {item.num && <span style={{background:"var(--navy)",color:"white",borderRadius:4,padding:"1px 8px",fontSize:11,marginRight:8,fontFamily:"'Source Sans 3',sans-serif"}}>{item.num}</span>}
+              {item.title}
+            </h3>
+            {item.year && <span className="const-item-year">Ratified {item.year}</span>}
+            <span style={{fontSize:18,color:"var(--text-light)",flexShrink:0}}>{open===item.id||open===item.num?"▲":"▼"}</span>
+          </div>
+          {(open===item.id||open===item.num) && (
+            <div className="const-item-body">
+              {mode==="original" ? (
+                <p className="const-original">"{item.original}"</p>
+              ) : (
+                <p style={{fontSize:14,lineHeight:1.8}}>{item.plain}</p>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ===================== TRACK MY REP ===================== */
+
+function TrackView({ notifications, onMarkRead, trackedReps, allReps, onOpenRep }) {
+  const unread = notifications.filter(n=>!n.read).length;
+  const iconMap = { vote:"🗳", trade:"📈", townhall:"📅" };
+  const typeNames = { vote:"New Vote", trade:"Trade Disclosure", townhall:"Town Hall Update" };
+
+  return (
+    <div>
+      <h2 className="section-title">Track My Rep</h2>
+      <p className="section-subtitle">Real-time alerts when your tracked representatives vote, trade, or schedule events.</p>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:24}}>
+        {[
+          {label:"Tracking", value:trackedReps.length},
+          {label:"Unread Alerts", value:unread},
+          {label:"Total Alerts", value:notifications.length},
+        ].map(s => (
+          <div key={s.label} style={{background:"white",border:"1.5px solid var(--border-light)",borderRadius:10,padding:"12px 16px"}}>
+            <div style={{fontSize:11,textTransform:"uppercase",letterSpacing:"0.5px",fontWeight:600,color:"var(--text-light)",marginBottom:4}}>{s.label}</div>
+            <div style={{fontSize:28,fontWeight:700,fontFamily:"'Playfair Display',serif",color:"var(--navy)"}}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <h3 style={{fontSize:16,fontWeight:700,color:"var(--navy)"}}>Recent Alerts</h3>
+        {unread > 0 && <button onClick={onMarkRead} style={{background:"none",border:"1.5px solid var(--border)",borderRadius:7,padding:"5px 12px",fontSize:12,fontWeight:600,color:"var(--text-mid)",cursor:"pointer"}}>Mark all read</button>}
+      </div>
+
+      {notifications.length===0 ? (
+        <div className="empty"><div className="empty-icon">🔔</div><p>No alerts yet. Track representatives to get notified.</p></div>
+      ) : notifications.map(n => {
+        const rep = allReps.find(r=>r.id===n.repId);
+        return (
+          <div key={n.id} className={"notif-item" + (n.read?"":" unread")}>
+            <div className={"notif-icon notif-"+n.type} style={{width:36,height:36,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+              {iconMap[n.type]}
+            </div>
+            <div style={{flex:1}}>
+              <div className="notif-msg">{n.message}</div>
+              <div className="notif-date">{n.date}</div>
+            </div>
+            {!n.read && <span className="badge badge-new" style={{padding:"2px 6px",fontSize:10}}>NEW</span>}
+            {rep && <button onClick={()=>onOpenRep(rep)} style={{background:"none",border:"1.5px solid var(--border)",borderRadius:7,padding:"5px 10px",fontSize:11,fontWeight:600,color:"var(--navy)",cursor:"pointer",whiteSpace:"nowrap",marginLeft:8}}>View Rep</button>}
+          </div>
+        );
+      })}
+
+      <h3 style={{fontSize:16,fontWeight:700,color:"var(--navy)",margin:"24px 0 14px"}}>My Tracked Representatives</h3>
+      {trackedReps.length === 0 ? (
+        <div className="empty"><div className="empty-icon">👤</div><p>No representatives tracked yet. Go to the Representatives tab and click "+ Track Rep".</p></div>
+      ) : (
+        <div className="reps-grid">
+          {allReps.filter(r=>trackedReps.includes(r.id)).map(rep => (
+            <div key={rep.id} style={{background:"white",border:"1.5px solid var(--border-light)",borderRadius:12,padding:16,display:"flex",alignItems:"center",gap:12,cursor:"pointer"}} onClick={()=>onOpenRep(rep)}>
+              <Avatar name={rep.name} size={44} />
+              <div>
+                <div style={{fontWeight:700,fontSize:14}}>{rep.name}</div>
+                <div style={{fontSize:12,color:"var(--text-light)"}}>{rep.title}</div>
+                <div style={{display:"flex",gap:6,marginTop:6}}>{levelBadge(rep.level)}{partyBadge(rep.party)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===================== SUBSCRIPTION ===================== */
+
+function SubscriptionView() {
+  return (
+    <div>
+      <h2 className="section-title" style={{textAlign:"center"}}>CivicPulse Pro</h2>
+      <p className="section-subtitle" style={{textAlign:"center"}}>Stay informed. Hold power accountable. Know exactly who represents you.</p>
+      <div className="sub-section">
+        <h2>Upgrade for Full Access</h2>
+        <p>Get unlimited representative tracking, real-time vote alerts, trade disclosure notifications, and full financial disclosure history.</p>
+        <div className="plan-cards">
+          <div className="plan-card">
+            <div className="plan-name">Basic</div>
+            <div className="plan-price">Free <span>/mo</span></div>
+            <ul className="plan-features">
+              <li>3 tracked representatives</li>
+              <li>Federal reps only</li>
+              <li>30-day voting history</li>
+              <li>Constitution reference</li>
+              <li>Email contact buttons</li>
+            </ul>
+          </div>
+          <div className="plan-card featured">
+            <div className="plan-name">⭐ Citizen Pro</div>
+            <div className="plan-price">$4.99 <span>/mo</span></div>
+            <ul className="plan-features">
+              <li>Unlimited tracking</li>
+              <li>All government levels</li>
+              <li>Full voting history</li>
+              <li>Trade & financial disclosures</li>
+              <li>Push notifications</li>
+              <li>Community polls & Town Hall</li>
+              <li>Docket & calendar alerts</li>
+            </ul>
+          </div>
+          <div className="plan-card">
+            <div className="plan-name">Civics Org</div>
+            <div className="plan-price">$19.99 <span>/mo</span></div>
+            <ul className="plan-features">
+              <li>Everything in Pro</li>
+              <li>5 user seats</li>
+              <li>Exportable voting reports</li>
+              <li>API access</li>
+              <li>Priority support</li>
+              <li>Custom district views</li>
+            </ul>
+          </div>
+        </div>
+        <button className="cta-btn">Start Free Trial — No Credit Card Required</button>
+        <p style={{fontSize:12,color:"rgba(255,255,255,0.5)",marginTop:12}}>Cancel anytime · Secure payment via Stripe · Trusted by 10,000+ civic advocates</p>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== MAIN APP ===================== */
+
+function App() {
+  const [mainTab, setMainTab] = useState("reps");
+  const [selectedRep, setSelectedRep] = useState(null);
+  const [trackedReps, setTrackedReps] = useState([1, 3]);
+  const [notifications, setNotifications] = useState([
+    { id:1, repId:1, type:"vote", message:"Alex Padilla voted on S.3012 — Housing Affordability Act", date:"2026-03-27", read:false },
+    { id:2, repId:3, type:"townhall", message:"Mark Takano scheduled a Town Hall in Moreno Valley on Apr 19", date:"2026-03-28", read:false },
+    { id:3, repId:1, type:"trade", message:"Alex Padilla filed new STOCK Act disclosure: AAPL purchase $15K–$50K", date:"2026-03-25", read:true },
+    { id:4, repId:4, type:"vote", message:"Gov. Newsom signed AB-1234 Universal Basic Income Pilot into law", date:"2026-03-20", read:true },
+  ]);
+  const [selectedState, setSelectedState] = useState("CA");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pollVotes, setPollVotes] = useState({ housing:124, traffic:87, jobs:156, environment:63 });
+  const [hasVoted, setHasVoted] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
+
+  const unreadCount = notifications.filter(n=>!n.read).length;
+
+  const filteredReps = REPS.filter(r => {
+    if (selectedState && r.state !== selectedState) return false;
+    if (levelFilter !== "all" && r.level !== levelFilter) return false;
+    if (searchQuery && !r.name.toLowerCase().includes(searchQuery.toLowerCase()) && !r.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
+  const toggleTrack = (repId) => {
+    setTrackedReps(prev => prev.includes(repId) ? prev.filter(id=>id!==repId) : [...prev, repId]);
+  };
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n=>({...n, read:true})));
+  };
+
+  const handleVote = (issue) => {
+    if (hasVoted) return;
+    setPollVotes(prev => ({...prev, [issue]: prev[issue]+1}));
+    setHasVoted(true);
+  };
+
+  const openRep = (rep) => {
+    setSelectedRep(rep);
+    setShowNotifPanel(false);
+  };
+
+  const navItems = [
+    { key:"reps", label:"🏛 Representatives" },
+    { key:"constitution", label:"📜 Constitution" },
+    { key:"track", label:`🔔 My Reps ${unreadCount>0?"("+unreadCount+")":""}` },
+    { key:"subscribe", label:"⭐ Subscribe" },
+  ];
+
+  return (
+    <>
+      <header className="header">
+        <div className="header-top">
+          <div className="logo">
+            <div className="logo-icon">⭐</div>
+            <div>
+              <h1>CivicPulse</h1>
+              <span>Know Your Representatives</span>
+            </div>
+          </div>
+          <div className="header-actions">
+            <button className="notif-btn" onClick={()=>setShowNotifPanel(!showNotifPanel)}>
+              🔔
+              {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+            </button>
+            <button className="subscribe-btn" onClick={()=>setMainTab("subscribe")}>⭐ Go Pro</button>
+          </div>
+        </div>
+        <nav className="nav-tabs">
+          {navItems.map(item => (
+            <button key={item.key} className={"nav-tab"+(mainTab===item.key?" active":"")} onClick={()=>{setMainTab(item.key);setShowNotifPanel(false)}}>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {showNotifPanel && (
+        <div style={{position:"fixed",top:98,right:20,width:360,background:"white",border:"1.5px solid var(--border)",borderRadius:14,zIndex:150,boxShadow:"0 12px 32px rgba(27,39,100,0.18)",overflow:"hidden"}}>
+          <div style={{padding:"12px 16px",borderBottom:"1px solid var(--border-light)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontWeight:700,fontSize:14}}>Notifications</span>
+            <button onClick={markAllRead} style={{background:"none",border:"none",fontSize:12,color:"var(--navy)",fontWeight:600,cursor:"pointer"}}>Mark all read</button>
+          </div>
+          <div style={{maxHeight:350,overflowY:"auto",padding:12}}>
+            {notifications.map(n => (
+              <div key={n.id} className={"notif-item" + (n.read?"":" unread")} style={{marginBottom:8}}>
+                <div style={{fontSize:20}}>{n.type==="vote"?"🗳":n.type==="trade"?"📈":"📅"}</div>
+                <div><div style={{fontSize:13}}>{n.message}</div><div style={{fontSize:11,color:"var(--text-light)"}}>{n.date}</div></div>
+                {!n.read && <span className="badge badge-new" style={{padding:"2px 6px",fontSize:10}}>NEW</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <main className="main">
+        {mainTab === "reps" && (
+          <>
+            <h2 className="section-title">Your Representatives</h2>
+            <p className="section-subtitle">From your city hall to Capitol Hill — know who represents you at every level of government.</p>
+
+            <StateMap selected={selectedState} onSelect={setSelectedState} />
+
+            <div className="reps-header">
+              <div className="search-box">
+                <span style={{fontSize:16,color:"var(--text-light)"}}>🔍</span>
+                <input placeholder="Search by name or title..." value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} />
+              </div>
+              <div className="filter-btns">
+                {["all","federal","state","municipal"].map(f => (
+                  <button key={f} className={"filter-btn"+(levelFilter===f?" active":"")} onClick={()=>setLevelFilter(f)}>
+                    {f==="all"?"All Levels":f.charAt(0).toUpperCase()+f.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {filteredReps.length === 0 ? (
+              <div className="empty"><div className="empty-icon">🏛</div><p>No representatives match your current filters.</p></div>
+            ) : (
+              <div className="reps-grid">
+                {filteredReps.map(rep => (
+                  <RepCard key={rep.id} rep={rep} onClick={()=>openRep(rep)} tracked={trackedReps.includes(rep.id)} onTrack={toggleTrack} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {mainTab === "constitution" && <ConstitutionView />}
+
+        {mainTab === "track" && (
+          <TrackView
+            notifications={notifications}
+            onMarkRead={markAllRead}
+            trackedReps={trackedReps}
+            allReps={REPS}
+            onOpenRep={openRep}
+          />
+        )}
+
+        {mainTab === "subscribe" && <SubscriptionView />}
+      </main>
+
+      <div className="star-banner">
+        ★ ★ ★ &nbsp; CIVICPULSE — BUILT FOR AMERICAN DEMOCRACY &nbsp; ★ ★ ★
+      </div>
+
+      {selectedRep && (
+        <RepDetail
+          rep={selectedRep}
+          onClose={()=>setSelectedRep(null)}
+          tracked={trackedReps.includes(selectedRep.id)}
+          onTrack={toggleTrack}
+          allReps={REPS}
+          pollVotes={pollVotes}
+          onVote={handleVote}
+          hasVoted={hasVoted}
+        />
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

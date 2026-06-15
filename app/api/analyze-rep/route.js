@@ -1,36 +1,40 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
+import { createClient } from '@supabase/supabase-js'
 
-// ── Per-user rate limiting with automatic cleanup ─────────────────────────────
-const rateMap = new Map()
-const PREVIEW_LIMIT = 3
-const FULL_LIMIT = 20
-const WINDOW_MS = 60 * 60 * 1000  // 1 hour
-const CLEANUP_INTERVAL_MS = 30 * 60 * 1000  // clean stale entries every 30 min
+const getSupabase = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
-// Sweep entries older than the window to prevent unbounded Map growth
-function cleanupRateMap() {
-  const now = Date.now()
-  for (const [key, entry] of rateMap.entries()) {
-    if (now - entry.windowStart > WINDOW_MS) {
-      rateMap.delete(key)
-    }
+// ── Supabase-backed per-user rate limiting ────────────────────────────────────
+// Survives serverless cold starts; stored in rate_limits table.
+async function checkRateLimit(userId, mode) {
+  const supabase = getSupabase()
+  const limit = mode === 'preview' ? 3 : 20
+  const windowHours = 1
+  const windowStart = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString()
+
+  try {
+    const { count } = await supabase
+      .from('rate_limits')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('action', `analyze_${mode}`)
+      .gte('created_at', windowStart)
+
+    if (count >= limit) return false  // rate limited — return false means "is limited"
+
+    await supabase.from('rate_limits').insert({
+      user_id: userId,
+      action: `analyze_${mode}`,
+      created_at: new Date().toISOString(),
+    })
+
+    return true  // allowed
+  } catch (err) {
+    console.error('analyze-rep: rate limit check failed:', err.message)
+    return true  // fail open — don't block if rate limit table is unreachable
   }
-}
-setInterval(cleanupRateMap, CLEANUP_INTERVAL_MS)
-
-function checkRateLimit(userId, mode) {
-  const now = Date.now()
-  const key = `${userId}:${mode}`
-  const entry = rateMap.get(key) || { count: 0, windowStart: now }
-  if (now - entry.windowStart > WINDOW_MS) {
-    rateMap.set(key, { count: 1, windowStart: now })
-    return false
-  }
-  const limit = mode === 'preview' ? PREVIEW_LIMIT : FULL_LIMIT
-  if (entry.count >= limit) return true
-  entry.count++
-  rateMap.set(key, entry)
-  return false
 }
 
 // ── String sanitizer: strips prompt injection patterns ───────────────────────
@@ -167,8 +171,9 @@ export async function POST(request) {
   }
 
   // ── Rate limiting ─────────────────────────────────────────────────────────
-  if (checkRateLimit(userId, mode)) {
-    const limit = mode === 'preview' ? PREVIEW_LIMIT : FULL_LIMIT
+  const allowed = await checkRateLimit(userId, mode)
+  if (!allowed) {
+    const limit = mode === 'preview' ? 3 : 20
     return Response.json(
       { error: `Rate limit reached. Maximum ${limit} ${mode === 'preview' ? 'previews' : 'full reports'} per hour.` },
       { status: 429, headers: { 'Retry-After': '3600' } }

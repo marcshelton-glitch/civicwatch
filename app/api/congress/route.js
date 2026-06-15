@@ -825,6 +825,16 @@ export async function GET(request) {
 
     // ── search ────────────────────────────────────────────────────────────
     if (type === 'search') {
+      // Additional IP-based gate for anonymous requests before expensive Congress.gov calls
+      if (!userId) {
+        const searchIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+          || request.headers.get('x-real-ip')
+          || 'anonymous'
+        if (isRateLimited(searchIp)) {
+          return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+        }
+      }
+
       const query = (searchParams.get('name') || '').trim().toLowerCase()
       if (query.length < 2) return NextResponse.json({ members: [], source: 'none' })
 
@@ -871,7 +881,9 @@ export async function GET(request) {
         .slice(0, 20)
         .map(normalize)
 
-      return NextResponse.json({ members, source: 'live' })
+      return NextResponse.json({ members, source: 'live' }, {
+        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' },
+      })
     }
 
     return NextResponse.json({ error: 'Unknown type' }, { status: 400 })

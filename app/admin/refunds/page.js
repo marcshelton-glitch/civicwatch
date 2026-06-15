@@ -17,9 +17,6 @@ const S = {
   green:     '#3DAA6E',
 }
 
-const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
-  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-
 function StatusBadge({ status }) {
   const styles = {
     pending:  { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)' },
