@@ -1,0 +1,132 @@
+# ============================================================
+# AI Code Review — GitHub Action
+# Triggers on every PR. Uses Gemini Flash (free) to review the
+# diff for architecture issues. CRITICAL findings block merges.
+#
+# SETUP (one-time):
+# 1. Add secret: github.com/marcshelton/civicwatch/settings/secrets/actions
+#    Name: GEMINI_API_KEY  |  Value: your Gemini key (same one in Vercel)
+# 2. Enable status check: Settings → Branches → main → require "AI Code Review"
+# ============================================================
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  ai-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > /tmp/pr.diff
+          DIFF_SIZE=$(wc -c < /tmp/pr.diff)
+          if [ "$DIFF_SIZE" -gt 40960 ]; then
+            head -c 40960 /tmp/pr.diff > /tmp/pr_capped.diff
+            echo "--- DIFF TRUNCATED AT 40KB ---" >> /tmp/pr_capped.diff
+            mv /tmp/pr_capped.diff /tmp/pr.diff
+          fi
+
+      - name: Run AI architecture review
+        id: review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          DIFF=$(cat /tmp/pr.diff)
+          PROMPT="You are a senior engineer reviewing a pull request diff. Focus ONLY on architecture and correctness — never comment on style, formatting, naming, or anything a linter would catch.
+
+          FOCUS ON:
+          - Business logic correctness
+          - SQL injection vectors (raw string interpolation into queries)
+          - Unhandled edge cases (null/undefined paths, missing error handling)
+          - N+1 query patterns (database calls inside loops)
+          - Auth gaps (routes or functions missing auth checks)
+          - Race conditions
+
+          ALWAYS FLAG AS CRITICAL — anything touching:
+          - Auth or Clerk user verification
+          - Payment processing or Stripe
+          - Data deletion (hard deletes, cascades)
+          - Supabase service_role key used client-side
+
+          OUTPUT FORMAT (strictly follow — no other text):
+          CRITICAL: [filename:line] Explanation of what breaks in production
+          WARNING: [filename:line] Informational concern
+
+          If no issues: output exactly NO_ISSUES
+
+          DIFF TO REVIEW:
+          ${DIFF}"
+
+          RESPONSE=$(curl -s -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"contents\":[{\"parts\":[{\"text\":$(echo "$PROMPT" | jq -Rs .)}]}],\"generationConfig\":{\"temperature\":0.1}}")
+
+          REVIEW_TEXT=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text // "ERROR: Could not parse AI response"')
+          echo "review_text<<EOF" >> $GITHUB_OUTPUT
+          echo "$REVIEW_TEXT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          if echo "$REVIEW_TEXT" | grep -q "^CRITICAL:"; then
+            echo "has_critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post review comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REVIEW_TEXT: ${{ steps.review.outputs.review_text }}
+          HAS_CRITICAL: ${{ steps.review.outputs.has_critical }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REPO=${{ github.repository }}
+
+          if [ "$REVIEW_TEXT" = "NO_ISSUES" ]; then
+            BODY="## ✅ AI Code Review\n\nNo architecture issues found."
+            EVENT="APPROVE"
+          elif [ "$HAS_CRITICAL" = "true" ]; then
+            BODY="## 🚨 AI Code Review — Critical Issues Found\n\nMust resolve before merging:\n\n\`\`\`\n${REVIEW_TEXT}\n\`\`\`\n\n> Reviewed by Gemini Flash. Architecture and security only — not style."
+            EVENT="REQUEST_CHANGES"
+          else
+            BODY="## ⚠️ AI Code Review — Warnings Only\n\nNo blocking issues (informational):\n\n\`\`\`\n${REVIEW_TEXT}\n\`\`\`\n\n> Reviewed by Gemini Flash. Architecture and security only — not style."
+            EVENT="COMMENT"
+          fi
+
+          curl -s -X POST \
+            "https://api.github.com/repos/${REPO}/pulls/${PR_NUMBER}/reviews" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\":$(echo -e "$BODY" | jq -Rs .),\"event\":\"${EVENT}\"}"
+
+      - name: Set commit status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAS_CRITICAL: ${{ steps.review.outputs.has_critical }}
+        run: |
+          if [ "$HAS_CRITICAL" = "true" ]; then
+            STATE="failure"
+            DESC="Critical architecture issues — review required"
+          else
+            STATE="success"
+            DESC="No critical issues found"
+          fi
+          curl -s -X POST \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"state\":\"${STATE}\",\"description\":\"${DESC}\",\"context\":\"AI Code Review\"}"
