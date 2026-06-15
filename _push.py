@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import subprocess, json, base64, urllib.request as ur, os, time
+import subprocess, json, base64, urllib.request as ur, urllib.parse, os, time
 
 token = subprocess.check_output(["security","find-internet-password","-s","github.com","-w"]).decode().strip()
 headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json", "Content-Type": "application/json"}
@@ -50,7 +50,8 @@ blobs = []
 
 # Handle deletions — only if the file actually exists on remote
 def remote_file_sha(fpath):
-    url = f"https://api.github.com/repos/{repo}/contents/{fpath}"
+    encoded = urllib.parse.quote(fpath, safe="/")
+    url = f"https://api.github.com/repos/{repo}/contents/{encoded}"
     req = ur.Request(url, method="GET", headers=headers)
     try:
         info = json.loads(ur.urlopen(req, timeout=30).read())
@@ -85,7 +86,7 @@ for fpath in changed:
 print(f"\nCreating tree with {len(blobs)} entries...")
 tree = api("POST", "git/trees", {"base_tree": tree_sha, "tree": blobs})
 
-commit_msg = "P0/P1 launch fixes: health endpoint, rate limiting, caching, auth hardening, push notifications, dedup constraints"
+commit_msg = "feat: AI gateway middleware with spend tracking and token logging"
 new_commit = api("POST", "git/commits", {
     "message": commit_msg,
     "tree": tree["sha"],

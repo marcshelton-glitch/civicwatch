@@ -1,5 +1,6 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
+import { validateAIRequest, checkSpendCap, logTokenUsage } from '@/lib/ai-gateway'
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -143,7 +144,7 @@ export async function POST(request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // ── Parse & validate body ─────────────────────────────────────────────────
+  // ── Parse body ────────────────────────────────────────────────────────────
   let body
   try {
     body = await request.json()
@@ -151,23 +152,23 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { mode, rep: rawRep } = body
+  // ── Payload validation ────────────────────────────────────────────────────
+  const validationError = validateAIRequest(request, body, { requiredFields: ['mode', 'rep'] })
+  if (validationError) return validationError
 
-  if (!mode || !rawRep) {
-    return Response.json({ error: 'Missing mode or rep data' }, { status: 400 })
-  }
+  const { mode, rep: rawRep } = body
 
   if (!['preview', 'full'].includes(mode)) {
     return Response.json({ error: 'Invalid mode' }, { status: 400 })
   }
 
-  // ── Pro check for full mode ───────────────────────────────────────────────
-  if (mode === 'full') {
-    const user = await currentUser()
-    const isPro = user?.publicMetadata?.isPro === true
-    if (!isPro) {
-      return Response.json({ error: 'Pro subscription required' }, { status: 403 })
-    }
+  // ── User metadata (pro check + tier for spend cap) ────────────────────────
+  const user = await currentUser()
+  const isPro = user?.publicMetadata?.isPro === true
+  const tier = isPro ? 'pro' : 'free'
+
+  if (mode === 'full' && !isPro) {
+    return Response.json({ error: 'Pro subscription required' }, { status: 403 })
   }
 
   // ── Rate limiting ─────────────────────────────────────────────────────────
@@ -177,6 +178,16 @@ export async function POST(request) {
     return Response.json(
       { error: `Rate limit reached. Maximum ${limit} ${mode === 'preview' ? 'previews' : 'full reports'} per hour.` },
       { status: 429, headers: { 'Retry-After': '3600' } }
+    )
+  }
+
+  // ── Spend cap ─────────────────────────────────────────────────────────────
+  const underCap = await checkSpendCap(userId, tier)
+  if (!underCap) {
+    const cap = tier === 'pro' ? '50,000' : '500'
+    return Response.json(
+      { error: `Daily token limit reached (${cap} tokens/${tier} tier). Resets at midnight UTC.` },
+      { status: 429, headers: { 'Retry-After': '86400' } }
     )
   }
 
@@ -273,6 +284,11 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
       console.error('AI empty response received')
       return Response.json({ error: 'AI analysis returned no content. Please try again.' }, { status: 500 })
     }
+
+    // ── Log token usage ───────────────────────────────────────────────────
+    const inputTokens = data.usageMetadata?.promptTokenCount ?? 0
+    const outputTokens = data.usageMetadata?.candidatesTokenCount ?? 0
+    await logTokenUsage(userId, 'analyze-rep', 'gemini-2.5-flash', inputTokens, outputTokens)
 
     return Response.json({ text }, { headers: { 'Cache-Control': 'private, no-store' } })
 
