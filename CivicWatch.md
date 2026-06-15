@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `/Users/marcshelton/civicwatch` · Last updated: June 13, 2026
+**Status: LIVE** · Repo: `/Users/marcshelton/civicwatch` · Last updated: June 14, 2026
 
 ---
 
@@ -61,6 +61,13 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 ---
 
 ## ⚡ Recent Work
+
+### 2026-06-14 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 14).
+- **Open items unchanged** — top priority remains adding Vercel env vars for web push notifications (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`) and applying the `push_subscriptions` Supabase migration.
+- **Reminder:** `bioguide_id` SQL backfill for 97 OCR `fd_net_worth` rows still needed, and `congress/route.js` caching layer is incomplete (15 return statements done, not complete).
+- **Screenshot blocker still open:** "Civicwatch.app project continuation" session stalled waiting on Marc's 11 screenshots (came through at 31px wide / unreadable). Re-share at full resolution to resume.
+- **⚠️ GitHub push still Mac-side only** — iCloud copy and `_push.py` require running on the Mac; this automated task can write CivicWatch.md via Cowork folder connection but cannot push to GitHub from the Linux sandbox.
 
 ### 2026-06-13 — Automated Daily Update
 - No new CivicWatch coding sessions today (June 13).
