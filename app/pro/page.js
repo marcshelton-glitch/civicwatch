@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useState } from 'react'
+import ProCountBanner from '@/components/ProCountBanner'
 
 const S = {
   navy:      '#0A0E1E',
@@ -192,6 +193,8 @@ export default function ProPage() {
             CivicWatch Pro unlocks full AI analysis, trade conflict scoring, wealth trajectories, real-time alerts, and local representative lookup — everything you need to hold your elected officials accountable.
           </p>
 
+          <ProCountBanner />
+
           {isPro ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
               <div style={{ padding: '14px 32px', background: `rgba(212,175,55,0.12)`, border: `1px solid ${S.gold}`, borderRadius: 12, color: S.gold, fontSize: 16, fontWeight: 700 }}>
@@ -373,9 +376,7 @@ export default function ProPage() {
         <div style={{ marginBottom: 12 }}>
           <Link href="/dashboard" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Dashboard</Link>
           <Link href="/privacy" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Privacy</Link>
-          <Link href="/terms" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Terms</Link>
-          <Link href="/refund-policy" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Refund Policy</Link>
-          <Link href="/privacy#ccpa" style={{ color: S.gray, textDecoration: 'none' }}>Do Not Sell My Personal Information</Link>
+          <Link href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms</Link>
         </div>
         <div>© {new Date().getFullYear()} CivicWatch · For informational purposes only · Not legal or financial advice</div>
       </footer>

@@ -5,6 +5,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import CookieBanner from '@/components/CookieBanner'
 import ScrollIndicator from '@/components/ScrollIndicator'
+import StickyProBar from '@/components/StickyProBar'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { GoogleAnalytics } from '@next/third-parties/google'
@@ -15,9 +16,8 @@ export const viewport = {
 }
 
 export const metadata = {
-  metadataBase: new URL('https://civicwatch.app'),
-  title: 'CivicWatch — Track Congressional Stock Trades in Real Time',
-  description: 'Your representatives trade stocks, cast votes, and build wealth while serving you. See exactly what they\'re doing.',
+  title: 'CivicWatch — See What Congress Is Buying',
+  description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
   keywords: 'congress stock trades, representative financial disclosure, STOCK Act, congressional transparency, civicwatch',
   robots: { index: true, follow: true },
   manifest: '/manifest.json',
@@ -34,25 +34,25 @@ export const metadata = {
     apple: { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
   },
   openGraph: {
-    title: 'CivicWatch — Track Congressional Stock Trades in Real Time',
-    description: 'Your representatives trade stocks, cast votes, and build wealth while serving you. See exactly what they\'re doing.',
+    title: 'CivicWatch — See What Congress Is Buying',
+    description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
     url: 'https://civicwatch.app',
     siteName: 'CivicWatch',
     images: [
       {
-        url: '/api/og-image?type=home',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'CivicWatch — Track Congressional Stock Trades in Real Time',
+        alt: 'CivicWatch — See What Congress Is Buying',
       },
     ],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CivicWatch — Track Congressional Stock Trades in Real Time',
-    description: 'Your representatives trade stocks, cast votes, and build wealth while serving you. See exactly what they\'re doing.',
-    images: ['/api/og-image?type=home'],
+    title: 'CivicWatch — See What Congress Is Buying',
+    description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
+    images: ['/og-image.png'],
   },
   verification: {
     google: 'dYkgYgk80Pl5OyCxB9q6Co6daeeKR2vJ4I06N8Sd5Js',
@@ -68,6 +68,7 @@ export default function RootLayout({ children }) {
           {children}
           <CookieBanner />
           <ScrollIndicator />
+          <StickyProBar />
           <Analytics />
           <SpeedInsights />
           {/* GA Measurement ID set via NEXT_PUBLIC_GA_MEASUREMENT_ID Vercel env var */}
