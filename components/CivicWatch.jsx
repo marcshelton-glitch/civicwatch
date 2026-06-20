@@ -347,7 +347,7 @@ const S = {
   cardBg: "rgba(255,255,255,0.04)", border: "rgba(212,175,55,0.25)",
 }
 
-export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA' }) {
+export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA', defaultSearch = '' }) {
   const { user, isSignedIn, isLoaded } = useUser()
   const { openSignIn, openUserProfile } = useClerk()
   const router = useRouter()
@@ -363,7 +363,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [constitMode, setConstitMode] = useState("plain")
   const [constitSection, setConstitSection] = useState("articles")
   const [selectedState, setSelectedState] = useState(defaultState)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState(defaultSearch)
   const [pollVotes, setPollVotes] = useState({})
   const [filterLevel, setFilterLevel] = useState("all")
   const [filterParty, setFilterParty] = useState("all")

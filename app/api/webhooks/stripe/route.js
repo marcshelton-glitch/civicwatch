@@ -222,6 +222,43 @@ export async function POST(request) {
         break
       }
 
+      // ── First invoice paid via direct API (Payment Request Button flow) ─────
+      // checkout.session.completed handles the Checkout-originated path.
+      // This handles subscriptions created directly via /api/subscribe-instant.
+      case 'invoice.paid': {
+        const invoice = event.data.object
+        // Only activate on the initial subscription invoice, not renewals
+        if (invoice.billing_reason !== 'subscription_create') break
+
+        const customerId = invoice.customer
+        if (!customerId || typeof customerId !== 'string') break
+
+        const user = await findClerkUserByStripeCustomerId(clerk, customerId)
+        if (!user) {
+          console.error('Webhook invoice.paid: no Clerk user found for Stripe customer')
+          break
+        }
+
+        // Skip if already Pro (checkout.session.completed may have fired first)
+        if (user.publicMetadata?.isPro === true) break
+
+        await clerk.users.updateUserMetadata(user.id, {
+          publicMetadata: {
+            isPro: true,
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: invoice.subscription,
+            proActivatedAt: new Date().toISOString(),
+          },
+        })
+
+        const email = user.emailAddresses?.[0]?.emailAddress
+        const firstName = user.firstName || ''
+        await sendProWelcomeEmail(email, firstName)
+
+        console.log('✅ Pro activated via direct subscription payment')
+        break
+      }
+
       // ── Payment failed: Stripe will retry, revocation happens on deleted ──
       case 'invoice.payment_failed': {
         console.warn('⚠️ Payment failed for a customer — Stripe will retry')
