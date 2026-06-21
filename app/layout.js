@@ -28,11 +28,8 @@ export const metadata = {
     statusBarStyle: 'black-translucent',
   },
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
-      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
-    ],
-    apple: { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    icon: '/brand/logo_icon_transparent.png',
+    apple: '/brand/logo_icon_transparent.png',
   },
   openGraph: {
     title: 'CivicWatch — Track Congressional Stock Trades in Real Time',

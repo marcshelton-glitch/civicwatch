@@ -999,11 +999,14 @@ useEffect(() => {
           <button className="header-logo"
             onClick={() => { setActiveTab("reps"); clearRep() }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
-            <span style={{ fontSize: 26 }}>🏛️</span>
-            <div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, letterSpacing: 2, color: S.white }}>CIVIC<span style={{ color: S.gold }}>WATCH</span></div>
-              <div style={{ fontSize: 9, letterSpacing: 3, color: S.gray, textTransform: "uppercase" }}>Your Representatives. Accountable.</div>
-            </div>
+            <Image
+              src="/brand/logo_civicwatch_horizontal.png"
+              alt="CivicWatch"
+              width={180}
+              height={49}
+              priority
+              style={{ objectFit: "contain" }}
+            />
           </button>
           <nav className="header-nav" style={{ display: "flex", gap: 2 }}>
             {[
