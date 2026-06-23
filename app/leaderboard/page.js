@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { TiltCard } from '../../components/TiltCard'
 
 const S = {
@@ -114,14 +115,8 @@ export default function LeaderboardPage() {
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button
             onClick={() => router.push('/')}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <span style={{ fontSize: 22 }}>🏛️</span>
-            <div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 16, letterSpacing: 2, color: S.white }}>
-                CIVIC<span style={{ color: S.gold }}>WATCH</span>
-              </div>
-              <div style={{ fontSize: 9, letterSpacing: 3, color: S.gray, textTransform: 'uppercase' }}>Your Representatives. Accountable.</div>
-            </div>
+            style={{ display: 'flex', alignItems: 'center', padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
           </button>
           <button
             onClick={() => router.push('/')}

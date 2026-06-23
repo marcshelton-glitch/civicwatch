@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const S = {
   navy:      '#0A1628',
@@ -187,8 +188,8 @@ export default function AdminRefundsPage() {
       `}</style>
 
       <nav style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, color: S.white, textDecoration: 'none', letterSpacing: 0.5 }}>
-          🏛️ Civic<span style={{ color: S.gold }}>Watch</span>
+        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
         </Link>
         <span style={{ fontSize: 12, color: S.gold, background: 'rgba(212,175,55,0.1)', border: `1px solid ${S.border}`, borderRadius: 4, padding: '2px 8px' }}>Staff</span>
       </nav>

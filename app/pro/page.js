@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useState } from 'react'
 import PaymentRequestButton from '@/components/PaymentRequestButton'
@@ -166,8 +167,8 @@ export default function ProPage() {
 
       {/* ── NAV ── */}
       <header style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: `rgba(10,14,30,0.95)`, backdropFilter: 'blur(12px)', zIndex: 100 }}>
-        <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, color: S.white, textDecoration: 'none', letterSpacing: 0.5 }}>
-          🏛️ CivicWatch
+        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
         </Link>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <Link href="/dashboard" style={{ fontSize: 13, color: S.gray, textDecoration: 'none' }}>← Back to Dashboard</Link>

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
@@ -177,11 +178,10 @@ export default function LandingPage() {
         }
 
         .nav-logo {
-          font-family: 'Playfair Display', serif;
-          font-weight: 900; font-size: 20px; letter-spacing: 2px;
-          color: var(--white); text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          text-decoration: none;
         }
-        .nav-logo span { color: var(--gold); }
 
         .nav-actions { display: flex; gap: 12px; align-items: center; }
 
@@ -772,7 +772,9 @@ export default function LandingPage() {
 
       {/* NAV */}
       <nav className="nav">
-        <Link href="/" className="nav-logo">CIVIC<span>WATCH</span></Link>
+        <Link href="/" className="nav-logo">
+          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={180} height={49} priority style={{display:'block'}} />
+        </Link>
         <div className="nav-actions">
           {isSignedIn ? (
             <Link href="/dashboard" className="btn-primary">Go to Dashboard →</Link>

@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 export const metadata = {
   title: 'Terms of Service — CivicWatch',
   description: 'Terms of Service for CivicWatch — the congressional financial transparency platform. Covers account use, data policies, subscriptions, and user rights.',
@@ -215,11 +217,8 @@ export default function TermsPage() {
 
       {/* HEADER */}
       <header style={{ borderBottom: `1px solid ${S.border}`, padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: S.white }}>
-          <span style={{ fontSize: 24 }}>🦅</span>
-          <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: 2 }}>
-            CIVIC<span style={{ color: S.gold }}>WATCH</span>
-          </span>
+        <a href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
         </a>
         <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
           <a href="/privacy" style={{ color: S.gray, textDecoration: 'none' }}>Privacy Policy</a>
