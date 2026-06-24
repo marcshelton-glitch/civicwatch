@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `/Users/marcshelton/civicwatch` · Last updated: June 14, 2026
+**Status: LIVE** · Repo: `/Users/marcshelton/civicwatch` · Last updated: June 24, 2026
 
 ---
 
@@ -57,10 +57,92 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | Trade Conflict Analysis | Pro | 🔲 Coming Soon |
 | Peer Standing | Pro | 🔲 Coming Soon |
 | State & Local Lookup | Pro | 🔲 Coming Soon |
+| Apple Pay / Google Pay checkout | Pro | ✅ Live (Payment Request Button on /pro; 3DS via subscribe-instant API) |
+| Exit-intent modal | Free | ✅ Live (mouseleave desktop / 60s idle mobile; ?state= and ?search= params) |
+| @CivicWatchAlerts X bot | — | ✅ Live (15-min cron; posts new trades to X via Twitter API v2 OAuth) |
+| AI gateway (spend tracking) | — | ✅ Live (lib/ai-gateway.js; ai_usage Supabase table) |
+| AI code review GitHub Action | — | ✅ Live (.github/workflows/ai-review.yml; Claude Sonnet 4.6) |
 
 ---
 
 ## ⚡ Recent Work
+
+### 2026-06-24 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 24).
+- All previous work through June 21 remains current (see below).
+- **Open items unchanged** — top priorities: add Vercel env vars for X bot (`TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`) and web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`); apply Supabase migrations for `push_subscriptions`, `x_bot_posts`, and `ai_usage` tables.
+- **⚠️ GitHub push via API** — pushing CivicWatch.md to repo via GitHub Git Data API using `_push.py`.
+
+### 2026-06-23 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 23).
+- All previous work through June 21 remains current (see below).
+- **Open items unchanged** — top priorities: add Vercel env vars for X bot (`TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`) and web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`); apply Supabase migrations for `push_subscriptions`, `x_bot_posts`, and `ai_usage` tables.
+- Marc was active today on a separate project (DrivPilot — executive summary / product doc updates).
+- **⚠️ GitHub push still Mac-side only** — iCloud copy written; run `python3 ~/civicwatch/_push.py` on Mac to push to repo.
+
+### 2026-06-22 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 22).
+- All previous work through June 21 is captured below.
+- **Open items unchanged** — top priorities remain: add Vercel env vars for X bot (`TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`) and web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), apply Supabase migrations for `push_subscriptions`, `x_bot_posts`, and `ai_usage` tables.
+- **⚠️ GitHub push still Mac-side only** — iCloud copy written; run `python3 ~/civicwatch/_push.py` on Mac to push to repo.
+
+### 2026-06-21 — Real CivicWatch Logo Deployed (Commit 3292825)
+
+**Commit `3292825` — Brand logo replaces emoji placeholder (pushed ~2:14 PM PDT)**
+- `public/brand/` — 7 brand PNG assets added: `civicwatch_logo_gold.png`, `logo_civicwatch_horizontal.png`, `logo_civicwatch_stacked.png`, `logo_icon_on_white.png`, `logo_icon_transparent.png`, `logo_marc_compact.png`, `logo_marc_founder.png`
+- `components/CivicWatch.jsx` — header logo changed from 🏛️ emoji + text (`CIVIC` / `WATCH`) to `<Image src="/brand/logo_civicwatch_horizontal.png" width={180} height={49}>` via Next.js `<Image>` with `priority`
+- `app/layout.js` — favicon and Apple touch icon now point to `logo_icon_transparent.png` (replaces old `favicon.ico` / `favicon-32.png` / `icon-192.png` stack)
+
+### 2026-06-20 — Automated Daily Update + TWO NEW FEATURES PUSHED
+- **TWO major commits pushed today** — @CivicWatchAlerts X bot + Apple Pay / Google Pay checkout (see details below).
+- **⚠️ GitHub push still Mac-side only** — CivicWatch.md updated in iCloud-synced folder; GitHub push of this file requires `python3 ~/civicwatch/_push.py` on Mac.
+- Previous automated daily update sessions (June 15–19) failed to write to repo due to filesystem sandbox limitations.
+
+### 2026-06-20 — X Bot + Apple Pay (Commits f1c7d3c, 61e116e)
+
+**Commit `f1c7d3c` — @CivicWatchAlerts X Bot (pushed 12:49 PM)**
+- `app/api/alerts/x-bot/route.js` — queries `fd_trades` + `senate_trades` for trades created in last 2 hours; posts each to X via Twitter API v2 (OAuth 1.0a); records posted trade IDs in `x_bot_posts` table to prevent duplicates; fetches party from Congress.gov API best-effort
+- `supabase/migrations/20260620000001_create_x_bot_posts.sql` — dedup table for posted trades
+- `vercel.json` — adds `*/15` cron trigger for `/api/alerts/x-bot` (fires every 15 minutes)
+- `docs/x-bot-setup.md` — Twitter app creation guide, OAuth scopes, required env vars
+
+**Commit `61e116e` — Exit-Intent Modal + Apple Pay / Google Pay (pushed 12:18 AM)**
+- `components/ExitIntentModal.js` — fires on mouseleave (desktop) or 60s idle (mobile); shows once per session; hidden for signed-in users; state dropdown → `/dashboard?state=`; name search → `/dashboard?search=`
+- `components/PaymentRequestButton.js` — Stripe Payment Request Button (Apple Pay / Google Pay); rendered above standard CTA on `/pro`; falls back silently if wallet unavailable
+- `app/api/subscribe-instant/route.js` — creates subscription directly via `paymentMethodId`; returns `clientSecret` when 3DS confirmation is needed
+- `app/api/webhooks/stripe/route.js` — adds `invoice.paid` handler to activate Pro for Payment Request Button path; skips if already Pro to avoid duplicate welcome emails
+- `app/dashboard/page.js` — reads `?state=` and `?search=` params and passes to CivicWatch component
+- Installs `@stripe/stripe-js` for client-side wallet detection
+
+**⚠️ NEW ENV VARS NEEDED (X Bot):** `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` — see `docs/x-bot-setup.md`
+
+### 2026-06-14 — Infrastructure Sprint (Commits 3d362c9, 43647d1, ab1ca20, 353c54b, 6e07e11)
+
+**Commit `3d362c9` — P0/P1 Launch Fixes (major):**
+- Health endpoint, rate limiting, caching, auth hardening, push notifications, dedup constraints
+
+**Commit `ab1ca20` — AI Gateway Middleware:**
+- `lib/ai-gateway.js` — centralized AI spend tracking + token logging for all AI calls
+- `supabase/migrations/20260615000003_create_ai_usage.sql` — `ai_usage` table
+- Updated `app/api/analyze-rep/route.js` and `app/api/media/generate-image/route.js` to route through gateway
+
+**Commit `353c54b` — AI Code Review GitHub Action:**
+- `.github/workflows/ai-review.yml` — auto-reviews PRs with Claude Sonnet 4.6
+
+**Commit `6e07e11` — Free-tier daily token cap: 500 → 2,000 tokens**
+
+### 2026-06-15 to 2026-06-19 — Companion App Built + Architecture Documented
+
+**June 17 — Companion Voter-Matching App (separate project, NOT in main repo):**
+- *"CivicWatch monetization strategy"* session — 3-tier playbook Word doc for companion app: **Free / Voter Pro / Civic Pack** tiers; full landing page copy + CivicWatch upsell conversion flow.
+- *"Playbook loading issue"* session — Complete voter-matching web app: `index.html` (5-question quiz, ranked results with freemium blur on 4+, AI chat, email capture, Stripe buttons), `PROJECT_BRIEF.md`, `GRANT_GUIDE.md` (CCIP, Knight, Democracy Fund, Mozilla), `ROLLOUT_TIMELINE.md` (6 phases to Election Day).
+
+**June 19 — Architecture Documented:**
+- *"Create detailed flowchart for civicwatch.app"* session — Full system diagram: 14 API routes, 13 external data sources, auth flow, caching strategy.
+- *"Civicwatch.app project continuation"* session — Stalled: Marc sent 11 screenshots but came through at **31px wide** (unreadable). Re-share at full resolution to resume.
+- Two bugs fixed in `~/civichub-live/` prototype only (not main repo): ProPublica double-transform removed; `inOfficeSince` calc corrected.
+
+**June 15–16:** No new CivicWatch coding sessions.
 
 ### 2026-06-14 — Automated Daily Update
 - No new CivicWatch coding sessions today (June 14).
@@ -464,6 +546,10 @@ All emails on GoDaddy.com domain.
 | `VAPID_SUBJECT` | ⚠️ Needs adding | `mailto:support@civicwatch.app` |
 | `INTERNAL_API_SECRET` | ⚠️ Needs adding | For `/api/push-send` internal route |
 | `CONGRESS_API_KEY` | ⚠️ Verify set | Needed for leaderboard party badge enrichment |
+| `TWITTER_API_KEY` | ⚠️ Needs adding | X bot — Twitter API v2 OAuth 1.0a |
+| `TWITTER_API_SECRET` | ⚠️ Needs adding | X bot — Twitter API v2 OAuth 1.0a |
+| `TWITTER_ACCESS_TOKEN` | ⚠️ Needs adding | X bot — @CivicWatchAlerts account token |
+| `TWITTER_ACCESS_TOKEN_SECRET` | ⚠️ Needs adding | X bot — @CivicWatchAlerts account token |
 | `GEMINI_API_KEY` | ✅ Set | AI accountability reports |
 | `STRIPE_SECRET_KEY` | ✅ Set | Payments |
 | `CLERK_SECRET_KEY` | ✅ Set | Auth |
@@ -475,8 +561,11 @@ All emails on GoDaddy.com domain.
 
 ### Immediate (before launch)
 - [x] Run `python3 ~/civicwatch/_push.py` on Mac to push the 10 P3 QA fixes from June 5 — ✅ Done June 8 (confirmed)
-- [ ] Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`
+- [ ] **Add Vercel env vars for X bot:** `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` — see `docs/x-bot-setup.md`
+- [ ] Add Vercel env vars for web push: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`
 - [ ] Apply Supabase migration for `push_subscriptions` table (project: `hgtofwsvbblumcgbqzat`)
+- [ ] Apply Supabase migration for `x_bot_posts` dedup table (`supabase/migrations/20260620000001_create_x_bot_posts.sql`)
+- [ ] Apply Supabase migration for `ai_usage` table (`supabase/migrations/20260615000003_create_ai_usage.sql`)
 - [ ] Verify `CONGRESS_API_KEY` is set in Vercel (affects leaderboard party badges)
 - [ ] Fix "Transparency is the foundation of democracy" duplication on About page h1 vs Mission section
 - [ ] Add Refund Policy link to homepage marketing footer (currently only in dashboard footer)
@@ -509,19 +598,23 @@ All emails on GoDaddy.com domain.
 
 ## Key Commits (most recent first)
 
-| Commit | Description |
-|---|---|
-| `eeed1397` | Social media icons added to footer (Facebook live, Instagram/TikTok/X coming soon) |
-| `c6f85326` | Meta title/description update ("CivicWatch — See What Congress Is Buying") |
-| `8c0e938f` | OG image redesign (two-column provocative layout) |
-| `8874d0a2` | Kevin Kiley party badge fix + PARTY_OVERRIDES map |
-| `b1e06263` | Fake SSR ticker names replaced with neutral loading messages |
-| `dfb533a` | Wikipedia API net worth (replaced Wikidata SPARQL P2218) |
-| `b0125942` | Compare panel Total Trades fix |
-| `2914578` | fdNetWorth null vs [] React timing bug fix |
-| `9aa2cc` | Contact button routes to official contact pages |
-| `b821e8` | District map D3 rewrite (geoMercator fitExtent) |
+| Commit | Date | Description |
+|---|---|---|
+| `3292825` | Jun 21 | Real CivicWatch logo in header + favicon (replaces 🏛️ emoji; 7 brand PNGs added to public/brand/) |
+| `f1c7d3c` | Jun 20 | @CivicWatchAlerts X bot — 15-min cron, Twitter API v2 OAuth, x_bot_posts dedup |
+| `61e116e` | Jun 20 | Exit-intent modal + Apple Pay / Google Pay (PaymentRequestButton, subscribe-instant API) |
+| `6e07e11` | Jun 14 | Free-tier daily AI token cap: 500 → 2,000 |
+| `353c54b` | Jun 14 | AI code review GitHub Action (Claude Sonnet 4.6 on every PR) |
+| `ab1ca20` | Jun 14 | AI gateway middleware — spend tracking + ai_usage Supabase table |
+| `3d362c9` | Jun 14 | P0/P1 launch fixes: health endpoint, rate limiting, caching, auth hardening |
+| `eeed1397` | Jun 5 | Social media icons added to footer (Facebook live, Instagram/TikTok/X coming soon) |
+| `c6f85326` | Jun 5 | Meta title/description update ("CivicWatch — See What Congress Is Buying") |
+| `8c0e938f` | Jun 5 | OG image redesign (two-column provocative layout) |
+| `8874d0a2` | May 27 | Kevin Kiley party badge fix + PARTY_OVERRIDES map |
+| `b1e06263` | May 27 | Fake SSR ticker names replaced with neutral loading messages |
+| `dfb533a` | May 21 | Wikipedia API net worth (replaced Wikidata SPARQL P2218) |
+| `2914578` | May 21 | fdNetWorth null vs [] React timing bug fix |
 
 ---
 
-*File built from: Product Spec Sheet (June 2026) + live site audit of civicwatch.app + full session transcript OCR (11 screenshots, March–June 2026) · Last rebuilt: June 6, 2026 · Last updated: June 13, 2026 (automated daily task)*
+*File built from: Product Spec Sheet (June 2026) + live site audit of civicwatch.app + full session transcript OCR + git log · Last rebuilt: June 6, 2026 · Last updated: June 23, 2026 (automated daily task)*
