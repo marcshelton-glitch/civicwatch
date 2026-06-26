@@ -1,15 +1,15 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
+import { getUserTier, tierAtLeast } from '@/lib/tier-utils'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-function getSafeAppUrl() {
-  const url = process.env.NEXT_PUBLIC_APP_URL || ''
-  if (!url.startsWith('https://') && !url.startsWith('http://localhost')) {
-    throw new Error('NEXT_PUBLIC_APP_URL must be a valid https URL')
-  }
-  return url.replace(/\/$/, '')
+const PRICE_MAP = {
+  voter_pro: () => process.env.STRIPE_VOTER_PRO_MONTHLY_PRICE_ID,
+  civic_pack: () => process.env.STRIPE_PRO_PRICE_ID,
 }
+
+const VALID_TIERS = ['voter_pro', 'civic_pack']
 
 export async function POST(request) {
   const { userId } = await auth()
@@ -24,14 +24,22 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { paymentMethodId } = body
+  const { paymentMethodId, tier: rawTier } = body
+  const tier = VALID_TIERS.includes(rawTier) ? rawTier : 'civic_pack'
+
   if (!paymentMethodId || typeof paymentMethodId !== 'string') {
     return Response.json({ error: 'paymentMethodId is required' }, { status: 400 })
   }
 
   const user = await currentUser()
-  if (user?.publicMetadata?.isPro === true) {
-    return Response.json({ error: 'Already subscribed' }, { status: 400 })
+  const currentTier = getUserTier(user)
+  if (currentTier !== 'free' && tierAtLeast(currentTier, tier)) {
+    return Response.json({ error: 'Already subscribed to this tier or higher' }, { status: 400 })
+  }
+
+  const priceId = PRICE_MAP[tier]?.()
+  if (!priceId) {
+    return Response.json({ error: `Price not configured for ${tier}` }, { status: 500 })
   }
 
   try {
@@ -46,7 +54,6 @@ export async function POST(request) {
       customerId = customer.id
     }
 
-    // Attach the payment method to the customer and set as default
     await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
     await stripe.customers.update(customerId, {
       invoice_settings: { default_payment_method: paymentMethodId },
@@ -54,9 +61,9 @@ export async function POST(request) {
 
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
-      items: [{ price: process.env.STRIPE_PRO_PRICE_ID }],
+      items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
-      metadata: { clerkUserId: userId },
+      metadata: { clerkUserId: userId, tier },
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
@@ -65,12 +72,10 @@ export async function POST(request) {
     const status = subscription.status
     const paymentIntent = subscription.latest_invoice?.payment_intent
 
-    // Already active (e.g. trial or instant payment collected)
     if (status === 'active') {
       return Response.json({ success: true, subscriptionId: subscription.id })
     }
 
-    // Payment intent needs confirmation (e.g. 3DS challenge)
     if (paymentIntent?.client_secret) {
       return Response.json({
         clientSecret: paymentIntent.client_secret,

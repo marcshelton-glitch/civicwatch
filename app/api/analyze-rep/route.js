@@ -1,6 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { validateAIRequest, checkSpendCap, logTokenUsage } from '@/lib/ai-gateway'
+import { getUserTier } from '@/lib/tier-utils'
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -162,13 +163,12 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid mode' }, { status: 400 })
   }
 
-  // ── User metadata (pro check + tier for spend cap) ────────────────────────
+  // ── User metadata (tier check + spend cap) ────────────────────────────────
   const user = await currentUser()
-  const isPro = user?.publicMetadata?.isPro === true
-  const tier = isPro ? 'pro' : 'free'
+  const userTier = getUserTier(user)
 
-  if (mode === 'full' && !isPro) {
-    return Response.json({ error: 'Pro subscription required' }, { status: 403 })
+  if (mode === 'full' && userTier !== 'civic_pack') {
+    return Response.json({ error: 'Civic Pack subscription required' }, { status: 403 })
   }
 
   // ── Rate limiting ─────────────────────────────────────────────────────────
@@ -182,11 +182,12 @@ export async function POST(request) {
   }
 
   // ── Spend cap ─────────────────────────────────────────────────────────────
-  const underCap = await checkSpendCap(userId, tier)
+  const underCap = await checkSpendCap(userId, userTier)
   if (!underCap) {
-    const cap = tier === 'pro' ? '50,000' : '500'
+    const capLabels = { civic_pack: '50,000', voter_pro: '10,000', free: '2,000' }
+    const cap = capLabels[userTier] ?? '2,000'
     return Response.json(
-      { error: `Daily token limit reached (${cap} tokens/${tier} tier). Resets at midnight UTC.` },
+      { error: `Daily token limit reached (${cap} tokens/${userTier} tier). Resets at midnight UTC.` },
       { status: 429, headers: { 'Retry-After': '86400' } }
     )
   }

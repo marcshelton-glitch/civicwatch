@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
+import { getUserTier } from '@/lib/tier-utils'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -351,7 +352,9 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const { user, isSignedIn, isLoaded } = useUser()
   const { openSignIn, openUserProfile } = useClerk()
   const router = useRouter()
-  const isPro = user?.publicMetadata?.isPro === true
+  const tier = getUserTier(user)
+  const isPro = tier !== 'free'         // voter_pro+ — gates net worth & alerts
+  const isCivicPack = tier === 'civic_pack'  // gates full AI reports
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("map")
   const [selectedRep, setSelectedRep] = useState(null)
@@ -877,9 +880,13 @@ useEffect(() => {
   }, [stats])
 
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (subscribeTier = 'civic_pack') => {
     try {
-      const res = await fetch('/api/subscribe', { method: 'POST' })
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: subscribeTier, paymentType: 'subscription' }),
+      })
       const { url } = await res.json()
       if (url) window.location.href = url
     } catch (e) {
@@ -1048,7 +1055,7 @@ useEffect(() => {
               </button>
             ) : (
               <>
-                {!isPro && (
+                {tier === 'free' && (
                   <button onClick={() => router.push('/pro')}
                     style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
                     ★ Go Pro
@@ -1367,7 +1374,7 @@ useEffect(() => {
 
         {/* REP DETAIL */}
         {activeTab === "reps" && selectedRep && (
-          <RepDetail rep={selectedRep} onBack={clearRep} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} S={S} />
+          <RepDetail rep={selectedRep} onBack={clearRep} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} isCivicPack={isCivicPack} tier={tier} S={S} />
         )}
 
         {/* MAP */}
@@ -2301,6 +2308,7 @@ useEffect(() => {
         trackedReps={liveReps.filter(r => tracked.includes(r.id)).map(r => ({ bioguide_id: r.id || r.bioguideId, rep_name: r.name }))}
         onUntrack={id => toggleTrack(id)}
         isPro={isPro}
+        tier={tier}
         user={user}
         tracked={tracked}
         liveReps={liveReps}
@@ -2364,7 +2372,7 @@ useEffect(() => {
   )
 }
 
-function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, handleBillingPortal, isPro: isProProp, S }) {
+function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, handleBillingPortal, isPro: isProProp, isCivicPack: isCivicPackProp, tier: tierProp, S }) {
   const [liveVotes, setLiveVotes] = useState(null)
   const [liveTrades, setLiveTrades] = useState(null)
   const [tradesMeta, setTradesMeta] = useState(null)
@@ -3293,15 +3301,15 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
                             <div style={{ fontSize: 32 }}>🔒</div>
                             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
-                              Net Worth Analysis · Pro Only
+                              Net Worth Analysis · Voter Pro+
                             </div>
                             <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0, lineHeight: 1.6 }}>
                               Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
                             </p>
                             <button
-                              onClick={handleSubscribe}
+                              onClick={() => handleSubscribe('voter_pro')}
                               style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-                              ★ Upgrade to Pro · $9.99/mo
+                              ★ Voter Pro · $3.99/mo
                             </button>
                           </div>
                         </div>
@@ -3490,15 +3498,15 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
                           <div style={{ fontSize: 32 }}>🔒</div>
                           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
-                            Net Worth Analysis · Pro Only
+                            Net Worth Analysis · Voter Pro+
                           </div>
                           <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0, lineHeight: 1.6 }}>
                             Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
                           </p>
                           <button
-                            onClick={handleSubscribe}
+                            onClick={() => handleSubscribe('voter_pro')}
                             style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-                            ★ Upgrade to Pro · $9.99/mo
+                            ★ Voter Pro · $3.99/mo
                           </button>
                         </div>
                       </div>
@@ -4361,14 +4369,14 @@ Sincerely,
       )}
 
       {repTab === "ai" && (
-        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
+        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} isCivicPackProp={isCivicPackProp} tierProp={tierProp} />
       )}
     </div>
   )
 }
 
 
-function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp }) {
+function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp, isCivicPackProp, tierProp }) {
   const { user, isSignedIn } = useUser()
   const { openSignIn } = useClerk()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
@@ -4378,7 +4386,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
   const [previewsUsed, setPreviewsUsed] = useState(0)
 
   // Prefer prop (from parent) so both stay in sync; fall back to local user read
-  const isPro = isProProp ?? (user?.publicMetadata?.isPro === true)
+  const localTier = tierProp ?? getUserTier(user)
+  const isPro = isProProp ?? localTier !== 'free'
+  const isCivicPack = isCivicPackProp ?? localTier === 'civic_pack'
 
   const runAnalysis = async (mode) => {
     setStatus('loading')
@@ -4418,54 +4428,56 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
 
   // ── IDLE ───────────────────────────────────────────────────────────────────
   if (status === 'idle') {
-    if (!isPro) {
-      if (isSignedIn) {
-        const previewsLeft = Math.max(0, 3 - previewsUsed)
+    if (!isCivicPack) {
+      // Free (not signed in): lock screen
+      if (!isSignedIn) {
         return (
           <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
-            <div style={{ fontSize: 48 }}>🤖</div>
+            <div style={{ fontSize: 48 }}>🔒</div>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
-              AI Analysis Preview
+              AI Analysis requires sign-in
             </div>
             <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
-              Get a brief nonpartisan AI preview of {rep.name.split(' ').pop()}&apos;s accountability record.
-              {previewsLeft > 0
-                ? ` You have ${previewsLeft} free preview${previewsLeft !== 1 ? 's' : ''} remaining this hour.`
-                : " You've used all 3 free previews for this hour."}
+              Sign in free to get 3 AI preview analyses per hour. Upgrade to Civic Pack for unlimited full reports.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               <button
-                onClick={() => runAnalysis('preview')}
-                disabled={previewsLeft === 0}
-                style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
-                Preview Analysis →
+                onClick={() => openSignIn()}
+                style={{ padding: '13px 28px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
+                Sign in to preview →
               </button>
               <a href="/pro"
                 style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-                Go Pro →
+                See Plans →
               </a>
             </div>
           </div>
         )
       }
+      // Signed in (free or voter_pro): preview UI
+      const previewsLeft = Math.max(0, 3 - previewsUsed)
       return (
         <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
-          <div style={{ fontSize: 48 }}>🔒</div>
+          <div style={{ fontSize: 48 }}>🤖</div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
-            AI Analysis is a Pro feature
+            AI Analysis Preview
           </div>
           <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
-            Get a nonpartisan AI-generated accountability report on any member of Congress — voting record, stock trades, wealth trajectory, and peer standing.
+            Get a brief nonpartisan AI preview of {rep.name.split(' ').pop()}&apos;s accountability record.
+            {previewsLeft > 0
+              ? ` You have ${previewsLeft} free preview${previewsLeft !== 1 ? 's' : ''} remaining this hour.`
+              : " You've used all 3 free previews for this hour."}
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
-              onClick={() => openSignIn()}
-              style={{ padding: '13px 28px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
-              Sign in to preview →
+              onClick={() => runAnalysis('preview')}
+              disabled={previewsLeft === 0}
+              style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
+              Preview Analysis →
             </button>
             <a href="/pro"
               style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-              Go Pro →
+              {isPro ? 'Upgrade to Civic Pack →' : 'Go Pro →'}
             </a>
           </div>
         </div>
@@ -4597,11 +4609,11 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
           {/* Lock overlay */}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.6)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
             <div style={{ fontSize: 28 }}>🔒</div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Full Report · Pro Members Only</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Full Report · Civic Pack Only</div>
             <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0 }}>
               Unlock trade conflict analysis, wealth trajectory deep-dive, peer standing breakdown, and overall accountability rating.
             </p>
-            {isPro ? (
+            {isCivicPack ? (
               <button
                 onClick={() => runAnalysis('full')}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
@@ -4609,9 +4621,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
               </button>
             ) : (
               <button
-                onClick={handleSubscribe}
+                onClick={() => handleSubscribe('civic_pack')}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5 }}>
-                ★ Upgrade to Pro · $9.99/mo
+                ★ Civic Pack · $9.99/mo
               </button>
             )}
           </div>

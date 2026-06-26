@@ -1,17 +1,24 @@
 'use client'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
+import { getUserTier, TIER_LABELS } from '@/lib/tier-utils'
 
-export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack, isPro }) {
+export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack, isPro, tier: tierProp }) {
   const { user } = useUser()
   const { signOut } = useClerk()
   const [prefs, setPrefs] = useState({ alert_frequency: 'daily', alert_trades: true, alert_networth: true, alert_legislation: false, alert_committees: false })
 
+  // Derive tier from prop (passed by CivicWatch) or fall back to reading user directly
+  const tier = tierProp ?? getUserTier(user)
+  const isVoterProPlus = tier !== 'free'
+  const isCivicPack = tier === 'civic_pack'
+  const tierLabel = TIER_LABELS[tier] || 'Free'
+
   useEffect(() => {
-    if (isOpen && isPro) {
+    if (isOpen && isVoterProPlus) {
       fetch('/api/preferences').then(r => r.json()).then(d => { if (d && !d.error) setPrefs(d) })
     }
-  }, [isOpen, isPro])
+  }, [isOpen, isVoterProPlus])
 
   if (!isOpen) return null
 
@@ -29,7 +36,9 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
           <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Account</div>
           <div style={{ color: '#e8e8e8', fontSize: 14 }}>{user?.fullName || user?.firstName || 'User'}</div>
           <div style={{ color: '#8899aa', fontSize: 12, marginBottom: 8 }}>{user?.primaryEmailAddress?.emailAddress}</div>
-          <span style={{ background: isPro ? '#1a3a1a' : '#1e2a3a', color: isPro ? '#4caf50' : '#8899aa', fontSize: 11, padding: '2px 8px', borderRadius: 10, border: `1px solid ${isPro ? '#4caf50' : '#334466'}` }}>{isPro ? '★ Pro Member' : 'Free Plan'}</span>
+          <span style={{ background: isVoterProPlus ? '#1a3a1a' : '#1e2a3a', color: isVoterProPlus ? '#4caf50' : '#8899aa', fontSize: 11, padding: '2px 8px', borderRadius: 10, border: `1px solid ${isVoterProPlus ? '#4caf50' : '#334466'}` }}>
+            {isVoterProPlus ? `★ ${tierLabel}` : 'Free Plan'}
+          </span>
         </div>
 
         {/* Tracked reps */}
@@ -43,8 +52,8 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
           ))}
         </div>
 
-        {/* Pro: notification prefs */}
-        {isPro && (
+        {/* Voter Pro+: notification prefs */}
+        {isVoterProPlus && (
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Email Notifications</div>
             {[['alert_trades','Trade Disclosures'],['alert_committees','Committee Assignments'],['alert_networth','Net Worth Updates'],['alert_legislation','Sponsored Legislation']].map(([key, label]) => (
@@ -56,25 +65,32 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
           </div>
         )}
 
-        {/* Pro: billing */}
-        {isPro && (
+        {/* Voter Pro+: billing */}
+        {isVoterProPlus && (
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Billing</div>
             <button onClick={() => fetch('/api/billing-portal', { method: 'POST' }).then(r=>r.json()).then(d=>{ if(d.url) window.location.href=d.url })} style={{ background: '#1e3a5f', color: '#e8e8e8', border: '1px solid #2a5f9e', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, width: '100%' }}>Manage Billing & Subscription →</button>
           </div>
         )}
 
+        {/* Voter Pro (not Civic Pack): upsell to Civic Pack */}
+        {isVoterProPlus && !isCivicPack && (
+          <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a2a3a, #0d1a2a)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none', marginBottom: 12 }}>
+            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 8, textAlign: 'center', fontSize: 13 }}>★ Upgrade to Civic Pack — $9.99/mo</div>
+            <div style={{ fontSize: 12, color: '#8899aa', textAlign: 'center' }}>Full AI reports, higher token caps</div>
+          </a>
+        )}
+
         {/* Free: upgrade CTA */}
-        {!isPro && (
+        {!isVoterProPlus && (
           <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a3a1a, #0d2a0d)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none' }}>
-            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 10, textAlign: 'center' }}>★ Upgrade to Pro — $9.99/mo</div>
+            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 10, textAlign: 'center' }}>★ Upgrade — from $3.99/mo</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
-                '🤖 Full AI accountability reports',
                 '📊 Net worth & financial disclosures',
-                '📈 Stock trade conflict analysis',
                 '🔔 Real-time alerts for tracked reps',
-                '⭐ Track any representative',
+                '🤖 Full AI accountability reports (Civic Pack)',
+                '📈 Stock trade conflict analysis',
               ].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b0bac8' }}>
                   <span style={{ color: '#c9a84c', fontSize: 10 }}>✓</span>
@@ -82,7 +98,7 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 12, textAlign: 'center', color: '#c9a84c', fontSize: 12, fontWeight: 600 }}>See full details →</div>
+            <div style={{ marginTop: 12, textAlign: 'center', color: '#c9a84c', fontSize: 12, fontWeight: 600 }}>See all plans →</div>
           </a>
         )}
       </div>
