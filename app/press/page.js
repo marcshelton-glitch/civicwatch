@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const S = {
   navy: '#080E1C',
@@ -66,18 +67,15 @@ export default function PressPage() {
           borderBottom: `1px solid ${S.border}`,
         }}
       >
-        <Link
-          href="/"
-          style={{
-            fontFamily: "'Playfair Display', serif",
-            fontWeight: 900,
-            fontSize: 20,
-            letterSpacing: 2,
-            color: S.white,
-            textDecoration: 'none',
-          }}
-        >
-          CIVIC<span style={{ color: S.gold }}>WATCH</span>
+        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <Image
+            src="/brand/logo_civicwatch_horizontal.png"
+            alt="CivicWatch"
+            width={150}
+            height={41}
+            priority
+            style={{ objectFit: 'contain' }}
+          />
         </Link>
         <Link
           href="/dashboard"
@@ -187,7 +185,7 @@ export default function PressPage() {
               For interviews, data requests, screenshots, or any media inquiry, reach out directly:
             </p>
             <a
-              href="mailto:support@civicwatch.app"
+              href="mailto:press@civicwatch.app"
               className="press-email-btn"
               style={{
                 display: 'inline-block',
@@ -203,7 +201,7 @@ export default function PressPage() {
                 transition: 'background 0.2s',
               }}
             >
-              support@civicwatch.app
+              press@civicwatch.app
             </a>
           </section>
 
@@ -357,51 +355,87 @@ export default function PressPage() {
                 borderBottom: `1px solid ${S.border}`,
               }}
             >
-              Download Press Kit
+              Brand Assets
             </h2>
-            <div
+            <p
               style={{
-                padding: '28px 32px',
-                background: 'rgba(212,175,55,0.05)',
-                border: `1px solid ${S.border}`,
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 24,
+                fontSize: 15,
+                lineHeight: 1.9,
+                color: S.grayLight,
+                fontWeight: 300,
+                marginBottom: 24,
               }}
             >
-              <div
-                style={{
-                  fontSize: 36,
-                  flexShrink: 0,
-                  opacity: 0.6,
-                }}
-              >
-                📦
-              </div>
-              <div>
-                <div
+              Official CivicWatch logos and brand assets for editorial use. Please do not modify
+              the logo or colors. For additional materials or high-res screenshots, contact{' '}
+              <a href="mailto:press@civicwatch.app" style={{ color: S.gold, textDecoration: 'none' }}>
+                press@civicwatch.app
+              </a>.
+            </p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: 12,
+              }}
+            >
+              {[
+                { file: 'logo_civicwatch_horizontal.png', label: 'Logo — Horizontal' },
+                { file: 'logo_civicwatch_stacked.png', label: 'Logo — Stacked' },
+                { file: 'civicwatch_logo_gold.png', label: 'Logo — Gold' },
+                { file: 'logo_icon_transparent.png', label: 'Icon — Transparent' },
+                { file: 'logo_icon_on_white.png', label: 'Icon — On White' },
+              ].map(({ file, label }) => (
+                <a
+                  key={file}
+                  href={`/brand/${file}`}
+                  download={file}
                   style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: 17,
-                    fontWeight: 700,
-                    marginBottom: 8,
-                    color: S.white,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '20px 16px',
+                    background: S.navyMid,
+                    border: `1px solid ${S.border}`,
+                    borderRadius: 8,
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.2s',
                   }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = S.gold}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
                 >
-                  Press kit coming soon
-                </div>
-                <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.7, fontWeight: 300 }}>
-                  Logos, screenshots, and brand assets are available on request. Contact{' '}
-                  <a
-                    href="mailto:support@civicwatch.app"
-                    style={{ color: S.gold, textDecoration: 'none' }}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: 80,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(255,255,255,0.04)',
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                    }}
                   >
-                    support@civicwatch.app
-                  </a>{' '}
-                  and we&rsquo;ll send everything you need.
-                </p>
-              </div>
+                    <Image
+                      src={`/brand/${file}`}
+                      alt={label}
+                      width={140}
+                      height={64}
+                      style={{ objectFit: 'contain', maxHeight: 64 }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 12, color: S.grayLight, fontWeight: 600, marginBottom: 4 }}>
+                      {label}
+                    </div>
+                    <div style={{ fontSize: 11, color: S.gold, letterSpacing: 0.5 }}>
+                      ↓ Download PNG
+                    </div>
+                  </div>
+                </a>
+              ))}
             </div>
           </section>
 
@@ -447,7 +481,7 @@ export default function PressPage() {
             { href: '/data-deletion', label: 'Data Deletion' },
             { href: '/refund-policy', label: 'Refund Policy' },
             { href: '/privacy#ccpa', label: 'Do Not Sell My Personal Information' },
-            { href: 'mailto:support@civicwatch.app', label: 'Contact' },
+            { href: 'mailto:press@civicwatch.app', label: 'Contact Press' },
           ].map(l => (
             <Link
               key={l.href}
