@@ -70,13 +70,54 @@ function formatDistrict(isSen, districtNum, termDistrictNum) {
   return d ? `District ${d}` : 'At-Large'
 }
 
-// ── Congress.gov fetch ────────────────────────────────────────────────────────
+// ── Congress.gov fetch with Supabase cache ────────────────────────────────────
+// TTL: 24h for individual member detail, 1h for everything else
+const MEMBER_DETAIL_RE = /^\/member\/[A-Z]\d{6}(\/|$|\?)/
+
 async function cFetch(path) {
   if (!KEY) throw new Error('CONGRESS_API_KEY not configured')
+
+  const supabase = getSupabase()
+  const cacheKey = `congress:${path}`
+  const ttl = MEMBER_DETAIL_RE.test(path) ? 86400 : 3600
+
+  // Check Supabase cache
+  const { data: cached } = await supabase
+    .from('congress_cache')
+    .select('data, fetched_at, ttl_seconds')
+    .eq('key', cacheKey)
+    .single()
+
+  if (cached) {
+    const ageSeconds = (Date.now() - new Date(cached.fetched_at).getTime()) / 1000
+    if (ageSeconds < (cached.ttl_seconds ?? ttl)) return cached.data
+  }
+
+  // Fetch from Congress.gov
   const url = `${BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${KEY}&format=json`
-  const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000) })
-  if (!res.ok) throw new Error(`Congress API ${res.status}`)
-  return res.json()
+  let res = await fetch(url, { next: { revalidate: 0 }, signal: AbortSignal.timeout(8000) })
+
+  // On 429: return stale cache immediately, or wait 2s and retry once
+  if (res.status === 429) {
+    if (cached) return cached.data
+    await new Promise(r => setTimeout(r, 2000))
+    res = await fetch(url, { next: { revalidate: 0 }, signal: AbortSignal.timeout(8000) })
+  }
+
+  if (!res.ok) {
+    if (cached) return cached.data  // stale-while-error
+    throw new Error(`Congress API ${res.status}`)
+  }
+
+  const json = await res.json()
+
+  // Persist to cache (don't await — response is ready, let this finish in background)
+  supabase.from('congress_cache').upsert(
+    { key: cacheKey, data: json, fetched_at: new Date().toISOString(), ttl_seconds: ttl },
+    { onConflict: 'key' }
+  ).then(() => {})
+
+  return json
 }
 
 // ── LegiScan fetch with Supabase cache ────────────────────────────────────────
@@ -90,7 +131,6 @@ async function legiScanFetch(op, params = {}) {
     .from('legiscan_cache')
     .select('data, change_hash, fetched_at')
     .eq('key', cacheKey)
-    .abortSignal(AbortSignal.timeout(8000))
     .single()
 
   const qs = new URLSearchParams({ key: LEGISCAN_KEY, op, ...params }).toString()
@@ -120,26 +160,9 @@ async function legiScanFetch(op, params = {}) {
   await supabase.from('legiscan_cache').upsert(
     { key: cacheKey, data: payload, change_hash: changeHash, fetched_at: new Date().toISOString() },
     { onConflict: 'key' }
-  ).abortSignal(AbortSignal.timeout(8000))
+  )
 
   return payload
-}
-
-// ── Bill type → congress.gov URL path segment ────────────────────────────────
-const BILL_TYPE_PATH = {
-  'hr':      'house-bill',
-  's':       'senate-bill',
-  'hjres':   'house-joint-resolution',
-  'sjres':   'senate-joint-resolution',
-  'hconres': 'house-concurrent-resolution',
-  'sconres': 'senate-concurrent-resolution',
-  'hres':    'house-resolution',
-  'sres':    'senate-resolution',
-}
-function billPageUrl(type, congress, number) {
-  if (!type || !congress || !number) return null
-  const path = BILL_TYPE_PATH[type.toLowerCase()] || type.toLowerCase()
-  return `https://www.congress.gov/bill/${congress}th-congress/${path}/${number}`
 }
 
 // ── State map ─────────────────────────────────────────────────────────────────
@@ -398,15 +421,13 @@ export async function GET(request) {
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, filing_id, year, ptr_url')
             .ilike('last_name', lastName)
             .order('transaction_date', { ascending: false })
-            .limit(50)
-            .abortSignal(AbortSignal.timeout(8000)),
+            .limit(50),
           supabase
             .from('fd_net_worth')
             .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
             .ilike('last_name', lastName)
             .order('report_year', { ascending: false })
-            .limit(20)
-            .abortSignal(AbortSignal.timeout(8000)),
+            .limit(20),
         ])
 
         const senateNetWorthHistory = (dbNetWorth || []).map(n => ({
@@ -461,20 +482,17 @@ export async function GET(request) {
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
             .ilike('last_name', lastName)
             .order('transaction_date', { ascending: false })
-            .limit(50)
-            .abortSignal(AbortSignal.timeout(8000)),
+            .limit(50),
           supabase
             .from('fd_net_worth')
             .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
             .ilike('last_name', lastName)
             .order('report_year', { ascending: false })
-            .limit(20)
-            .abortSignal(AbortSignal.timeout(8000)),
+            .limit(20),
           supabase
             .from('fd_filings')
             .select('*', { count: 'exact', head: true })
-            .ilike('last_name', lastName)
-            .abortSignal(AbortSignal.timeout(8000)),
+            .ilike('last_name', lastName),
         ])
         dbFilingsCount = filingsCount || 0
 
@@ -581,7 +599,6 @@ export async function GET(request) {
           .ilike('last_name', lastName)
           .order('report_year', { ascending: false })
           .limit(20)
-          .abortSignal(AbortSignal.timeout(8000))
         liveNetWorthHistory = (nwData || []).map(n => ({
           year: n.report_year,
           assetsMin: n.assets_min,
@@ -636,7 +653,7 @@ export async function GET(request) {
           number: `${b.type}${b.number}`,
           title: b.title,
           congress: b.congress,
-          url: billPageUrl(b.type, b.congress, b.number),
+          url: b.url,
           latestAction: b.latestAction?.text,
           latestActionDate: b.latestAction?.actionDate,
           policyArea: b.policyArea?.name,
@@ -665,7 +682,7 @@ export async function GET(request) {
               : b.latestAction.text?.toLowerCase().includes('enrolled') ? 3
               : 1)
             : 1,
-          url: billPageUrl(b.type, b.congress, b.number),
+          url: b.url || `https://www.congress.gov/bill/${b.congress}th-congress/${b.type?.toLowerCase().replace('hconres','house-concurrent-resolution').replace('hjres','house-joint-resolution').replace('hr','house-bill').replace('s','senate-bill').replace('sconres','senate-concurrent-resolution').replace('sjres','senate-joint-resolution')}/${b.number}`,
           role,
           policyArea: b.policyArea?.name || '',
         })
@@ -825,16 +842,6 @@ export async function GET(request) {
 
     // ── search ────────────────────────────────────────────────────────────
     if (type === 'search') {
-      // Additional IP-based gate for anonymous requests before expensive Congress.gov calls
-      if (!userId) {
-        const searchIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-          || request.headers.get('x-real-ip')
-          || 'anonymous'
-        if (isRateLimited(searchIp)) {
-          return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
-        }
-      }
-
       const query = (searchParams.get('name') || '').trim().toLowerCase()
       if (query.length < 2) return NextResponse.json({ members: [], source: 'none' })
 
@@ -881,9 +888,7 @@ export async function GET(request) {
         .slice(0, 20)
         .map(normalize)
 
-      return NextResponse.json({ members, source: 'live' }, {
-        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' },
-      })
+      return NextResponse.json({ members, source: 'live' })
     }
 
     return NextResponse.json({ error: 'Unknown type' }, { status: 400 })
