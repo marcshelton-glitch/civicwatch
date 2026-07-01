@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
-import { getUserTier } from '@/lib/tier-utils'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -141,45 +140,6 @@ const AMENDMENTS = [
   { num: 15, title: "Right to Vote Regardless of Race (1870)", original: "The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.", plain: "Citizens cannot be denied the right to vote based on race or previous enslaved status." },
   { num: 19, title: "Women's Right to Vote (1920)", original: "The right of citizens of the United States to vote shall not be denied or abridged on account of sex.", plain: "Women have the right to vote." },
   { num: 26, title: "Voting Age Lowered to 18 (1971)", original: "The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged on account of age.", plain: "Citizens 18 and older have the right to vote." },
-]
-
-const DECLARATION_SECTIONS = [
-  {
-    id: "preamble",
-    title: "Preamble",
-    original: "When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation.",
-    plain: "When a people must break free from the government ruling them, they owe the world an explanation for why."
-  },
-  {
-    id: "self-evident",
-    title: "Self-Evident Truths",
-    original: "We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness. — That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, — That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government...",
-    plain: "All people are created equal with rights that cannot be taken away — life, liberty, and the pursuit of happiness. Governments exist to protect those rights, and when they don't, the people have the right to change or overthrow them."
-  },
-  {
-    id: "grievances",
-    title: "List of Grievances Against the King",
-    original: "He has refused his Assent to Laws, the most wholesome and necessary for the public good... He has forbidden his Governors to pass Laws of immediate and pressing importance... He has dissolved Representative Houses repeatedly, for opposing with manly firmness his invasions on the rights of the people... He has obstructed the Administration of Justice... He has kept among us, in times of peace, Standing Armies... He has imposed Taxes on us without our Consent... He has deprived us in many cases, of the benefits of Trial by Jury...",
-    plain: "The colonists list 27 specific abuses by King George III: blocking laws, dissolving legislatures, keeping military troops among civilians in peacetime, taxing without consent, denying jury trials, and more."
-  },
-  {
-    id: "attempts",
-    title: "Appeals to the British People and King",
-    original: "In every stage of these Oppressions We have Petitioned for Redress in the most humble terms: Our repeated Petitions have been answered only by repeated injury. A Prince, whose character is thus marked by every act which may define a Tyrant, is unfit to be the ruler of a free people... We have warned them from time to time of attempts by their legislature to extend an unwarrantable jurisdiction over us...",
-    plain: "The colonists repeatedly asked the king to fix these wrongs and were ignored every time. They also warned the British people, who failed to act. A ruler who acts like a tyrant is unfit to govern a free people."
-  },
-  {
-    id: "declaration",
-    title: "The Declaration",
-    original: "We, therefore, the Representatives of the united States of America, in General Congress, Assembled, appealing to the Supreme Judge of the world for the rectitude of our intentions, do, in the Name, and by Authority of the good People of these Colonies, solemnly publish and declare, That these United Colonies are, and of Right ought to be Free and Independent States; that they are Absolved from all Allegiance to the British Crown, and that all political connection between them and the State of Great Britain, is and ought to be totally dissolved...",
-    plain: "Therefore, the representatives of the United States declare that these colonies are free and independent states, no longer part of Great Britain. They are dissolved from all loyalty to the British Crown and have full power to make war, make peace, form alliances, and do all other things that free nations do."
-  },
-  {
-    id: "pledge",
-    title: "The Signers' Pledge",
-    original: "And for the support of this Declaration, with a firm reliance on the protection of divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor.",
-    plain: "The 56 signers pledged everything — their lives, their wealth, and their reputations — to this cause. Many risked death by signing."
-  },
 ]
 
 const STATE_MAP_DATA = [
@@ -348,13 +308,11 @@ const S = {
   cardBg: "rgba(255,255,255,0.04)", border: "rgba(212,175,55,0.25)",
 }
 
-export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA', defaultSearch = '' }) {
+export default function CivicWatch({ defaultBioguideId = null, defaultState = 'CA' }) {
   const { user, isSignedIn, isLoaded } = useUser()
   const { openSignIn, openUserProfile } = useClerk()
   const router = useRouter()
-  const tier = getUserTier(user)
-  const isPro = tier !== 'free'         // voter_pro+ — gates net worth & alerts
-  const isCivicPack = tier === 'civic_pack'  // gates full AI reports
+  const isPro = user?.publicMetadata?.isPro === true
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("map")
   const [selectedRep, setSelectedRep] = useState(null)
@@ -366,7 +324,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [constitMode, setConstitMode] = useState("plain")
   const [constitSection, setConstitSection] = useState("articles")
   const [selectedState, setSelectedState] = useState(defaultState)
-  const [searchTerm, setSearchTerm] = useState(defaultSearch)
+  const [searchTerm, setSearchTerm] = useState("")
   const [pollVotes, setPollVotes] = useState({})
   const [filterLevel, setFilterLevel] = useState("all")
   const [filterParty, setFilterParty] = useState("all")
@@ -400,6 +358,8 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [prefsSaved, setPrefsSaved] = useState(false)
   const prefsSaveTimer = useRef(null)
   const liveAlertsLoaded = useRef(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState(null)
 
   // District drill-down state
   const [mapView, setMapView] = useState('national') // 'national' | 'state'
@@ -880,27 +840,40 @@ useEffect(() => {
   }, [stats])
 
 
-  const handleSubscribe = async (subscribeTier = 'civic_pack') => {
+  const handleSubscribe = async () => {
+    if (!isSignedIn) { openSignIn(); return }
+    setCheckoutLoading(true)
+    setCheckoutError(null)
     try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: subscribeTier, paymentType: 'subscription' }),
-      })
-      const { url } = await res.json()
-      if (url) window.location.href = url
-    } catch (e) {
-      console.error('Subscribe error:', e)
+      const res = await fetch('/api/subscribe', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok || !data.url) {
+        setCheckoutError(data.error || 'Unable to start checkout. Please try again.')
+        return
+      }
+      window.location.href = data.url
+    } catch {
+      setCheckoutError('Network error — please check your connection and try again.')
+    } finally {
+      setCheckoutLoading(false)
     }
   }
 
   const handleBillingPortal = async () => {
+    setCheckoutLoading(true)
+    setCheckoutError(null)
     try {
       const res = await fetch('/api/billing-portal', { method: 'POST' })
-      const { url } = await res.json()
-      if (url) window.location.href = url
-    } catch (e) {
-      console.error('Billing portal error:', e)
+      const data = await res.json()
+      if (!res.ok || !data.url) {
+        setCheckoutError(data.error || 'Unable to open billing portal. Please try again.')
+        return
+      }
+      window.location.href = data.url
+    } catch {
+      setCheckoutError('Network error — please check your connection and try again.')
+    } finally {
+      setCheckoutLoading(false)
     }
   }
 
@@ -913,6 +886,12 @@ useEffect(() => {
 
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: "100vh", color: S.white, overflowX: "hidden", width: "100%" }}>
+      {checkoutError && (
+        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 99999, padding: '12px 20px', background: 'rgba(178,34,52,0.95)', border: '1px solid #CC2B3F', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 4px 24px rgba(0,0,0,0.4)', whiteSpace: 'nowrap', maxWidth: 'calc(100vw - 32px)' }}>
+          <span>⚠ {checkoutError}</span>
+          <button onClick={() => setCheckoutError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+        </div>
+      )}
       <style>{`
         html, body { overflow-x: hidden; max-width: 100%; }
         * { box-sizing: border-box; min-width: 0; }
@@ -1006,14 +985,11 @@ useEffect(() => {
           <button className="header-logo"
             onClick={() => { setActiveTab("reps"); clearRep() }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
-            <Image
-              src="/brand/logo_civicwatch_horizontal.png"
-              alt="CivicWatch"
-              width={180}
-              height={49}
-              priority
-              style={{ objectFit: "contain" }}
-            />
+            <span style={{ fontSize: 26 }}>🏛️</span>
+            <div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, letterSpacing: 2, color: S.white }}>CIVIC<span style={{ color: S.gold }}>WATCH</span></div>
+              <div style={{ fontSize: 9, letterSpacing: 3, color: S.gray, textTransform: "uppercase" }}>Your Representatives. Accountable.</div>
+            </div>
           </button>
           <nav className="header-nav" style={{ display: "flex", gap: 2 }}>
             {[
@@ -1022,7 +998,6 @@ useEffect(() => {
               { id: "alerts", label: `Alerts${unreadCount > 0 ? ` (${unreadCount})` : ""}` },
               { id: "search", label: "Search" },
               { id: "constitution", label: "Constitution" },
-              { id: "declaration", label: "Declaration" },
             ].map(tab => (
               <button key={tab.id} className={`nav-btn ${activeTab === tab.id ? "active" : ""}`}
                 onClick={() => { setActiveTab(tab.id); clearRep() }}
@@ -1055,7 +1030,7 @@ useEffect(() => {
               </button>
             ) : (
               <>
-                {tier === 'free' && (
+                {!isPro && (
                   <button onClick={() => router.push('/pro')}
                     style={{ padding: "7px 14px", background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: "none", borderRadius: 8, color: "white", fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5 }}>
                     ★ Go Pro
@@ -1374,7 +1349,7 @@ useEffect(() => {
 
         {/* REP DETAIL */}
         {activeTab === "reps" && selectedRep && (
-          <RepDetail rep={selectedRep} onBack={clearRep} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} isCivicPack={isCivicPack} tier={tier} S={S} />
+          <RepDetail rep={selectedRep} onBack={clearRep} tracked={tracked} toggleTrack={toggleTrack} repTab={repTab} setRepTab={setRepTab} pollVotes={pollVotes} handlePollVote={handlePollVote} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isPro={isPro} S={S} />
         )}
 
         {/* MAP */}
@@ -2105,51 +2080,6 @@ useEffect(() => {
             )}
           </div>
         )}
-
-        {/* DECLARATION OF INDEPENDENCE */}
-        {activeTab === "declaration" && (
-          <div className="slide-in">
-            <SectionHeader title="The Declaration of Independence" subtitle="Adopted July 4, 1776 — the founding document that proclaimed the thirteen colonies free from British rule." />
-
-            {/* Header image */}
-            <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, border: `1px solid ${S.border}` }}>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/United_States_Declaration_of_Independence.jpg/960px-United_States_Declaration_of_Independence.jpg"
-                alt="Declaration of Independence"
-                referrerPolicy="no-referrer"
-                style={{ width: "100%", maxHeight: 260, objectFit: "cover", objectPosition: "top", display: "block" }}
-              />
-            </div>
-
-            {/* Intro */}
-            <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, marginBottom: 24, padding: "16px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-              The Declaration of Independence was adopted by the Second Continental Congress on July 4, 1776. Written primarily by Thomas Jefferson, it announced and explained the separation of the thirteen American colonies from Great Britain. It remains one of the most influential documents in world history.
-            </p>
-
-            {/* Archive link */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-              <a href="https://www.archives.gov/founding-docs/declaration" target="_blank" rel="noreferrer"
-                style={{ padding: "8px 18px", background: `rgba(212,175,55,0.1)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
-                📜 National Archives
-              </a>
-            </div>
-
-            {/* Sections */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {DECLARATION_SECTIONS.map(sec => (
-                <ConstitutionCard key={sec.id} title={sec.title} plain={sec.plain} original={sec.original} S={S} />
-              ))}
-            </div>
-
-            {/* Signers callout */}
-            <div style={{ marginTop: 28, padding: "18px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 14, color: S.gold, marginBottom: 8 }}>56 Signers</div>
-              <p style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.7, margin: 0 }}>
-                Fifty-six delegates to the Continental Congress signed the Declaration between August 2 and November 4, 1776. The signers represented all thirteen original colonies. John Hancock, as President of Congress, signed first with a notably large signature. By signing, each man risked being charged with treason against the British Crown — a crime punishable by death.
-              </p>
-            </div>
-          </div>
-        )}
       </main>
 
       {/* ── ONBOARDING MODAL ── */}
@@ -2280,8 +2210,20 @@ useEffect(() => {
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </a>
-            <a href="https://x.com/CivicWatchAlerts" title="CivicWatch on X" target="_blank" rel="noopener noreferrer"
-               style={{color:'rgba(255,255,255,0.7)', margin:'0 10px', display:'inline-flex', alignItems:'center'}}>
+            <a href="#" title="Instagram — coming soon"
+               style={{color:'rgba(255,255,255,0.4)', margin:'0 10px', display:'inline-flex', alignItems:'center', cursor:'default', pointerEvents:'none'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+            <a href="#" title="TikTok — coming soon"
+               style={{color:'rgba(255,255,255,0.4)', margin:'0 10px', display:'inline-flex', alignItems:'center', cursor:'default', pointerEvents:'none'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+              </svg>
+            </a>
+            <a href="#" title="X / Twitter — coming soon"
+               style={{color:'rgba(255,255,255,0.4)', margin:'0 10px', display:'inline-flex', alignItems:'center', cursor:'default', pointerEvents:'none'}}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.261 5.635 5.903-5.635zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
@@ -2295,7 +2237,6 @@ useEffect(() => {
             <a href="/refund-policy" style={{ color: S.gray, textDecoration: "none" }}>Refund Policy</a>
             <a href="mailto:support@civicwatch.app" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
             <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion</a>
-            <a href="/privacy#ccpa" style={{ color: S.gray, textDecoration: "none" }}>Do Not Sell My Personal Information</a>
           </div>
           <div style={{ fontSize: 11, color: S.gray }}>Data sourced from <a href="https://congress.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Congress.gov</a>, <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>House Clerk STOCK Act Disclosures</a>, <a href="https://efts.senate.gov" target="_blank" rel="noreferrer" style={{ color: S.gray }}>Senate Financial Disclosures</a>, and <a href="https://legiscan.com" target="_blank" rel="noreferrer" style={{ color: S.gray }}>LegiScan LLC (CC BY 4.0)</a>.</div>
         </div>
@@ -2308,7 +2249,6 @@ useEffect(() => {
         trackedReps={liveReps.filter(r => tracked.includes(r.id)).map(r => ({ bioguide_id: r.id || r.bioguideId, rep_name: r.name }))}
         onUntrack={id => toggleTrack(id)}
         isPro={isPro}
-        tier={tier}
         user={user}
         tracked={tracked}
         liveReps={liveReps}
@@ -2372,7 +2312,7 @@ useEffect(() => {
   )
 }
 
-function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, handleBillingPortal, isPro: isProProp, isCivicPack: isCivicPackProp, tier: tierProp, S }) {
+function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, handleBillingPortal, isPro: isProProp, S }) {
   const [liveVotes, setLiveVotes] = useState(null)
   const [liveTrades, setLiveTrades] = useState(null)
   const [tradesMeta, setTradesMeta] = useState(null)
@@ -3301,15 +3241,15 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
                             <div style={{ fontSize: 32 }}>🔒</div>
                             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
-                              Net Worth Analysis · Voter Pro+
+                              Net Worth Analysis · Pro Only
                             </div>
                             <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0, lineHeight: 1.6 }}>
                               Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
                             </p>
                             <button
-                              onClick={() => handleSubscribe('voter_pro')}
+                              onClick={handleSubscribe}
                               style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-                              ★ Voter Pro · $3.99/mo
+                              ★ Upgrade to Pro · $9.99/mo
                             </button>
                           </div>
                         </div>
@@ -3498,15 +3438,15 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.72)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
                           <div style={{ fontSize: 32 }}>🔒</div>
                           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 17, textAlign: 'center', color: S.offWhite }}>
-                            Net Worth Analysis · Voter Pro+
+                            Net Worth Analysis · Pro Only
                           </div>
                           <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0, lineHeight: 1.6 }}>
                             Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
                           </p>
                           <button
-                            onClick={() => handleSubscribe('voter_pro')}
+                            onClick={handleSubscribe}
                             style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-                            ★ Voter Pro · $3.99/mo
+                            ★ Upgrade to Pro · $9.99/mo
                           </button>
                         </div>
                       </div>
@@ -4369,14 +4309,14 @@ Sincerely,
       )}
 
       {repTab === "ai" && (
-        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} isCivicPackProp={isCivicPackProp} tierProp={tierProp} />
+        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
       )}
     </div>
   )
 }
 
 
-function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp, isCivicPackProp, tierProp }) {
+function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp }) {
   const { user, isSignedIn } = useUser()
   const { openSignIn } = useClerk()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
@@ -4386,9 +4326,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
   const [previewsUsed, setPreviewsUsed] = useState(0)
 
   // Prefer prop (from parent) so both stay in sync; fall back to local user read
-  const localTier = tierProp ?? getUserTier(user)
-  const isPro = isProProp ?? localTier !== 'free'
-  const isCivicPack = isCivicPackProp ?? localTier === 'civic_pack'
+  const isPro = isProProp ?? (user?.publicMetadata?.isPro === true)
 
   const runAnalysis = async (mode) => {
     setStatus('loading')
@@ -4428,56 +4366,54 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
 
   // ── IDLE ───────────────────────────────────────────────────────────────────
   if (status === 'idle') {
-    if (!isCivicPack) {
-      // Free (not signed in): lock screen
-      if (!isSignedIn) {
+    if (!isPro) {
+      if (isSignedIn) {
+        const previewsLeft = Math.max(0, 3 - previewsUsed)
         return (
           <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
-            <div style={{ fontSize: 48 }}>🔒</div>
+            <div style={{ fontSize: 48 }}>🤖</div>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
-              AI Analysis requires sign-in
+              AI Analysis Preview
             </div>
             <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
-              Sign in free to get 3 AI preview analyses per hour. Upgrade to Civic Pack for unlimited full reports.
+              Get a brief nonpartisan AI preview of {rep.name.split(' ').pop()}&apos;s accountability record.
+              {previewsLeft > 0
+                ? ` You have ${previewsLeft} free preview${previewsLeft !== 1 ? 's' : ''} remaining this hour.`
+                : " You've used all 3 free previews for this hour."}
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               <button
-                onClick={() => openSignIn()}
-                style={{ padding: '13px 28px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
-                Sign in to preview →
+                onClick={() => runAnalysis('preview')}
+                disabled={previewsLeft === 0}
+                style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
+                Preview Analysis →
               </button>
               <a href="/pro"
                 style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-                See Plans →
+                Go Pro →
               </a>
             </div>
           </div>
         )
       }
-      // Signed in (free or voter_pro): preview UI
-      const previewsLeft = Math.max(0, 3 - previewsUsed)
       return (
         <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 20, textAlign: 'center' }}>
-          <div style={{ fontSize: 48 }}>🤖</div>
+          <div style={{ fontSize: 48 }}>🔒</div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22 }}>
-            AI Analysis Preview
+            AI Analysis is a Pro feature
           </div>
           <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 380, margin: 0 }}>
-            Get a brief nonpartisan AI preview of {rep.name.split(' ').pop()}&apos;s accountability record.
-            {previewsLeft > 0
-              ? ` You have ${previewsLeft} free preview${previewsLeft !== 1 ? 's' : ''} remaining this hour.`
-              : " You've used all 3 free previews for this hour."}
+            Get a nonpartisan AI-generated accountability report on any member of Congress — voting record, stock trades, wealth trajectory, and peer standing.
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
-              onClick={() => runAnalysis('preview')}
-              disabled={previewsLeft === 0}
-              style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
-              Preview Analysis →
+              onClick={() => openSignIn()}
+              style={{ padding: '13px 28px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
+              Sign in to preview →
             </button>
             <a href="/pro"
               style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
-              {isPro ? 'Upgrade to Civic Pack →' : 'Go Pro →'}
+              Go Pro →
             </a>
           </div>
         </div>
@@ -4609,11 +4545,11 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
           {/* Lock overlay */}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'rgba(10,14,30,0.6)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', borderRadius: 12 }}>
             <div style={{ fontSize: 28 }}>🔒</div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Full Report · Civic Pack Only</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Full Report · Pro Members Only</div>
             <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0 }}>
               Unlock trade conflict analysis, wealth trajectory deep-dive, peer standing breakdown, and overall accountability rating.
             </p>
-            {isCivicPack ? (
+            {isPro ? (
               <button
                 onClick={() => runAnalysis('full')}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
@@ -4621,9 +4557,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
               </button>
             ) : (
               <button
-                onClick={() => handleSubscribe('civic_pack')}
+                onClick={handleSubscribe}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5 }}>
-                ★ Civic Pack · $9.99/mo
+                ★ Upgrade to Pro · $9.99/mo
               </button>
             )}
           </div>

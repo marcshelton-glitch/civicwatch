@@ -2,45 +2,18 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { clerkClient } from '@clerk/nextjs/server'
 import { Resend } from 'resend'
-import { getUserTier } from '@/lib/tier-utils'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-// ── Map Stripe price IDs → tier strings ───────────────────────────────────────
-function priceIdToTier(priceId) {
-  if (!priceId) return null
-  if (priceId === process.env.STRIPE_VOTER_PRO_MONTHLY_PRICE_ID) return 'voter_pro'
-  if (priceId === process.env.STRIPE_VOTER_PRO_ONETIME_PRICE_ID) return 'voter_pro'
-  if (priceId === process.env.STRIPE_PRO_PRICE_ID) return 'civic_pack'
-  if (priceId === process.env.STRIPE_CIVIC_PACK_ONETIME_PRICE_ID) return 'civic_pack'
-  return null
-}
-
-const TIER_NAMES = { voter_pro: 'Voter Pro', civic_pack: 'Civic Pack' }
-
-async function sendWelcomeEmail(email, firstName, tier) {
+async function sendProWelcomeEmail(email, firstName) {
   if (!resend || !email) return
-  const tierName = TIER_NAMES[tier] || 'Pro'
-  const features = tier === 'voter_pro'
-    ? [
-        '📊 <strong style="color:#F8F9FF;">Net Worth Data</strong> — Full wealth disclosure timeline',
-        '🔔 <strong style="color:#F8F9FF;">Alerts</strong> — Real-time votes and trades for tracked reps',
-        '⭐ <strong style="color:#F8F9FF;">Track Any Rep</strong> — Watchlist front and center',
-      ]
-    : [
-        '🤖 <strong style="color:#F8F9FF;">AI Analysis</strong> — Conflict scoring, wealth trajectories & peer comparisons',
-        '📊 <strong style="color:#F8F9FF;">Full Trade History</strong> — Every STOCK Act filing, cross-referenced',
-        '🔔 <strong style="color:#F8F9FF;">Alerts</strong> — Real-time votes and trades for tracked reps',
-        '🏛️ <strong style="color:#F8F9FF;">All Representatives</strong> — Federal, state, and local officials',
-      ]
-
   try {
     await resend.emails.send({
       from: 'CivicWatch <noreply@civicwatch.app>',
       to: email,
-      subject: `★ Welcome to CivicWatch ${tierName}`,
+      subject: '★ Welcome to CivicWatch Pro',
       html: `
         <div style="font-family:Georgia,serif;background:#0A1628;color:#F8F9FF;padding:40px;max-width:560px;margin:0 auto;border-radius:16px;">
           <div style="text-align:center;margin-bottom:32px;">
@@ -51,12 +24,15 @@ async function sendWelcomeEmail(email, firstName, tier) {
             <p style="color:#8892A4;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin:0;">Your Representatives. Accountable.</p>
           </div>
           <div style="background:rgba(27,42,107,0.5);border:1px solid rgba(212,175,55,0.25);border-radius:12px;padding:28px;margin-bottom:24px;">
-            <h2 style="color:#D4AF37;font-size:20px;margin:0 0 12px;">Welcome to ${tierName}${firstName ? ', ' + firstName : ''}!</h2>
+            <h2 style="color:#D4AF37;font-size:20px;margin:0 0 12px;">Welcome to Pro${firstName ? ', ' + firstName : ''}!</h2>
             <p style="color:#CDD2E0;font-size:14px;line-height:1.8;margin:0 0 16px;">
-              Your subscription is active. You now have access to:
+              Your subscription is active. You now have full access to:
             </p>
             <ul style="color:#CDD2E0;font-size:14px;line-height:2;padding-left:20px;margin:0 0 20px;">
-              ${features.map(f => `<li>${f}</li>`).join('')}
+              <li>🤖 <strong style="color:#F8F9FF;">AI Analysis</strong> — Conflict scoring, wealth trajectories & peer comparisons</li>
+              <li>📊 <strong style="color:#F8F9FF;">Full Trade History</strong> — Every STOCK Act filing, cross-referenced</li>
+              <li>🔔 <strong style="color:#F8F9FF;">Alerts</strong> — Real-time votes and trades for tracked reps</li>
+              <li>🏛️ <strong style="color:#F8F9FF;">All Representatives</strong> — Federal, state, and local officials</li>
             </ul>
             <a href="https://www.civicwatch.app/dashboard" style="display:inline-block;padding:12px 28px;background:#B22234;color:white;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:0.5px;">
               Go to My Dashboard →
@@ -73,13 +49,49 @@ async function sendWelcomeEmail(email, firstName, tier) {
   }
 }
 
+async function sendPaymentFailedEmail(email, firstName) {
+  if (!resend || !email) return
+  try {
+    await resend.emails.send({
+      from: 'CivicWatch <noreply@civicwatch.app>',
+      to: email,
+      subject: 'Action required: CivicWatch Pro payment failed',
+      html: `
+        <div style="font-family:Georgia,serif;background:#0A1628;color:#F8F9FF;padding:40px;max-width:560px;margin:0 auto;border-radius:16px;">
+          <div style="text-align:center;margin-bottom:32px;">
+            <span style="font-size:48px;">🏛️</span>
+            <h1 style="font-size:28px;font-weight:900;margin:16px 0 4px;">CIVIC<span style="color:#D4AF37">WATCH</span></h1>
+          </div>
+          <div style="background:rgba(178,34,52,0.12);border:1px solid rgba(178,34,52,0.4);border-radius:12px;padding:28px;margin-bottom:24px;">
+            <h2 style="color:#FF6B6B;font-size:18px;margin:0 0 12px;">Payment Failed${firstName ? ', ' + firstName : ''}</h2>
+            <p style="color:#CDD2E0;font-size:14px;line-height:1.8;margin:0 0 16px;">
+              We weren't able to charge your card for your CivicWatch Pro subscription. Stripe will automatically retry — no action is needed right now.
+            </p>
+            <p style="color:#CDD2E0;font-size:14px;line-height:1.8;margin:0 0 20px;">
+              If retries fail, your subscription will be cancelled and access will revert to the free tier. To avoid interruption, update your payment method now.
+            </p>
+            <a href="https://www.civicwatch.app/pro" style="display:inline-block;padding:12px 28px;background:#B22234;color:white;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;">
+              Update Payment Method →
+            </a>
+          </div>
+          <p style="color:#8892A4;font-size:12px;text-align:center;margin:0;">
+            Questions? <a href="mailto:support@civicwatch.app" style="color:#D4AF37;">support@civicwatch.app</a>
+          </p>
+        </div>
+      `,
+    })
+  } catch (err) {
+    console.error('Payment failed email error:', err.message)
+  }
+}
+
 async function sendCancellationEmail(email, firstName) {
   if (!resend || !email) return
   try {
     await resend.emails.send({
       from: 'CivicWatch <noreply@civicwatch.app>',
       to: email,
-      subject: 'Your CivicWatch subscription has been cancelled',
+      subject: 'Your CivicWatch Pro subscription has been cancelled',
       html: `
         <div style="font-family:Georgia,serif;background:#0A1628;color:#F8F9FF;padding:40px;max-width:560px;margin:0 auto;border-radius:16px;">
           <div style="text-align:center;margin-bottom:32px;">
@@ -89,13 +101,13 @@ async function sendCancellationEmail(email, firstName) {
           <div style="background:rgba(27,42,107,0.5);border:1px solid rgba(212,175,55,0.25);border-radius:12px;padding:28px;margin-bottom:24px;">
             <h2 style="font-size:18px;margin:0 0 12px;">Subscription Cancelled${firstName ? ', ' + firstName : ''}</h2>
             <p style="color:#CDD2E0;font-size:14px;line-height:1.8;margin:0 0 16px;">
-              Your CivicWatch subscription has been cancelled. You'll retain access until the end of your current billing period.
+              Your CivicWatch Pro subscription has been cancelled. You'll retain access until the end of your current billing period.
             </p>
             <p style="color:#CDD2E0;font-size:14px;line-height:1.8;margin:0 0 20px;">
               You can resubscribe at any time from your dashboard.
             </p>
-            <a href="https://www.civicwatch.app/pro" style="display:inline-block;padding:12px 28px;background:rgba(212,175,55,0.15);border:1px solid #D4AF37;color:#D4AF37;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;">
-              View Plans
+            <a href="https://www.civicwatch.app/dashboard" style="display:inline-block;padding:12px 28px;background:rgba(212,175,55,0.15);border:1px solid #D4AF37;color:#D4AF37;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;">
+              Return to Dashboard
             </a>
           </div>
           <p style="color:#8892A4;font-size:12px;text-align:center;margin:0;">
@@ -121,6 +133,7 @@ export const runtime = 'nodejs'
 // Fallback: scan Clerk user list (only works up to 100 users — kept as safety net).
 async function findClerkUserByStripeCustomerId(clerk, customerId) {
   try {
+    // Primary: get clerkUserId from Stripe Customer metadata
     const customer = await stripe.customers.retrieve(customerId)
     if (!customer.deleted) {
       const clerkUserId = customer.metadata?.clerkUserId
@@ -135,6 +148,7 @@ async function findClerkUserByStripeCustomerId(clerk, customerId) {
     console.error('Stripe customer retrieve error:', err.message)
   }
 
+  // Fallback: scan Clerk user list (covers legacy customers created before metadata was added)
   try {
     const result = await clerk.users.getUserList({ limit: 100 })
     return result.data.find(
@@ -155,6 +169,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
   }
 
+  // ── Verify the event came from Stripe, not a forged request ──────────────
   let event
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
@@ -168,16 +183,18 @@ export async function POST(request) {
   try {
     switch (event.type) {
 
-      // ── Checkout completed (subscription or one-time payment) ─────────────
+      // ── Subscription created ──────────────────────────────────────────────
       case 'checkout.session.completed': {
         const session = event.data.object
         const clerkUserId = session.metadata?.clerkUserId
 
+        // ✅ Validate clerkUserId format before touching Clerk API
         if (!clerkUserId || !CLERK_USER_ID_RE.test(clerkUserId)) {
           console.error('Webhook: invalid or missing clerkUserId in metadata')
           break
         }
 
+        // ✅ Verify user exists in Clerk before updating
         let clerkUser
         try {
           clerkUser = await clerk.users.getUser(clerkUserId)
@@ -187,46 +204,25 @@ export async function POST(request) {
         }
         if (!clerkUser) break
 
-        // Determine tier: prefer explicit metadata, fall back to price ID lookup
-        let paidTier = session.metadata?.tier || null
-        if (!paidTier) {
-          // Expand line_items to get price ID (only available on retrieve, not event object)
-          try {
-            const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-              expand: ['line_items'],
-            })
-            const priceId = fullSession.line_items?.data?.[0]?.price?.id
-            paidTier = priceIdToTier(priceId)
-          } catch {
-            paidTier = 'civic_pack'  // safe default for legacy sessions
-          }
-        }
-
-        if (!paidTier || paidTier === 'free') {
-          console.error('Webhook: could not determine paid tier for session', session.id)
-          break
-        }
-
         await clerk.users.updateUserMetadata(clerkUserId, {
           publicMetadata: {
-            tier: paidTier,
-            tierType: session.mode === 'payment' ? 'onetime' : 'subscription',
-            isPro: true,  // backward compat
+            isPro: true,
             stripeCustomerId: session.customer,
-            stripeSubscriptionId: session.subscription || null,
+            stripeSubscriptionId: session.subscription,
             proActivatedAt: new Date().toISOString(),
           },
         })
 
+        // Send welcome email
         const email = clerkUser.emailAddresses?.[0]?.emailAddress
         const firstName = clerkUser.firstName || ''
-        await sendWelcomeEmail(email, firstName, paidTier)
+        await sendProWelcomeEmail(email, firstName)
 
-        console.log(`✅ ${paidTier} activated for a new subscriber`)
+        console.log('✅ Pro activated for a new subscriber')
         break
       }
 
-      // ── Subscription cancelled or paused → revert to free ─────────────────
+      // ── Subscription cancelled or paused → revoke Pro ─────────────────────
       case 'customer.subscription.deleted':
       case 'customer.subscription.paused': {
         const subscription = event.data.object
@@ -237,22 +233,15 @@ export async function POST(request) {
           break
         }
 
+        // ✅ Fixed: proper lookup that works at scale
         const user = await findClerkUserByStripeCustomerId(clerk, customerId)
         if (!user) {
           console.error('Webhook: no Clerk user found for Stripe customer')
           break
         }
 
-        // Don't downgrade one-time purchasers if a subscription gets cancelled
-        if (user.publicMetadata?.tierType === 'onetime') {
-          console.log('Webhook: skipping downgrade — user has onetime purchase')
-          break
-        }
-
         await clerk.users.updateUserMetadata(user.id, {
           publicMetadata: {
-            tier: 'free',
-            tierType: null,
             isPro: false,
             stripeCustomerId: customerId,
             stripeSubscriptionId: null,
@@ -260,57 +249,27 @@ export async function POST(request) {
           },
         })
 
+        // Send cancellation email
         const cancelEmail = user.emailAddresses?.[0]?.emailAddress
         const cancelName = user.firstName || ''
         await sendCancellationEmail(cancelEmail, cancelName)
 
-        console.log('⛔ Subscription revoked — tier reset to free')
+        console.log('⛔ Pro revoked for a subscriber')
         break
       }
 
-      // ── First invoice paid via direct API (Payment Request Button flow) ─────
-      case 'invoice.paid': {
-        const invoice = event.data.object
-        if (invoice.billing_reason !== 'subscription_create') break
-
-        const customerId = invoice.customer
-        if (!customerId || typeof customerId !== 'string') break
-
-        const user = await findClerkUserByStripeCustomerId(clerk, customerId)
-        if (!user) {
-          console.error('Webhook invoice.paid: no Clerk user found for Stripe customer')
-          break
-        }
-
-        // Skip if already at civic_pack (checkout.session.completed may have fired first,
-        // or user has a one-time civic_pack purchase)
-        if (getUserTier(user) === 'civic_pack') break
-
-        // Determine tier from price ID in the invoice line items
-        const priceId = invoice.lines?.data?.[0]?.price?.id
-        const paidTier = priceIdToTier(priceId) || 'civic_pack'
-
-        await clerk.users.updateUserMetadata(user.id, {
-          publicMetadata: {
-            tier: paidTier,
-            tierType: 'subscription',
-            isPro: true,
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: invoice.subscription,
-            proActivatedAt: new Date().toISOString(),
-          },
-        })
-
-        const email = user.emailAddresses?.[0]?.emailAddress
-        const firstName = user.firstName || ''
-        await sendWelcomeEmail(email, firstName, paidTier)
-
-        console.log(`✅ ${paidTier} activated via direct subscription payment`)
-        break
-      }
-
+      // ── Payment failed: notify user; Stripe will retry automatically ────
       case 'invoice.payment_failed': {
-        console.warn('⚠️ Payment failed for a customer — Stripe will retry')
+        const invoice = event.data.object
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : null
+        if (customerId) {
+          const user = await findClerkUserByStripeCustomerId(clerk, customerId)
+          if (user) {
+            const email = user.emailAddresses?.[0]?.emailAddress
+            await sendPaymentFailedEmail(email, user.firstName || '')
+          }
+        }
+        console.warn('⚠️ Payment failed — Stripe will retry')
         break
       }
 
@@ -324,18 +283,16 @@ export async function POST(request) {
           if (!customerId || typeof customerId !== 'string') break
 
           const user = await findClerkUserByStripeCustomerId(clerk, customerId)
-          if (user && user.publicMetadata?.tierType !== 'onetime') {
+          if (user) {
             await clerk.users.updateUserMetadata(user.id, {
               publicMetadata: {
-                tier: 'free',
-                tierType: null,
                 isPro: false,
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: subscription.id,
                 proSuspendedAt: new Date().toISOString(),
               },
             })
-            console.log(`⏸ Tier suspended due to status: ${subscription.status}`)
+            console.log(`⏸ Pro suspended due to status: ${subscription.status}`)
           }
         }
         break
