@@ -222,18 +222,16 @@ export async function POST(request) {
         break
       }
 
-      // ── Subscription cancelled or paused → revoke Pro ─────────────────────
-      case 'customer.subscription.deleted':
-      case 'customer.subscription.paused': {
+      // ── Subscription cancelled → revoke Pro ──────────────────────────────
+      case 'customer.subscription.deleted': {
         const subscription = event.data.object
         const customerId = subscription.customer
 
         if (!customerId || typeof customerId !== 'string') {
-          console.error('Webhook: subscription event missing customer id')
+          console.error('Webhook: subscription.deleted missing customer id')
           break
         }
 
-        // ✅ Fixed: proper lookup that works at scale
         const user = await findClerkUserByStripeCustomerId(clerk, customerId)
         if (!user) {
           console.error('Webhook: no Clerk user found for Stripe customer')
@@ -249,12 +247,45 @@ export async function POST(request) {
           },
         })
 
-        // Send cancellation email
         const cancelEmail = user.emailAddresses?.[0]?.emailAddress
         const cancelName = user.firstName || ''
         await sendCancellationEmail(cancelEmail, cancelName)
 
-        console.log('⛔ Pro revoked for a subscriber')
+        console.log('⛔ Pro revoked — subscription cancelled')
+        break
+      }
+
+      // ── Subscription paused → revoke Pro, prompt payment update ──────────
+      case 'customer.subscription.paused': {
+        const subscription = event.data.object
+        const customerId = subscription.customer
+
+        if (!customerId || typeof customerId !== 'string') {
+          console.error('Webhook: subscription.paused missing customer id')
+          break
+        }
+
+        const user = await findClerkUserByStripeCustomerId(clerk, customerId)
+        if (!user) {
+          console.error('Webhook: no Clerk user found for Stripe customer')
+          break
+        }
+
+        await clerk.users.updateUserMetadata(user.id, {
+          publicMetadata: {
+            isPro: false,
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: null,
+            proCancelledAt: new Date().toISOString(),
+          },
+        })
+
+        // Paused means Stripe exhausted retries — user needs to update payment
+        const pausedEmail = user.emailAddresses?.[0]?.emailAddress
+        const pausedName = user.firstName || ''
+        await sendPaymentFailedEmail(pausedEmail, pausedName)
+
+        console.log('⏸ Pro revoked — subscription paused (payment exhausted)')
         break
       }
 
@@ -292,6 +323,11 @@ export async function POST(request) {
                 proSuspendedAt: new Date().toISOString(),
               },
             })
+
+            // Notify user their access was cut and why
+            const suspendEmail = user.emailAddresses?.[0]?.emailAddress
+            await sendPaymentFailedEmail(suspendEmail, user.firstName || '')
+
             console.log(`⏸ Pro suspended due to status: ${subscription.status}`)
           }
         }
