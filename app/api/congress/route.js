@@ -1,5 +1,9 @@
+// Server-side Pro gate added 2026-06-30 for type=trades.
+// The trades response embeds netWorthHistory (from fd_net_worth) which is a
+// Pro-only feature. Non-Pro and anonymous callers receive an empty array for
+// that field; all other trade data remains accessible to everyone.
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 
 // ── Supabase client factory (server-only) ─────────────────────────────────────
@@ -396,6 +400,11 @@ export async function GET(request) {
     if (type === 'trades') {
       const supabase = getSupabase()
 
+      // Pro check — netWorthHistory is Pro-only; strip it for non-Pro/anonymous callers
+      const isProUser = userId
+        ? (await currentUser())?.publicMetadata?.isPro === true
+        : false
+
       // Fetch member name + chamber from Congress.gov
       let lastName = '', firstName = '', isSenator = false, fullName = ''
       try {
@@ -464,9 +473,9 @@ export async function GET(request) {
           trades: allSenTrades, buys, sells, topTickers,
           filingsCount: allSenTrades.length,
           isSenator, disclosureUrl, source: allSenTrades.length > 0 ? 'db' : 'none',
-          netWorthHistory: senateNetWorthHistory,
+          netWorthHistory: isProUser ? senateNetWorthHistory : [],
         }, {
-          headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
+          headers: { 'Cache-Control': 'private, no-store' },
         })
       }
 
@@ -539,9 +548,10 @@ export async function GET(request) {
           return NextResponse.json({
             trades: allTrades, buys, sells, topTickers,
             filingsCount: dbFilingsCount,
-            isSenator, disclosureUrl, source: 'db', netWorthHistory: dbNetWorthHistory,
+            isSenator, disclosureUrl, source: 'db',
+            netWorthHistory: isProUser ? dbNetWorthHistory : [],
           }, {
-            headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
+            headers: { 'Cache-Control': 'private, no-store' },
           })
         }
         // No trades in fd_trades — fall through to live House Clerk fallback.
@@ -624,7 +634,9 @@ export async function GET(request) {
         filingsCount: dbFilingsCount,
         isSenator, disclosureUrl,
         source: allTrades.length > 0 ? 'live' : 'none',
-        netWorthHistory: liveNetWorthHistory,
+        netWorthHistory: isProUser ? liveNetWorthHistory : [],
+      }, {
+        headers: { 'Cache-Control': 'private, no-store' },
       })
     }
 

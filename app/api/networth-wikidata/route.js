@@ -1,32 +1,9 @@
-export const revalidate = 86400
-
+// Server-side Pro gate added 2026-06-30.
+// This endpoint returns Wikipedia/Wikidata net-worth estimates used in the
+// Wealth tab when the primary /api/networth (fd_net_worth table) has no data.
+// It was previously unprotected; non-Pro callers now receive 403.
 import { NextResponse } from 'next/server';
-
-// ── IP-based rate limiter ─────────────────────────────────────────────────────
-const nwRateMap = new Map();
-const NW_WINDOW_MS = 60_000;
-const NW_MAX_CALLS = 20;
-
-function cleanupNwRateMap() {
-  const now = Date.now();
-  for (const [key, entry] of nwRateMap.entries()) {
-    if (now - entry.windowStart > NW_WINDOW_MS * 2) nwRateMap.delete(key);
-  }
-}
-setInterval(cleanupNwRateMap, 5 * 60_000);
-
-function isNwRateLimited(ip) {
-  const now = Date.now();
-  const entry = nwRateMap.get(ip) || { count: 0, windowStart: now };
-  if (now - entry.windowStart > NW_WINDOW_MS) {
-    nwRateMap.set(ip, { count: 1, windowStart: now });
-    return false;
-  }
-  if (entry.count >= NW_MAX_CALLS) return true;
-  entry.count++;
-  nwRateMap.set(ip, entry);
-  return false;
-}
+import { requirePro } from '@/lib/requirePro';
 
 const UA = 'CivicWatch/1.0 (civicwatch.app)';
 const WD_SPARQL = 'https://query.wikidata.org/sparql';
@@ -116,12 +93,8 @@ function parseNetWorth(text) {
 }
 
 export async function GET(req) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || req.headers.get('x-real-ip')
-    || 'anonymous';
-  if (isNwRateLimited(ip)) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
+  const { errorResponse } = await requirePro()
+  if (errorResponse) return errorResponse
 
   const { searchParams } = new URL(req.url);
   const name = searchParams.get('name');
@@ -136,7 +109,7 @@ export async function GET(req) {
       const year = top.pointInTime?.value ? new Date(top.pointInTime.value).getFullYear() : null;
       if (!isNaN(amount)) {
         return NextResponse.json({ netWorth: amount, year, label: top.personLabel?.value, source: 'wikidata-p2218' }, {
-        headers: { 'Cache-Control': 'public, s-maxage=86400' },
+        headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=60' },
       });
       }
     }
@@ -147,13 +120,13 @@ export async function GET(req) {
       const netWorth = await getNetWorthFromWikipedia(qid).catch(() => null);
       if (netWorth) {
         return NextResponse.json({ netWorth, source: 'wikipedia', qid }, {
-          headers: { 'Cache-Control': 'public, s-maxage=86400' },
+          headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=60' },
         });
       }
     }
 
     return NextResponse.json({ netWorth: null, source: 'wikidata' }, {
-      headers: { 'Cache-Control': 'public, s-maxage=86400' },
+      headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=60' },
     });
   } catch (e) {
     return NextResponse.json({ netWorth: null, source: 'wikidata', error: e.message });
