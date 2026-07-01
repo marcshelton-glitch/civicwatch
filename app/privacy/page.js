@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export const metadata = {
   title: "Privacy Policy | CivicWatch",
@@ -39,8 +38,8 @@ export default function PrivacyPolicyPage() {
 
       {/* ── NAV ── */}
       <nav style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
+        <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, color: S.white, textDecoration: 'none', letterSpacing: 0.5 }}>
+          🏛️ Civic<span style={{ color: S.gold }}>Watch</span>
         </Link>
         <Link href="/" style={{ fontSize: 13, color: S.gray, textDecoration: 'none' }}>← Back</Link>
       </nav>
@@ -146,7 +145,7 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
 
-          <div id="ccpa">
+          <div>
   <h2 style={H2}>8. California Privacy Rights (CCPA)</h2>
   <p style={P}>
     If you are a California resident, the California Consumer Privacy Act (CCPA) grants you
@@ -170,7 +169,7 @@ export default function PrivacyPolicyPage() {
   </p>
 </div>
 
-<div id="gdpr">
+<div>
   <h2 style={H2}>9. International Users and GDPR</h2>
   <p style={P}>
     CivicWatch is operated from the United States. If you access CivicWatch from outside the United States,
@@ -217,8 +216,18 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
 
+          <div id="do-not-sell">
+            <h2 style={H2}>13. Do Not Sell My Personal Information</h2>
+            <p style={P}>
+              CivicWatch does not sell your personal information to third parties. We do not sell, rent, trade, or
+              otherwise transfer your personal data to outside parties for monetary or other valuable consideration.
+              If you have questions about how your data is used, contact us at{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="priv-link">{CONTACT_EMAIL}</a>.
+            </p>
+          </div>
+
           <div>
-            <h2 style={H2}>13. Contact Us</h2>
+            <h2 style={H2}>14. Contact Us</h2>
             <p style={P}>
               If you have questions about this Privacy Policy or our data practices, contact us at{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="priv-link">{CONTACT_EMAIL}</a>.
@@ -232,10 +241,6 @@ export default function PrivacyPolicyPage() {
           <Link href="/terms" className="priv-footer-link">Terms of Service</Link>
           {' · '}
           <Link href="/data-deletion" className="priv-footer-link">Data Deletion</Link>
-          {' · '}
-          <Link href="/refund-policy" className="priv-footer-link">Refund Policy</Link>
-          {' · '}
-          <Link href="/privacy#ccpa" className="priv-footer-link">Do Not Sell My Personal Information</Link>
         </footer>
       </main>
     </div>

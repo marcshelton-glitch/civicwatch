@@ -2235,6 +2235,7 @@ useEffect(() => {
             <a href="/privacy" style={{ color: S.gray, textDecoration: "none" }}>Privacy Policy</a>
             <a href="/terms" style={{ color: S.gray, textDecoration: "none" }}>Terms of Service</a>
             <a href="/refund-policy" style={{ color: S.gray, textDecoration: "none" }}>Refund Policy</a>
+            <a href="/privacy#do-not-sell" style={{ color: S.gray, textDecoration: "none" }}>Do Not Sell My Personal Information</a>
             <a href="mailto:support@civicwatch.app" style={{ color: S.gray, textDecoration: "none" }}>Contact</a>
             <a href="/data-deletion" style={{ color: S.gray, textDecoration: "none" }}>Data Deletion</a>
           </div>

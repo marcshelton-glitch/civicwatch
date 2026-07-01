@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
@@ -178,10 +177,11 @@ export default function LandingPage() {
         }
 
         .nav-logo {
-          display: inline-flex;
-          align-items: center;
-          text-decoration: none;
+          font-family: 'Playfair Display', serif;
+          font-weight: 900; font-size: 20px; letter-spacing: 2px;
+          color: var(--white); text-decoration: none;
         }
+        .nav-logo span { color: var(--gold); }
 
         .nav-actions { display: flex; gap: 12px; align-items: center; }
 
@@ -772,9 +772,7 @@ export default function LandingPage() {
 
       {/* NAV */}
       <nav className="nav">
-        <Link href="/" className="nav-logo">
-          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={180} height={49} priority style={{display:'block'}} />
-        </Link>
+        <Link href="/" className="nav-logo">CIVIC<span>WATCH</span></Link>
         <div className="nav-actions">
           {isSignedIn ? (
             <Link href="/dashboard" className="btn-primary">Go to Dashboard →</Link>
@@ -1080,9 +1078,9 @@ and got <span className="red">rich.</span>
           <Link href="/about" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>About</Link>
           <Link href="/privacy" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Privacy Policy</Link>
           <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms of Service</Link>
-          <Link href="/data-deletion" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Data Deletion</Link>
           <Link href="/refund-policy" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Refund Policy</Link>
-          <Link href="/privacy#ccpa" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Do Not Sell My Personal Information</Link>
+          <Link href="/data-deletion" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Data Deletion</Link>
+          <Link href="/privacy#do-not-sell" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Do Not Sell My Personal Information</Link>
           <a href="mailto:support@civicwatch.app" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Contact</a>
           <a href="https://congress.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Congress.gov</a>
           <a href="https://disclosures-clerk.house.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>House Disclosures</a>

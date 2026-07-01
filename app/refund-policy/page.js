@@ -1,12 +1,11 @@
 import Link from 'next/link'
-import Image from 'next/image'
 
 export const metadata = {
   title: 'Refund Policy | CivicWatch',
   description: 'CivicWatch refund policy — eligibility, process, and timelines.',
 }
 
-const EFFECTIVE_DATE = 'May 29, 2026'
+const EFFECTIVE_DATE = 'June 30, 2026'
 const CONTACT_EMAIL = 'support@civicwatch.app'
 
 const S = {
@@ -34,8 +33,8 @@ export default function RefundPolicyPage() {
       `}</style>
 
       <nav style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
+        <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, color: S.white, textDecoration: 'none', letterSpacing: 0.5 }}>
+          🏛️ Civic<span style={{ color: S.gold }}>Watch</span>
         </Link>
         <Link href="/" style={{ fontSize: 13, color: S.gray, textDecoration: 'none' }}>← Back</Link>
       </nav>
@@ -52,76 +51,40 @@ export default function RefundPolicyPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
           <p style={P}>
-            CivicWatch (&ldquo;CivicWatch,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) aims to provide
-            a reliable, continuously available service. This policy describes when refunds are available and how to request one.
+            CivicWatch (&ldquo;CivicWatch,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) wants you
+            to be satisfied with your subscription. This policy describes when refunds are available and how to request one.
           </p>
 
           <div>
-            <h2 style={H2}>1. Refund Eligibility</h2>
+            <h2 style={H2}>1. 7-Day Refund Window</h2>
             <p style={P}>
-              Refunds are available within <strong style={{ color: S.white }}>14 days</strong> of your original payment date,
-              subject to the following condition:
-            </p>
-            <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 8 }}>
-                You must be able to demonstrate a <strong style={{ color: S.white }}>loss of service</strong> — meaning the
-                CivicWatch site was down, inaccessible, or a core feature was broken during a meaningful portion of your
-                billing period.
-              </li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 8 }}>
-                All refund requests are reviewed and must be approved by CivicWatch staff before any charge is reversed
-                through Stripe.
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 style={H2}>2. When Refunds Are Not Issued</h2>
-            <p style={P}>
-              If the CivicWatch site is functioning correctly, refunds are not available — regardless of usage level or
-              satisfaction. In this case, you are welcome to <strong style={{ color: S.white }}>cancel your subscription</strong> at
-              any time, no questions asked. Your access will continue until the end of the current billing period.
-            </p>
-            <p style={P}>
-              Examples of situations that do <em>not</em> qualify for a refund:
-            </p>
-            <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Changed your mind about subscribing</li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Did not use the service during the billing period</li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Dissatisfied with data coverage or content</li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Forgot to cancel before renewal</li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 style={H2}>3. How to Request a Refund</h2>
-            <p style={P}>
-              To submit a refund request, sign in to your CivicWatch account and complete the{' '}
-              <a href="/refund-request" className="rp-link">refund request form</a>. You will be asked to:
-            </p>
-            <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Provide the date of your original payment</li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Describe the service disruption or outage you experienced</li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Provide any supporting evidence (error messages, screenshots, dates)</li>
-              <li style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.85, marginBottom: 6 }}>Confirm that the site was not functioning correctly during this period</li>
-            </ul>
-            <p style={P}>
-              Requests submitted outside the 14-day window will not be reviewed.
+              If you are a new Pro subscriber and are not satisfied, you may request a full refund within{' '}
+              <strong style={{ color: S.white }}>7 days of your initial purchase</strong>. No reason is required.
+              Email us at <a href={`mailto:${CONTACT_EMAIL}`} className="rp-link">{CONTACT_EMAIL}</a> within 7 days of
+              your first charge and we will issue a full refund.
             </p>
           </div>
 
           <div>
-            <h2 style={H2}>4. Processing Time</h2>
+            <h2 style={H2}>2. After the 7-Day Window</h2>
             <p style={P}>
-              Once your request is submitted, our team will review it within <strong style={{ color: S.white }}>2 business days</strong>.
-              If approved, the refund will be processed through Stripe and typically appears on your original payment method
-              within <strong style={{ color: S.white }}>5–10 business days</strong>, depending on your bank or card issuer.
-              You will receive an email notification once a decision has been made.
+              After the 7-day window has passed, subscription fees are non-refundable. There are no prorated refunds
+              for partial months. If you cancel your subscription, your Pro access continues until the end of the
+              current billing period, after which it will not renew.
             </p>
           </div>
 
           <div>
-            <h2 style={H2}>5. Contact</h2>
+            <h2 style={H2}>3. Cancellations</h2>
+            <p style={P}>
+              You may cancel your Pro subscription at any time from your account settings. Cancellations take effect
+              at the end of the current billing period — you will not be charged again, and you will retain Pro access
+              through the period you have already paid for.
+            </p>
+          </div>
+
+          <div>
+            <h2 style={H2}>4. Contact</h2>
             <p style={P}>
               Questions about this policy or your subscription?{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="rp-link">{CONTACT_EMAIL}</a>
@@ -136,7 +99,6 @@ export default function RefundPolicyPage() {
           <a href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms of Service</a>
           <a href="/refund-policy" style={{ color: S.gold, textDecoration: 'none' }}>Refund Policy</a>
           <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: S.gray, textDecoration: 'none' }}>Contact</a>
-          <a href="/privacy#ccpa" style={{ color: S.gray, textDecoration: 'none' }}>Do Not Sell My Personal Information</a>
         </div>
       </footer>
     </div>
