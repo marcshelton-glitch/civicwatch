@@ -1,6 +1,7 @@
 export const runtime = 'nodejs'
 
 import { NextResponse } from 'next/server'
+import sharp from 'sharp'
 
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
 
@@ -36,12 +37,26 @@ export async function GET(request, { params }) {
 
     clearTimeout(timeout)
     const buffer = await res.arrayBuffer()
-    return new Response(buffer, {
-      headers: {
-        'Content-Type': 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=3600',
-      },
-    })
+
+    try {
+      const webpBuffer = await sharp(Buffer.from(buffer))
+        .resize(200, 200, { fit: 'cover' })
+        .webp({ quality: 80 })
+        .toBuffer()
+      return new Response(webpBuffer, {
+        headers: {
+          'Content-Type': 'image/webp',
+          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
+        },
+      })
+    } catch {
+      return new Response(buffer, {
+        headers: {
+          'Content-Type': 'image/jpeg',
+          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
+        },
+      })
+    }
   } catch {
     clearTimeout(timeout)
     return NextResponse.json({ error: 'Failed to fetch image' }, { status: 404 })

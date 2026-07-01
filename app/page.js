@@ -703,7 +703,7 @@ export default function LandingPage() {
         .footer-links a:hover { color: var(--gold); }
 
         .footer-copy {
-          font-size: 11px; color: rgba(122,132,153,0.6);
+          font-size: 11px; color: #7A8499;
           line-height: 1.6;
         }
 
@@ -738,7 +738,7 @@ export default function LandingPage() {
         .hiw-number {
           font-family: 'Playfair Display', serif;
           font-size: 56px; font-weight: 900;
-          color: rgba(124,124,255,0.18);
+          color: rgba(124,124,255,0.55);
           line-height: 1; margin-bottom: 16px;
         }
 
@@ -980,7 +980,7 @@ and got <span className="red">rich.</span>
         <div className="hiw-steps">
           {HOW_IT_WORKS.map((step, i) => (
             <div key={i} className="hiw-step">
-              <div className="hiw-number">{String(i + 1).padStart(2, '0')}</div>
+              <div className="hiw-number" aria-hidden="true">{String(i + 1).padStart(2, '0')}</div>
               <span className="hiw-icon">{step.icon}</span>
               <div className="hiw-title">{step.title}</div>
               <div className="hiw-desc">{step.desc}</div>

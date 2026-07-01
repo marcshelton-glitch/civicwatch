@@ -27,6 +27,13 @@ Sentry.init({
   // Enable sending user PII (Personally Identifiable Information)
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
+
+  // Only send performance transactions to /monitoring for authenticated users
+  beforeSendTransaction(event) {
+    const user = Sentry.getCurrentScope().getUser();
+    if (!user?.id) return null;
+    return event;
+  },
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
