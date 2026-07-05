@@ -9,6 +9,8 @@ import StickyProBar from '@/components/StickyProBar'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import MetaPixel from '@/components/MetaPixel'
+import TiktokPixel from '@/components/TiktokPixel'
 import './globals.css'
 
 export const viewport = {
@@ -74,6 +76,13 @@ export default function RootLayout({ children }) {
           {/* GA Measurement ID set via NEXT_PUBLIC_GA_MEASUREMENT_ID Vercel env var */}
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
             <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+          )}
+          {/* Requires Vercel env vars: NEXT_PUBLIC_META_PIXEL_ID and NEXT_PUBLIC_TIKTOK_PIXEL_ID */}
+          {process.env.NEXT_PUBLIC_META_PIXEL_ID && (
+            <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+          )}
+          {process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID && (
+            <TiktokPixel pixelId={process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID} />
           )}
         </body>
       </html>
