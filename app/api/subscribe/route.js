@@ -1,7 +1,12 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// Lazy — see app/api/pro-count/route.js for why this isn't module-scope.
+let _stripe = null
+function getStripe() {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  return _stripe
+}
 
 function getSafeAppUrl() {
   const url = process.env.NEXT_PUBLIC_APP_URL || ''
@@ -37,6 +42,7 @@ export async function POST(request) {
   }
 
   try {
+    const stripe = getStripe()
     const appUrl = getSafeAppUrl()
     const email = user?.emailAddresses?.[0]?.emailAddress
 
