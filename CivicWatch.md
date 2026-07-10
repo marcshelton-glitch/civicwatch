@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `/Users/marcshelton/civicwatch` · Last updated: July 9, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 9, 2026
 
 ---
 
@@ -524,31 +524,23 @@ See "Pre-Launch Audit Results" section below.
 
 ---
 
-## Push Pattern for GitHub (NEVER use `git push` — it hangs)
+## Push Pattern for GitHub
 
-```python
-import subprocess, requests, re
-token = subprocess.check_output(['security','find-internet-password','-s','github.com','-w']).decode().strip()
-headers = {'Authorization': f'token {token}', 'Accept': 'application/vnd.github+json'}
-remote = subprocess.check_output(['git','remote','get-url','origin']).decode().strip()
-match = re.search(r'[:/]([^/]+/[^/]+?)(?:\.git)?$', remote)
-base = f'https://api.github.com/repos/{match.group(1)}'
+As of the **July 2026 repo cleanup**, CivicWatch uses **normal git**. The canonical clone at
+`~/Projects/civicwatch` has a working GitHub remote (`marcshelton-glitch/civicwatch`):
 
-def push_file(disk_path, repo_path, msg):
-    ref = requests.get(f'{base}/git/ref/heads/main', headers=headers).json()
-    sha = ref['object']['sha']
-    commit_obj = requests.get(f'{base}/git/commits/{sha}', headers=headers).json()
-    tree_sha = commit_obj['tree']['sha']
-    with open(disk_path, 'r') as f:
-        content = f.read()
-    blob = requests.post(f'{base}/git/blobs', headers=headers, json={'content': content, 'encoding': 'utf-8'}).json()
-    tree = requests.post(f'{base}/git/trees', headers=headers, json={'base_tree': tree_sha, 'tree': [{'path': repo_path, 'mode': '100644', 'type': 'blob', 'sha': blob['sha']}]}).json()
-    new_commit = requests.post(f'{base}/git/commits', headers=headers, json={'message': msg, 'tree': tree['sha'], 'parents': [sha]}).json()
-    requests.patch(f'{base}/git/refs/heads/main', headers=headers, json={'sha': new_commit['sha']})
-    print(f'Pushed {repo_path}:', new_commit['sha'])
+```bash
+git add <files>
+git commit -m "message"
+git push origin main
 ```
 
-The script is saved at `~/civicwatch/_push.py`.
+> **History (why the old hack existed):** earlier this project pushed via a Python
+> GitHub-Data-API script (`_push.py` + `security find-internet-password`) because `git push`
+> appeared to hang, and some history was uploaded through the GitHub website's "Add files via
+> upload." That workaround is what caused the repo to drift ~95 commits behind GitHub. It is
+> **retired — do not use `_push.py`.** Dated entries further down still reference it; those are
+> left as historical record, not current instructions.
 
 ---
 
