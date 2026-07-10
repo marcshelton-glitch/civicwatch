@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 9, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 10, 2026
 
 ---
 
@@ -64,6 +64,35 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 ---
 
 ## ⚡ Recent Work
+
+### ⚠️ RATE LIMIT SNAPSHOT — July 10, 2026, ~3:15 PM PDT
+
+**Session `local_ad241ba6-1f93-4544-a63a-30fda983c18d` (running automated daily update) hit rate limit.** Context preserved — work was in progress scanning all CivicWatch Cowork sessions to find new July 10 development activity. Transcripts reviewed confirm:
+- No new CivicWatch.app coding sessions since July 10 started (only SEO/Search Console work from prior sessions, already captured in July 10 section below)
+- July 8 late-night feature build (Conflict Score, `/trades`, `/accountability`, committee alerts) still uncommitted — **requires `npm run build` verification + Mac-side git commit/push** (see command block in July 9 section, lines 96–100)
+- GitHub MCP connector confirmed unavailable in Cowork sessions (read-only file-picker only)
+
+**Next action:** Run `npm run build` on Mac to verify Stripe fix clean, then execute git commit/push block.
+
+### 2026-07-10 — SEO Setup, Search Console Analysis, GitHub Connector Notes
+
+**SEO & Search Console**
+- Created `sitemap.xml` and added to `public/` folder for automated Vercel deployment
+- Added `Sitemap:` line to `public/robots.txt` for search engine discovery
+- Submitted sitemap to Google Search Console and Bing Webmaster Tools
+- **Indexing analysis:**
+  - Core pages (Home, Dashboard, About, Privacy, Data Deletion, Refund Policy) properly indexed
+  - 2 pages intentionally excluded: Sign Up page and Terms page (noindex tag — expected)
+  - 1 page excluded: `/opengraph-image` (behind-the-scenes thumbnail gen, not a real page)
+  - 1 page with 401 error: `clerk.civicwatch.app` (Clerk's subdomain, not a site page — low priority)
+  - Some pages indexed without content due to client-side data loading (expected, not a bug)
+  - Recommendation: eventually ask developer to block Clerk subdomain from indexing for tidiness
+
+**GitHub Connector Troubleshooting**
+- User attempted to connect GitHub MCP connector for write access (commit/push tools)
+- Discovered "GitHub Integration" (file-picker) vs "GitHub Connector" (MCP tools) distinction
+- Instructions provided for proper connector setup (Settings → Connectors → Engineering → GitHub)
+- Note: Proper MCP access required for future code push automation
 
 ### 2026-07-09 — Automated Daily Update (completes the July 8 late-night build)
 - **Catch-up: the "Congressional trading platforms analysis" session (flagged as still-running in yesterday's update) continued past the 9:14 PM snapshot and finished around 10:14 PM on July 8. Four things weren't captured yesterday:**
