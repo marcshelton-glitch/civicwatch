@@ -50,3 +50,6 @@ next-env.d.ts
 stripe_backup_code.txt
 client_secret_*.json
 CivicWatch Downloaded Files/
+
+# Serena MCP project config/memories (local dev tool state)
+.serena/
