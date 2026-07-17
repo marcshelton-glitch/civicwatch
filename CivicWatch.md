@@ -4,7 +4,46 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 16, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 17, 2026
+
+> ### ⚠️ Read this before trusting any "uncommitted work" note below
+> **There are two clones of this repo.** `~/Projects/civicwatch` (this one, `~/civicwatch` symlinks here)
+> is canonical and tracks `origin/main`. The old iCloud copy at
+> `AI App Projects/CivicWatch` is a **stale, divergent clone** whose git root sits one level up,
+> at `AI App Projects/` — it reports ~277 changes, most of them phantom deletions of files that
+> merely moved.
+>
+> The July 8 build was written in the **iCloud** copy and never existed here, but the daily notes
+> described it as "uncommitted in `~/civicwatch`". Every recovery command (`cd ~/civicwatch && git add
+> app/api/conflict-score/...`) therefore failed on pathspec, and the work sat "blocked" for eight days
+> over a path bug. It was ported and committed on July 16–17 (`59fa0e6`).
+>
+> **Do not treat the iCloud copy as a working tree.** It predates June 14 hardening, June 20 features,
+> and the July 10 press fix in several files.
+
+---
+
+## ⚡ Daily Update — July 17, 2026
+
+### 🎉 The July 8 build is committed. The eight-day blocker was a path bug.
+
+- **Root cause:** the July 8 feature build never existed in this repo. It was written in the stale iCloud clone. The documented `git add app/api/conflict-score/...` could only ever fail. Nothing was lost, and no build was ever broken by the feature work.
+- **Ported and committed** (`59fa0e6`) after a file-by-file drift review. The two copies had drifted **in both directions**, so shared files were merged, not copied — a blind copy would have deleted web push, the leaderboard rate limiter, the X-bot cron, and the July 10 press fix.
+- **`npm run build` passes (exit 0)** — the first verified build since July 8.
+- **Committee alerts AND legislation alerts are now real** — legislation alerts turned out to be implemented (live Congress.gov sponsored-bill lookups), not scaffolded. Feature Status updated.
+- **Wallet Pro activation fixed** (`4629403`) — see below.
+
+### 🔴 Correction to the July 16 entry: Apple Pay was NOT charging customers
+The July 16 note claimed a live revenue leak. **That was wrong.** `PaymentRequestButton` is imported nowhere — `df3cf63` (a *logo* commit) removed it from `/pro` on **June 26**, four days before `7d1c8b9` deleted the `invoice.paid` handler on **June 30**. No customer was ever charged without receiving Pro. The bug is **latent**, not active.
+
+The real finding: **wallet checkout was silently deleted from your pricing page by a logo commit and went unnoticed for three weeks.** The activation gap is fixed (`4629403`), so re-mounting the button is now safe — but it is still **not mounted**, and that's a product decision.
+
+### Four build-breaking bugs found by actually running the build
+All the same class the July 8 work fixed for Stripe — module-scope initialisers that crash `next build` during "Collecting page data" — in routes that pass never touched:
+- `refund-list` — module-scope `createClient` (the only route in the codebase still doing this)
+- `push/send` — unguarded `webpush.setVapidDetails`
+- `subscribe-instant` — module-scope Stripe client, missed by the July 8 pass over its four siblings
+- `/trades` — `useSearchParams()` with no Suspense boundary; failed prerendering
 
 ---
 
@@ -68,17 +107,17 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | Compare any two representatives | Pro | ✅ Live |
 | Net Worth Alerts | Pro | ✅ Live (Resend, dedup via sent_alerts) |
 | @CivicWatchAlerts X bot | — | ✅ Live — code (verified July 16: `app/api/alerts/x-bot/route.js` committed, `*/15` cron in `vercel.json`). ⚠️ Requires `TWITTER_*` Vercel env vars + `x_bot_posts` migration — **runtime unverified** |
-| Apple Pay / Google Pay checkout | Pro | 🔴 **BROKEN** — UI live (`PaymentRequestButton.js`, `subscribe-instant`), but **payment never grants Pro**. Charges the card, shows success, no access. See Critical Open Items |
+| Apple Pay / Google Pay checkout | Pro | ⚠️ **Built, not mounted** — `PaymentRequestButton.js` is imported nowhere; `df3cf63` (logo commit) removed it from `/pro` on June 26. Unreachable, so **no customer was ever mischarged**. Activation gap fixed July 17 (`4629403`), so re-mounting is now safe — product decision |
 | Exit-intent modal | Free | ✅ Live (verified July 16: `components/ExitIntentModal.js` committed) |
 | AI gateway (spend tracking) | — | ✅ Live — code (verified July 16: `lib/ai-gateway.js` committed). ⚠️ `ai_usage` migration application **unverified** |
 | AI code review GitHub Action | — | ✅ Live (verified July 16: `.github/workflows/ai-review.yml` committed) |
-| Committee assignment alerts | Sign-In | 🔨 In Progress (real `sendCommitteeAlerts` implementation + `committee_snapshots` migration built July 8, build-fixed & SEO middleware fixed July 8, not yet committed/live) |
-| Sponsored legislation alerts | Sign-In | 🔲 Coming Soon (scaffold in place; needs rep_legislation table) |
+| Committee assignment alerts | Sign-In | ✅ Committed `59fa0e6` — ⚠️ needs `committee_snapshots` migration applied in Supabase + `CONGRESS_API_KEY` in Vercel, else no-ops |
+| Sponsored legislation alerts | Sign-In | ✅ Committed `59fa0e6` — **was implemented, not scaffolded.** Fetches sponsored bills live from Congress.gov per tracked member; no `rep_legislation` table needed. ⚠️ Requires `CONGRESS_API_KEY` |
 | Annual subscription tier | — | 🔲 Planned |
-| Trade Conflict Analysis | Pro | 🔨 In Progress (Conflict Score card + API built July 8, build-fixed & SEO middleware fixed July 8, not yet committed/live) |
-| Ticker search / trade browsing (`/trades`) | Free | 🔨 In Progress (built July 8, build-fixed & SEO middleware fixed July 8, not yet committed/live) |
-| Live stock-ownership accountability report (`/accountability`) | Free | 🔨 In Progress (built July 8, build-fixed & SEO middleware fixed July 8, not yet committed/live) |
-| Return-on-trade data | Free | 🔨 In Progress (built July 8, build-fixed & SEO middleware fixed July 8, not yet committed/live) |
+| Trade Conflict Analysis | Pro | ✅ Committed `59fa0e6` (Conflict Score card + `/api/conflict-score`) — build verified |
+| Ticker search / trade browsing (`/trades`) | Free | ✅ Committed `59fa0e6` — build verified (Suspense boundary added) |
+| Live stock-ownership accountability report (`/accountability`) | Free | ✅ Committed `59fa0e6` — build verified |
+| Return-on-trade data | Free | ✅ Committed `59fa0e6` (`lib/stockPrice.js`, wired into `/api/congress`) |
 | Peer Standing | Pro | 🔲 Coming Soon |
 | State & Local Lookup | Pro | 🔲 Coming Soon |
 
@@ -696,22 +735,19 @@ All emails on GoDaddy.com domain.
 
 ## Open Items
 
-### 🔴 Critical — losing money right now
+### ✅ Recently resolved (July 16–17)
 
-- [ ] **Apple Pay / Google Pay subscribers are charged but never get Pro.** Verified against the repo July 16, 2026.
+- [x] **July 8 build ported, verified and committed** (`59fa0e6`) — was never in this repo; see the two-clones warning at the top of this file.
+- [x] **`npm run build` passes** (exit 0) — first verified build since July 8.
+- [x] **Wallet Pro activation restored** (`4629403`) — `invoice.paid` handler, scoped to the subscribe-instant path.
 
-  **The path:** `PaymentRequestButton.js` → `POST /api/subscribe-instant` → `stripe.subscriptions.create({ payment_behavior: 'default_incomplete' })` → client calls `confirmCardPayment(clientSecret)` → redirect to `/dashboard?upgrade=success`.
+### 🔴 Critical — before the next deploy
 
-  **Why it fails:** `subscribe-instant` never writes Clerk metadata itself — it relies on a webhook. But:
-  - `checkout.session.completed` — the **only** place in the codebase that sets `isPro: true` (`app/api/webhooks/stripe/route.js:209`) — never fires, because this path creates a subscription directly and uses no Checkout Session.
-  - `invoice.paid` — **the handler was deleted** by commit `7d1c8b9` ("harden Stripe checkout flow"), which replaced `case 'invoice.paid'` with `case 'invoice.payment_failed'`. It was added by `3e97b36` (the Apple Pay commit) specifically to activate Pro on this path. Removing it almost certainly went unnoticed because the main Checkout flow was unaffected.
-  - `customer.subscription.updated` — only acts inside `if (!isActive)`. On `incomplete → active` it does nothing.
-
-  **Net effect:** card is charged, subscription is active in Stripe, user sees "upgrade=success", `isPro` stays `false`. Silent — no error is logged and the customer has to complain to surface it.
-
-  **Fix:** restore an `invoice.paid` handler, or grant Pro on the `isActive` branch of `customer.subscription.updated`. Then reconcile any wallet subscribers already charged — check Stripe for active subscriptions whose Clerk user has `isPro: false`.
-
-  **Also:** `app/api/subscribe-instant/route.js:5` still constructs the Stripe client at module load — the exact crash pattern the July 8 build fixed in four sibling routes. It was missed. Fold it into that commit.
+- [ ] **Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase.** Committee alerts are committed and will run on the daily cron; without this table `sendCommitteeAlerts` errors.
+- [ ] **Confirm `CONGRESS_API_KEY` is set in Vercel.** Both committee and legislation alerts return 0 without it — silently.
+- [ ] **Decide on Apple Pay / Google Pay.** `PaymentRequestButton` has been built-but-unmounted since June 26 (`df3cf63`, a logo commit, removed it from `/pro`). The activation bug that would have made it charge-without-Pro is fixed, so re-mounting is safe. Either mount it on `/pro` or delete the dead path (`components/PaymentRequestButton.js`, `app/api/subscribe-instant/route.js`).
+- [ ] **`package-lock.json` is out of sync with `package.json`.** A plain `npm install` rewrites ~800 lines (adds `sharp` to the root dependency list, bumps transitive versions). Deliberately excluded from `59fa0e6`. Worth resolving deliberately — a stale lockfile can break `npm ci` on Vercel.
+- [ ] **Review the daily-update task's summarisation step.** Its July 15 run cut `CivicWatch.md` from 817 to 252 lines, deleting nine reference sections and all June history, and deleted the reconciliation block's open questions without answering them. Restored in `aa322b1`.
 
 ### Immediate (before launch)
 - [x] Run `python3 ~/civicwatch/_push.py` on Mac to push the 10 P3 QA fixes from June 5 — ✅ Done June 8 (confirmed)
@@ -719,7 +755,7 @@ All emails on GoDaddy.com domain.
 - [ ] **NEW (July 4):** Add `NEXT_PUBLIC_META_PIXEL_ID` + `NEXT_PUBLIC_TIKTOK_PIXEL_ID` to Vercel env vars, then push pixel code (`components/MetaPixel.jsx`, `components/TiktokPixel.jsx`, updated `app/layout.js`)
 - [ ] **NEW (July 4):** Record 45-second founder POV video ("Why I Built This") — identified as highest-ROI marketing asset
 - [ ] **NEW (July 4):** Set up @CivicWatchAlerts X/Twitter bot account for automated trade alert posts
-- [ ] **NEW (July 8):** Finish + verify the in-progress feature build from the "Congressional trading platforms analysis" session (Conflict Score, `/trades` ticker search, `/accountability` live stock-ownership report, return-on-trade data, real committee alerts) — check `git status` in `~/civicwatch`, confirm build passes, apply `supabase/migrations/20260709000000_committee_snapshots.sql`, then commit + push
+- [x] **NEW (July 8):** Finish + verify the in-progress feature build (Conflict Score, `/trades`, `/accountability`, return-on-trade, committee alerts) — ✅ **Done July 16–17** (`59fa0e6`). It was never uncommitted here; it lived in the stale iCloud clone. Build verified, exit 0.
 - [x] ~~Review `CivicWatch_Competitive_Analysis_and_Roadmap.docx` (4-phase competitor roadmap)~~ — superseded July 8 (late night) by v2, see below
 - [ ] **NEW (July 9):** Confirm `npm run build` passes locally after the Stripe lazy-init fix (`pro-count`, `subscribe`, `billing-portal`, `webhooks/stripe`), then commit + push — this fix must land before the July 8 feature build can go live
 - [ ] **NEW (July 9) — high priority:** `/robots.txt` and `/sitemap.xml` were returning 401 to Googlebot due to a Clerk middleware gap (likely the main reason organic search has been near zero) — fixed locally in `proxy.ts`, not yet pushed
@@ -798,12 +834,12 @@ All five verified as **committed** (`git cat-file -e HEAD:<path>`). They were lo
 | Feature | Verified evidence | Status |
 |---|---|---|
 | @CivicWatchAlerts X bot | `app/api/alerts/x-bot/route.js` committed; `*/15` cron present in `vercel.json` | ✅ Code live — runtime unverified (needs `TWITTER_*` env vars) |
-| Apple Pay / Google Pay | `components/PaymentRequestButton.js` + `app/api/subscribe-instant/route.js` committed | 🔴 **Live but BROKEN — never grants Pro.** See Critical Open Items |
+| Apple Pay / Google Pay | `components/PaymentRequestButton.js` + `app/api/subscribe-instant/route.js` committed | ⚠️ Committed but **never mounted** — the old copy's "✅ Live (Payment Request Button on /pro)" was wrong by June 26. Activation gap fixed July 17 |
 | Exit-intent modal | `components/ExitIntentModal.js` committed | ✅ Live |
 | AI gateway | `lib/ai-gateway.js` committed | ✅ Code live — `ai_usage` migration unverified |
 | AI code review Action | `.github/workflows/ai-review.yml` committed | ✅ Live |
 
-**This is what the reconciliation block was for.** Verifying the Apple Pay row is what exposed the revenue bug — the question had been open since June and the July 15 daily run tried to delete it unanswered.
+**This is what the reconciliation block was for.** Verifying the Apple Pay row is what exposed the activation bug — a question open since June that the July 15 daily run tried to delete unanswered. It also corrected the old copy's claim: Apple Pay was never actually live on `/pro` past June 26.
 
 ### C. Env vars / migrations — **PARTIALLY RESOLVED: migration files exist, application unverified**
 
