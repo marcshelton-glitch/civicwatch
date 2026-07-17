@@ -138,6 +138,20 @@ async function sendCancellationEmail(email, firstName) {
 // Clerk user IDs are always in the format: user_XXXXXXXXXXXXXXXXXXXXXXXXXX
 const CLERK_USER_ID_RE = /^user_[a-zA-Z0-9]{24,}$/
 
+// Resolve the subscription id off an invoice, across Stripe API versions.
+// The flat `invoice.subscription` field was removed and relocated to
+// `invoice.parent.subscription_details.subscription` (it's absent from the
+// Invoice type in the pinned 2026-03-25.dahlia version). The shape a webhook
+// receives depends on the API version configured on the endpoint, not on this
+// SDK, so accept either rather than assuming.
+function invoiceSubscriptionId(invoice) {
+  const direct = invoice.subscription
+  if (direct) return typeof direct === 'string' ? direct : direct.id
+  const nested = invoice.parent?.subscription_details?.subscription
+  if (nested) return typeof nested === 'string' ? nested : nested.id
+  return null
+}
+
 // ── Stripe requires the raw body for signature verification ───────────────────
 export const runtime = 'nodejs'
 
@@ -300,6 +314,78 @@ export async function POST(request) {
         await sendPaymentFailedEmail(pausedEmail, pausedName)
 
         console.log('⏸ Pro revoked — subscription paused (payment exhausted)')
+        break
+      }
+
+      // ── Invoice paid → activate Pro for the wallet (Apple Pay / Google Pay) path ──
+      // /api/subscribe-instant creates the subscription directly, so no Checkout
+      // Session exists and checkout.session.completed never fires for it. That
+      // handler is the only other place Pro is granted, so without this one a
+      // wallet subscriber is charged and never receives access. An invoice.paid
+      // handler existed for exactly this reason (added in 3e97b36) and was
+      // dropped by 7d1c8b9 while hardening the Checkout flow.
+      //
+      // Scoped by subscription metadata: only subscribe-instant puts clerkUserId
+      // there. Checkout puts it on the Session instead, so Checkout-created
+      // subscriptions fall through untouched and can't double-fire against
+      // checkout.session.completed.
+      case 'invoice.paid': {
+        const invoice = event.data.object
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : null
+        const subscriptionId = invoiceSubscriptionId(invoice)
+        if (!customerId || !subscriptionId) break
+
+        let subscription
+        try {
+          subscription = await getStripe().subscriptions.retrieve(subscriptionId)
+        } catch (err) {
+          console.error('Webhook invoice.paid: subscription retrieve failed:', err.message)
+          break
+        }
+
+        const clerkUserId = subscription.metadata?.clerkUserId
+        if (!clerkUserId) break // Checkout-created — checkout.session.completed owns it
+        if (!CLERK_USER_ID_RE.test(clerkUserId)) {
+          console.error('Webhook invoice.paid: invalid clerkUserId in subscription metadata')
+          break
+        }
+        if (!['active', 'trialing'].includes(subscription.status)) break
+
+        let walletUser
+        try {
+          walletUser = await clerk.users.getUser(clerkUserId)
+        } catch {
+          console.error('Webhook invoice.paid: Clerk user not found for provided id')
+          break
+        }
+        if (!walletUser) break
+
+        const tier = ['voter_pro', 'civic_pack'].includes(subscription.metadata?.tier)
+          ? subscription.metadata.tier
+          : 'civic_pack'
+        const wasPro = walletUser.publicMetadata?.isPro === true
+
+        await clerk.users.updateUserMetadata(clerkUserId, {
+          publicMetadata: {
+            isPro: true,
+            tier,
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscription.id,
+            // Renewals also fire invoice.paid — don't reset the original date.
+            proActivatedAt: wasPro
+              ? walletUser.publicMetadata?.proActivatedAt || new Date().toISOString()
+              : new Date().toISOString(),
+          },
+        })
+
+        // Only on first activation — this fires on every renewal too.
+        if (!wasPro) {
+          await sendProWelcomeEmail(
+            walletUser.emailAddresses?.[0]?.emailAddress,
+            walletUser.firstName || ''
+          )
+          console.log(`✅ Pro activated via wallet checkout (${tier})`)
+        }
         break
       }
 
