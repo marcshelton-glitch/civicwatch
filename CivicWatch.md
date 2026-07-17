@@ -7,19 +7,23 @@
 **Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 17, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
-> **There are two clones of this repo.** `~/Projects/civicwatch` (this one, `~/civicwatch` symlinks here)
-> is canonical and tracks `origin/main`. The old iCloud copy at
-> `AI App Projects/CivicWatch` is a **stale, divergent clone** whose git root sits one level up,
-> at `AI App Projects/` — it reports ~277 changes, most of them phantom deletions of files that
-> merely moved.
+> **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
+> `origin/main` and is where all editing, committing and pushing happens.
 >
-> The July 8 build was written in the **iCloud** copy and never existed here, but the daily notes
-> described it as "uncommitted in `~/civicwatch`". Every recovery command (`cd ~/civicwatch && git add
-> app/api/conflict-score/...`) therefore failed on pathspec, and the work sat "blocked" for eight days
-> over a path bug. It was ported and committed on July 16–17 (`59fa0e6`).
+> **The iCloud copy at `AI App Projects/CivicWatch` is a backup / remote-access copy — not a working
+> tree.** Never edit or commit there. It is behind the working copy in several files (it predates the
+> June 14 hardening, the June 20 features, and the July 10 press fix), so it is **not a safe restore
+> source** without a file-by-file diff.
 >
-> **Do not treat the iCloud copy as a working tree.** It predates June 14 hardening, June 20 features,
-> and the July 10 press fix in several files.
+> **Why this warning exists:** the July 8 feature build was written *in the iCloud copy* and never
+> existed here, but the daily notes recorded it as "uncommitted in `~/civicwatch`". Every recovery
+> command (`cd ~/civicwatch && git add app/api/conflict-score/...`) therefore failed on pathspec, and
+> the work sat "blocked" for eight days over a path bug. Ported and committed July 16–17 (`59fa0e6`).
+>
+> **Known hazard:** a leftover `.git` still lives at `AI App Projects/` (127 MB, ~194 `claude/*`
+> branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
+> session treat the backup as a repo in the first place. Its content is not unique — those commits'
+> work reached this repo by another route. Retiring it would make the backup behave like a backup.
 
 ---
 
