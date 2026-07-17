@@ -37,6 +37,18 @@
 - **Committee alerts AND legislation alerts are now real** — legislation alerts turned out to be implemented (live Congress.gov sponsored-bill lookups), not scaffolded. Feature Status updated.
 - **Wallet Pro activation fixed** (`4629403`) — see below.
 
+### 🔑 Vercel env audit (July 17) — checked the live config, not the notes
+Read via `vercel env ls production` (names only; values stay encrypted). Four items settled:
+
+| Item | Verified state |
+|---|---|
+| `CONGRESS_API_KEY` | ✅ **Set** (Production/Preview/Development, 101d). Committee + legislation alerts need only the migration now. |
+| Meta + TikTok pixels | ✅ **Set** (24d). The "high priority" open item was already done — pixel code is live and gated in `app/layout.js:81-86`. |
+| Web push (`VAPID_*`, `INTERNAL_API_SECRET`) | 🔴 **All four absent.** Push was listed "✅ Live" but has never delivered anything — `sendPushToUser()` returns early. |
+| X bot (`X_BOT_ACCESS_TOKEN`, `..._SECRET`) | 🔴 **Missing 2 of 4 credentials.** Cron has been getting 503 every 15 min since June 20; the bot has never posted. The `TWITTER_*` names in older notes are obsolete. |
+
+Also noted: `STRIPE_VOTER_PRO_MONTHLY_PRICE_ID` is not set, so `subscribe-instant` would 500 on a `voter_pro` purchase. Not currently reachable (the wallet button sends no tier and defaults to `civic_pack`), but it blocks selling that tier.
+
 ### 🔴 Correction to the July 16 entry: Apple Pay was NOT charging customers
 The July 16 note claimed a live revenue leak. **That was wrong.** `PaymentRequestButton` is imported nowhere — `df3cf63` (a *logo* commit) removed it from `/pro` on **June 26**, four days before `7d1c8b9` deleted the `invoice.paid` handler on **June 30**. No customer was ever charged without receiving Pro. The bug is **latent**, not active.
 
@@ -103,14 +115,14 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | Member biography & district info | Free | ✅ Live |
 | Press page (/press) | Free | ✅ Live |
 | Track My Rep™ Alerts | Sign-In | ✅ Live |
-| Browser push notifications | Sign-In | ✅ Live (web-push via Service Worker) |
+| Browser push notifications | Sign-In | ⚠️ **Built, not configured** — verified July 17 against Vercel: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET` are **all absent from Production**. `sendPushToUser()` returns early, so no push has ever been delivered |
 | My Representatives dashboard | Sign-In | ✅ Live |
 | Community polling | Sign-In | ✅ Live |
 | Wealth & Net Worth Timeline | Pro | ✅ Live (server-side Pro gate: 401/403) |
 | AI Accountability Reports (Gemini) | Pro | ✅ Live (3 free previews/hr for signed-in) |
 | Compare any two representatives | Pro | ✅ Live |
 | Net Worth Alerts | Pro | ✅ Live (Resend, dedup via sent_alerts) |
-| @CivicWatchAlerts X bot | — | ✅ Live — code (verified July 16: `app/api/alerts/x-bot/route.js` committed, `*/15` cron in `vercel.json`). ⚠️ Requires `TWITTER_*` Vercel env vars + `x_bot_posts` migration — **runtime unverified** |
+| @CivicWatchAlerts X bot | — | 🔴 **Not running** — verified July 17 against Vercel. The route reads `X_BOT_CLIENT_ID`, `X_BOT_CLIENT_SECRET`, `X_BOT_ACCESS_TOKEN`, `X_BOT_ACCESS_TOKEN_SECRET`. Only the first two are set, so the guard at `x-bot/route.js:240` returns **503 'X bot credentials not configured'** on every `*/15` cron run — it has never posted. (The `TWITTER_*` names in older notes are obsolete; the code reads `X_BOT_*`.) |
 | Apple Pay / Google Pay checkout | Pro | ⚠️ **Built, not mounted** — `PaymentRequestButton.js` is imported nowhere; `df3cf63` (logo commit) removed it from `/pro` on June 26. Unreachable, so **no customer was ever mischarged**. Activation gap fixed July 17 (`4629403`), so re-mounting is now safe — product decision |
 | Exit-intent modal | Free | ✅ Live (verified July 16: `components/ExitIntentModal.js` committed) |
 | AI gateway (spend tracking) | — | ✅ Live — code (verified July 16: `lib/ai-gateway.js` committed). ⚠️ `ai_usage` migration application **unverified** |
@@ -748,7 +760,7 @@ All emails on GoDaddy.com domain.
 ### 🔴 Critical — before the next deploy
 
 - [ ] **Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase.** Committee alerts are committed and will run on the daily cron; without this table `sendCommitteeAlerts` errors.
-- [ ] **Confirm `CONGRESS_API_KEY` is set in Vercel.** Both committee and legislation alerts return 0 without it — silently.
+- [x] **`CONGRESS_API_KEY` confirmed set in Vercel** (July 17) — Production, Preview, Development. Committee + legislation alerts only need the migration now.
 - [ ] **Decide on Apple Pay / Google Pay.** `PaymentRequestButton` has been built-but-unmounted since June 26 (`df3cf63`, a logo commit, removed it from `/pro`). The activation bug that would have made it charge-without-Pro is fixed, so re-mounting is safe. Either mount it on `/pro` or delete the dead path (`components/PaymentRequestButton.js`, `app/api/subscribe-instant/route.js`).
 - [ ] **`package-lock.json` is out of sync with `package.json`.** A plain `npm install` rewrites ~800 lines (adds `sharp` to the root dependency list, bumps transitive versions). Deliberately excluded from `59fa0e6`. Worth resolving deliberately — a stale lockfile can break `npm ci` on Vercel.
 - [ ] **Review the daily-update task's summarisation step.** Its July 15 run cut `CivicWatch.md` from 817 to 252 lines, deleting nine reference sections and all June history, and deleted the reconciliation block's open questions without answering them. Restored in `aa322b1`.
@@ -756,7 +768,7 @@ All emails on GoDaddy.com domain.
 ### Immediate (before launch)
 - [x] Run `python3 ~/civicwatch/_push.py` on Mac to push the 10 P3 QA fixes from June 5 — ✅ Done June 8 (confirmed)
 - [x] Add CCPA/GDPR named sections to Privacy Policy — ✅ Done June 29
-- [ ] **NEW (July 4):** Add `NEXT_PUBLIC_META_PIXEL_ID` + `NEXT_PUBLIC_TIKTOK_PIXEL_ID` to Vercel env vars, then push pixel code (`components/MetaPixel.jsx`, `components/TiktokPixel.jsx`, updated `app/layout.js`)
+- [x] **NEW (July 4):** Meta + TikTok pixel env vars — ✅ **Done** (verified July 17: both set in Production/Preview). Pixel code is live, gated on them in `app/layout.js:81-86`.
 - [ ] **NEW (July 4):** Record 45-second founder POV video ("Why I Built This") — identified as highest-ROI marketing asset
 - [ ] **NEW (July 4):** Set up @CivicWatchAlerts X/Twitter bot account for automated trade alert posts
 - [x] **NEW (July 8):** Finish + verify the in-progress feature build (Conflict Score, `/trades`, `/accountability`, return-on-trade, committee alerts) — ✅ **Done July 16–17** (`59fa0e6`). It was never uncommitted here; it lived in the stale iCloud clone. Build verified, exit 0.
@@ -766,10 +778,10 @@ All emails on GoDaddy.com domain.
 - [ ] **NEW (July 9):** Build `/api/og-image` — referenced in page metadata but doesn't exist; social share preview images are currently broken
 - [ ] **NEW (July 9):** Review `CivicWatch_Competitive_Analysis_and_Roadmap_v2.docx` (supersedes the July 8 v1) — Phase 5–8 roadmap, next priority is distribution (API, backlinks, content) over new features
 - [ ] **NEW (July 9):** GitHub push/commit connector still not available in Cowork sessions — confirmed after troubleshooting with Marc; all code changes continue to require a manual Mac-side `git commit` + `_push.py` run
-- [ ] Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`
+- [ ] **Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`** — verified July 17: all four absent from Production. Until set, browser push silently delivers nothing despite being built and shipped.
 - [ ] Apply Supabase migration for `push_subscriptions` table (project: `hgtofwsvbblumcgbqzat`)
 - [ ] Register Clerk webhook: Clerk Dashboard → `https://civicwatch.app/api/webhooks/clerk` → event: `user.created` → add `CLERK_WEBHOOK_SECRET` to Vercel
-- [ ] Verify `CONGRESS_API_KEY` is set in Vercel (affects leaderboard party badges)
+- [x] Verify `CONGRESS_API_KEY` is set in Vercel — ✅ **Confirmed July 17** (Production, Preview, Development)
 - [ ] Fix "Transparency is the foundation of democracy" duplication on About page h1 vs Mission section
 - [ ] Add Refund Policy link to homepage marketing footer (currently only in dashboard footer)
 - [ ] Add "Do Not Sell My Personal Information" link to all footers
