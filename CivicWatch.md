@@ -4,7 +4,23 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 10, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 16, 2026
+
+---
+
+## ⚡ Daily Update — July 15–16, 2026
+
+### Recent Work
+- **📝 Documentation & SEO verification review** — Confirmed prior work on the /press page fix (commit `f7f6541`) and the sitemap / Search Console setup (July 10) are complete and live. No new coding changes committed July 15.
+- **🔍 Competitive research follow-up** — Additional analysis of congressional trading platforms (House Stock Watcher, TraderCongress, Kapitol.ai, NANC/KRUZ ETFs) documented in competitive roadmap v2 (from July 13).
+- **✅ June reconciliation closed (July 16)** — The open A/B/C reconciliation questions were verified against the repo and resolved. See *Reconciliation — Resolved* at the end of this file. **This surfaced a live revenue bug — see Critical Open Items.**
+
+### Status Summary
+- **✅ /press page** — Fixed, deployed (commit `f7f6541`), live at civicwatch.app/press
+- **✅ SEO setup** — Sitemap live, robots.txt fixed (Clerk middleware 401 bug resolved), Search Console indexing verified
+- **✅ June features confirmed live** — X bot, Apple Pay/Google Pay, exit-intent modal, AI gateway, AI code-review action are all committed and deployed (statuses now reflected in Feature Status)
+- **🔴 Apple Pay / Google Pay does not grant Pro** — NEW, verified July 16. Customers are charged and receive nothing. See Critical Open Items.
+- **⚠️ July 8 feature build** — Still uncommitted and blocking next deployment
 
 ---
 
@@ -51,6 +67,11 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | AI Accountability Reports (Gemini) | Pro | ✅ Live (3 free previews/hr for signed-in) |
 | Compare any two representatives | Pro | ✅ Live |
 | Net Worth Alerts | Pro | ✅ Live (Resend, dedup via sent_alerts) |
+| @CivicWatchAlerts X bot | — | ✅ Live — code (verified July 16: `app/api/alerts/x-bot/route.js` committed, `*/15` cron in `vercel.json`). ⚠️ Requires `TWITTER_*` Vercel env vars + `x_bot_posts` migration — **runtime unverified** |
+| Apple Pay / Google Pay checkout | Pro | 🔴 **BROKEN** — UI live (`PaymentRequestButton.js`, `subscribe-instant`), but **payment never grants Pro**. Charges the card, shows success, no access. See Critical Open Items |
+| Exit-intent modal | Free | ✅ Live (verified July 16: `components/ExitIntentModal.js` committed) |
+| AI gateway (spend tracking) | — | ✅ Live — code (verified July 16: `lib/ai-gateway.js` committed). ⚠️ `ai_usage` migration application **unverified** |
+| AI code review GitHub Action | — | ✅ Live (verified July 16: `.github/workflows/ai-review.yml` committed) |
 | Committee assignment alerts | Sign-In | 🔨 In Progress (real `sendCommitteeAlerts` implementation + `committee_snapshots` migration built July 8, build-fixed & SEO middleware fixed July 8, not yet committed/live) |
 | Sponsored legislation alerts | Sign-In | 🔲 Coming Soon (scaffold in place; needs rep_legislation table) |
 | Annual subscription tier | — | 🔲 Planned |
@@ -64,6 +85,42 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 ---
 
 ## ⚡ Recent Work
+
+### 2026-07-16 — June Reconciliation Resolved + Live Stripe Bug Found
+
+- **Closed the June reconciliation block** by verifying each open question against the repo rather than deferring or deleting it. All five disputed features (X bot, Apple Pay, exit-intent modal, AI gateway, AI code-review action) are **committed** — the old GitHub copy was right and the newer file had simply lost the rows. Feature Status updated accordingly.
+- **🔴 Found a live revenue bug while verifying Apple Pay.** Commit `7d1c8b9` ("harden Stripe checkout flow") removed the `case 'invoice.paid'` handler from `app/api/webhooks/stripe/route.js` — the only hook that granted Pro on the wallet path. Full detail in Critical Open Items. Not fixed; needs a decision.
+- **Repo hygiene:** cleared three stale git locks (`.git/index.lock`, `.git/HEAD.lock`, `.git/objects/maintenance.lock`) left behind on July 10 at 02:30 when the `_push.py` daily run crashed mid-commit. They had been silently blocking every git write since. Committed `.gitignore` for `.serena/` (`53f1a42`).
+- **⚠️ Note on the daily update task:** the July 15 automated run rewrote `CivicWatch.md` from 817 lines to 252, dropping the entire reference half of the document (Technology Stack, Data Sources, Site Routes, Business Model, Env Vars, Contacts, Key Commits, Complete Project History, Pre-Launch Audit) plus all June history — and deleted the reconciliation block's open questions without answering them. Restored from git and re-merged. **The task's summarization step needs review before the next run.**
+
+---
+
+### 2026-07-14 — SEO Verification & Build Fixes Complete
+
+**SEO verification (continuation from July 10 sitemap work)**
+- Sitemap.xml verified live at production (`https://www.civicwatch.app/sitemap.xml`)
+- Google Search Console coverage analysis completed — **no action items**
+  - Core pages (Home, Dashboard, About, Privacy, Data Deletion, Refund Policy) properly indexed ✅
+  - 2 pages intentionally excluded by noindex (Sign Up, Terms) — expected behavior
+  - 1 page with 401: `/opengraph-image` (behind-the-scenes thumbnail generator, not user-facing)
+  - 1 page indexed without content: `clerk.civicwatch.app` (Clerk's own subdomain, optional cleanup only)
+  - Some pages show "indexed without content" due to client-side data loading — normal for this architecture
+- **Status:** Search Console health verified ✅; sitemap live and discoverable ✅
+
+**Competitive roadmap v2 delivered** (supersedes July 8 v1)
+- Expanded competitor set: House Stock Watcher, TraderCongress, Kapitol.ai, NANC/KRUZ congressional-trading ETF category
+- Updated feature matrix: reflects 5 gaps closed + 2 net-new differentiators from July 8 build
+- Phase 5–8 roadmap: next priority flagged as **distribution** (API, backlinks, content) rather than more features
+- **File:** `CivicWatch_Competitive_Analysis_and_Roadmap_v2.docx` in project folder
+
+---
+
+### 2026-07-13 — Documentation Update & Build Verification
+
+- **Competitive roadmap v2** — supersedes v1 from July 8, now includes SEO findings and competitive reanalysis
+- **Build-related captures** — confirmed Stripe lazy-client factory pattern works in all four routes; SEO middleware 401 fix verified
+
+---
 
 ### ⚠️ RATE LIMIT SNAPSHOT — July 10, 2026, ~3:15 PM PDT
 
@@ -639,6 +696,23 @@ All emails on GoDaddy.com domain.
 
 ## Open Items
 
+### 🔴 Critical — losing money right now
+
+- [ ] **Apple Pay / Google Pay subscribers are charged but never get Pro.** Verified against the repo July 16, 2026.
+
+  **The path:** `PaymentRequestButton.js` → `POST /api/subscribe-instant` → `stripe.subscriptions.create({ payment_behavior: 'default_incomplete' })` → client calls `confirmCardPayment(clientSecret)` → redirect to `/dashboard?upgrade=success`.
+
+  **Why it fails:** `subscribe-instant` never writes Clerk metadata itself — it relies on a webhook. But:
+  - `checkout.session.completed` — the **only** place in the codebase that sets `isPro: true` (`app/api/webhooks/stripe/route.js:209`) — never fires, because this path creates a subscription directly and uses no Checkout Session.
+  - `invoice.paid` — **the handler was deleted** by commit `7d1c8b9` ("harden Stripe checkout flow"), which replaced `case 'invoice.paid'` with `case 'invoice.payment_failed'`. It was added by `3e97b36` (the Apple Pay commit) specifically to activate Pro on this path. Removing it almost certainly went unnoticed because the main Checkout flow was unaffected.
+  - `customer.subscription.updated` — only acts inside `if (!isActive)`. On `incomplete → active` it does nothing.
+
+  **Net effect:** card is charged, subscription is active in Stripe, user sees "upgrade=success", `isPro` stays `false`. Silent — no error is logged and the customer has to complain to surface it.
+
+  **Fix:** restore an `invoice.paid` handler, or grant Pro on the `isActive` branch of `customer.subscription.updated`. Then reconcile any wallet subscribers already charged — check Stripe for active subscriptions whose Clerk user has `isPro: false`.
+
+  **Also:** `app/api/subscribe-instant/route.js:5` still constructs the Stripe client at module load — the exact crash pattern the July 8 build fixed in four sibling routes. It was missed. Fold it into that commit.
+
 ### Immediate (before launch)
 - [x] Run `python3 ~/civicwatch/_push.py` on Mac to push the 10 P3 QA fixes from June 5 — ✅ Done June 8 (confirmed)
 - [x] Add CCPA/GDPR named sections to Privacy Policy — ✅ Done June 29
@@ -710,16 +784,36 @@ All emails on GoDaddy.com domain.
 
 ---
 
-## ⚠️ Reconciliation notes — recovered from the June 24 GitHub copy (verify & fold in)
+## ✅ Reconciliation — RESOLVED July 16, 2026
 
-> **Why this exists:** During the July 2026 repo cleanup we found the GitHub-committed
-> `CivicWatch.md` had frozen around **June 24** (the old `_push.py` hack wasn't reliably
-> reaching GitHub), while the iCloud copy kept advancing to **July 9**. This file is now the
-> July 9 version (the more current/complete one). The items below existed **only** in the
-> older GitHub copy and were dropped or changed as the file advanced — **confirm each, then
-> fold in or delete this block.**
+> **Why this existed:** During the July 2026 repo cleanup the GitHub-committed `CivicWatch.md`
+> was found frozen around **June 24** (the old `_push.py` hack wasn't reliably reaching GitHub),
+> while the iCloud copy kept advancing to **July 9**. Items below existed **only** in the older
+> GitHub copy. Each was verified against the repo on **July 16, 2026** and resolved.
 
-### A. Older "Recent Work" entries not present in the current file (pure history — safe to keep)
+### B. Feature rows "✅ Live" in the old copy but missing from the newer one — **RESOLVED: the old copy was right**
+
+All five verified as **committed** (`git cat-file -e HEAD:<path>`). They were lost from the newer file's table, not un-shipped. Feature Status now reflects reality.
+
+| Feature | Verified evidence | Status |
+|---|---|---|
+| @CivicWatchAlerts X bot | `app/api/alerts/x-bot/route.js` committed; `*/15` cron present in `vercel.json` | ✅ Code live — runtime unverified (needs `TWITTER_*` env vars) |
+| Apple Pay / Google Pay | `components/PaymentRequestButton.js` + `app/api/subscribe-instant/route.js` committed | 🔴 **Live but BROKEN — never grants Pro.** See Critical Open Items |
+| Exit-intent modal | `components/ExitIntentModal.js` committed | ✅ Live |
+| AI gateway | `lib/ai-gateway.js` committed | ✅ Code live — `ai_usage` migration unverified |
+| AI code review Action | `.github/workflows/ai-review.yml` committed | ✅ Live |
+
+**This is what the reconciliation block was for.** Verifying the Apple Pay row is what exposed the revenue bug — the question had been open since June and the July 15 daily run tried to delete it unanswered.
+
+### C. Env vars / migrations — **PARTIALLY RESOLVED: migration files exist, application unverified**
+
+Both migration *files* are committed. Whether they've been **applied in Supabase** cannot be checked from the repo and remains open:
+
+- [ ] Verify `x_bot_posts` applied in Supabase (`supabase/migrations/20260620000001_create_x_bot_posts.sql` — file ✅ committed)
+- [ ] Verify `ai_usage` applied in Supabase (`supabase/migrations/20260615000003_create_ai_usage.sql` — file ✅ committed)
+- [ ] Verify X bot env vars in Vercel: `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` — the `*/15` cron is live, so **if these are unset the bot has been failing silently every 15 minutes since June 20**
+
+### A. June history recovered from the June 24 GitHub copy — **RESOLVED: folded in below as permanent history**
 ### 2026-06-24 — Automated Daily Update
 - No new CivicWatch coding sessions today (June 24).
 - All previous work through June 21 remains current (see below).
@@ -803,15 +897,3 @@ All emails on GoDaddy.com domain.
 - **Reminder:** `bioguide_id` SQL backfill for 97 OCR `fd_net_worth` rows still needed, and `congress/route.js` caching layer is incomplete (15 return statements done, not complete).
 - **Screenshot blocker still open:** "Civicwatch.app project continuation" session stalled waiting on Marc's 11 screenshots (came through at 31px wide / unreadable). Re-share at full resolution to resume.
 - **⚠️ GitHub push still Mac-side only** — iCloud copy and `_push.py` require running on the Mac; this automated task can write CivicWatch.md via Cowork folder connection but cannot push to GitHub from the Linux sandbox.
-
-### B. Feature-status rows that were "✅ Live" in the old copy but absent from the current one — CONFIRM STATUS
-- **@CivicWatchAlerts X bot** — old copy: ✅ Live (15-min cron; posts new trades via Twitter API v2 OAuth). Current file lists it as a July-4 to-do — which is right?
-- **Apple Pay / Google Pay checkout (Pro)** — old copy: ✅ Live (Payment Request Button on /pro; 3DS via subscribe-instant API)
-- **Exit-intent modal (Free)** — old copy: ✅ Live (mouseleave desktop / 60s idle mobile)
-- **AI gateway (spend tracking)** — old copy: ✅ Live (lib/ai-gateway.js; ai_usage Supabase table)
-- **AI code review GitHub Action** — old copy: ✅ Live (.github/workflows/ai-review.yml; Claude Sonnet 4.6)
-
-### C. Env vars / migrations in the old copy but not the current one — CONFIRM STILL NEEDED
-- Env vars (X bot): `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`
-- Supabase migration: `x_bot_posts` dedup table (`supabase/migrations/20260620000001_create_x_bot_posts.sql`)
-- Supabase migration: `ai_usage` table (`supabase/migrations/20260615000003_create_ai_usage.sql`)
