@@ -3,7 +3,15 @@ import Stripe from 'stripe'
 
 export const revalidate = 3600
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// Lazy — constructing Stripe at module scope makes `next build` fail during
+// "Collecting page data" if STRIPE_SECRET_KEY isn't present in the build
+// environment (build-time env vars aren't always the same as runtime env
+// vars on Vercel). Matches the getSupabase() factory pattern used elsewhere.
+let _stripe = null
+function getStripe() {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  return _stripe
+}
 
 function getMonthStart() {
   const now = new Date()
@@ -12,6 +20,7 @@ function getMonthStart() {
 
 export async function GET() {
   try {
+    const stripe = getStripe()
     const monthStart = getMonthStart()
     let count = 0
     let hasMore = true

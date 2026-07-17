@@ -45,6 +45,43 @@ async function sendPushToUser(supabase, userId, payload) {
   ))
 }
 
+const CONGRESS_BASE = 'https://api.congress.gov/v3'
+const CONGRESS_KEY = process.env.CONGRESS_API_KEY
+
+// Bounds how many distinct tracked members get a live Congress.gov committee
+// lookup per cron run — keeps the function well inside Vercel's execution
+// limit even if the tracked-rep list grows large. Members beyond the cap are
+// simply picked up on the next day's run.
+const MAX_COMMITTEE_LOOKUPS_PER_RUN = 150
+
+// Returns the set of committee names a member currently sits on, taken from
+// the highest-numbered congress present in their terms (i.e. "current").
+async function fetchCurrentCommittees(bioguideId) {
+  if (!CONGRESS_KEY || !bioguideId) return null
+  try {
+    const res = await fetch(
+      `${CONGRESS_BASE}/member/${bioguideId}?format=json&api_key=${CONGRESS_KEY}`,
+      { next: { revalidate: 21600 } }
+    )
+    if (!res.ok) return null
+    const json = await res.json()
+    const terms = json.member?.terms || []
+    if (terms.length === 0) return new Set()
+    const maxCongress = Math.max(...terms.map(t => t.congress || 0))
+    const names = new Set()
+    for (const term of terms) {
+      if (term.congress !== maxCongress) continue
+      for (const c of (term.memberOf || [])) {
+        if (c.name) names.add(c.name)
+      }
+    }
+    return names
+  } catch (err) {
+    console.error(`send-alerts: committee lookup failed for ${bioguideId}:`, err.message)
+    return null
+  }
+}
+
 // ── Cron rate limiter — prevents more than 5 manual triggers per hour ─────────
 const cronRateMap = new Map()
 function isCronRateLimited() {
@@ -363,24 +400,282 @@ async function sendNetWorthAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
 }
 
 // ── Committee assignment alerts ───────────────────────────────────────────────
-// TODO: No committee_assignments table exists yet. Wire this up once a table with
-// columns (bioguide_id, committee_name, committee_code, assigned_at) is created.
-// Query would be:
-//   SELECT bioguide_id, committee_name, assigned_at FROM committee_assignments
-//   WHERE assigned_at > cutoff
+// Diffs each tracked member's live Congress.gov committee roster against the
+// committee_snapshots table (see supabase/migrations/20260709000000_committee_snapshots.sql).
+// A member's first-ever snapshot seeds their current committees as "known"
+// without alerting — otherwise every user would get a flood of "assigned to
+// committee" emails the first time this ran, for committees the member may
+// have sat on for years.
 async function sendCommitteeAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
-  return 0
+  if (!CONGRESS_KEY) return 0
+
+  // Distinct bioguide_ids across all tracked reps, bounded per run.
+  const byBioguide = {}
+  for (const [userId, reps] of Object.entries(byUser)) {
+    for (const rep of reps) {
+      if (!rep.bioguide_id) continue
+      if (!byBioguide[rep.bioguide_id]) byBioguide[rep.bioguide_id] = { repName: rep.rep_name || rep.last_name, users: [] }
+      byBioguide[rep.bioguide_id].users.push(userId)
+    }
+  }
+  const bioguideIds = Object.keys(byBioguide).slice(0, MAX_COMMITTEE_LOOKUPS_PER_RUN)
+  if (bioguideIds.length === 0) return 0
+
+  const { data: existingSnapshots } = await supabase
+    .from('committee_snapshots')
+    .select('bioguide_id, committee_name')
+    .in('bioguide_id', bioguideIds)
+
+  const knownByBioguide = {}
+  for (const row of existingSnapshots || []) {
+    if (!knownByBioguide[row.bioguide_id]) knownByBioguide[row.bioguide_id] = new Set()
+    knownByBioguide[row.bioguide_id].add(row.committee_name)
+  }
+
+  // newAssignmentsByUser[userId] = [{ repName, bioguideId, committeeName }]
+  const newAssignmentsByUser = {}
+  const snapshotInserts = []
+
+  await Promise.all(bioguideIds.map(async (bioguideId) => {
+    const current = await fetchCurrentCommittees(bioguideId)
+    if (!current) return
+
+    const known = knownByBioguide[bioguideId]
+    const isFirstSnapshot = !known || known.size === 0
+
+    for (const committeeName of current) {
+      const alreadyKnown = known?.has(committeeName)
+      if (!alreadyKnown) {
+        snapshotInserts.push({ bioguide_id: bioguideId, committee_name: committeeName })
+      }
+      if (!isFirstSnapshot && !alreadyKnown) {
+        for (const userId of byBioguide[bioguideId].users) {
+          const userPrefs = prefsMap[userId]
+          if (userPrefs && userPrefs.alert_committees === false) continue
+          if (!newAssignmentsByUser[userId]) newAssignmentsByUser[userId] = []
+          newAssignmentsByUser[userId].push({
+            repName: byBioguide[bioguideId].repName,
+            bioguideId,
+            committeeName,
+          })
+        }
+      }
+    }
+  }))
+
+  if (snapshotInserts.length > 0) {
+    await supabase
+      .from('committee_snapshots')
+      .upsert(snapshotInserts, { onConflict: 'bioguide_id,committee_name', ignoreDuplicates: true })
+  }
+
+  let sentCount = 0
+  for (const [userId, assignments] of Object.entries(newAssignmentsByUser)) {
+    if (assignments.length === 0) continue
+
+    const filingIds = assignments.map(a => `committee_${a.bioguideId}_${a.committeeName}`)
+    const { data: alreadySent } = await supabase
+      .from('sent_alerts')
+      .select('filing_id')
+      .eq('user_id', userId)
+      .in('filing_id', filingIds)
+    const sentIds = new Set((alreadySent || []).map(r => r.filing_id))
+    const toSend = assignments.filter((a, i) => !sentIds.has(filingIds[i]))
+    if (toSend.length === 0) continue
+
+    let email, firstName
+    try {
+      const clerkUser = await clerk.users.getUser(userId)
+      email = clerkUser.emailAddresses?.[0]?.emailAddress
+      firstName = clerkUser.firstName || ''
+    } catch (err) {
+      console.error(`send-alerts: Clerk lookup failed for ${userId}:`, err.message)
+      continue
+    }
+    if (!email) continue
+
+    const emailSent = await sendCommitteeAlertEmail(email, firstName, toSend)
+    if (!emailSent) continue
+
+    sentCount++
+    await supabase
+      .from('sent_alerts')
+      .upsert(
+        toSend.map(a => ({ user_id: userId, bioguide_id: a.bioguideId, filing_id: `committee_${a.bioguideId}_${a.committeeName}` })),
+        { onConflict: 'user_id,filing_id', ignoreDuplicates: true }
+      )
+  }
+
+  return sentCount
+}
+
+// ── Email: committee assignment ───────────────────────────────────────────────
+async function sendCommitteeAlertEmail(email, firstName, assignments) {
+  if (!resend) return false
+
+  const rows = assignments.map(a => `
+    <div style="margin-bottom:12px;padding:14px 16px;background:rgba(27,42,107,0.4);border:1px solid rgba(212,175,55,0.2);border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;font-weight:700;color:#F8F9FF;">${a.repName}</span>
+        <a href="https://www.civicwatch.app?rep=${a.bioguideId}" style="font-size:11px;color:#D4AF37;text-decoration:none;">View profile →</a>
+      </div>
+      <div style="font-size:13px;color:#CDD2E0;margin-top:6px;">New committee assignment: <strong style="color:#F8F9FF;">${a.committeeName}</strong></div>
+    </div>`).join('')
+
+  const greeting = firstName ? `, ${firstName}` : ''
+  const repCount = new Set(assignments.map(a => a.bioguideId)).size
+
+  try {
+    await resend.emails.send({
+      from: 'CivicWatch <noreply@civicwatch.app>',
+      to: email,
+      subject: `🏛️ New committee assignment${assignments.length > 1 ? 's' : ''} for your tracked representatives`,
+      html: emailWrapper(`
+        <div style="margin-bottom:24px;">
+          <h2 style="color:#D4AF37;font-size:18px;margin:0 0 6px;">Committee Updates${greeting}</h2>
+          <p style="color:#CDD2E0;font-size:13px;line-height:1.7;margin:0;">
+            ${repCount === 1 ? '1 representative' : `${repCount} representatives`} you track joined a new committee — new jurisdiction can mean new trade conflict exposure worth watching.
+          </p>
+        </div>
+        ${rows}
+      `),
+    })
+    return true
+  } catch (err) {
+    console.error('send-alerts: Resend committee error:', err.message)
+    return false
+  }
 }
 
 // ── Legislation alerts ────────────────────────────────────────────────────────
-// TODO: No rep-linked bill table exists. The legiscan_cache table is keyed by
-// request parameters, not by sponsoring rep, so we can't efficiently query it
-// by bioguide_id. Wire this up once a rep_legislation table is created with
-// columns (bioguide_id, bill_id, bill_title, sponsor_type, introduced_at).
-// Query would be:
-//   SELECT * FROM rep_legislation WHERE introduced_at > cutoff
+// No ingestion pipeline needed — sponsored bills are fetched live from
+// Congress.gov per tracked member (same endpoint the rep-detail "sponsored"
+// tab already uses) and deduped against sent_alerts by bill number, exactly
+// like the trade/net-worth alert legs above. New = introducedDate > cutoff.
 async function sendLegislationAlerts(supabase, clerk, byUser, prefsMap, cutoff) {
-  return 0
+  if (!CONGRESS_KEY) return 0
+
+  const byBioguide = {}
+  for (const [userId, reps] of Object.entries(byUser)) {
+    for (const rep of reps) {
+      if (!rep.bioguide_id) continue
+      if (!byBioguide[rep.bioguide_id]) byBioguide[rep.bioguide_id] = { repName: rep.rep_name || rep.last_name, users: [] }
+      byBioguide[rep.bioguide_id].users.push(userId)
+    }
+  }
+  const bioguideIds = Object.keys(byBioguide).slice(0, MAX_COMMITTEE_LOOKUPS_PER_RUN)
+  if (bioguideIds.length === 0) return 0
+
+  const cutoffDate = cutoff.slice(0, 10) // introducedDate is a plain YYYY-MM-DD
+
+  const newBillsByUser = {}
+  await Promise.all(bioguideIds.map(async (bioguideId) => {
+    try {
+      const res = await fetch(
+        `${CONGRESS_BASE}/member/${bioguideId}/sponsored-legislation?limit=10&format=json&api_key=${CONGRESS_KEY}`,
+        { next: { revalidate: 3600 } }
+      )
+      if (!res.ok) return
+      const json = await res.json()
+      const bills = (json.sponsoredLegislation || [])
+        .filter(b => b.title && b.type && b.number && b.introducedDate >= cutoffDate)
+        .map(b => ({
+          number: `${b.type}${b.number}`,
+          title: b.title,
+          congress: b.congress,
+          url: b.url,
+          introducedDate: b.introducedDate,
+        }))
+
+      for (const bill of bills) {
+        for (const userId of byBioguide[bioguideId].users) {
+          const userPrefs = prefsMap[userId]
+          if (userPrefs && userPrefs.alert_legislation === false) continue
+          if (!newBillsByUser[userId]) newBillsByUser[userId] = []
+          newBillsByUser[userId].push({ repName: byBioguide[bioguideId].repName, bioguideId, ...bill })
+        }
+      }
+    } catch (err) {
+      console.error(`send-alerts: sponsored-legislation lookup failed for ${bioguideId}:`, err.message)
+    }
+  }))
+
+  let sentCount = 0
+  for (const [userId, bills] of Object.entries(newBillsByUser)) {
+    if (bills.length === 0) continue
+
+    const filingIds = bills.map(b => `bill_${b.bioguideId}_${b.number}`)
+    const { data: alreadySent } = await supabase
+      .from('sent_alerts')
+      .select('filing_id')
+      .eq('user_id', userId)
+      .in('filing_id', filingIds)
+    const sentIds = new Set((alreadySent || []).map(r => r.filing_id))
+    const toSend = bills.filter((b, i) => !sentIds.has(filingIds[i]))
+    if (toSend.length === 0) continue
+
+    let email, firstName
+    try {
+      const clerkUser = await clerk.users.getUser(userId)
+      email = clerkUser.emailAddresses?.[0]?.emailAddress
+      firstName = clerkUser.firstName || ''
+    } catch (err) {
+      console.error(`send-alerts: Clerk lookup failed for ${userId}:`, err.message)
+      continue
+    }
+    if (!email) continue
+
+    const emailSent = await sendLegislationAlertEmail(email, firstName, toSend)
+    if (!emailSent) continue
+
+    sentCount++
+    await supabase
+      .from('sent_alerts')
+      .upsert(
+        toSend.map(b => ({ user_id: userId, bioguide_id: b.bioguideId, filing_id: `bill_${b.bioguideId}_${b.number}` })),
+        { onConflict: 'user_id,filing_id', ignoreDuplicates: true }
+      )
+  }
+
+  return sentCount
+}
+
+// ── Email: new sponsored legislation ────────────────────────────────────────
+async function sendLegislationAlertEmail(email, firstName, bills) {
+  if (!resend) return false
+
+  const rows = bills.map(b => `
+    <div style="margin-bottom:12px;padding:14px 16px;background:rgba(27,42,107,0.4);border:1px solid rgba(212,175,55,0.2);border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:700;color:#F8F9FF;">${b.repName}</span>
+        <a href="https://www.civicwatch.app?rep=${b.bioguideId}" style="font-size:11px;color:#D4AF37;text-decoration:none;">View profile →</a>
+      </div>
+      <div style="font-size:13px;color:#CDD2E0;">Introduced <strong style="color:#F8F9FF;">${b.number}</strong>: ${b.title}</div>
+    </div>`).join('')
+
+  const greeting = firstName ? `, ${firstName}` : ''
+  const repCount = new Set(bills.map(b => b.bioguideId)).size
+
+  try {
+    await resend.emails.send({
+      from: 'CivicWatch <noreply@civicwatch.app>',
+      to: email,
+      subject: `🏛️ New bill${bills.length > 1 ? 's' : ''} sponsored by your tracked representatives`,
+      html: emailWrapper(`
+        <div style="margin-bottom:24px;">
+          <h2 style="color:#D4AF37;font-size:18px;margin:0 0 6px;">New Legislation${greeting}</h2>
+          <p style="color:#CDD2E0;font-size:13px;line-height:1.7;margin:0;">
+            ${repCount === 1 ? '1 representative' : `${repCount} representatives`} you track introduced new legislation.
+          </p>
+        </div>
+        ${rows}
+      `),
+    })
+    return true
+  } catch (err) {
+    console.error('send-alerts: Resend legislation error:', err.message)
+    return false
+  }
 }
 
 // ── Email: trade disclosures ──────────────────────────────────────────────────

@@ -3,11 +3,23 @@ import Stripe from 'stripe'
 import { clerkClient } from '@clerk/nextjs/server'
 import { Resend } from 'resend'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// Lazy — constructing these at module scope makes `next build` fail during
+// "Collecting page data" if the secret env vars aren't present in the build
+// environment. Matches the getSupabase() factory pattern used elsewhere.
+let _stripe = null
+function getStripe() {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  return _stripe
+}
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+let _resend = null
+function getResend() {
+  if (!_resend && process.env.RESEND_API_KEY) _resend = new Resend(process.env.RESEND_API_KEY)
+  return _resend
+}
 
 async function sendProWelcomeEmail(email, firstName) {
+  const resend = getResend()
   if (!resend || !email) return
   try {
     await resend.emails.send({
@@ -50,6 +62,7 @@ async function sendProWelcomeEmail(email, firstName) {
 }
 
 async function sendPaymentFailedEmail(email, firstName) {
+  const resend = getResend()
   if (!resend || !email) return
   try {
     await resend.emails.send({
@@ -86,6 +99,7 @@ async function sendPaymentFailedEmail(email, firstName) {
 }
 
 async function sendCancellationEmail(email, firstName) {
+  const resend = getResend()
   if (!resend || !email) return
   try {
     await resend.emails.send({
@@ -134,7 +148,7 @@ export const runtime = 'nodejs'
 async function findClerkUserByStripeCustomerId(clerk, customerId) {
   try {
     // Primary: get clerkUserId from Stripe Customer metadata
-    const customer = await stripe.customers.retrieve(customerId)
+    const customer = await getStripe().customers.retrieve(customerId)
     if (!customer.deleted) {
       const clerkUserId = customer.metadata?.clerkUserId
       if (clerkUserId && CLERK_USER_ID_RE.test(clerkUserId)) {
@@ -172,7 +186,7 @@ export async function POST(request) {
   // ── Verify the event came from Stripe, not a forged request ──────────────
   let event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
+    event = getStripe().webhooks.constructEvent(body, sig, webhookSecret)
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })

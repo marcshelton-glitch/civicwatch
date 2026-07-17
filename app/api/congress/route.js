@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
+import { enrichTradesWithReturns } from '../../../lib/stockPrice'
 
 // ── Supabase client factory (server-only) ─────────────────────────────────────
 const getSupabase = () => createClient(
@@ -469,8 +470,11 @@ export async function GET(request) {
         const sells = allSenTrades.filter(t => t.type === 'SELL').length
         const topTickers = [...new Set(allSenTrades.map(t => t.ticker).filter(Boolean))].slice(0, 5)
 
+        // Return-since-disclosure: bounded, fail-soft — see lib/stockPrice.js.
+        const pricedSenTrades = await enrichTradesWithReturns(allSenTrades)
+
         return NextResponse.json({
-          trades: allSenTrades, buys, sells, topTickers,
+          trades: pricedSenTrades, buys, sells, topTickers,
           filingsCount: allSenTrades.length,
           isSenator, disclosureUrl, source: allSenTrades.length > 0 ? 'db' : 'none',
           netWorthHistory: isProUser ? senateNetWorthHistory : [],
@@ -545,8 +549,11 @@ export async function GET(request) {
           const sells = allTrades.filter(t => t.type === 'SELL').length
           const topTickers = [...new Set(allTrades.map(t => t.ticker).filter(Boolean))].slice(0, 5)
 
+          // Return-since-disclosure: bounded, fail-soft — see lib/stockPrice.js.
+          const pricedTrades = await enrichTradesWithReturns(allTrades)
+
           return NextResponse.json({
-            trades: allTrades, buys, sells, topTickers,
+            trades: pricedTrades, buys, sells, topTickers,
             filingsCount: dbFilingsCount,
             isSenator, disclosureUrl, source: 'db',
             netWorthHistory: isProUser ? dbNetWorthHistory : [],

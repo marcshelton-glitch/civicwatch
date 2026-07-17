@@ -2,7 +2,10 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabase = createClient(
+// Lazy — constructing the client at module scope makes `next build` fail during
+// "Collecting page data" when the Supabase env vars aren't present in the build
+// environment. Matches the getSupabase() factory pattern used by every other route.
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
@@ -20,7 +23,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('refund_requests')
     .select('*')
     .order('created_at', { ascending: false });

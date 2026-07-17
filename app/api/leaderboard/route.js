@@ -135,36 +135,61 @@ export async function GET(request) {
   }
 
   try {
+    const { searchParams } = new URL(request.url)
+    const sortBy = searchParams.get('sort') === 'volume' ? 'volume' : 'count'
+
     const supabase = getSupabase()
 
     // Query fd_filings — bioguide_ids populated via DB backfill (only for reps whose
     // trade page has been visited; many rows will have bioguide_id = null)
-    const { data: rows, error: qErr } = await supabase
-      .from('fd_filings')
-      .select('bioguide_id, last_name, first_name, state_dst, filing_date')
-      .eq('filing_type', 'P')
-      .abortSignal(AbortSignal.timeout(8000))
+    const [{ data: rows, error: qErr }, { data: senRows, error: senErr }, { data: houseTrades, error: htErr }] = await Promise.all([
+      supabase
+        .from('fd_filings')
+        .select('bioguide_id, last_name, first_name, state_dst, filing_date')
+        .eq('filing_type', 'P')
+        .abortSignal(AbortSignal.timeout(8000)),
+      // Senate has no fd_filings-style index — derive filing activity directly
+      // from senate_trades (distinct filing_id = one PTR filing).
+      supabase
+        .from('senate_trades')
+        .select('bioguide_id, last_name, first_name, state, filing_id, filing_date, amount_min, amount_max')
+        .abortSignal(AbortSignal.timeout(8000)),
+      supabase
+        .from('fd_trades')
+        .select('bioguide_id, last_name, first_name, amount_min, amount_max')
+        .abortSignal(AbortSignal.timeout(8000)),
+    ])
 
     if (qErr) throw new Error(qErr.message)
+    if (senErr) throw new Error(senErr.message)
+    if (htErr) throw new Error(htErr.message)
 
     // Aggregate by bioguide_id when available, else by last_name|first_name
     const map = new Map()
-    for (const row of rows || []) {
-      const key = row.bioguide_id || `${row.last_name}|${row.first_name}`
+    const keyFor = (bioguideId, last, first) => bioguideId || `${last}|${first}`
+    const ensure = (bioguideId, last, first, state) => {
+      const key = keyFor(bioguideId, last, first)
       if (!map.has(key)) {
         map.set(key, {
-          bioguide_id: row.bioguide_id || null,
-          name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || null,
-          _last: (row.last_name || '').toLowerCase(),
-          _first: (row.first_name || '').toLowerCase().split(/\s+/)[0],
-          state: row.state_dst ? row.state_dst.slice(0, 2) : null,
+          bioguide_id: bioguideId || null,
+          name: `${first || ''} ${last || ''}`.trim() || null,
+          _last: (last || '').toLowerCase(),
+          _first: (first || '').toLowerCase().split(/\s+/)[0],
+          state: state ? state.slice(0, 2) : null,
+          chamber: null,
           party: null,
           is_former: null,
           filing_count: 0,
+          volume: 0,
           latest_filing: null,
         })
       }
-      const entry = map.get(key)
+      return map.get(key)
+    }
+
+    for (const row of rows || []) {
+      const entry = ensure(row.bioguide_id, row.last_name, row.first_name, row.state_dst)
+      entry.chamber = 'house'
       entry.filing_count++
       if (!entry.bioguide_id && row.bioguide_id) entry.bioguide_id = row.bioguide_id
       if (row.filing_date && (!entry.latest_filing || row.filing_date > entry.latest_filing)) {
@@ -172,8 +197,44 @@ export async function GET(request) {
       }
     }
 
+    // Senate: count distinct PTR filings (a filing can contain several trade rows)
+    const senFilingsSeen = new Map() // key -> Set(filing_id)
+    for (const row of senRows || []) {
+      const entry = ensure(row.bioguide_id, row.last_name, row.first_name, row.state)
+      entry.chamber = 'senate'
+      if (!entry.bioguide_id && row.bioguide_id) entry.bioguide_id = row.bioguide_id
+      const key = keyFor(row.bioguide_id, row.last_name, row.first_name)
+      if (!senFilingsSeen.has(key)) senFilingsSeen.set(key, new Set())
+      const seen = senFilingsSeen.get(key)
+      if (row.filing_id && !seen.has(row.filing_id)) {
+        seen.add(row.filing_id)
+        entry.filing_count++
+      }
+      if (row.filing_date && (!entry.latest_filing || row.filing_date > entry.latest_filing)) {
+        entry.latest_filing = row.filing_date
+      }
+      if (row.amount_min != null) {
+        entry.volume += (row.amount_min + (row.amount_max ?? row.amount_min)) / 2
+      }
+    }
+
+    // House trade volume (fd_trades — individual buy/sell rows, midpoint of disclosed range)
+    for (const row of houseTrades || []) {
+      const key = keyFor(row.bioguide_id, row.last_name, row.first_name)
+      // Only attribute volume to reps already present from fd_filings — avoids
+      // creating phantom entries from trades whose parent filing didn't match.
+      if (!map.has(key)) continue
+      if (row.amount_min != null) {
+        map.get(key).volume += (row.amount_min + (row.amount_max ?? row.amount_min)) / 2
+      }
+    }
+
+    const sortFn = sortBy === 'volume'
+      ? (a, b) => b.volume - a.volume
+      : (a, b) => b.filing_count - a.filing_count
+
     const sorted = [...map.values()]
-      .sort((a, b) => b.filing_count - a.filing_count)
+      .sort(sortFn)
       .slice(0, 50)
 
     // Pass 1: current members — 3 pages × 250 covers all ~535 current members.
@@ -248,6 +309,7 @@ export async function GET(request) {
         }
       }
       if (rep.is_former === null) rep.is_former = false
+      rep.volume = Math.round(rep.volume)
       delete rep._last
       delete rep._first
     }

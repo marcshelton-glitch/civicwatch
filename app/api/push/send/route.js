@@ -4,11 +4,16 @@ import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-)
+// Guarded — an unconditional setVapidDetails() at module scope throws during
+// `next build` ("Collecting page data") when the VAPID env vars aren't present
+// in the build environment. Matches the guard in app/api/send-alerts/route.js.
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || 'mailto:support@civicwatch.app',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  )
+}
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

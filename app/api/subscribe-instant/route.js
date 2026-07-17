@@ -2,7 +2,12 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
 import { getUserTier, tierAtLeast } from '@/lib/tier-utils'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// Lazy — see app/api/pro-count/route.js for why this isn't module-scope.
+let _stripe = null
+function getStripe() {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  return _stripe
+}
 
 const PRICE_MAP = {
   voter_pro: () => process.env.STRIPE_VOTER_PRO_MONTHLY_PRICE_ID,
@@ -47,19 +52,19 @@ export async function POST(request) {
     let customerId = user?.publicMetadata?.stripeCustomerId
 
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email,
         metadata: { clerkUserId: userId },
       })
       customerId = customer.id
     }
 
-    await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
-    await stripe.customers.update(customerId, {
+    await getStripe().paymentMethods.attach(paymentMethodId, { customer: customerId })
+    await getStripe().customers.update(customerId, {
       invoice_settings: { default_payment_method: paymentMethodId },
     })
 
-    const subscription = await stripe.subscriptions.create({
+    const subscription = await getStripe().subscriptions.create({
       customer: customerId,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,

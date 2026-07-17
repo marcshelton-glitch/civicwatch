@@ -32,6 +32,14 @@ const isPublicRoute = createRouteMatcher([
   '/api/networth(.*)',
   '/api/og-image(.*)',
   '/api/health(.*)',
+  '/trades(.*)',
+  '/api/ticker-trades(.*)',
+  '/accountability(.*)',
+  '/api/accountability-stats(.*)',
+  '/api/conflict-score(.*)',
+  '/refund-policy(.*)',
+  '/robots.txt',
+  '/sitemap.xml',
 ])
 
 // Only Stripe checkout and billing portal require authentication at middleware level
@@ -58,7 +66,17 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // NOTE: .txt and .xml were previously missing from this extension exclusion
+    // list, so /robots.txt and /sitemap.xml were being routed through Clerk
+    // middleware. Neither path is in isPublicRoute, so both were falling
+    // through to the auth check and returning 401 Unauthorized to anyone
+    // without a session — including Googlebot. That meant search engines
+    // could not fetch crawl directives or the page list, which is almost
+    // certainly why civicwatch.app wasn't showing up in organic search
+    // results beyond the bare homepage. Adding txt|xml here, plus the
+    // explicit isPublicRoute entries above as a defense-in-depth backstop,
+    // fixes both.
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|txt|xml)).*)',
     '/(api|trpc)(.*)',
   ],
 }

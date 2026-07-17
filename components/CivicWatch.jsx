@@ -1017,6 +1017,14 @@ useEffect(() => {
               style={{ padding: "7px 14px", background: "transparent", border: `1px solid ${S.border}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
               🏆 Leaderboard
             </button>
+            <button onClick={() => router.push('/trades')}
+              style={{ padding: "7px 14px", background: "transparent", border: `1px solid ${S.border}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+              🔎 Trade Search
+            </button>
+            <button onClick={() => router.push('/accountability')}
+              style={{ padding: "7px 14px", background: "transparent", border: `1px solid ${S.border}`, borderRadius: 8, color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", letterSpacing: 0.5, whiteSpace: "nowrap" }}>
+              📊 Accountability
+            </button>
             {unreadCount > 0 && (
               <div className="pulse" onClick={() => setActiveTab("alerts")}
                 style={{ background: S.red, borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
@@ -2332,6 +2340,8 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const [liveNonprofits, setLiveNonprofits] = useState(null)
   const [loadingNonprofits, setLoadingNonprofits] = useState(false)
   const [netWorthHistory, setNetWorthHistory] = useState(null)
+  const [conflictScore, setConflictScore] = useState(null)
+  const [loadingConflictScore, setLoadingConflictScore] = useState(false)
   const [disclosures, setDisclosures] = useState(null)
   const [loadingDisclosures, setLoadingDisclosures] = useState(false)
   const [ptrResults, setPtrResults] = useState({})   // docId → { trades, loading, error }
@@ -2385,6 +2395,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
     setLiveDocket(null); setLiveDocketSource(null)
     setLiveTownHall(null); setLiveTownHallMeta(null)
     setLiveNonprofits(null); setNetWorthHistory(null)
+    setConflictScore(null); setLoadingConflictScore(false)
     setDisclosures(null); setPtrResults({}); setExpandedPtr(null)
     setLoadingVotes(false); setLoadingTrades(false); setLoadingBio(false)
     setLoadingDocket(false); setLoadingTownHall(false); setLoadingNonprofits(false)
@@ -2403,6 +2414,16 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         .then(r => r.json())
         .then(d => { setLiveVotes(d.votes || []); setLoadingVotes(false) })
         .catch(() => { setLiveVotes([]); setLoadingVotes(false) })
+    }
+  }, [repTab, rep.id])
+
+  useEffect(() => {
+    if (repTab === 'wealth' && isLive && !conflictScore && !loadingConflictScore) {
+      setLoadingConflictScore(true)
+      fetch(`/api/conflict-score?bioguideId=${rep.id}`)
+        .then(r => r.json())
+        .then(d => { setConflictScore(d.error ? null : d); setLoadingConflictScore(false) })
+        .catch(() => setLoadingConflictScore(false))
     }
   }, [repTab, rep.id])
 
@@ -3512,6 +3533,57 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           </div>
                         )}
 
+                        {/* ── Vote/Committee-Trade Conflict Score ── */}
+                        {conflictScore && conflictScore.score > 0 && (
+                          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: `1px solid ${conflictScore.tier === 'High' ? 'rgba(248,113,113,0.4)' : 'rgba(212,175,55,0.3)'}` }}>
+                            <div style={{
+                              padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                              background: conflictScore.tier === 'High' ? 'rgba(248,113,113,0.1)' : 'rgba(212,175,55,0.08)',
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 18 }}>{conflictScore.tier === 'High' ? '🚩' : '⚑'}</span>
+                                <div>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>
+                                    Committee Conflict Score: {conflictScore.tier} ({conflictScore.score} flagged)
+                                  </div>
+                                  <div style={{ fontSize: 10.5, color: S.gray, marginTop: 1 }}>
+                                    Trades in a sector overseen by a committee this member served on at the time
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {!isProProp ? (
+                              <div style={{ position: 'relative', padding: '14px 16px', background: 'rgba(10,14,30,0.5)' }}>
+                                <div style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12, color: S.gray }}>
+                                  {conflictScore.flaggedTrades.slice(0, 2).map((f, i) => (
+                                    <div key={i}>{f.ticker} · {f.committeeName}</div>
+                                  ))}
+                                </div>
+                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <button
+                                    onClick={handleSubscribe}
+                                    style={{ padding: '8px 18px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 8, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                                    🔒 Unlock flagged trades · Pro
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ padding: '10px 16px 14px' }}>
+                                {conflictScore.flaggedTrades.map((f, i) => (
+                                  <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? `1px solid ${S.border}` : 'none', fontSize: 12 }}>
+                                    <span style={{ fontWeight: 700, color: S.gold }}>{f.ticker}</span>
+                                    <span style={{ color: S.gray }}> {actionWord(f.type)} {f.date} · sits on </span>
+                                    <span style={{ color: S.offWhite }}>{f.committeeName}</span>
+                                    <span style={{ color: S.gray }}> ({f.sector})</span>
+                                  </div>
+                                ))}
+                                <div style={{ fontSize: 10, color: S.gray, marginTop: 8, lineHeight: 1.5 }}>{conflictScore.methodology}</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {/* Individual trades */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {trades.map((t, i) => (
@@ -3535,8 +3607,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                   )}
                                 </div>
                               </div>
-                              <div style={{ textAlign: 'right', flexShrink: 0, fontSize: 13, fontWeight: 600 }}>
-                                {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 600 }}>
+                                  {typeof t.amount === 'number' ? fmt(t.amount) : t.amount}
+                                </div>
+                                {typeof t.returnPct === 'number' && (
+                                  <div
+                                    title="Change in price from the trade date to today — an estimate, not the member's actual realized gain or loss"
+                                    style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color: t.returnPct >= 0 ? '#4CAF50' : '#f87171' }}>
+                                    {t.returnPct >= 0 ? '▲' : '▼'} {Math.abs(t.returnPct)}% since
+                                  </div>
+                                )}
                               </div>
                               <button
                                 onClick={() => handleShare(`${rep.name} (${partyAbbr(rep.party)}-${rep.state}) ${actionWord(t.type)} ${typeof t.amount === 'number' ? fmt(t.amount) : (t.amount || '')} of ${t.ticker || t.asset}${t.date ? ` on ${t.date}` : ''} 🏛️ civicwatch.app`)}
