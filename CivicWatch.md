@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 17, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 19, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -24,6 +24,23 @@
 > branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
 > session treat the backup as a repo in the first place. Its content is not unique — those commits'
 > work reached this repo by another route. Retiring it would make the backup behave like a backup.
+
+---
+
+## ⚡ Daily Update — July 19, 2026
+
+### Recent Work Summary
+
+- **CivicWatch /press page:** Verified `/press` page fix is live with correct logo, press contact email (press@civicwatch.app), and brand asset download grid. Commit `f7f6541d7f8ec5776b89c3069e89fe30ebd774bc` confirmed deployed.
+- **Sitemap & SEO verification:** Confirmed sitemap.xml is live at production. Verified Google Search Console: homepage, dashboard, about, privacy, data deletion, refund policy all indexed correctly. No critical issues found.
+- **Infrastructure assessment:** Investigated Prisma Accelerate query caching — decided not to pursue for current bottlenecks (Supabase connection pooling is sufficient).
+- **GitHub connectivity limitation identified:** MCP connector access in Cowork is read-only (file-picker). Read/write connector setup needed for future automated pushes.
+
+### 📋 Open Items (check off completed)
+
+- [ ] July 8 late-night feature build (Conflict Score, `/trades`, `/accountability`, committee alerts, Stripe fixes, SEO middleware fixes) — requires `npm run build` verification then `git commit`/`push` from Mac
+- [ ] Set up read/write GitHub MCP connector for future Cowork sessions (Settings → Connectors → Engineering)
+- [ ] Monitor Google indexing crawl completion — sitemap submission in progress
 
 ---
 

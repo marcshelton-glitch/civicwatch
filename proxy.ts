@@ -40,6 +40,14 @@ const isPublicRoute = createRouteMatcher([
   '/refund-policy(.*)',
   '/robots.txt',
   '/sitemap.xml',
+  // Cron-only endpoints: authenticate themselves via `Authorization: Bearer
+  // CRON_SECRET` inside the route handler, not Clerk sessions. Without these
+  // entries, Clerk middleware intercepts the request first and issues a
+  // handshake redirect (no session cookie present on cron/curl calls), so
+  // the route's own auth check never runs — the same class of bug that
+  // blocked robots.txt/sitemap.xml above.
+  '/api/alerts/x-bot(.*)',
+  '/api/send-alerts(.*)',
 ])
 
 // Only Stripe checkout and billing portal require authentication at middleware level
