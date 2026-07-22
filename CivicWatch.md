@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 19, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 21, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -24,6 +24,22 @@
 > branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
 > session treat the backup as a repo in the first place. Its content is not unique — those commits'
 > work reached this repo by another route. Retiring it would make the backup behave like a backup.
+
+---
+
+## ⚡ July 21, 2026 — SEO & Indexing Verification
+
+**Sitemap.xml deployment:**
+- Created sitemap.xml covering all public pages
+- Added to `/public` folder for Vercel static serving
+- Verified in Google Search Console: main content pages indexing correctly (green trend)
+- Minor non-urgent findings: opengraph-image 401 (behind-the-scenes), signup/terms noindex (intentional)
+
+**Outstanding from July 8 (uncommitted):**
+- Conflict Score feature, `/trades`, `/accountability` pages, committee alerts, Stripe fixes, SEO middleware fixes
+- Status: awaiting `npm run build` verification + git commit/push
+
+**Rate limit tracking:** Documented; no active issues
 
 ---
 
@@ -157,6 +173,21 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 ---
 
 ## ⚡ Recent Work
+
+### 2026-07-21 — No new development work completed today
+
+**Status:** No new development work completed today.
+- Repo remains at previous commit (1 commit ahead of main)
+- No blockers or new issues
+- Open items remain as documented in previous entries
+
+**Open blockers still pending:**
+- Web push notifications: 4 Vercel env vars needed (NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, INTERNAL_API_SECRET)
+- X bot: Missing 2 of 4 credentials, 503 errors since June 20
+- Committee alerts: `committee_snapshots` migration needed in Supabase
+- Apple/Google Pay: Built but decision pending on `/pro` mount
+
+---
 
 ### 2026-07-16 — June Reconciliation Resolved + Live Stripe Bug Found
 
