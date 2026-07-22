@@ -27,22 +27,6 @@
 
 ---
 
-## ⚡ July 21, 2026 — SEO & Indexing Verification
-
-**Sitemap.xml deployment:**
-- Created sitemap.xml covering all public pages
-- Added to `/public` folder for Vercel static serving
-- Verified in Google Search Console: main content pages indexing correctly (green trend)
-- Minor non-urgent findings: opengraph-image 401 (behind-the-scenes), signup/terms noindex (intentional)
-
-**Outstanding from July 8 (uncommitted):**
-- Conflict Score feature, `/trades`, `/accountability` pages, committee alerts, Stripe fixes, SEO middleware fixes
-- Status: awaiting `npm run build` verification + git commit/push
-
-**Rate limit tracking:** Documented; no active issues
-
----
-
 ## ⚡ Daily Update — July 19, 2026
 
 ### Recent Work Summary
