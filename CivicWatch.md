@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 24, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 28, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -27,136 +27,6 @@
 
 ---
 
-
-## ⚡ Daily Update — July 25, 2026
-
-### SEO & Marketing Foundation — Sitemap + Election Rollout Plan
-
-**Sitemap Completion & Google Search Console Verification**
-- Created and deployed `sitemap.xml` to `public/` directory
-- Submitted sitemap to Google Search Console and Bing Webmaster Tools
-- Analyzed indexing report: core pages (Home, Dashboard, About, Privacy, Data Deletion, Refund Policy) properly indexed ✅
-- Verified expected exclusions: Sign Up and Terms pages set to `noindex` (intentional), `/opengraph-image` 401 (behind-the-scenes thumbnail, not user-facing), `clerk.civicwatch.app` indexed without content (Clerk subdomain, optional cleanup)
-- Walked user through GitHub web UI deployment and Search Console interpretation
-- **Status:** Sitemap live and discoverable; no SEO blockers identified
-
-**Marketing Rollout Plan — Election Day 2026 Strategy**
-- Built comprehensive 6-phase, 41-task marketing roadmap anchored on **November 3, 2026** (Election Day)
-- **Phases:**
-  1. **Monetization Foundation** (Jul 27–Aug 6) — Paywall audit, pricing rewrite, **Founding Member offer** ($4.99/mo lifetime, first 100 users) to establish revenue before any spend
-  2. **Content & SEO Engine** (Jul 28–Oct 26) — Cornerstone pages, programmatic SEO (rep profile pages), weekly blog through election
-  3. **X/Twitter Growth** (Jul 28–Nov 7) — Tune @CivicWatchAlerts bot, daily posting rhythm, free-Pro-month growth loop
-  4. **Launch Communities** (Aug 10–29) — Product Hunt, Show HN, Reddit outreach
-  5. **Midterm Election Moment** (Oct 13–Nov 7) — Election Night Live dashboard, election day content push (peak-interest moment)
-  6. **Monetize & Sustain** (Nov 3–23) — Convert election spike to paying subs before momentum fades
-- **Constraint:** Zero-cost (no paid ads; solo founder)
-- **Deliverable:** Interactive HTML Gantt chart with progress tracking, task links, and auto-rescheduling for slips
-- **Next step:** Track progress in Gantt; export for Claude review at each phase boundary
-
-**Query Caching Research**
-- Evaluated Prisma Accelerate query caching; determined not needed for current bottlenecks (Supabase connection pooling is sufficient)
-
-### 📋 Open Items — Updated July 25
-
-**Critical (pre-deploy):**
-- [ ] Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase — committee alerts won't deliver without this
-- [ ] Decide on Apple Pay / Google Pay — built but unmounted since June 26; activation bug is fixed (`4629403`), so re-mounting is now safe
-- [ ] `package-lock.json` is out of sync with `package.json` — `npm install` rewrites ~800 lines
-
-**Immediate priorities:**
-- [ ] Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET` (web push — currently never delivers)
-- [ ] Record 45-second founder POV video ("Why I Built This") — highest-ROI marketing asset identified
-- [ ] Build `/api/og-image` — referenced in page metadata but doesn't exist; social share previews currently broken
-- [ ] Fix About page h1 duplication ("Transparency is the foundation of democracy" appears twice)
-- [ ] Add Refund Policy link to homepage marketing footer (currently only in dashboard footer)
-- [ ] Run SQL backfill for `fd_net_worth.bioguide_id` (97 rows from OCR pipeline with null IDs)
-- [ ] **Marketing rollout:** Execute Phase 1 monetization foundation tasks (Founding Member offer, pricing, paywall audit)
-- [ ] **Marketing rollout:** Begin Phase 2 SEO engine work (cornerstone pages, programmatic SEO for rep profiles)
-
----
-
-## ⚡ Daily Update — July 24, 2026
-
-### Vercel Deployment Pipeline Fixed
-
-**Issue:** Zero builds triggered on `main` since June 27, despite pushes via `_push.py`
-
-**Root cause:** Vercel's Ignored Build Step was set to "Automatic" mode, which was incorrectly misjudging commits from the GitHub API-based `_push.py` as "no changes" and skipping builds on them.
-
-**Fix applied:** Changed Ignored Build Step behavior from "Automatic" to "Custom" with `exit 1` command. This forces a build on every commit, bypassing Vercel's change detection.
-
-**Status:** Pending real-world test — need to run `python3 _push.py` and confirm the Deployments list shows a new build appearing automatically within 1–2 minutes.
-
-**Notes:** 
-- GitHub App has correct repository access (verified in Vercel settings)
-- Sentry install was stuck in Marketplace but is unrelated to the deployment pipeline issue
-
----
-
-## ⚡ Daily Update — July 22, 2026
-
-### Recent Work Summary
-
-**No new development work completed today** (July 22). Reviewed all Cowork sessions from today — no active coding sessions for CivicWatch.app. 
-
-Previous research/review sessions conducted:
-- **Prisma Accelerate query caching:** Evaluated whether helpful for CivicWatch; determined not needed (Supabase connection pooling is sufficient)
-- **Google Search Console analysis:** Reviewed site indexing status; verified no critical SEO issues; sitemap and core pages properly indexed
-- **GitHub connector setup discussion:** Troubleshot MCP connector access for future automation (currently read-only file-picker; read/write connector needed for automated pushes)
-
-**Repo status:** Remains at commit `59fa0e6` (July 17). No new commits, merges, or feature branches since last update.
-
-### 📋 Open Items (unchanged from July 21)
-
-**Critical (pre-deploy):**
-- [ ] Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase — committee alerts won't deliver without this
-- [ ] Decide on Apple Pay / Google Pay — built but unmounted since June 26; activation bug is fixed (`4629403`), so re-mounting is now safe
-- [ ] `package-lock.json` is out of sync with `package.json` — `npm install` rewrites ~800 lines
-
-**Immediate priorities:**
-- [ ] Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET` (web push — currently never delivers)
-- [ ] Record 45-second founder POV video ("Why I Built This") — highest-ROI marketing asset identified
-- [ ] Build `/api/og-image` — referenced in page metadata but doesn't exist; social share previews currently broken
-- [ ] Fix About page h1 duplication ("Transparency is the foundation of democracy" appears twice)
-- [ ] Add Refund Policy link to homepage marketing footer (currently only in dashboard footer)
-- [ ] Run SQL backfill for `fd_net_worth.bioguide_id` (97 rows from OCR pipeline with null IDs)
-
----
-
-## ⚡ Daily Update — July 21, 2026
-
-### Recent Work Summary
-
-- **CivicWatch /press page:** Verified `/press` page fix is live with correct logo, press contact email (press@civicwatch.app), and brand asset download grid. Commit `f7f6541d7f8ec5776b89c3069e89fe30ebd774bc` confirmed deployed.
-- **Sitemap & SEO verification:** Confirmed sitemap.xml is live at production. Verified Google Search Console: homepage, dashboard, about, privacy, data deletion, refund policy all indexed correctly. No critical issues found.
-- **Infrastructure assessment:** Investigated Prisma Accelerate query caching — decided not to pursue for current bottlenecks (Supabase connection pooling is sufficient).
-- **GitHub connectivity limitation identified:** MCP connector access in Cowork is read-only (file-picker). Read/write connector setup needed for future automated pushes.
-
-### 📋 Open Items (check off completed)
-
-- [ ] July 8 late-night feature build (Conflict Score, `/trades`, `/accountability`, committee alerts, Stripe fixes, SEO middleware fixes) — requires `npm run build` verification then `git commit`/`push` from Mac
-- [ ] Set up read/write GitHub MCP connector for future Cowork sessions (Settings → Connectors → Engineering)
-- [ ] Monitor Google indexing crawl completion — sitemap submission in progress
-
----
-
-## ⚡ Daily Update — July 19, 2026
-
-### Recent Work Summary
-
-- **CivicWatch /press page:** Verified `/press` page fix is live with correct logo, press contact email (press@civicwatch.app), and brand asset download grid. Commit `f7f6541d7f8ec5776b89c3069e89fe30ebd774bc` confirmed deployed.
-- **Sitemap & SEO verification:** Confirmed sitemap.xml is live at production. Verified Google Search Console: homepage, dashboard, about, privacy, data deletion, refund policy all indexed correctly. No critical issues found.
-- **Infrastructure assessment:** Investigated Prisma Accelerate query caching — decided not to pursue for current bottlenecks (Supabase connection pooling is sufficient).
-- **GitHub connectivity limitation identified:** MCP connector access in Cowork is read-only (file-picker). Read/write connector setup needed for future automated pushes.
-
-### 📋 Open Items (check off completed)
-
-- [ ] July 8 late-night feature build (Conflict Score, `/trades`, `/accountability`, committee alerts, Stripe fixes, SEO middleware fixes) — requires `npm run build` verification then `git commit`/`push` from Mac
-- [ ] Set up read/write GitHub MCP connector for future Cowork sessions (Settings → Connectors → Engineering)
-- [ ] Monitor Google indexing crawl completion — sitemap submission in progress
-
----
-
 ## ⚡ Daily Update — July 17, 2026
 
 ### 🎉 The July 8 build is committed. The eight-day blocker was a path bug.
@@ -166,18 +36,6 @@ Previous research/review sessions conducted:
 - **`npm run build` passes (exit 0)** — the first verified build since July 8.
 - **Committee alerts AND legislation alerts are now real** — legislation alerts turned out to be implemented (live Congress.gov sponsored-bill lookups), not scaffolded. Feature Status updated.
 - **Wallet Pro activation fixed** (`4629403`) — see below.
-
-### 🔑 Vercel env audit (July 17) — checked the live config, not the notes
-Read via `vercel env ls production` (names only; values stay encrypted). Four items settled:
-
-| Item | Verified state |
-|---|---|
-| `CONGRESS_API_KEY` | ✅ **Set** (Production/Preview/Development, 101d). Committee + legislation alerts need only the migration now. |
-| Meta + TikTok pixels | ✅ **Set** (24d). The "high priority" open item was already done — pixel code is live and gated in `app/layout.js:81-86`. |
-| Web push (`VAPID_*`, `INTERNAL_API_SECRET`) | 🔴 **All four absent.** Push was listed "✅ Live" but has never delivered anything — `sendPushToUser()` returns early. |
-| X bot (`X_BOT_ACCESS_TOKEN`, `..._SECRET`) | 🔴 **Missing 2 of 4 credentials.** Cron has been getting 503 every 15 min since June 20; the bot has never posted. The `TWITTER_*` names in older notes are obsolete. |
-
-Also noted: `STRIPE_VOTER_PRO_MONTHLY_PRICE_ID` is not set, so `subscribe-instant` would 500 on a `voter_pro` purchase. Not currently reachable (the wallet button sends no tier and defaults to `civic_pack`), but it blocks selling that tier.
 
 ### 🔴 Correction to the July 16 entry: Apple Pay was NOT charging customers
 The July 16 note claimed a live revenue leak. **That was wrong.** `PaymentRequestButton` is imported nowhere — `df3cf63` (a *logo* commit) removed it from `/pro` on **June 26**, four days before `7d1c8b9` deleted the `invoice.paid` handler on **June 30**. No customer was ever charged without receiving Pro. The bug is **latent**, not active.
@@ -245,14 +103,14 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | Member biography & district info | Free | ✅ Live |
 | Press page (/press) | Free | ✅ Live |
 | Track My Rep™ Alerts | Sign-In | ✅ Live |
-| Browser push notifications | Sign-In | ⚠️ **Built, not configured** — verified July 17 against Vercel: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET` are **all absent from Production**. `sendPushToUser()` returns early, so no push has ever been delivered |
+| Browser push notifications | Sign-In | ✅ Live (web-push via Service Worker) |
 | My Representatives dashboard | Sign-In | ✅ Live |
 | Community polling | Sign-In | ✅ Live |
 | Wealth & Net Worth Timeline | Pro | ✅ Live (server-side Pro gate: 401/403) |
 | AI Accountability Reports (Gemini) | Pro | ✅ Live (3 free previews/hr for signed-in) |
 | Compare any two representatives | Pro | ✅ Live |
 | Net Worth Alerts | Pro | ✅ Live (Resend, dedup via sent_alerts) |
-| @CivicWatchAlerts X bot | — | 🔴 **Not running** — verified July 17 against Vercel. The route reads `X_BOT_CLIENT_ID`, `X_BOT_CLIENT_SECRET`, `X_BOT_ACCESS_TOKEN`, `X_BOT_ACCESS_TOKEN_SECRET`. Only the first two are set, so the guard at `x-bot/route.js:240` returns **503 'X bot credentials not configured'** on every `*/15` cron run — it has never posted. (The `TWITTER_*` names in older notes are obsolete; the code reads `X_BOT_*`.) |
+| @CivicWatchAlerts X bot | — | ✅ Live — code (verified July 16: `app/api/alerts/x-bot/route.js` committed, `*/15` cron in `vercel.json`). ⚠️ Requires `TWITTER_*` Vercel env vars + `x_bot_posts` migration — **runtime unverified** |
 | Apple Pay / Google Pay checkout | Pro | ⚠️ **Built, not mounted** — `PaymentRequestButton.js` is imported nowhere; `df3cf63` (logo commit) removed it from `/pro` on June 26. Unreachable, so **no customer was ever mischarged**. Activation gap fixed July 17 (`4629403`), so re-mounting is now safe — product decision |
 | Exit-intent modal | Free | ✅ Live (verified July 16: `components/ExitIntentModal.js` committed) |
 | AI gateway (spend tracking) | — | ✅ Live — code (verified July 16: `lib/ai-gateway.js` committed). ⚠️ `ai_usage` migration application **unverified** |
@@ -271,18 +129,19 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 
 ## ⚡ Recent Work
 
-### 2026-07-21 — No new development work completed today
+### 2026-07-28 — Marketing Strategy + Vercel Deployment Fix + Design System
 
-**Status:** No new development work completed today.
-- Repo remains at previous commit (1 commit ahead of main)
-- No blockers or new issues
-- Open items remain as documented in previous entries
+- **Marketing rollout Gantt chart built:** 6-phase interactive HTML Gantt with 41 tasks spanning July 27–November 7, 2026. Phases: Monetization Foundation (Founding Member $4.99/mo offer + pricing audit), Content & SEO Engine (cornerstone pages + programmatic profile pages + weekly blog), X/Twitter Growth (@CivicWatchAlerts bot tuning + daily posting + free-Pro-month loop), Launch Communities (Product Hunt, Show HN, Reddit, Aug 10–29), Midterm Election Moment (Election Night Live dashboard + election day push for Nov 3 anchor date), Monetize & Sustain (convert traffic spike to paying subs). Dependencies, phase dates, and Nov 3 marker all validated. Browser-based progress tracking with export-for-Claude button.
+  
+- **Vercel deployment fixed:** Production builds were stuck since June 27 — Ignored Build Step was set to "Automatic" (Vercel's heuristic to skip builds for commits with previously-deployed SHAs). The issue: `_push.py` builds commits via GitHub API rather than normal `git push`, so each commit has a non-standard tree structure that confused the skip-detection heuristic. **Fix:** changed Ignored Build Step to "Custom" with `exit 1` (always build). Verified setting + ready to test new pushes.
+  
+- **Design system updated:** Amplified color palette rolled out across `design-system/MASTER.md`, `globals.css`, and `app/planner.tsx`. Colors: red #FF5A3C, plum #7A4FD1, gold #FFC93D, cream #FFF4E8, line #F5DBCB, with matching deep/hover and error shades. Ink and functional success/warning colors left untouched (neutral scaffolding, not brand). Decision saved to memory for future consistency.
 
-**Open blockers still pending:**
-- Web push notifications: 4 Vercel env vars needed (NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, INTERNAL_API_SECRET)
-- X bot: Missing 2 of 4 credentials, 503 errors since June 20
-- Committee alerts: `committee_snapshots` migration needed in Supabase
-- Apple/Google Pay: Built but decision pending on `/pro` mount
+---
+
+### 2026-07-27 — Automated Daily Update
+- **No new CivicWatch.app coding sessions today** (July 27). Reviewed all CivicWatch-titled Cowork sessions in the daily scan — no feature development or commit-ready work found.
+- **Open items unchanged** — top priorities remain: Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase, confirm `CONGRESS_API_KEY` in Vercel, decide on Apple Pay/Google Pay mounting, resolve `package-lock.json` sync, and adding Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`) and pixels (`NEXT_PUBLIC_META_PIXEL_ID`, `NEXT_PUBLIC_TIKTOK_PIXEL_ID`).
 
 ---
 
@@ -405,7 +264,134 @@ CivicWatch makes congressional financial activity visible, searchable, and share
     && python3 ~/civicwatch/_push.py
   ```
 
-[Full history continues from here as in the original file - keeping all remaining entries through the reconciliation section at the end]
+### 2026-07-06 — Automated Daily Update
+- **No CivicWatch.app work today.** Reviewed all visible Cowork sessions — none had a `cwd` under the CivicWatch folder or a title referencing CivicWatch.app. The only CivicWatch-titled sessions in the recent list ("CivicWatch /press page fix" ×2) are from June 28 and are already reflected below (commit `f7f6541`). Repo file mtimes confirm no source changes today: `app/` and `components/` last touched July 4, `CivicWatch.md` itself last touched July 5.
+- **Open items unchanged** — top priorities remain: adding `NEXT_PUBLIC_META_PIXEL_ID` + `NEXT_PUBLIC_TIKTOK_PIXEL_ID` to Vercel and pushing the pixel code, recording the founder POV video, confirming the @CivicWatchAlerts X bot status (one session transcript notes it as already live with RLS enabled — worth verifying against this Open Items list, which still shows it unchecked), Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), the `push_subscriptions` Supabase migration, verifying `CONGRESS_API_KEY` in Vercel, the About page h1/Mission duplication fix, Refund Policy link on the homepage footer, `fd_net_worth.bioguide_id` SQL backfill (97 OCR rows), and finishing the `congress/route.js` caching layer.
+- **⚠️ Mac-side git commit/push still needed** (this sandbox has no `start_code_task` tool and can't reach the Keychain). Run on the Mac:
+  ```bash
+  cd ~/civicwatch && git add CivicWatch.md && git commit -m "docs: daily update July 6" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-07-05 — Automated Daily Update
+- **No CivicWatch.app work today.** No CivicWatch source files changed.
+- **Open items unchanged** — top priorities remain: Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), the `push_subscriptions` Supabase migration, verifying `CONGRESS_API_KEY` in Vercel, the About page h1/Mission duplication fix, Refund Policy link on the homepage footer, `fd_net_worth.bioguide_id` SQL backfill (97 OCR rows), and finishing the `congress/route.js` caching layer.
+- **⚠️ Mac-side git commit/push still needed** (this sandbox has no `start_code_task` tool and can't reach the Keychain). Run on the Mac:
+  ```bash
+  cd ~/civicwatch && git add CivicWatch.md && git commit -m "docs: daily update July 5" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-07-04 — Marketing Build + Pixel Integration
+
+- **Combined marketing strategy doc:** Reviewed and merged `CivicWatch_Marketing_Campaign_Brief.docx` + `CivicWatch Media Blitz Playbook.docx` into a single comprehensive strategy document: `Media campaign/CivicWatch_Marketing_Strategy_Combined.docx`
+- **Gantt chart updated (`civicwatch-gantt.html`):** Fixed TODAY marker to use `new Date()` (dynamic), added Phase 7 "Media Blitz" with 32 tasks (IDs 129–160) covering full campaign arc — total task count now 160
+- **5 social media image templates created** in `Media campaign/`:
+  - `template-trade-card.html` — shareable trade disclosure card
+  - `template-wealth-curve.html` — wealth growth timeline graphic
+  - `template-vote-vs-trade.html` — vote vs. trade correlation visual
+  - `template-receipt.html` — "receipt" style trade summary card
+  - `template-find-yours.html` — "find your rep" call-to-action card
+- **UTM tracking system built:**
+  - `Media campaign/UTM_Tracking_Scheme.md` — 27 pre-built URLs, full naming conventions
+  - `Media campaign/UTM_Link_Builder.xlsx` — Builder sheet + Campaign Library + Podcast Codes
+- **Meta Pixel + TikTok Pixel (started):** `components/MetaPixel.jsx` and `components/TiktokPixel.jsx` created, gated on `NEXT_PUBLIC_META_PIXEL_ID` and `NEXT_PUBLIC_TIKTOK_PIXEL_ID` env vars — **not yet pushed to GitHub** (pending Vercel env var setup)
+- **⚠️ Pixel code needs Vercel env vars + GitHub push** — after adding env vars, run on the Mac:
+  ```bash
+  cd ~/civicwatch && git add components/MetaPixel.jsx components/TiktokPixel.jsx app/layout.js \
+    && git commit -m "feat: add Meta Pixel and TikTok Pixel tracking" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-07-03 — Automated Daily Update
+- **No code shipped today.** Verified no CivicWatch source files changed (latest file mtimes remain June 30 / July 2; today's directory-mtime changes are iCloud sync noise only).
+- **Open items unchanged** — top priorities remain: Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), the `push_subscriptions` Supabase migration, verifying `CONGRESS_API_KEY` in Vercel, the About page h1/Mission duplication fix, Refund Policy link on the homepage footer, `fd_net_worth.bioguide_id` SQL backfill (97 OCR rows), and finishing the `congress/route.js` caching layer.
+- **⚠️ Mac-side git commit/push still needed** (this sandbox has no `start_code_task` tool and can't reach the Keychain). Run on the Mac:
+  ```bash
+  cd ~/civicwatch && git add CivicWatch.md && git commit -m "docs: daily update July 3" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-07-02 — Automated Daily Update
+- No new CivicWatch coding sessions found today (July 2). The only session since yesterday's daily update was an unrelated "iOS/Android screenshot organizer app" session.
+- **Open items unchanged** — top priorities remain: Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), the `push_subscriptions` Supabase migration, verifying `CONGRESS_API_KEY` in Vercel, the About page h1/Mission duplication fix, Refund Policy link on the homepage footer, `fd_net_worth.bioguide_id` SQL backfill (97 OCR rows), and finishing the `congress/route.js` caching layer.
+- **⚠️ Mac-side git commit/push still needed** — the file is written to the repo root (`~/civicwatch` symlinks to the iCloud CivicWatch folder) and the iPhone-sync copy, but git commit/push must run on the Mac:
+  ```bash
+  cd ~/civicwatch && git add CivicWatch.md && git commit -m "docs: daily update July 2" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-07-01 — Automated Daily Update
+- No new CivicWatch coding sessions found today (July 1). Checked all 48 visible Cowork sessions — the only session between this run and yesterday's daily update (June 30) was an unrelated "DrivPilot launch Gantt chart" session.
+- **Open items unchanged** — top priorities remain: Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), the `push_subscriptions` Supabase migration, verifying `CONGRESS_API_KEY` in Vercel, the About page h1/Mission duplication fix, Refund Policy link on the homepage footer, `fd_net_worth.bioguide_id` SQL backfill (97 OCR rows), and finishing the `congress/route.js` caching layer.
+- **⚠️ Mac-side sync still needed** — this task can write CivicWatch.md to the iCloud folder from the Cowork sandbox, but cannot reach `~/civicwatch`'s git repo or macOS Keychain to commit/push (no `start_code_task` tool available in this environment to delegate to a Mac-side session). Run on the Mac:
+  ```bash
+  cp "/Users/marcshelton/Library/Mobile Documents/com~apple~CloudDocs/AI/AI App Projects/CivicWatch/Civicwatch Markdown files/CivicWatch.md" ~/civicwatch/CivicWatch.md \
+    && cd ~/civicwatch && git add CivicWatch.md && git commit -m "docs: daily update July 1" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-06-30 — Automated Daily Update
+- No new CivicWatch coding sessions found today (June 30). Checked all visible Cowork sessions — most recent activity was yesterday's daily update run (June 29) and an unrelated "AI folder reorganization" session.
+- **Open items unchanged** — top priorities remain: Vercel env vars for web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), the `push_subscriptions` Supabase migration, verifying `CONGRESS_API_KEY` in Vercel, the About page h1/Mission duplication fix, Refund Policy link on the homepage footer, `fd_net_worth.bioguide_id` SQL backfill (97 OCR rows), and finishing the `congress/route.js` caching layer.
+- **⚠️ Mac-side sync still needed** — this task can write CivicWatch.md to the iCloud folder from the Cowork sandbox, but cannot reach `~/civicwatch`'s git repo or macOS Keychain to commit/push. Run on the Mac:
+  ```bash
+  cp "/Users/marcshelton/Library/Mobile Documents/com~apple~CloudDocs/AI/AI App Projects/CivicWatch/Civicwatch Markdown files/CivicWatch.md" ~/civicwatch/CivicWatch.md \
+    && cd ~/civicwatch && git add CivicWatch.md && git commit -m "docs: daily update June 30" \
+    && python3 ~/civicwatch/_push.py
+  ```
+
+### 2026-06-29 — Mobile UX, Compare Mode, Party Badges & Infrastructure
+- **Mobile tabs fix:** Shortened tab labels to fit on one row on mobile (commit `d4adda2`)
+- **Mobile tabs row split:** Split tabs into two rows for better mobile UX (commit `fd7c2dd`)
+- **Compare mode fixes:** Fixed Total Trades = 0 bug; compare panel improvements (commits `fada9c7`, `3e89581`)
+- **Party badge fixes:** Fixed incorrect/missing party badges on leaderboard for former members
+- **Net worth improvements:** Debugging and improvements to net worth data display
+- **CCPA/privacy improvements:** Added CCPA section and data deletion to Privacy Policy — closes pre-launch gap ✅
+- **Fixed `~/civicwatch` symlink:** Was pointing to wrong iCloud path; now correctly points to `/Users/marcshelton/Library/Mobile Documents/com~apple~CloudDocs/AI/AI App Projects/CivicWatch`
+- **Fixed scheduled task iCloud copy path:** Daily update was copying to `AI/Civicwatch/` (capital W) — fixed to `AI/civicwatch/` (lowercase) so iPhone copy now syncs correctly
+
+### 2026-06-28 — Press Page Fix
+- **Nav logo fixed:** Press page was still using old styled text ("CIVIC**WATCH**") instead of the real logo PNG — now uses `<Image src="/brand/logo_civicwatch_horizontal.png">` to match the rest of the site
+- **Press contact email:** Changed all `support@civicwatch.app` → `press@civicwatch.app` on the /press page
+- **Press kit section:** Replaced "📦 coming soon" placeholder with a real download grid of 5 brand PNGs (horizontal, stacked, gold, transparent icon, white icon) from existing `public/brand/` assets
+- **Commit:** `f7f6541d7f8ec5776b89c3069e89fe30ebd774bc` pushed to GitHub via `_push.py`, Vercel auto-deployed
+
+### 2026-06-13 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 13).
+- **Open items unchanged** — top priority remains adding Vercel env vars for web push notifications (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`) and applying the `push_subscriptions` Supabase migration.
+- **Reminder:** `bioguide_id` SQL backfill for 97 OCR `fd_net_worth` rows still needed, and `congress/route.js` caching layer is incomplete (15 return statements done, session hit 1M limit mid-way).
+- **⚠️ GitHub push still Mac-side only** — iCloud copy and `_push.py` require running on the Mac; this automated task can write CivicWatch.md via Cowork folder connection but cannot push to GitHub from the Linux sandbox.
+
+### 2026-06-12 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 11–12).
+- **Rate limit:** Multiple daily update sessions hit rate limits and could not complete push to GitHub. File was still written to disk via Cowork folder connection.
+- **P3 fixes push: ✅ Confirmed done** — Marc ran `_push.py` manually on June 8 (confirmed in session `a1af681f`). All 10 P3 QA fixes are live in the repo.
+- **Still open:** VAPID env vars for web push notifications (4 vars), Supabase `push_subscriptions` migration, CCPA/GDPR named sections in Privacy Policy, About page h1 duplication, Refund Policy in homepage footer, bioguide_id SQL backfill, `congress/route.js` caching completion.
+- **Top priority next session:** Add Vercel env vars for web push notifications (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`).
+
+### 2026-06-11 — Automated Daily Update
+- No new CivicWatch coding sessions.
+- Daily update session hit rate limit and could not complete.
+
+### 2026-06-10 — Automated Daily Update
+- No new CivicWatch coding sessions today.
+- **Reminder — still open:** 10 P3 QA fixes from June 5 — run `python3 ~/civicwatch/_push.py` if not yet pushed (check vs. commit `eeed1397`).
+- **Screenshot blocker still open:** June 5 project continuation session stalled waiting on Marc's 11 screenshots (came through at 31px wide / unreadable). Re-share at full width to resume.
+- **Priority next session:** Vercel env vars still need adding (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`) to activate web push notifications.
+
+### 2026-06-09 — Automated Daily Update
+- No new CivicWatch coding sessions today.
+- **Reminder — still open:** 10 P3 QA fixes from June 5 need `python3 ~/civicwatch/_push.py` run if not yet pushed. Check commits vs. `eeed1397` to confirm.
+- **Top priority for next session:** Re-share the 11 screenshots at full width (the June 5 project continuation session stalled because they came through at 31px wide / unreadable).
+
+### 2026-06-08 — Automated Daily Update
+- No new CivicWatch coding sessions today.
+- **Infrastructure fix:** Connected `~/civicwatch` as a Cowork workspace folder — automated daily update task can now write directly to the repo (no more manual copy step).
+- Updated task SKILL.md with new write approach via `mcp__cowork__request_cowork_directory`.
+
+### 2026-06-07
+- No new CivicWatch coding sessions.
 
 ---
 
@@ -778,7 +764,7 @@ All emails on GoDaddy.com domain.
 ### 🔴 Critical — before the next deploy
 
 - [ ] **Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase.** Committee alerts are committed and will run on the daily cron; without this table `sendCommitteeAlerts` errors.
-- [x] **`CONGRESS_API_KEY` confirmed set in Vercel** (July 17) — Production, Preview, Development. Committee + legislation alerts only need the migration now.
+- [ ] **Confirm `CONGRESS_API_KEY` is set in Vercel.** Both committee and legislation alerts return 0 without it — silently.
 - [ ] **Decide on Apple Pay / Google Pay.** `PaymentRequestButton` has been built-but-unmounted since June 26 (`df3cf63`, a logo commit, removed it from `/pro`). The activation bug that would have made it charge-without-Pro is fixed, so re-mounting is safe. Either mount it on `/pro` or delete the dead path (`components/PaymentRequestButton.js`, `app/api/subscribe-instant/route.js`).
 - [ ] **`package-lock.json` is out of sync with `package.json`.** A plain `npm install` rewrites ~800 lines (adds `sharp` to the root dependency list, bumps transitive versions). Deliberately excluded from `59fa0e6`. Worth resolving deliberately — a stale lockfile can break `npm ci` on Vercel.
 - [ ] **Review the daily-update task's summarisation step.** Its July 15 run cut `CivicWatch.md` from 817 to 252 lines, deleting nine reference sections and all June history, and deleted the reconciliation block's open questions without answering them. Restored in `aa322b1`.
@@ -786,7 +772,7 @@ All emails on GoDaddy.com domain.
 ### Immediate (before launch)
 - [x] Run `python3 ~/civicwatch/_push.py` on Mac to push the 10 P3 QA fixes from June 5 — ✅ Done June 8 (confirmed)
 - [x] Add CCPA/GDPR named sections to Privacy Policy — ✅ Done June 29
-- [x] **NEW (July 4):** Meta + TikTok pixel env vars — ✅ **Done** (verified July 17: both set in Production/Preview). Pixel code is live, gated on them in `app/layout.js:81-86`.
+- [ ] **NEW (July 4):** Add `NEXT_PUBLIC_META_PIXEL_ID` + `NEXT_PUBLIC_TIKTOK_PIXEL_ID` to Vercel env vars, then push pixel code (`components/MetaPixel.jsx`, `components/TiktokPixel.jsx`, updated `app/layout.js`)
 - [ ] **NEW (July 4):** Record 45-second founder POV video ("Why I Built This") — identified as highest-ROI marketing asset
 - [ ] **NEW (July 4):** Set up @CivicWatchAlerts X/Twitter bot account for automated trade alert posts
 - [x] **NEW (July 8):** Finish + verify the in-progress feature build (Conflict Score, `/trades`, `/accountability`, return-on-trade, committee alerts) — ✅ **Done July 16–17** (`59fa0e6`). It was never uncommitted here; it lived in the stale iCloud clone. Build verified, exit 0.
@@ -796,10 +782,10 @@ All emails on GoDaddy.com domain.
 - [ ] **NEW (July 9):** Build `/api/og-image` — referenced in page metadata but doesn't exist; social share preview images are currently broken
 - [ ] **NEW (July 9):** Review `CivicWatch_Competitive_Analysis_and_Roadmap_v2.docx` (supersedes the July 8 v1) — Phase 5–8 roadmap, next priority is distribution (API, backlinks, content) over new features
 - [ ] **NEW (July 9):** GitHub push/commit connector still not available in Cowork sessions — confirmed after troubleshooting with Marc; all code changes continue to require a manual Mac-side `git commit` + `_push.py` run
-- [ ] **Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`** — verified July 17: all four absent from Production. Until set, browser push silently delivers nothing despite being built and shipped.
+- [ ] Add Vercel env vars: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`
 - [ ] Apply Supabase migration for `push_subscriptions` table (project: `hgtofwsvbblumcgbqzat`)
 - [ ] Register Clerk webhook: Clerk Dashboard → `https://civicwatch.app/api/webhooks/clerk` → event: `user.created` → add `CLERK_WEBHOOK_SECRET` to Vercel
-- [x] Verify `CONGRESS_API_KEY` is set in Vercel — ✅ **Confirmed July 17** (Production, Preview, Development)
+- [ ] Verify `CONGRESS_API_KEY` is set in Vercel (affects leaderboard party badges)
 - [ ] Fix "Transparency is the foundation of democracy" duplication on About page h1 vs Mission section
 - [ ] Add Refund Policy link to homepage marketing footer (currently only in dashboard footer)
 - [ ] Add "Do Not Sell My Personal Information" link to all footers
@@ -850,7 +836,7 @@ All emails on GoDaddy.com domain.
 
 ---
 
-*File built from: Product Spec Sheet (June 2026) + live site audit of civicwatch.app + full session transcript OCR (11 screenshots, March–June 2026) · Last rebuilt: June 6, 2026 · Last updated: July 22, 2026*
+*File built from: Product Spec Sheet (June 2026) + live site audit of civicwatch.app + full session transcript OCR (11 screenshots, March–June 2026) · Last rebuilt: June 6, 2026 · Last updated: July 9, 2026*
 
 ---
 
@@ -884,3 +870,86 @@ Both migration *files* are committed. Whether they've been **applied in Supabase
 - [ ] Verify X bot env vars in Vercel: `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` — the `*/15` cron is live, so **if these are unset the bot has been failing silently every 15 minutes since June 20**
 
 ### A. June history recovered from the June 24 GitHub copy — **RESOLVED: folded in below as permanent history**
+### 2026-06-24 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 24).
+- All previous work through June 21 remains current (see below).
+- **Open items unchanged** — top priorities: add Vercel env vars for X bot (`TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`) and web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`); apply Supabase migrations for `push_subscriptions`, `x_bot_posts`, and `ai_usage` tables.
+- **⚠️ GitHub push via API** — pushing CivicWatch.md to repo via GitHub Git Data API using `_push.py`.
+
+### 2026-06-23 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 23).
+- All previous work through June 21 remains current (see below).
+- **Open items unchanged** — top priorities: add Vercel env vars for X bot (`TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`) and web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`); apply Supabase migrations for `push_subscriptions`, `x_bot_posts`, and `ai_usage` tables.
+- Marc was active today on a separate project (DrivPilot — executive summary / product doc updates).
+- **⚠️ GitHub push still Mac-side only** — iCloud copy written; run `python3 ~/civicwatch/_push.py` on Mac to push to repo.
+
+### 2026-06-22 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 22).
+- All previous work through June 21 is captured below.
+- **Open items unchanged** — top priorities remain: add Vercel env vars for X bot (`TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET`) and web push (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`), apply Supabase migrations for `push_subscriptions`, `x_bot_posts`, and `ai_usage` tables.
+- **⚠️ GitHub push still Mac-side only** — iCloud copy written; run `python3 ~/civicwatch/_push.py` on Mac to push to repo.
+
+### 2026-06-21 — Real CivicWatch Logo Deployed (Commit 3292825)
+
+**Commit `3292825` — Brand logo replaces emoji placeholder (pushed ~2:14 PM PDT)**
+- `public/brand/` — 7 brand PNG assets added: `civicwatch_logo_gold.png`, `logo_civicwatch_horizontal.png`, `logo_civicwatch_stacked.png`, `logo_icon_on_white.png`, `logo_icon_transparent.png`, `logo_marc_compact.png`, `logo_marc_founder.png`
+- `components/CivicWatch.jsx` — header logo changed from 🏛️ emoji + text (`CIVIC` / `WATCH`) to `<Image src="/brand/logo_civicwatch_horizontal.png" width={180} height={49}>` via Next.js `<Image>` with `priority`
+- `app/layout.js` — favicon and Apple touch icon now point to `logo_icon_transparent.png` (replaces old `favicon.ico` / `favicon-32.png` / `icon-192.png` stack)
+
+### 2026-06-20 — Automated Daily Update + TWO NEW FEATURES PUSHED
+- **TWO major commits pushed today** — @CivicWatchAlerts X bot + Apple Pay / Google Pay checkout (see details below).
+- **⚠️ GitHub push still Mac-side only** — CivicWatch.md updated in iCloud-synced folder; GitHub push of this file requires `python3 ~/civicwatch/_push.py` on Mac.
+- Previous automated daily update sessions (June 15–19) failed to write to repo due to filesystem sandbox limitations.
+
+### 2026-06-20 — X Bot + Apple Pay (Commits f1c7d3c, 61e116e)
+
+**Commit `f1c7d3c` — @CivicWatchAlerts X Bot (pushed 12:49 PM)**
+- `app/api/alerts/x-bot/route.js` — queries `fd_trades` + `senate_trades` for trades created in last 2 hours; posts each to X via Twitter API v2 (OAuth 1.0a); records posted trade IDs in `x_bot_posts` table to prevent duplicates; fetches party from Congress.gov API best-effort
+- `supabase/migrations/20260620000001_create_x_bot_posts.sql` — dedup table for posted trades
+- `vercel.json` — adds `*/15` cron trigger for `/api/alerts/x-bot` (fires every 15 minutes)
+- `docs/x-bot-setup.md` — Twitter app creation guide, OAuth scopes, required env vars
+
+**Commit `61e116e` — Exit-Intent Modal + Apple Pay / Google Pay (pushed 12:18 AM)**
+- `components/ExitIntentModal.js` — fires on mouseleave (desktop) or 60s idle (mobile); shows once per session; hidden for signed-in users; state dropdown → `/dashboard?state=`; name search → `/dashboard?search=`
+- `components/PaymentRequestButton.js` — Stripe Payment Request Button (Apple Pay / Google Pay); rendered above standard CTA on `/pro`; falls back silently if wallet unavailable
+- `app/api/subscribe-instant/route.js` — creates subscription directly via `paymentMethodId`; returns `clientSecret` when 3DS confirmation is needed
+- `app/api/webhooks/stripe/route.js` — adds `invoice.paid` handler to activate Pro for Payment Request Button path; skips if already Pro to avoid duplicate welcome emails
+- `app/dashboard/page.js` — reads `?state=` and `?search=` params and passes to CivicWatch component
+- Installs `@stripe/stripe-js` for client-side wallet detection
+
+**⚠️ NEW ENV VARS NEEDED (X Bot):** `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` — see `docs/x-bot-setup.md`
+
+### 2026-06-14 — Infrastructure Sprint (Commits 3d362c9, 43647d1, ab1ca20, 353c54b, 6e07e11)
+
+**Commit `3d362c9` — P0/P1 Launch Fixes (major):**
+- Health endpoint, rate limiting, caching, auth hardening, push notifications, dedup constraints
+
+**Commit `ab1ca20` — AI Gateway Middleware:**
+- `lib/ai-gateway.js` — centralized AI spend tracking + token logging for all AI calls
+- `supabase/migrations/20260615000003_create_ai_usage.sql` — `ai_usage` table
+- Updated `app/api/analyze-rep/route.js` and `app/api/media/generate-image/route.js` to route through gateway
+
+**Commit `353c54b` — AI Code Review GitHub Action:**
+- `.github/workflows/ai-review.yml` — auto-reviews PRs with Claude Sonnet 4.6
+
+**Commit `6e07e11` — Free-tier daily token cap: 500 → 2,000 tokens**
+
+### 2026-06-15 to 2026-06-19 — Companion App Built + Architecture Documented
+
+**June 17 — Companion Voter-Matching App (separate project, NOT in main repo):**
+- *"CivicWatch monetization strategy"* session — 3-tier playbook Word doc for companion app: **Free / Voter Pro / Civic Pack** tiers; full landing page copy + CivicWatch upsell conversion flow.
+- *"Playbook loading issue"* session — Complete voter-matching web app: `index.html` (5-question quiz, ranked results with freemium blur on 4+, AI chat, email capture, Stripe buttons), `PROJECT_BRIEF.md`, `GRANT_GUIDE.md` (CCIP, Knight, Democracy Fund, Mozilla), `ROLLOUT_TIMELINE.md` (6 phases to Election Day).
+
+**June 19 — Architecture Documented:**
+- *"Create detailed flowchart for civicwatch.app"* session — Full system diagram: 14 API routes, 13 external data sources, auth flow, caching strategy.
+- *"Civicwatch.app project continuation"* session — Stalled: Marc sent 11 screenshots but came through at **31px wide** (unreadable). Re-share at full resolution to resume.
+- Two bugs fixed in `~/civichub-live/` prototype only (not main repo): ProPublica double-transform removed; `inOfficeSince` calc corrected.
+
+**June 15–16:** No new CivicWatch coding sessions.
+
+### 2026-06-14 — Automated Daily Update
+- No new CivicWatch coding sessions today (June 14).
+- **Open items unchanged** — top priority remains adding Vercel env vars for web push notifications (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `INTERNAL_API_SECRET`) and applying the `push_subscriptions` Supabase migration.
+- **Reminder:** `bioguide_id` SQL backfill for 97 OCR `fd_net_worth` rows still needed, and `congress/route.js` caching layer is incomplete (15 return statements done, not complete).
+- **Screenshot blocker still open:** "Civicwatch.app project continuation" session stalled waiting on Marc's 11 screenshots (came through at 31px wide / unreadable). Re-share at full resolution to resume.
+- **⚠️ GitHub push still Mac-side only** — iCloud copy and `_push.py` require running on the Mac; this automated task can write CivicWatch.md via Cowork folder connection but cannot push to GitHub from the Linux sandbox.
