@@ -232,9 +232,14 @@ export async function POST(request) {
         }
         if (!clerkUser) break
 
+        // Merge, don't replace — see the note on the invoice.paid handler.
+        // Setting `tier` explicitly also matters: without it, access relied on
+        // getUserTier()'s isPro fallback rather than a stored value.
         await clerk.users.updateUserMetadata(clerkUserId, {
           publicMetadata: {
+            ...(clerkUser.publicMetadata ?? {}),
             isPro: true,
+            tier: 'pro',
             stripeCustomerId: session.customer,
             stripeSubscriptionId: session.subscription,
             proActivatedAt: new Date().toISOString(),
@@ -360,15 +365,16 @@ export async function POST(request) {
         }
         if (!walletUser) break
 
-        const tier = ['voter_pro', 'civic_pack'].includes(subscription.metadata?.tier)
-          ? subscription.metadata.tier
-          : 'civic_pack'
         const wasPro = walletUser.publicMetadata?.isPro === true
 
+        // Merge, don't replace. updateUserMetadata overwrites publicMetadata
+        // wholesale, so spreading the existing object preserves onboarding
+        // state, preferences, and anything else stored alongside billing.
         await clerk.users.updateUserMetadata(clerkUserId, {
           publicMetadata: {
+            ...(walletUser.publicMetadata ?? {}),
             isPro: true,
-            tier,
+            tier: 'pro',
             stripeCustomerId: customerId,
             stripeSubscriptionId: subscription.id,
             // Renewals also fire invoice.paid — don't reset the original date.
@@ -384,7 +390,7 @@ export async function POST(request) {
             walletUser.emailAddresses?.[0]?.emailAddress,
             walletUser.firstName || ''
           )
-          console.log(`✅ Pro activated via wallet checkout (${tier})`)
+          console.log('✅ Pro activated via wallet checkout')
         }
         break
       }

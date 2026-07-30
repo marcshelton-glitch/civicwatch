@@ -10,15 +10,14 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
 
   // Derive tier from prop (passed by CivicWatch) or fall back to reading user directly
   const tier = tierProp ?? getUserTier(user)
-  const isVoterProPlus = tier !== 'free'
-  const isCivicPack = tier === 'civic_pack'
+  const isPaid = tier !== 'free'
   const tierLabel = TIER_LABELS[tier] || 'Free'
 
   useEffect(() => {
-    if (isOpen && isVoterProPlus) {
+    if (isOpen && isPaid) {
       fetch('/api/preferences').then(r => r.json()).then(d => { if (d && !d.error) setPrefs(d) })
     }
-  }, [isOpen, isVoterProPlus])
+  }, [isOpen, isPaid])
 
   if (!isOpen) return null
 
@@ -36,8 +35,8 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
           <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Account</div>
           <div style={{ color: '#e8e8e8', fontSize: 14 }}>{user?.fullName || user?.firstName || 'User'}</div>
           <div style={{ color: '#8899aa', fontSize: 12, marginBottom: 8 }}>{user?.primaryEmailAddress?.emailAddress}</div>
-          <span style={{ background: isVoterProPlus ? '#1a3a1a' : '#1e2a3a', color: isVoterProPlus ? '#4caf50' : '#8899aa', fontSize: 11, padding: '2px 8px', borderRadius: 10, border: `1px solid ${isVoterProPlus ? '#4caf50' : '#334466'}` }}>
-            {isVoterProPlus ? `★ ${tierLabel}` : 'Free Plan'}
+          <span style={{ background: isPaid ? '#1a3a1a' : '#1e2a3a', color: isPaid ? '#4caf50' : '#8899aa', fontSize: 11, padding: '2px 8px', borderRadius: 10, border: `1px solid ${isPaid ? '#4caf50' : '#334466'}` }}>
+            {isPaid ? `★ ${tierLabel}` : 'Free Plan'}
           </span>
         </div>
 
@@ -53,7 +52,7 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
         </div>
 
         {/* Voter Pro+: notification prefs */}
-        {isVoterProPlus && (
+        {isPaid && (
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Email Notifications</div>
             {[['alert_trades','Trade Disclosures'],['alert_committees','Committee Assignments'],['alert_networth','Net Worth Updates'],['alert_legislation','Sponsored Legislation']].map(([key, label]) => (
@@ -66,30 +65,25 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
         )}
 
         {/* Voter Pro+: billing */}
-        {isVoterProPlus && (
+        {isPaid && (
           <div style={{ marginBottom: 20 }}>
             <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Billing</div>
             <button onClick={() => fetch('/api/billing-portal', { method: 'POST' }).then(r=>r.json()).then(d=>{ if(d.url) window.location.href=d.url })} style={{ background: '#1e3a5f', color: '#e8e8e8', border: '1px solid #2a5f9e', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, width: '100%' }}>Manage Billing & Subscription →</button>
           </div>
         )}
 
-        {/* Voter Pro (not Civic Pack): upsell to Civic Pack */}
-        {isVoterProPlus && !isCivicPack && (
-          <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a2a3a, #0d1a2a)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none', marginBottom: 12 }}>
-            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 8, textAlign: 'center', fontSize: 13 }}>★ Upgrade to Civic Pack — $9.99/mo</div>
-            <div style={{ fontSize: 12, color: '#8899aa', textAlign: 'center' }}>Full AI reports, higher token caps</div>
-          </a>
-        )}
-
-        {/* Free: upgrade CTA */}
-        {!isVoterProPlus && (
+        {/* Free: upgrade CTA. CivicWatch sells one paid plan — Pro, $9.99/mo.
+            This block previously advertised "from $3.99/mo" and a Civic Pack
+            upsell, both carried over from the California Candidate Calculator's
+            pricing. Free users saw $3.99 here and $9.99 on /pro. */}
+        {!isPaid && (
           <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a3a1a, #0d2a0d)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none' }}>
-            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 10, textAlign: 'center' }}>★ Upgrade — from $3.99/mo</div>
+            <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 10, textAlign: 'center' }}>★ Upgrade to Pro — $9.99/mo</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
                 '📊 Net worth & financial disclosures',
                 '🔔 Real-time alerts for tracked reps',
-                '🤖 Full AI accountability reports (Civic Pack)',
+                '🤖 Full AI accountability reports',
                 '📈 Stock trade conflict analysis',
               ].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b0bac8' }}>

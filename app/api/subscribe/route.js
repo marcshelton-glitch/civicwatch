@@ -1,5 +1,6 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
+import { getProMonthlyPriceId, PriceConfigError } from '@/lib/stripe-prices'
 
 // Lazy — see app/api/pro-count/route.js for why this isn't module-scope.
 let _stripe = null
@@ -41,6 +42,23 @@ export async function POST(request) {
     return Response.json({ error: 'Already subscribed' }, { status: 400 })
   }
 
+  // ── Price config ──────────────────────────────────────────────────────────
+  // Resolved before the try block so a misconfiguration surfaces as its own
+  // diagnostic rather than being swallowed by the generic checkout catch.
+  let proPriceId
+  try {
+    proPriceId = getProMonthlyPriceId()
+  } catch (err) {
+    if (err instanceof PriceConfigError) {
+      console.error('STRIPE PRICE MISCONFIGURED —', err.message)
+      return Response.json(
+        { error: 'Checkout is temporarily unavailable. Our team has been notified.' },
+        { status: 503 }
+      )
+    }
+    throw err
+  }
+
   try {
     const stripe = getStripe()
     const appUrl = getSafeAppUrl()
@@ -67,7 +85,7 @@ export async function POST(request) {
       payment_method_collection: 'always',
       customer: customerId,
       client_reference_id: userId,
-      line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: proPriceId, quantity: 1 }],
       allow_promotion_codes: true,
       metadata: { clerkUserId: userId },
       success_url: `${appUrl}/dashboard?upgrade=success`,

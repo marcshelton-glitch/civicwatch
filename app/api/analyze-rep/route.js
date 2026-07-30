@@ -167,8 +167,8 @@ export async function POST(request) {
   const user = await currentUser()
   const userTier = getUserTier(user)
 
-  if (mode === 'full' && userTier !== 'civic_pack') {
-    return Response.json({ error: 'Civic Pack subscription required' }, { status: 403 })
+  if (mode === 'full' && userTier !== 'pro') {
+    return Response.json({ error: 'Pro subscription required' }, { status: 403 })
   }
 
   // ── Rate limiting ─────────────────────────────────────────────────────────
@@ -184,7 +184,7 @@ export async function POST(request) {
   // ── Spend cap ─────────────────────────────────────────────────────────────
   const underCap = await checkSpendCap(userId, userTier)
   if (!underCap) {
-    const capLabels = { civic_pack: '50,000', voter_pro: '10,000', free: '2,000' }
+    const capLabels = { pro: '50,000', free: '2,000' }
     const cap = capLabels[userTier] ?? '2,000'
     return Response.json(
       { error: `Daily token limit reached (${cap} tokens/${userTier} tier). Resets at midnight UTC.` },

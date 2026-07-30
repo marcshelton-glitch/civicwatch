@@ -1,6 +1,6 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
-import { getUserTier, tierAtLeast } from '@/lib/tier-utils'
+import { getProMonthlyPriceId, PriceConfigError } from '@/lib/stripe-prices'
 
 // Lazy — see app/api/pro-count/route.js for why this isn't module-scope.
 let _stripe = null
@@ -9,12 +9,14 @@ function getStripe() {
   return _stripe
 }
 
-const PRICE_MAP = {
-  voter_pro: () => process.env.STRIPE_VOTER_PRO_MONTHLY_PRICE_ID,
-  civic_pack: () => process.env.STRIPE_PRO_PRICE_ID,
-}
-
-const VALID_TIERS = ['voter_pro', 'civic_pack']
+// CivicWatch sells exactly one paid tier: Pro, $9.99/mo.
+//
+// This route previously carried a voter_pro / civic_pack PRICE_MAP imported
+// from the California Candidate Calculator's pricing model. voter_pro pointed
+// at STRIPE_VOTER_PRO_MONTHLY_PRICE_ID — a live price on the *other* product.
+// It was only ever unreachable because PaymentRequestButton is not mounted;
+// mounting it would have charged CivicWatch customers against that product.
+// The map is gone. There is one price, and it is validated before use.
 
 export async function POST(request) {
   const { userId } = await auth()
@@ -29,22 +31,29 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { paymentMethodId, tier: rawTier } = body
-  const tier = VALID_TIERS.includes(rawTier) ? rawTier : 'civic_pack'
+  const { paymentMethodId } = body
 
   if (!paymentMethodId || typeof paymentMethodId !== 'string') {
     return Response.json({ error: 'paymentMethodId is required' }, { status: 400 })
   }
 
   const user = await currentUser()
-  const currentTier = getUserTier(user)
-  if (currentTier !== 'free' && tierAtLeast(currentTier, tier)) {
-    return Response.json({ error: 'Already subscribed to this tier or higher' }, { status: 400 })
+  if (user?.publicMetadata?.isPro === true) {
+    return Response.json({ error: 'Already subscribed' }, { status: 400 })
   }
 
-  const priceId = PRICE_MAP[tier]?.()
-  if (!priceId) {
-    return Response.json({ error: `Price not configured for ${tier}` }, { status: 500 })
+  let priceId
+  try {
+    priceId = getProMonthlyPriceId()
+  } catch (err) {
+    if (err instanceof PriceConfigError) {
+      console.error('STRIPE PRICE MISCONFIGURED —', err.message)
+      return Response.json(
+        { error: 'Checkout is temporarily unavailable. Our team has been notified.' },
+        { status: 503 }
+      )
+    }
+    throw err
   }
 
   try {
@@ -68,7 +77,7 @@ export async function POST(request) {
       customer: customerId,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
-      metadata: { clerkUserId: userId, tier },
+      metadata: { clerkUserId: userId, tier: 'pro' },
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],

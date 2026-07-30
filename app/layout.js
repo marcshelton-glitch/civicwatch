@@ -18,6 +18,11 @@ export const viewport = {
 }
 
 export const metadata = {
+  // Required: openGraph.images and twitter.images below are relative paths.
+  // Without metadataBase, Next resolves them against http://localhost:3000 —
+  // so every link shared to X, Facebook, LinkedIn or iMessage renders a broken
+  // preview card. Silent in production; only visible as a build warning.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.civicwatch.app'),
   title: 'CivicWatch — See What Congress Is Buying',
   description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
   keywords: 'congress stock trades, representative financial disclosure, STOCK Act, congressional transparency, civicwatch',
