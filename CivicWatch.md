@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 28, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: July 30, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -24,6 +24,140 @@
 > branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
 > session treat the backup as a repo in the first place. Its content is not unique — those commits'
 > work reached this repo by another route. Retiring it would make the backup behave like a backup.
+
+---
+
+## ⚡ Daily Update — July 30, 2026
+
+### 🔴 CivicWatch could not take money. Checkout had been failing on every attempt.
+
+**Root cause:** `/api/subscribe` — the only reachable checkout path, behind all three
+"Upgrade" CTAs on `/pro` — built its Stripe session with
+`line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID }]`. **That variable was never set
+in Vercel.** Stripe received `price: undefined`, threw, and the user saw "Failed to start
+checkout." Every upgrade attempt, for as long as the variable has been missing.
+
+**Why it wasn't obvious:** the Vercel project *did* carry three Stripe price IDs — but they
+belong to the **California Candidate Calculator**, a separate product whose pricing model
+(Free / Voter Pro / Civic Pack) had bled into this repo. The env looked populated. None of
+the three was the variable the code actually reads.
+
+| Contaminating env var | Price ID | Referenced by CivicWatch code |
+|---|---|---|
+| `STRIPE_VOTER_PRO_MONTHLY_PRICE_ID` | `price_1Tmk39Pe8la2Z0hh4yDJnWca` | `subscribe-instant` only — **latent landmine** |
+| `STRIPE_VOTER_PRO_ONETIME_PRICE_ID` | `price_1Tmk3DPe8la2Z0hhnM08fsN8` | nothing |
+| `STRIPE_CIVIC_PACK_ONETIME_PRICE_ID` | `price_1Tmk3FPe8la2Z0hh5tGr95kY` | nothing |
+
+All three share the account fragment `Pe8la2Z0hh` and sequential suffixes (`1Tmk39/3D/3F`)
+— same Stripe account, created in one sitting. So `STRIPE_SECRET_KEY` and the webhook
+secret are fine; what was missing was the right **Product**, not a different account.
+
+**No customer was ever mischarged.** `/api/subscribe` always failed on the undefined price,
+and the wallet path has been unmounted since `df3cf63` (June 26). The failure mode was
+"no revenue," not "wrong revenue."
+
+### 🔴 Second live bug: `/pro` charged $9.99, Settings advertised $3.99
+
+`components/SettingsPanel.jsx` showed free users **"★ Upgrade — from $3.99/mo"** — more
+Candidate Calculator pricing — while `/pro` charged $9.99. Anyone who opened Account
+Settings saw one price and got quoted another at checkout. Also removed a phantom
+"Upgrade to Civic Pack" block that would have started showing to *paying* Pro users once
+tiers were set correctly.
+
+### 🔴 Third: every shared link had a broken preview card
+
+`metadataBase` was never set in `app/layout.js`, so the relative `openGraph.images` /
+`twitter.images` paths resolved against `http://localhost:3000`. Every CivicWatch link
+shared to X, Facebook, LinkedIn or iMessage rendered a broken preview. Silent in
+production — visible only as a build warning. (The homepage was unaffected; it has its own
+`generateMetadata` with absolute URLs. The inheriting pages — `/pro`, `/about`, `/trades`,
+`/accountability`, `/leaderboard`, `/press` — were not.)
+
+Combined with the dead X bot and missing pixels, the entire free-distribution loop was
+offline.
+
+### ✅ Committed `d008cab` — 11 files, build verified
+
+- **`lib/stripe-prices.js` (new)** — `getProMonthlyPriceId()` validates the price and
+  **hard-rejects the three Candidate Calculator IDs by value**, so they can never be
+  charged against CivicWatch even if pasted back into Vercel. Unit-tested across 6 cases.
+- **`/api/subscribe`** — uses the resolver; misconfiguration returns `503` + an explicit
+  server log instead of a silent `500`.
+- **`/api/subscribe-instant`** — the `voter_pro`/`civic_pack` `PRICE_MAP` is gone. This was
+  the real hazard: re-mounting Apple Pay would have charged CivicWatch customers against
+  the Candidate Calculator's product.
+- **`/api/webhooks/stripe`** — both grant paths now **merge** `publicMetadata` instead of
+  replacing it wholesale (it was silently wiping onboarding state and preferences), and set
+  `tier` explicitly rather than relying on `getUserTier()`'s `isPro` fallback.
+- **`lib/tier-utils.js`** — collapsed to `free` | `pro`. **CivicWatch sells exactly one paid
+  plan.** Legacy `voter_pro`/`civic_pack` still map to `pro` so no account loses access.
+- **`lib/ai-gateway.js`, `/api/analyze-rep`** — spend caps and gates keyed on `pro`.
+- **`app/layout.js`** — `metadataBase` set.
+- **`docs/stripe-price-fix.md` (new)** — handoff: exact Stripe/Vercel steps + test plan.
+
+### 🧹 Toolchain: three separate problems, all resolved
+
+1. **`node_modules/.bin` pointed at iCloud.** All 25 shims were absolute symlinks into
+   `AI App Projects/CivicWatch/node_modules/…`. Local builds were executing the *iCloud
+   copy's* Next.js binary — one iCloud eviction from breaking with `next: not found`. This
+   is the documented two-clone hazard reaching the toolchain. Now relative.
+2. **`package-lock.json` was out of sync** (the long-standing open item). One root cause:
+   `package.json` declared `sharp@^0.35.2`, lock pinned `0.34.5`; the ~50 `@img/sharp-*`
+   errors were all downstream. Resynced to `0.35.3`. **Note:** `sharp` is imported directly
+   in `app/api/rep-photo/[bioguideId]/route.js`, so this bump touches live code — verify
+   headshots render.
+3. **Orphaned `~/node_modules` + `~/package-lock.json`** (no `package.json`) made Next infer
+   `/Users/marcshelton` as the workspace root. Worse, Node resolves upward — any project
+   under `~/` could silently satisfy a missing dependency from there and then fail on
+   Vercel. Removed; the clean rebuild confirmed nothing depended on it.
+
+**Repeated `ENOTEMPTY` / "Directory not empty" failures were Finder.** `.next/build/`
+contained exactly one file: `.DS_Store`. Next deletes its artifacts, calls `rmdir`, and
+chokes because Finder re-dropped `.DS_Store`. Same cause as the earlier
+`rm -rf node_modules` failures. Fix: close Finder windows on the project, `rm -rf .next`.
+
+`npm run build` passes — 61 routes, no `metadataBase` warnings, no workspace-root warning.
+The push also carried up `558b653` (July 28 docs), which had been sitting local-only.
+
+### 🔲 BLOCKING — only Marc can do this
+
+Code alone does not restore checkout. **Stripe Dashboard → Products:**
+
+1. Find or create **CivicWatch Pro**, recurring **$9.99/mo USD**; copy the `price_…` ID.
+2. Set `STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID` in Vercel (Production + Preview).
+3. **Delete** the three Candidate Calculator vars listed above.
+4. Redeploy, then run one real card through `/pro` and confirm: charge lands on the
+   **CivicWatch** product · Clerk metadata gains `isPro: true` **and** `tier: 'pro'` ·
+   a full AI report loads.
+
+Until step 2, checkout returns a clean `503` with a loud server log — so it will be
+obvious whether it took. See `docs/stripe-price-fix.md`.
+
+### ⚠️ Still open — the rest of the revenue path
+
+- **`RESEND_API_KEY` unset** → `getResend()` returns null, so welcome, **dunning**,
+  cancellation, and net-worth alert emails all silently no-op. No dunning means every
+  failed card is permanent involuntary churn. **Highest-value item after checkout works.**
+- **`X_BOT_*` unset** → the `*/15` cron has posted nothing since June 20 (~6 weeks).
+- **No `NEXT_PUBLIC_GA_MEASUREMENT_ID` / Meta / TikTok pixel IDs** → no funnel visibility,
+  no attribution, cannot run paid acquisition.
+- **Apple Pay still unmounted** — now *safe* to mount (the foreign price map is gone), but
+  do it only after the Stripe price ID is set and verified.
+- **11 unrelated modified files** in the working tree (`disclosures`, `onboarding`,
+  `preferences`, `track`, `proxy.ts`, `requirePro.js`, …) predate this session and remain
+  uncommitted. Triage separately.
+- Unchanged from before: apply `committee_snapshots` migration, confirm `CONGRESS_API_KEY`
+  in Vercel, verify `x_bot_posts` / `ai_usage` migrations applied.
+
+---
+
+## ⚡ Daily Update — July 29, 2026
+
+**Strategic Review & Marketing Planning — No Development Commits**
+
+- **Marketing Gantt chart reviewed:** The interactive HTML Gantt chart from July 28 (6-phase campaign with 41 tasks spanning July 27–November 7, 2026) was reviewed and validated. All phase dates, dependencies, and November 3 election-day anchor are confirmed. Progress tracking and export-for-Claude button ready for ongoing use.
+- **No CivicWatch.app development sessions today.** This update reflects strategic planning only — no feature work, bug fixes, or commits.
+- **Open items unchanged** — top priorities remain: Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase, confirm `CONGRESS_API_KEY` in Vercel, decide on Apple Pay/Google Pay mounting, resolve `package-lock.json` sync, and add Vercel env vars for web push and pixels.
 
 ---
 
@@ -111,7 +245,10 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | Compare any two representatives | Pro | ✅ Live |
 | Net Worth Alerts | Pro | ✅ Live (Resend, dedup via sent_alerts) |
 | @CivicWatchAlerts X bot | — | ✅ Live — code (verified July 16: `app/api/alerts/x-bot/route.js` committed, `*/15` cron in `vercel.json`). ⚠️ Requires `TWITTER_*` Vercel env vars + `x_bot_posts` migration — **runtime unverified** |
-| Apple Pay / Google Pay checkout | Pro | ⚠️ **Built, not mounted** — `PaymentRequestButton.js` is imported nowhere; `df3cf63` (logo commit) removed it from `/pro` on June 26. Unreachable, so **no customer was ever mischarged**. Activation gap fixed July 17 (`4629403`), so re-mounting is now safe — product decision |
+| Apple Pay / Google Pay checkout | Pro | ⚠️ **Built, not mounted** — `PaymentRequestButton.js` is imported nowhere; `df3cf63` (logo commit) removed it from `/pro` on June 26. Unreachable, so **no customer was ever mischarged**. Activation gap fixed July 17 (`4629403`); the Candidate Calculator price map removed July 30 (`d008cab`) — mounting was unsafe until then. Now safe **once `STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID` is set and verified** |
+| Card checkout (`/api/subscribe`) | Pro | 🔴 **Broken until Vercel env is set** — `STRIPE_PRO_PRICE_ID` was never configured, so every upgrade attempt failed. Code fixed July 30 (`d008cab`); now returns a diagnostic `503` instead of a silent `500`. **Requires `STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID` in Vercel to work** |
+| Pricing tiers | — | ✅ **Free + Pro ($9.99/mo) only.** The `voter_pro` / `civic_pack` ladder was California Candidate Calculator contamination and was never sold on civicwatch.app. Collapsed July 30 (`d008cab`); legacy values still map to `pro` |
+| Social preview cards (OG / Twitter) | Free | ✅ Fixed July 30 (`d008cab`) — `metadataBase` was unset, so every shared link on inheriting pages rendered a broken preview against `localhost:3000` |
 | Exit-intent modal | Free | ✅ Live (verified July 16: `components/ExitIntentModal.js` committed) |
 | AI gateway (spend tracking) | — | ✅ Live — code (verified July 16: `lib/ai-gateway.js` committed). ⚠️ `ai_usage` migration application **unverified** |
 | AI code review GitHub Action | — | ✅ Live (verified July 16: `.github/workflows/ai-review.yml` committed) |
