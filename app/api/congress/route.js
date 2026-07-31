@@ -266,6 +266,11 @@ export async function GET(request) {
           url: m.url,
           officialWebsiteUrl: m.officialWebsiteUrl || null,
           depiction: m.depiction?.imageUrl || null,
+          // The map sidebar and other consumers render a photo only when `photo` is
+          // set, and this shape never set it — so every member coming from this
+          // endpoint fell through to the initials avatar. /api/representatives has
+          // always emitted the same field; this brings the two into line.
+          photo: m.bioguideId ? `/api/rep-photo/${m.bioguideId}` : null,
         }
       })
       return NextResponse.json({ members, source: 'live' }, {
@@ -293,6 +298,7 @@ export async function GET(request) {
           birthYear: m.birthYear,
           officialWebsiteUrl: m.officialWebsiteUrl,
           depiction: m.depiction?.imageUrl || null,
+          photo: m.bioguideId ? `/api/rep-photo/${m.bioguideId}` : null,
           leadership: m.leadership || [],
           terms: m.terms || [],
         },
