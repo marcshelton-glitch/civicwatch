@@ -10,6 +10,16 @@ const S = {
   cardBg: 'rgba(255,255,255,0.04)', border: 'rgba(212,175,55,0.25)',
 }
 
+// Resolve founding-document scans by *filename* via Special:FilePath rather than by
+// Commons' content-hash thumb path. The previous hotlink pointed at
+// .../thumb/6/6c/Constitution_of_the_United_States,_page_1.jpg/960px-...jpg
+// Commons later re-uploaded that file as a .tif, which moved it to hash 6/60 and
+// changed the extension — so the old URL began returning a hard 404 and the image
+// silently disappeared from the page. Special:FilePath resolves by name and follows
+// re-uploads, so a future rename can't break it the same way.
+const CONSTITUTION_IMG =
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Constitution%20of%20the%20United%20States%2C%20page%201.tif?width=1200'
+
 const CONSTITUTION_ARTICLES = [
   { id: 'preamble', title: 'Preamble', original: 'We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defence, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.', plain: 'This introduction explains why the Constitution was created: to form a unified nation, ensure justice, maintain peace, and protect the freedom of all Americans.' },
   { id: 'art1', title: 'Article I – The Legislative Branch', original: 'All legislative Powers herein granted shall be vested in a Congress of the United States, which shall consist of a Senate and House of Representatives...', plain: 'Creates Congress — the Senate and House of Representatives — and gives them the power to make laws.' },
@@ -81,7 +91,7 @@ export default function ConstitutionPage() {
             onClick={() => setLightboxOpen(true)}
           >
             <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
+              src={CONSTITUTION_IMG}
               alt="Constitution of the United States, page 1"
               referrerPolicy="no-referrer"
               style={{ width: '100%', maxHeight: 260, objectFit: 'cover', objectPosition: 'top', display: 'block', cursor: 'pointer' }}
@@ -114,7 +124,7 @@ export default function ConstitutionPage() {
               ×
             </button>
             <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
+              src={CONSTITUTION_IMG}
               alt="Constitution of the United States, page 1 — full view"
               referrerPolicy="no-referrer"
               onClick={e => e.stopPropagation()}

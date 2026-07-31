@@ -118,6 +118,17 @@ const REPS = []
 // ─── REMOVED: mock ALERT_LOG. Alerts are fetched live from Congress API. ─────
 const ALERT_LOG = []
 
+// ─── FOUNDING DOCUMENT SCANS ──────────────────────────────────────────────────
+// Resolved by *filename* via Special:FilePath rather than by Commons' content-hash
+// thumb path. The old hotlinks pointed at .../thumb/<hash>/<name>.jpg/960px-....jpg;
+// Commons re-uploaded the Constitution scan as a .tif, which moved its hash from
+// 6/6c to 6/60 and changed the extension, so the URL started returning a hard 404
+// and the image silently vanished. Special:FilePath follows re-uploads by name.
+const CONSTITUTION_IMG =
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Constitution%20of%20the%20United%20States%2C%20page%201.tif?width=1200'
+const DECLARATION_IMG =
+  'https://commons.wikimedia.org/wiki/Special:FilePath/United%20States%20Declaration%20of%20Independence.jpg?width=1200'
+
 // ─── CONSTITUTION (real data) ─────────────────────────────────────────────────
 const CONSTITUTION_ARTICLES = [
   { id: "preamble", title: "Preamble", original: "We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defence, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.", plain: "This introduction explains why the Constitution was created: to form a unified nation, ensure justice, maintain peace, and protect the freedom of all Americans." },
@@ -140,6 +151,45 @@ const AMENDMENTS = [
   { num: 15, title: "Right to Vote Regardless of Race (1870)", original: "The right of citizens of the United States to vote shall not be denied or abridged by the United States or by any State on account of race, color, or previous condition of servitude.", plain: "Citizens cannot be denied the right to vote based on race or previous enslaved status." },
   { num: 19, title: "Women's Right to Vote (1920)", original: "The right of citizens of the United States to vote shall not be denied or abridged on account of sex.", plain: "Women have the right to vote." },
   { num: 26, title: "Voting Age Lowered to 18 (1971)", original: "The right of citizens of the United States, who are eighteen years of age or older, to vote shall not be denied or abridged on account of age.", plain: "Citizens 18 and older have the right to vote." },
+]
+
+const DECLARATION_SECTIONS = [
+  {
+    id: "preamble",
+    title: "Preamble",
+    original: "When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation.",
+    plain: "When a people must break free from the government ruling them, they owe the world an explanation for why."
+  },
+  {
+    id: "self-evident",
+    title: "Self-Evident Truths",
+    original: "We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness. — That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, — That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government...",
+    plain: "All people are created equal with rights that cannot be taken away — life, liberty, and the pursuit of happiness. Governments exist to protect those rights, and when they don't, the people have the right to change or overthrow them."
+  },
+  {
+    id: "grievances",
+    title: "List of Grievances Against the King",
+    original: "He has refused his Assent to Laws, the most wholesome and necessary for the public good... He has forbidden his Governors to pass Laws of immediate and pressing importance... He has dissolved Representative Houses repeatedly, for opposing with manly firmness his invasions on the rights of the people... He has obstructed the Administration of Justice... He has kept among us, in times of peace, Standing Armies... He has imposed Taxes on us without our Consent... He has deprived us in many cases, of the benefits of Trial by Jury...",
+    plain: "The colonists list 27 specific abuses by King George III: blocking laws, dissolving legislatures, keeping military troops among civilians in peacetime, taxing without consent, denying jury trials, and more."
+  },
+  {
+    id: "attempts",
+    title: "Appeals to the British People and King",
+    original: "In every stage of these Oppressions We have Petitioned for Redress in the most humble terms: Our repeated Petitions have been answered only by repeated injury. A Prince, whose character is thus marked by every act which may define a Tyrant, is unfit to be the ruler of a free people... We have warned them from time to time of attempts by their legislature to extend an unwarrantable jurisdiction over us...",
+    plain: "The colonists repeatedly asked the king to fix these wrongs and were ignored every time. They also warned the British people, who failed to act. A ruler who acts like a tyrant is unfit to govern a free people."
+  },
+  {
+    id: "declaration",
+    title: "The Declaration",
+    original: "We, therefore, the Representatives of the united States of America, in General Congress, Assembled, appealing to the Supreme Judge of the world for the rectitude of our intentions, do, in the Name, and by Authority of the good People of these Colonies, solemnly publish and declare, That these United Colonies are, and of Right ought to be Free and Independent States; that they are Absolved from all Allegiance to the British Crown, and that all political connection between them and the State of Great Britain, is and ought to be totally dissolved...",
+    plain: "Therefore, the representatives of the United States declare that these colonies are free and independent states, no longer part of Great Britain. They are dissolved from all loyalty to the British Crown and have full power to make war, make peace, form alliances, and do all other things that free nations do."
+  },
+  {
+    id: "pledge",
+    title: "The Signers' Pledge",
+    original: "And for the support of this Declaration, with a firm reliance on the protection of divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor.",
+    plain: "The 56 signers pledged everything — their lives, their wealth, and their reputations — to this cause. Many risked death by signing."
+  },
 ]
 
 const STATE_MAP_DATA = [
@@ -932,13 +982,13 @@ useEffect(() => {
         @keyframes nwAreaReveal { from { opacity: 0; } to { opacity: 1; } }
         @keyframes nwDotPop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
         ::-webkit-scrollbar { width:6px } ::-webkit-scrollbar-track { background:${S.navy} } ::-webkit-scrollbar-thumb { background:${S.navyMid}; border-radius:3px }
-        @media (max-width: 768px) {
-          .mobile-stack { grid-template-columns: 1fr !important; }
-          .mobile-col { flex-direction: column !important; }
-          .mobile-scroll { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
-          .mobile-hide { display: none !important; }
-          .map-layout { grid-template-columns: 1fr !important; }
-          /* Mobile header: nav tabs drop to their own scrollable row */
+        /* Header: logo + nav + actions total ~1060-1200px of un-shrinkable content
+           (every button is white-space: nowrap). In a 1200px container that left
+           almost no slack, so on narrower viewports — and on any browser whose font
+           metrics run a few px wide, e.g. Safari — the three groups collided:
+           "My Reps" wrapped mid-word and "About" overlapped the Leaderboard button.
+           Below 1180px the nav now drops to its own scrollable row instead. */
+        @media (max-width: 1180px) {
           .header-inner { flex-wrap: wrap !important; }
           .header-nav {
             order: 3; width: 100%; border-top: 1px solid rgba(212,175,55,0.15);
@@ -949,6 +999,13 @@ useEffect(() => {
           .header-nav .nav-btn { padding: 8px 10px !important; font-size: 11px !important; white-space: nowrap; }
           .header-logo { order: 1; }
           .header-actions { order: 2; }
+        }
+        @media (max-width: 768px) {
+          .mobile-stack { grid-template-columns: 1fr !important; }
+          .mobile-col { flex-direction: column !important; }
+          .mobile-scroll { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
+          .mobile-hide { display: none !important; }
+          .map-layout { grid-template-columns: 1fr !important; }
           .header-actions .header-username { display: none !important; }
           /* Rep detail hero: action buttons wrap to multiple rows on mobile */
           .rep-hero-actions { flex-basis: 100% !important; flex-wrap: wrap !important; flex-direction: row !important; }
@@ -981,23 +1038,36 @@ useEffect(() => {
 
       {/* HEADER */}
       <header style={{ background: `linear-gradient(135deg, #0A0E1E, ${S.navyMid})`, borderBottom: `2px solid ${S.gold}`, position: "sticky", top: 0, zIndex: 100 }}>
-        <div className="header-inner" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        {/* maxWidth 1320 (not the 1200 used for page content): logo 180 + nav ~413 +
+            actions ~568 + gaps needs ~1184px, which does not fit in 1200 minus padding.
+            That 16px shortfall is what squeezed the nav and wrapped "My Reps" mid-label.
+            Measured on the live header — 1280 is the break-even point, 1320 leaves room
+            for the extra "Go Pro" + avatar buttons in the signed-in state. */}
+        <div className="header-inner" style={{ maxWidth: 1320, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 4, columnGap: 12 }}>
           <button className="header-logo"
             onClick={() => { setActiveTab("reps"); clearRep() }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
-            <span style={{ fontSize: 26 }}>🏛️</span>
-            <div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, letterSpacing: 2, color: S.white }}>CIVIC<span style={{ color: S.gold }}>WATCH</span></div>
-              <div style={{ fontSize: 9, letterSpacing: 3, color: S.gray, textTransform: "uppercase" }}>Your Representatives. Accountable.</div>
-            </div>
+            <Image
+              src="/brand/logo_civicwatch_horizontal.png"
+              alt="CivicWatch — Your Representatives. Accountable."
+              width={180}
+              height={49}
+              priority
+              style={{ objectFit: "contain" }}
+            />
           </button>
-          <nav className="header-nav" style={{ display: "flex", gap: 2 }}>
+          {/* flexShrink 0: the nav buttons are all white-space: nowrap, so letting this
+              box shrink just pushes its contents outside it and back over the actions
+              group — the original overlap. Refusing to shrink makes the actions wrap to
+              a second row instead, which degrades cleanly. */}
+          <nav className="header-nav" style={{ display: "flex", gap: 2, flexShrink: 0, minWidth: 0 }}>
             {[
               { id: "reps", label: "My Reps" },
               { id: "map", label: "Map" },
               { id: "alerts", label: `Alerts${unreadCount > 0 ? ` (${unreadCount})` : ""}` },
               { id: "search", label: "Search" },
               { id: "constitution", label: "Constitution" },
+              { id: "declaration", label: "Declaration" },
             ].map(tab => (
               <button key={tab.id} className={`nav-btn ${activeTab === tab.id ? "active" : ""}`}
                 onClick={() => { setActiveTab(tab.id); clearRep() }}
@@ -1195,7 +1265,7 @@ useEffect(() => {
                       <div style={{ position: "relative" }}>
                         {rep.photo ? (
                           <>
-                            <Image src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
+                            <Image unoptimized src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: "50%", border: `3px solid ${S.gold}`, objectFit: "cover" }}
                               onError={e => { const el = e.currentTarget; const direct = rep.id ? `https://bioguide.congress.gov/bioguide/photo/${rep.id[0]}/${rep.id}.jpg` : null; if (direct && !el.dataset.triedDirect) { el.dataset.triedDirect = '1'; el.src = direct } else { el.style.display = 'none'; el.nextSibling.style.display = 'block' } }} />
                             <InitialsAvatar name={rep.name} party={rep.party} size={68} style={{ display: 'none', border: `3px solid ${S.gold}` }} />
                           </>
@@ -1273,7 +1343,7 @@ useEffect(() => {
                           <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
                             <div style={{ position: 'relative' }}>
                               {rep.photo
-                                ? <Image src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: '50%', border: `3px solid ${levelColor}`, objectFit: 'cover' }}
+                                ? <Image unoptimized src={rep.photo} alt={rep.name} width={68} height={68} style={{ borderRadius: '50%', border: `3px solid ${levelColor}`, objectFit: 'cover' }}
                                     onError={e => { e.currentTarget.style.display='none'; e.currentTarget.nextSibling.style.display='block' }} />
                                 : null}
                               <InitialsAvatar name={rep.name} party={rep.party} size={68}
@@ -1654,7 +1724,7 @@ useEffect(() => {
                 className="rep-card">
                 {r.photo ? (
                   <>
-                    <Image src={r.photo} alt={r.name} width={38} height={38} style={{ borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
+                    <Image unoptimized src={r.photo} alt={r.name} width={38} height={38} style={{ borderRadius: "50%", border: `2px solid ${S.gold}`, objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
                     <InitialsAvatar name={r.name} party={r.party} size={38} style={{ display: 'none', border: `2px solid ${S.gold}`, flexShrink: 0 }} />
                   </>
                 ) : (
@@ -1715,7 +1785,7 @@ useEffect(() => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
                     <InitialsAvatar name={trade.name} party={party || ''} size={40} />
-                    {photo && <Image src={photo} alt="" fill style={{ borderRadius: '50%', objectFit: 'cover', border: `2px solid ${S.gold}` }} onError={e => { e.currentTarget.style.display = 'none' }} />}
+                    {photo && <Image unoptimized src={photo} alt="" fill style={{ borderRadius: '50%', objectFit: 'cover', border: `2px solid ${S.gold}` }} onError={e => { e.currentTarget.style.display = 'none' }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: S.white, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trade.name}</div>
@@ -1790,7 +1860,7 @@ useEffect(() => {
                 {displayReps.map(r => (
                   <div key={r.id} onClick={() => toggleTrack(r.id)}
                     style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", background: tracked.includes(r.id) ? `rgba(212,175,55,0.12)` : S.cardBg, border: `1px solid ${tracked.includes(r.id) ? S.gold : S.border}`, borderRadius: 30, cursor: "pointer" }}>
-                    <Image src={r.photo} alt={r.name} width={26} height={26} style={{ borderRadius: "50%", objectFit: "cover" }} onError={e => { e.currentTarget.style.display = 'none' }} />
+                    <Image unoptimized src={r.photo} alt={r.name} width={26} height={26} style={{ borderRadius: "50%", objectFit: "cover" }} onError={e => { e.currentTarget.style.display = 'none' }} />
                     <span style={{ fontSize: 12, color: tracked.includes(r.id) ? S.gold : S.gray }}>{r.name.split(" ").slice(-1)[0]}</span>
                     {tracked.includes(r.id) && <span style={{ color: S.gold, fontSize: 11 }}>✓</span>}
                   </div>
@@ -1899,7 +1969,7 @@ useEffect(() => {
                     <div key={alert.id} className={"glass-card" + (alert.read ? "" : " alert-unread")}
                       style={{ padding: "14px 16px", borderRadius: 10, display: "flex", gap: 12, alignItems: "center" }}>
                       <span style={{ fontSize: 20 }}>{typeIcon}</span>
-                      {photo && <Image src={photo} alt="" width={34} height={34} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none' }} />}
+                      {photo && <Image unoptimized src={photo} alt="" width={34} height={34} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} onError={e => { e.currentTarget.style.display = 'none' }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alert.message}</div>
                         <div style={{ fontSize: 11, color: S.gray }}>{displayTime}</div>
@@ -1986,7 +2056,7 @@ useEffect(() => {
                     >
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: partyColor }} />
                       <div style={{ position: 'relative', flexShrink: 0, marginTop: 3 }}>
-                        <Image src={photo} alt={displayName}
+                        <Image unoptimized src={photo} alt={displayName}
                           width={56} height={56}
                           style={{ borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
                           onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }} />
@@ -2034,7 +2104,7 @@ useEffect(() => {
             {/* Header image */}
             <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, border: `1px solid ${S.border}` }}>
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Constitution_of_the_United_States%2C_page_1.jpg/960px-Constitution_of_the_United_States%2C_page_1.jpg"
+                src={CONSTITUTION_IMG}
                 alt="Constitution of the United States, page 1"
                 referrerPolicy="no-referrer"
                 style={{ width: "100%", maxHeight: 260, objectFit: "cover", objectPosition: "top", display: "block" }}
@@ -2086,6 +2156,50 @@ useEffect(() => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+        {/* DECLARATION OF INDEPENDENCE */}
+        {activeTab === "declaration" && (
+          <div className="slide-in">
+            <SectionHeader title="The Declaration of Independence" subtitle="Adopted July 4, 1776 — the founding document that proclaimed the thirteen colonies free from British rule." />
+
+            {/* Header image */}
+            <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, border: `1px solid ${S.border}` }}>
+              <img
+                src={DECLARATION_IMG}
+                alt="Declaration of Independence"
+                referrerPolicy="no-referrer"
+                style={{ width: "100%", maxHeight: 260, objectFit: "cover", objectPosition: "top", display: "block" }}
+              />
+            </div>
+
+            {/* Intro */}
+            <p style={{ fontSize: 14, color: S.grayLight, lineHeight: 1.8, marginBottom: 24, padding: "16px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+              The Declaration of Independence was adopted by the Second Continental Congress on July 4, 1776. Written primarily by Thomas Jefferson, it announced and explained the separation of the thirteen American colonies from Great Britain. It remains one of the most influential documents in world history.
+            </p>
+
+            {/* Archive link */}
+            <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
+              <a href="https://www.archives.gov/founding-docs/declaration" target="_blank" rel="noreferrer"
+                style={{ padding: "8px 18px", background: `rgba(212,175,55,0.1)`, border: `1px solid ${S.gold}`, borderRadius: 8, color: S.gold, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+                📜 National Archives
+              </a>
+            </div>
+
+            {/* Sections */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {DECLARATION_SECTIONS.map(sec => (
+                <ConstitutionCard key={sec.id} title={sec.title} plain={sec.plain} original={sec.original} S={S} />
+              ))}
+            </div>
+
+            {/* Signers callout */}
+            <div style={{ marginTop: 28, padding: "18px 20px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 14, color: S.gold, marginBottom: 8 }}>56 Signers</div>
+              <p style={{ fontSize: 13, color: S.grayLight, lineHeight: 1.7, margin: 0 }}>
+                Fifty-six delegates to the Continental Congress signed the Declaration between August 2 and November 4, 1776. The signers represented all thirteen original colonies. John Hancock, as President of Congress, signed first with a notably large signature. By signing, each man risked being charged with treason against the British Crown — a crime punishable by death.
+              </p>
+            </div>
           </div>
         )}
       </main>
@@ -2647,7 +2761,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         <div className="star-pattern" style={{ position: "absolute", inset: 0, opacity: 0.4 }} />
         <div style={{ position: "relative", display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
           {(rep.photo && !profilePhotoFailed) ? (
-            <Image src={rep.photo} alt={rep.name} width={90} height={90} style={{ borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
+            <Image unoptimized src={rep.photo} alt={rep.name} width={90} height={90} style={{ borderRadius: "50%", border: `4px solid ${S.gold}`, objectFit: "cover" }}
               onError={e => { const el = e.currentTarget; const direct = rep.id ? `https://bioguide.congress.gov/bioguide/photo/${rep.id[0]}/${rep.id}.jpg` : null; if (direct && !el.dataset.triedDirect) { el.dataset.triedDirect = '1'; el.src = direct } else { setProfilePhotoFailed(true) } }} />
           ) : (
             <InitialsAvatar name={rep.name} party={rep.party} size={90}
@@ -2750,7 +2864,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           onMouseLeave={e => e.currentTarget.style.borderColor = S.border}
                         >
                           <div style={{ position: 'relative', flexShrink: 0 }}>
-                            <Image src={photo} alt={displayName}
+                            <Image unoptimized src={photo} alt={displayName}
                               width={40} height={40}
                               style={{ borderRadius: '50%', border: `2px solid ${partyColor}`, objectFit: 'cover' }}
                               onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }} />
@@ -2787,7 +2901,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                 <div className="compare-card-header">
                   <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                     {rep.photo
-                      ? <Image src={rep.photo} alt={repDisplayName}
+                      ? <Image unoptimized src={rep.photo} alt={repDisplayName}
                           width={60} height={60}
                           style={{ borderRadius: '50%', border: `3px solid ${S.gold}`, objectFit: 'cover', margin: '0 auto 10px', display: 'block' }}
                           onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
@@ -2803,7 +2917,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                   <div className="compare-vs-mobile">VS</div>
                   <div style={{ padding: '20px 16px', textAlign: 'center' }}>
                     <div style={{ position: 'relative', width: 60, margin: '0 auto 10px' }}>
-                      <Image src={compareRep.photo} alt={compareRep.displayName}
+                      <Image unoptimized src={compareRep.photo} alt={compareRep.displayName}
                         width={60} height={60}
                         style={{ borderRadius: '50%', border: `3px solid ${compareRep.partyColor}`, objectFit: 'cover', display: 'block' }}
                         onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'block' }} />
