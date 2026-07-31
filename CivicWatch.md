@@ -27,6 +27,27 @@
 
 ---
 
+## ⚡ Daily Update — July 30, 2026 (continued)
+
+### ✅ Map Sidebar Photos Rendering — Commit `ab7f52c`
+
+**Bug:** Map sidebar on `/dashboard` showed initials (GJ, KK, TM, etc.) instead of congressional portraits for California representatives.
+
+**Root cause:** `/api/congress` was stripping the `photo` field from response objects before returning them.
+
+**Fix committed `ab7f52c`** — `app/api/congress/route.js`
+- Now emits `photo: "/api/rep-photo/G000607"` (and others) in response
+- Map sidebar receives the field and renders `<Image>` elements instead of falling through to initials
+- Verified on production: California panel now displays **6 portrait images where there were 0** (cold lambda latency caused earlier "pending" state; lazy-load correctly defers off-screen images)
+
+**Verified:** `/api/congress?type=members&state=CA` returns `photo` field ✅ | `<Image>` elements in viewport ✅ | `src` URLs return 200 image/webp in 51ms ✅
+
+**Still outstanding:**
+- CSP headers missing in production (silent failures on some resource loads)
+- Founding documents (Declaration of Independence, Constitution) — currently external links, need self-hosted scans with OCR
+
+---
+
 ## ⚡ Daily Update — July 30, 2026
 
 ### 🔴 CivicWatch could not take money. Checkout had been failing on every attempt.
