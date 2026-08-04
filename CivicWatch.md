@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: August 2, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: August 3, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -24,6 +24,33 @@
 > branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
 > session treat the backup as a repo in the first place. Its content is not unique — those commits'
 > work reached this repo by another route. Retiring it would make the backup behave like a backup.
+
+---
+
+## ⚡ Recent Work — 2026-08-03
+
+### Committee Memberships Migration
+- **Applied** `migrations/010_committee_memberships.sql` to production
+  - Table with sector indexes and read-only RLS verified
+- **Created** `scripts/ingest-committees.mjs`
+  - Pulls both congressional committee YAMLs (HSAG and HSAG22 keys)
+  - Joins full committees + subcommittees, dry-run by default
+  - Prints coverage report: 27 of 43 committees map to sector
+- **Extracted** Congress arithmetic to `lib/congressSession.js` to prevent drift
+- **Rewired routes** to read `committee_memberships` table
+- **Tenure/Scoring** scoped to 119th Congress; older trades shown but not scored
+- **Sector mapping gaps:** Appropriations, Environment and Public Works, Education and Workforce
+- **Status:** 5 commits, unpushed. Ready to push after ingest runs on Mac.
+- **Blocker:** Run ingest on Mac (sandbox blocks raw.githubusercontent.com):
+  ```bash
+  npm install && node --env-file=.env.local scripts/ingest-committees.mjs --apply
+  ```
+
+### Photo Field Data Flow Fix
+- **Verified** `/api/congress?type=members&state=CA` returns `photo` field
+- **Map sidebar** renders 6 Image elements (was 0)
+- **Performance** confirmed: 51ms photo fetch, 200 image/webp
+- **Still needs:** Visual verification on production dashboard (open civicwatch.app/dashboard, check California panel)
 
 ---
 
@@ -426,7 +453,7 @@ CivicWatch makes congressional financial activity visible, searchable, and share
 | Exit-intent modal | Free | ✅ Live (verified July 16: `components/ExitIntentModal.js` committed) |
 | AI gateway (spend tracking) | — | ✅ Live — code (verified July 16: `lib/ai-gateway.js` committed). ⚠️ `ai_usage` migration application **unverified** |
 | AI code review GitHub Action | — | ✅ Live (verified July 16: `.github/workflows/ai-review.yml` committed) |
-| Committee assignment alerts | Sign-In | ✅ Committed `59fa0e6` — ⚠️ needs `committee_snapshots` migration applied in Supabase + `CONGRESS_API_KEY` in Vercel, else no-ops |
+| Committee assignment alerts | Sign-In | ✅ Live (migration `010_committee_memberships` applied to production 2026-08-03; ingest runs on Mac) — 27 of 43 committees mapped to sector; gaps: Appropriations, Environment, Education |
 | Sponsored legislation alerts | Sign-In | ✅ Committed `59fa0e6` — **was implemented, not scaffolded.** Fetches sponsored bills live from Congress.gov per tracked member; no `rep_legislation` table needed. ⚠️ Requires `CONGRESS_API_KEY` |
 | Annual subscription tier | — | 🔲 Planned |
 | Trade Conflict Analysis | Pro | ✅ Committed `59fa0e6` (Conflict Score card + `/api/conflict-score`) — build verified |
@@ -945,7 +972,7 @@ All emails on GoDaddy.com domain.
 
 ### 🔴 Critical — before the next deploy
 
-- [ ] **Apply `supabase/migrations/20260709000000_committee_snapshots.sql` in Supabase.** Committee alerts are committed and will run on the daily cron; without this table `sendCommitteeAlerts` errors.
+- [x] **Committee memberships migration applied (2026-08-03).** Migration `010_committee_memberships` deployed to production; ingest script `scripts/ingest-committees.mjs` ready — **still needs to run on Mac** (sandbox blocks raw.githubusercontent.com). Command: `npm install && node --env-file=.env.local scripts/ingest-committees.mjs --apply`
 - [ ] **Confirm `CONGRESS_API_KEY` is set in Vercel.** Both committee and legislation alerts return 0 without it — silently.
 - [ ] **Decide on Apple Pay / Google Pay.** `PaymentRequestButton` has been built-but-unmounted since June 26 (`df3cf63`, a logo commit, removed it from `/pro`). The activation bug that would have made it charge-without-Pro is fixed, so re-mounting is safe. Either mount it on `/pro` or delete the dead path (`components/PaymentRequestButton.js`, `app/api/subscribe-instant/route.js`).
 - [ ] **`package-lock.json` is out of sync with `package.json`.** A plain `npm install` rewrites ~800 lines (adds `sharp` to the root dependency list, bumps transitive versions). Deliberately excluded from `59fa0e6`. Worth resolving deliberately — a stale lockfile can break `npm ci` on Vercel.
@@ -954,6 +981,7 @@ All emails on GoDaddy.com domain.
 ### Immediate (before launch)
 - [x] Run `python3 ~/civicwatch/_push.py` on Mac to push the 10 P3 QA fixes from June 5 — ✅ Done June 8 (confirmed)
 - [x] Add CCPA/GDPR named sections to Privacy Policy — ✅ Done June 29
+- [ ] **NEW (Aug 3):** Visual verification of congressional photos on production dashboard — open civicwatch.app/dashboard → California panel, verify 6 portraits render (API verified, map sidebar verified, still needs browser visual check)
 - [ ] **NEW (July 4):** Add `NEXT_PUBLIC_META_PIXEL_ID` + `NEXT_PUBLIC_TIKTOK_PIXEL_ID` to Vercel env vars, then push pixel code (`components/MetaPixel.jsx`, `components/TiktokPixel.jsx`, updated `app/layout.js`)
 - [ ] **NEW (July 4):** Record 45-second founder POV video ("Why I Built This") — identified as highest-ROI marketing asset
 - [ ] **NEW (July 4):** Set up @CivicWatchAlerts X/Twitter bot account for automated trade alert posts
