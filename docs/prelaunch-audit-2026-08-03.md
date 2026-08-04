@@ -187,6 +187,62 @@ node --env-file=.env.local scripts/backfill-trades-bioguide.mjs          # repor
 node --env-file=.env.local scripts/backfill-trades-bioguide.mjs --apply  # write
 ```
 
+### The other half of the join is also broken — committees return `[]`
+
+Verified after the backfill:
+
+```
+GET /api/conflict-score?bioguideId=F000450
+→ totalTradesReviewed: 117   ← was 0, the backfill worked
+→ committees: []             ← still nothing to match against
+```
+
+The scorer needs both sides. Trades now arrive; committee assignments do not.
+
+Both `fetchCommitteesWithTenure()` in `app/api/conflict-score/route.js` and the
+`type === 'committees'` branch in `app/api/congress/route.js` read
+`json.member.terms[].memberOf[]` from Congress.gov `/member/{bioguideId}`.
+
+**That field does not exist.** Per the [official MemberEndpoint
+documentation](https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/MemberEndpoint.md),
+a `terms.item` contains only `memberType`, `congress`, `chamber`, `stateCode`,
+`stateName`, `partyName`, `partyCode`, `startYear`, `endYear`, `district`. There
+is no committee data anywhere in that response. `term.memberOf` is always
+`undefined`, the inner loop never runs, and the result is always `[]`.
+
+Confirmed live — the UI's Committees tab is empty for everyone too:
+
+```
+GET /api/congress?type=committees&bioguideId=F000450 → {"committees":[],"source":"live"}
+```
+
+Congress.gov v3 does not expose per-member committee assignments at all, so this
+cannot be fixed by correcting the field path. It needs a different source.
+
+**Recommended: `unitedstates/congress-legislators`** — the standard public
+dataset, actively maintained, no API key. Both files verified present:
+
+| File | Size | Provides |
+|---|---|---|
+| `committee-membership-current.yaml` | 291 KB | bioguide IDs per committee, with `rank` and `title` |
+| `committees-current.yaml` | 63 KB | committee names, chambers, `thomas_id` codes, subcommittees |
+
+Raw URLs: `https://raw.githubusercontent.com/unitedstates/congress-legislators/main/<file>`
+
+Scope of the fix (not started — your call):
+
+1. New `committee_memberships` table, plus an ingest script parsing both YAMLs.
+2. Map their committee names onto the keys `lib/committeeSectors.js` already uses
+   — this is the fiddly part and needs a coverage check, not a guess.
+3. Point both routes at the table instead of Congress.gov.
+4. **Tenure caveat:** the `-current` files are a snapshot, not history. The
+   scorer's methodology is "served on that committee *at the time of the trade*",
+   so a current-only snapshot would flag trades against committees a member had
+   not yet joined. `committees-historical.yaml` covers the committees themselves
+   but not per-member historical rosters. Either constrain scoring to the current
+   Congress and say so in the methodology text, or source historical rosters
+   separately. Do not quietly widen the claim.
+
 ### The data is stale, and some of it is wrong
 
 ```sql
