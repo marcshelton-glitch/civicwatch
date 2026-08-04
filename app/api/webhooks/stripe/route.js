@@ -271,9 +271,16 @@ export async function POST(request) {
           break
         }
 
+        // Merge, don't replace — updateUserMetadata overwrites publicMetadata
+        // wholesale. Replacing it here wiped onboardingComplete and every other
+        // non-billing key, so a cancelled user who later resubscribed was walked
+        // back through onboarding. `tier` must also be set explicitly: dropping
+        // the key left getUserTier() inferring access from a stale default.
         await clerk.users.updateUserMetadata(user.id, {
           publicMetadata: {
+            ...(user.publicMetadata ?? {}),
             isPro: false,
+            tier: 'free',
             stripeCustomerId: customerId,
             stripeSubscriptionId: null,
             proCancelledAt: new Date().toISOString(),
@@ -304,9 +311,12 @@ export async function POST(request) {
           break
         }
 
+        // Merge — see the note on customer.subscription.deleted.
         await clerk.users.updateUserMetadata(user.id, {
           publicMetadata: {
+            ...(user.publicMetadata ?? {}),
             isPro: false,
+            tier: 'free',
             stripeCustomerId: customerId,
             stripeSubscriptionId: null,
             proCancelledAt: new Date().toISOString(),
@@ -421,9 +431,12 @@ export async function POST(request) {
 
           const user = await findClerkUserByStripeCustomerId(clerk, customerId)
           if (user) {
+            // Merge — see the note on customer.subscription.deleted.
             await clerk.users.updateUserMetadata(user.id, {
               publicMetadata: {
+                ...(user.publicMetadata ?? {}),
                 isPro: false,
+                tier: 'free',
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: subscription.id,
                 proSuspendedAt: new Date().toISOString(),

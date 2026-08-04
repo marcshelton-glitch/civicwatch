@@ -133,54 +133,59 @@ async function runAlerts(request) {
     console.warn('send-alerts: called from non-production environment:', process.env.VERCEL_ENV)
   }
 
-  const supabase = getSupabase()
-  const clerk = await clerkClient()
+  try {
+    const supabase = getSupabase()
+    const clerk = await clerkClient()
 
-  // ── 1. Fetch all tracked reps ─────────────────────────────────────────────
-  const { data: allTracked, error: trackErr } = await supabase
-    .from('user_tracked_reps')
-    .select('user_id, bioguide_id, last_name, is_senator, rep_name')
+    // ── 1. Fetch all tracked reps ───────────────────────────────────────────
+    const { data: allTracked, error: trackErr } = await supabase
+      .from('user_tracked_reps')
+      .select('user_id, bioguide_id, last_name, is_senator, rep_name')
 
-  if (trackErr) {
-    console.error('send-alerts: failed to fetch tracked reps:', trackErr.message)
-    return NextResponse.json({ error: 'DB error' }, { status: 500 })
+    if (trackErr) {
+      console.error('send-alerts: failed to fetch tracked reps:', trackErr.message)
+      return NextResponse.json({ error: 'DB error' }, { status: 500 })
+    }
+
+    if (!allTracked || allTracked.length === 0) {
+      return NextResponse.json({ sent: 0, message: 'No tracked reps' })
+    }
+
+    // ── 2. Fetch user preferences for alert filtering ──────────────────────
+    const { data: allPrefs } = await supabase
+      .from('user_preferences')
+      .select('user_id, alert_trades, alert_networth, alert_legislation, alert_committees')
+
+    const prefsMap = {}
+    for (const p of allPrefs || []) {
+      prefsMap[p.user_id] = p
+    }
+
+    // ── 3. Determine new-filing window (25h to overlap the 24h cron cadence) ─
+    const cutoff = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString()
+
+    // ── 4. Group tracked reps by user_id ────────────────────────────────────
+    const byUser = {}
+    for (const row of allTracked) {
+      if (!byUser[row.user_id]) byUser[row.user_id] = []
+      byUser[row.user_id].push(row)
+    }
+
+    // ── 5. Run all alert types in parallel ──────────────────────────────────
+    const [tradesSent, networthSent, committeeSent, legislationSent] = await Promise.all([
+      sendTradeAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+      sendNetWorthAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+      sendCommitteeAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+      sendLegislationAlerts(supabase, clerk, byUser, prefsMap, cutoff),
+    ])
+
+    const totalSent = tradesSent + networthSent + committeeSent + legislationSent
+    console.log(`send-alerts: done — trades:${tradesSent} networth:${networthSent} committee:${committeeSent} legislation:${legislationSent}`)
+    return NextResponse.json({ sent: totalSent, trades: tradesSent, networth: networthSent, committee: committeeSent, legislation: legislationSent }, { headers: { 'Cache-Control': 'private, no-store' } })
+  } catch (err) {
+    console.error('send-alerts: fatal error:', err.message)
+    return NextResponse.json({ error: 'Failed to run alerts' }, { status: 500 })
   }
-
-  if (!allTracked || allTracked.length === 0) {
-    return NextResponse.json({ sent: 0, message: 'No tracked reps' })
-  }
-
-  // ── 2. Fetch user preferences for alert filtering ─────────────────────────
-  const { data: allPrefs } = await supabase
-    .from('user_preferences')
-    .select('user_id, alert_trades, alert_networth, alert_legislation, alert_committees')
-
-  const prefsMap = {}
-  for (const p of allPrefs || []) {
-    prefsMap[p.user_id] = p
-  }
-
-  // ── 3. Determine new-filing window (25h to overlap the 24h cron cadence) ──
-  const cutoff = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString()
-
-  // ── 4. Group tracked reps by user_id ─────────────────────────────────────
-  const byUser = {}
-  for (const row of allTracked) {
-    if (!byUser[row.user_id]) byUser[row.user_id] = []
-    byUser[row.user_id].push(row)
-  }
-
-  // ── 5. Run all alert types in parallel ───────────────────────────────────
-  const [tradesSent, networthSent, committeeSent, legislationSent] = await Promise.all([
-    sendTradeAlerts(supabase, clerk, byUser, prefsMap, cutoff),
-    sendNetWorthAlerts(supabase, clerk, byUser, prefsMap, cutoff),
-    sendCommitteeAlerts(supabase, clerk, byUser, prefsMap, cutoff),
-    sendLegislationAlerts(supabase, clerk, byUser, prefsMap, cutoff),
-  ])
-
-  const totalSent = tradesSent + networthSent + committeeSent + legislationSent
-  console.log(`send-alerts: done — trades:${tradesSent} networth:${networthSent} committee:${committeeSent} legislation:${legislationSent}`)
-  return NextResponse.json({ sent: totalSent, trades: tradesSent, networth: networthSent, committee: committeeSent, legislation: legislationSent }, { headers: { 'Cache-Control': 'private, no-store' } })
 }
 
 // ── Trade alerts ──────────────────────────────────────────────────────────────

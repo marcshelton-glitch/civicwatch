@@ -16,18 +16,23 @@ export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const user = await currentUser();
-  const email = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase() || '';
+  try {
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase() || '';
 
-  if (!ADMIN_EMAILS.includes(email)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!ADMIN_EMAILS.includes(email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { data, error } = await getSupabase()
+      .from('refund_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ requests: data });
+  } catch (err) {
+    console.error('refund-list GET error:', err.message);
+    return NextResponse.json({ error: 'Failed to fetch refund requests.' }, { status: 500 });
   }
-
-  const { data, error } = await getSupabase()
-    .from('refund_requests')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ requests: data });
 }

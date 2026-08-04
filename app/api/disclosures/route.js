@@ -41,64 +41,69 @@ export async function GET(request) {
 
   if (!lastName) return NextResponse.json({ error: 'lastName required' }, { status: 400 })
 
-  const currentYear = new Date().getFullYear()
-  // Fetch last 4 years in parallel — annual FDs are filed in the following year
-  const years = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3]
-  const allMembers = (await Promise.all(years.map(fetchFDIndex))).flat()
+  try {
+    const currentYear = new Date().getFullYear()
+    // Fetch last 4 years in parallel — annual FDs are filed in the following year
+    const years = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3]
+    const allMembers = (await Promise.all(years.map(fetchFDIndex))).flat()
 
-  // Match by last name and optional state prefix (e.g. "CA" from "CA03")
-  const statePrefix = stateDst.slice(0, 2)
-  const matches = allMembers.filter(m => {
-    const mLast  = (m.Last  || '').trim().toLowerCase()
-    const mState = (m.StateDst || '').trim().toUpperCase()
-    const nameMatch  = mLast === lastName
-    const stateMatch = !statePrefix || mState.startsWith(statePrefix)
-    return nameMatch && stateMatch
-  })
-
-  // Deduplicate by DocID
-  const seen = new Set()
-  const filings = matches
-    .filter(m => {
-      const key = String(m.DocID)
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
-    .map(m => {
-      const type  = (m.FilingType || '').trim()
-      const year  = parseInt(m.Year, 10) || currentYear
-      const docId = String(m.DocID)
-      const isPtr = type === 'P' || type === 'D'
-      const isAnnual = type === 'A' || type === 'O' || type === 'G'
-      return {
-        docId,
-        type,
-        typeLabel: TYPE_LABELS[type] || type,
-        isPtr,
-        isAnnual,
-        year,
-        filingDate: m.FilingDate || null,
-        firstName:  (m.First    || '').trim(),
-        lastName:   (m.Last     || '').trim(),
-        stateDst:   (m.StateDst || '').trim(),
-        pdfUrl: isPtr
-          ? `${HOUSE_CLERK}/ptr-pdfs/${year}/${docId}.pdf`
-          : `${HOUSE_CLERK}/financial-pdfs/${year}/${docId}.pdf`,
-      }
-    })
-    .sort((a, b) => {
-      const da = a.filingDate ? new Date(a.filingDate) : new Date(0)
-      const db = b.filingDate ? new Date(b.filingDate) : new Date(0)
-      return db - da
+    // Match by last name and optional state prefix (e.g. "CA" from "CA03")
+    const statePrefix = stateDst.slice(0, 2)
+    const matches = allMembers.filter(m => {
+      const mLast  = (m.Last  || '').trim().toLowerCase()
+      const mState = (m.StateDst || '').trim().toUpperCase()
+      const nameMatch  = mLast === lastName
+      const stateMatch = !statePrefix || mState.startsWith(statePrefix)
+      return nameMatch && stateMatch
     })
 
-  return NextResponse.json({
-    filings,
-    ptrCount:    filings.filter(f => f.isPtr).length,
-    annualCount: filings.filter(f => f.isAnnual).length,
-    memberName:  filings[0] ? `${filings[0].firstName} ${filings[0].lastName}` : null,
-  }, {
-    headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
-  })
+    // Deduplicate by DocID
+    const seen = new Set()
+    const filings = matches
+      .filter(m => {
+        const key = String(m.DocID)
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .map(m => {
+        const type  = (m.FilingType || '').trim()
+        const year  = parseInt(m.Year, 10) || currentYear
+        const docId = String(m.DocID)
+        const isPtr = type === 'P' || type === 'D'
+        const isAnnual = type === 'A' || type === 'O' || type === 'G'
+        return {
+          docId,
+          type,
+          typeLabel: TYPE_LABELS[type] || type,
+          isPtr,
+          isAnnual,
+          year,
+          filingDate: m.FilingDate || null,
+          firstName:  (m.First    || '').trim(),
+          lastName:   (m.Last     || '').trim(),
+          stateDst:   (m.StateDst || '').trim(),
+          pdfUrl: isPtr
+            ? `${HOUSE_CLERK}/ptr-pdfs/${year}/${docId}.pdf`
+            : `${HOUSE_CLERK}/financial-pdfs/${year}/${docId}.pdf`,
+        }
+      })
+      .sort((a, b) => {
+        const da = a.filingDate ? new Date(a.filingDate) : new Date(0)
+        const db = b.filingDate ? new Date(b.filingDate) : new Date(0)
+        return db - da
+      })
+
+    return NextResponse.json({
+      filings,
+      ptrCount:    filings.filter(f => f.isPtr).length,
+      annualCount: filings.filter(f => f.isAnnual).length,
+      memberName:  filings[0] ? `${filings[0].firstName} ${filings[0].lastName}` : null,
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60' },
+    })
+  } catch (err) {
+    console.error('disclosures GET error:', err.message)
+    return NextResponse.json({ error: 'Failed to fetch disclosures' }, { status: 500 })
+  }
 }

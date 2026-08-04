@@ -1,0 +1,43 @@
+-- 009 — Remove world-writable RLS policy on push_subscriptions
+--
+-- SECURITY (P0). The policy named "Service role bypass" was granted to the
+-- `public` role — not `service_role` — with USING (true) WITH CHECK (true) for
+-- ALL commands:
+--
+--   tablename           | policyname          | cmd | roles    | qual | with_check
+--   push_subscriptions  | Service role bypass | ALL | {public} | true | true
+--
+-- NEXT_PUBLIC_SUPABASE_ANON_KEY is shipped to every browser, and the `public`
+-- role is what that key authenticates as. The policy therefore allowed any
+-- visitor to SELECT, INSERT, UPDATE, and DELETE every row in the table —
+-- exposing each subscriber's push endpoint URL along with the p256dh/auth keys
+-- required to deliver a notification to that device, and allowing anyone to
+-- delete other users' subscriptions outright.
+--
+-- The policy is also redundant. Two correct policies already exist:
+--
+--   * service_role_all                    ALL on {service_role}  — server path
+--   * Users can manage own subscriptions  ALL, auth.jwt()->>'sub' = user_id
+--
+-- and service_role bypasses RLS regardless of policy. Dropping this one closes
+-- the hole with no loss of functionality.
+--
+-- Apply with:
+--   psql "$SUPABASE_DB_URL" -f migrations/009_fix_push_subscriptions_rls.sql
+-- or paste into the Supabase SQL editor.
+
+drop policy if exists "Service role bypass" on public.push_subscriptions;
+
+-- Verify — this should return only `service_role_all` and
+-- `Users can manage own subscriptions`:
+--
+--   select policyname, cmd, roles::text, qual, with_check
+--   from pg_policies
+--   where schemaname = 'public' and tablename = 'push_subscriptions';
+--
+-- Note on the three INFO-level "RLS enabled, no policy" advisories
+-- (email_sequences, senate_net_worth, x_bot_posts): those tables are written
+-- only by server-side code holding the service-role key, which bypasses RLS.
+-- RLS-on-with-no-policy means deny-all for the anon key, which is the intended
+-- and correct posture. No change needed — do not "fix" them by adding
+-- permissive policies.

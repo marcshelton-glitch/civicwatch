@@ -11,23 +11,28 @@ const BIOGUIDE_RE = /^[A-Z]\d{6}$/
 
 // GET /api/track — return the current user's tracked bioguide IDs
 export async function GET() {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const { userId } = await auth()
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const supabase = getSupabase()
-  const { data, error } = await supabase
-    .from('user_tracked_reps')
-    .select('bioguide_id')
-    .eq('user_id', userId)
+    const supabase = getSupabase()
+    const { data, error } = await supabase
+      .from('user_tracked_reps')
+      .select('bioguide_id')
+      .eq('user_id', userId)
 
-  if (error) {
-    console.error('track GET error:', error.message)
+    if (error) {
+      console.error('track GET error:', error.message)
+      return NextResponse.json({ tracked: [] })
+    }
+
+    return NextResponse.json({ tracked: (data || []).map(r => r.bioguide_id) }, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
+  } catch (err) {
+    console.error('track GET error:', err.message)
     return NextResponse.json({ tracked: [] })
   }
-
-  return NextResponse.json({ tracked: (data || []).map(r => r.bioguide_id) }, {
-    headers: { 'Cache-Control': 'private, no-store' },
-  })
 }
 
 // POST /api/track — add or remove a tracked rep

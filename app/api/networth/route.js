@@ -15,7 +15,13 @@ export async function GET(request) {
   if (!userId) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
-  const user = await currentUser()
+  let user
+  try {
+    user = await currentUser()
+  } catch (err) {
+    console.error('networth GET currentUser error:', err.message)
+    return NextResponse.json({ error: 'Failed to verify subscription status' }, { status: 500 })
+  }
   const isPro = user?.publicMetadata?.isPro === true
   if (!isPro) {
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 403 })

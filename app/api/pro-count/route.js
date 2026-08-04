@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getProMonthlyPriceId } from '@/lib/stripe-prices'
 
 export const revalidate = 3600
 
@@ -22,12 +23,34 @@ export async function GET() {
   try {
     const stripe = getStripe()
     const monthStart = getMonthStart()
+
+    // ── Scope to the CivicWatch Pro price ────────────────────────────────────
+    // This Stripe account also holds the California Candidate Calculator. An
+    // unfiltered subscriptions.list() returns that product's subscribers too,
+    // and ProCountBanner renders the result as "N Americans went Pro this
+    // month" on /pro — a public claim inflated by a different product's sales.
+    // Passing `price` makes Stripe do the filtering server-side.
+    //
+    // If the price isn't configured, return 0 rather than an inflated number:
+    // the banner hides itself at 0, which is the correct failure mode for a
+    // social-proof claim we cannot substantiate.
+    let priceId
+    try {
+      priceId = getProMonthlyPriceId()
+    } catch (err) {
+      console.error('pro-count: Pro price not configured —', err.message)
+      return NextResponse.json({ count: 0 }, {
+        headers: { 'Cache-Control': 'public, s-maxage=300' },
+      })
+    }
+
     let count = 0
     let hasMore = true
     let startingAfter = undefined
 
     while (hasMore) {
       const params = {
+        price: priceId,
         created: { gte: monthStart },
         limit: 100,
         status: 'all',

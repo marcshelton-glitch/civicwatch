@@ -11,31 +11,36 @@ const VALID_FREQUENCIES = ['daily', 'weekly', 'instant']
 
 // GET /api/preferences — return the signed-in user's notification preferences
 export async function GET() {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const { userId } = await auth()
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const supabase = getSupabase()
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .select('alert_frequency, alert_trades, alert_networth, alert_legislation, alert_committees')
-    .eq('user_id', userId)
-    .maybeSingle()
+    const supabase = getSupabase()
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .select('alert_frequency, alert_trades, alert_networth, alert_legislation, alert_committees')
+      .eq('user_id', userId)
+      .maybeSingle()
 
-  if (error) {
-    console.error('preferences GET error:', error.message)
-    return NextResponse.json({ error: 'DB error' }, { status: 500 })
+    if (error) {
+      console.error('preferences GET error:', error.message)
+      return NextResponse.json({ error: 'DB error' }, { status: 500 })
+    }
+
+    // Return defaults when no row exists yet
+    return NextResponse.json(data ?? {
+      alert_frequency: 'daily',
+      alert_trades: true,
+      alert_networth: true,
+      alert_legislation: false,
+      alert_committees: false,
+    }, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
+  } catch (err) {
+    console.error('preferences GET error:', err.message)
+    return NextResponse.json({ error: 'Failed to load preferences' }, { status: 500 })
   }
-
-  // Return defaults when no row exists yet
-  return NextResponse.json(data ?? {
-    alert_frequency: 'daily',
-    alert_trades: true,
-    alert_networth: true,
-    alert_legislation: false,
-    alert_committees: false,
-  }, {
-    headers: { 'Cache-Control': 'private, no-store' },
-  })
 }
 
 // POST /api/preferences — upsert the signed-in user's notification preferences

@@ -37,6 +37,12 @@ const isPublicRoute = createRouteMatcher([
   '/accountability(.*)',
   '/api/accountability-stats(.*)',
   '/api/conflict-score(.*)',
+  // Read-only subscriber count rendered by ProCountBanner on /pro. /pro is a
+  // public route, so the banner's fetch came from signed-out visitors and was
+  // answered with 401 by this middleware — the social-proof counter on the
+  // pricing page has therefore never rendered for the exact audience it exists
+  // to persuade. Returns an aggregate integer only; no customer data.
+  '/api/pro-count(.*)',
   '/refund-policy(.*)',
   '/robots.txt',
   '/sitemap.xml',

@@ -319,21 +319,45 @@ export async function GET(request) {
         searchName = rawName.split(',')[0].trim().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || bioguideId
       } catch { /* keep bioguideId as query */ }
 
+      // GovTrack person ID resolution, most reliable strategy first.
+      //
+      // The name query alone was the sole strategy and it is lossy: nicknames,
+      // hyphenated and accented surnames, and common last names all either miss
+      // or return the wrong person, and a miss surfaced as "Could not extract
+      // GovTrack person ID" — the top production error. GovTrack indexes
+      // bioguideid directly, which is the same key we already hold, so query
+      // that first and keep the name search only as a fallback.
+      const gtQueries = [
+        `bioguideid=${encodeURIComponent(bioguideId)}`,
+        `q=${encodeURIComponent(searchName)}&limit=10`,
+      ]
+
       try {
-        const gtPerson = await fetch(
-          `https://www.govtrack.us/api/v2/person?q=${encodeURIComponent(searchName)}&limit=10`,
-          { next: { revalidate: 86400 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
-        )
-        if (!gtPerson.ok) throw new Error('GovTrack person lookup failed')
-        const personJson = await gtPerson.json()
+        let match = null
+        let gtId = null
 
-        // Prefer bioguide match, fall back to first result
-        const match = personJson.objects?.find(p => p.bioguideid === bioguideId)
-          ?? personJson.objects?.[0]
+        for (const query of gtQueries) {
+          const gtPerson = await fetch(
+            `https://www.govtrack.us/api/v2/person?${query}`,
+            { next: { revalidate: 86400 }, headers: { 'User-Agent': 'CivicWatch/1.0 (civicwatch.app)' } }
+          )
+          if (!gtPerson.ok) continue
+          const personJson = await gtPerson.json()
 
-        // GovTrack person.id is absent — extract from link: /congress/members/name/12345
-        const gtId = match?.link ? parseInt(match.link.split('/').pop(), 10) : null
-        if (!gtId) throw new Error('Could not extract GovTrack person ID')
+          // Prefer bioguide match, fall back to first result
+          const candidate = personJson.objects?.find(p => p.bioguideid === bioguideId)
+            ?? personJson.objects?.[0]
+
+          // GovTrack person.id is absent — extract from link: /congress/members/name/12345
+          const id = candidate?.link ? parseInt(candidate.link.split('/').pop(), 10) : null
+          if (Number.isFinite(id)) {
+            match = candidate
+            gtId = id
+            break
+          }
+        }
+
+        if (!gtId) throw new Error(`Could not resolve GovTrack person for ${bioguideId}`)
 
         const gtVotes = await fetch(
           `https://www.govtrack.us/api/v2/vote_voter?person=${gtId}&limit=30&order_by=-created`,
@@ -393,7 +417,11 @@ export async function GET(request) {
         })
         }
       } catch (e) {
-        console.error('GovTrack votes error:', e.message)
+        // warn, not error: this path has a working Congress.gov fallback below,
+        // so a GovTrack miss degrades the response rather than breaking it.
+        // Logging it at error level put a handled condition at the top of the
+        // Vercel error dashboard, which is where real breakage needs to be.
+        console.warn('GovTrack votes unavailable, falling back:', e.message)
       }
 
       // Fallback: Congress.gov member sponsored-legislation as proxy for activity
