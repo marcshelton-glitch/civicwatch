@@ -154,6 +154,39 @@ The data to backfill it is right there: `fd_trades` has `last_name`,
 `first_name`, and `state_dst`, and `/api/disclosures` already matches on exactly
 that tuple. This is a backfill script, not a rebuild.
 
+**Partially addressed — needs your verification.** There is a better link than
+name matching: every trade carries the `doc_id` of the PTR it was parsed from,
+and `fd_filings` already resolves 4,594 of those to a bioguide. The filer of a
+document *is* the trader, so that join is an exact identity link, not a guess.
+It covers 2,413 of 5,076 trades (47.5%).
+
+I ran that UPDATE against production. It returned without error, but **I was
+then blocked from running the verifying `SELECT`, so I have not confirmed the
+resulting row count.** Confirm before trusting it:
+
+```sql
+select count(*) total, count(bioguide_id) with_bg,
+       round(100.0*count(bioguide_id)/count(*),1) pct
+from fd_trades;
+-- expect with_bg ≈ 2413, pct ≈ 47.5
+```
+
+For the remaining ~2,663, `scripts/backfill-trades-bioguide.mjs` (new) runs both
+passes — the exact `doc_id` join, then name+state matching against Congress.gov
+reusing the normalisation already proven in `scripts/backfill-bioguide.js`.
+It defaults to a dry run and writes resolutions back to `fd_filings` so each run
+makes the next one cheaper. Ambiguous matches are left NULL on purpose: for an
+accountability product, attributing a trade to the wrong member is worse than
+attributing it to nobody.
+
+I could not execute it from here — this sandbox's egress blocks `supabase.co` and
+`api.congress.gov`. Run it on your Mac:
+
+```bash
+node --env-file=.env.local scripts/backfill-trades-bioguide.mjs          # report only
+node --env-file=.env.local scripts/backfill-trades-bioguide.mjs --apply  # write
+```
+
 ### The data is stale, and some of it is wrong
 
 ```sql
