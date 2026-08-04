@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { enrichTradesWithReturns } from '../../../lib/stockPrice'
+import { currentCongress } from '../../../lib/congressSession'
 
 // ── Supabase client factory (server-only) ─────────────────────────────────────
 const getSupabase = () => createClient(
@@ -874,23 +875,53 @@ export async function GET(request) {
 
     // ── committees ────────────────────────────────────────────────────────
     if (type === 'committees') {
-      const data = await cFetch(`/member/${bioguideId}`)
-      const terms = data.member?.terms || []
-      // Group by committee name, tracking min/max congress so we can show year ranges
-      const byName = {}
-      for (const term of terms) {
-        const congress = term.congress
-        for (const c of (term.memberOf || [])) {
-          if (!c.name) continue
-          if (!byName[c.name]) byName[c.name] = { name: c.name, chamber: c.chamber, startCongress: congress, endCongress: congress }
-          else {
-            if (congress < byName[c.name].startCongress) byName[c.name].startCongress = congress
-            if (congress > byName[c.name].endCongress) byName[c.name].endCongress = congress
-          }
+      // Was: read `member.terms[].memberOf[]` off Congress.gov /member/{id}.
+      // That field does not exist in the v3 response (terms.item carries only
+      // memberType, congress, chamber, stateCode, stateName, partyName,
+      // partyCode, startYear, endYear, district), so the inner loop never ran
+      // and this returned [] for every member — the Committees tab has been
+      // empty for the life of the endpoint, silently, because [] renders as
+      // "no data" rather than an error. Congress.gov has no per-member
+      // committee endpoint, so the roster now comes from
+      // public.committee_memberships (see migrations/010 and
+      // scripts/ingest-committees.mjs).
+      const congress = currentCongress()
+      const { data, error } = await getSupabase()
+        .from('committee_memberships')
+        .select('committee_name, subcommittee_name, chamber, title, rank, congress')
+        .eq('bioguide_id', bioguideId)
+        .eq('congress', congress)
+        .order('subcommittee_name', { ascending: true, nullsFirst: true })
+
+      if (error) {
+        console.error('committees lookup failed:', error.message)
+        return NextResponse.json({ committees: [], source: 'db', error: 'lookup failed' }, { status: 500 })
+      }
+
+      // Full-committee seats first, each followed by its subcommittees.
+      const byCommittee = new Map()
+      for (const r of data || []) {
+        if (!byCommittee.has(r.committee_name)) {
+          byCommittee.set(r.committee_name, {
+            name: r.committee_name,
+            chamber: r.chamber,
+            title: null,
+            congress: r.congress,
+            subcommittees: [],
+          })
+        }
+        const c = byCommittee.get(r.committee_name)
+        if (r.subcommittee_name) {
+          c.subcommittees.push({ name: r.subcommittee_name, title: r.title || null })
+        } else {
+          c.title = r.title || null
         }
       }
-      const committees = Object.values(byName).sort((a, b) => b.endCongress - a.endCongress)
-      return NextResponse.json({ committees, source: 'live' })
+
+      const committees = [...byCommittee.values()].sort((a, b) => a.name.localeCompare(b.name))
+      return NextResponse.json({ committees, congress, source: 'db' }, {
+        headers: { 'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=3600' },
+      })
     }
 
     // ── search ────────────────────────────────────────────────────────────

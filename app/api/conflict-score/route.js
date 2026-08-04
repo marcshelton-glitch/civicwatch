@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sectorsForCommittee, tickerMatchesCommittee } from '../../../lib/committeeSectors'
+import { currentCongress, congressToStartYear } from '../../../lib/congressSession'
 
 // GET /api/conflict-score?bioguideId=P000197
 //
@@ -15,8 +16,6 @@ import { sectorsForCommittee, tickerMatchesCommittee } from '../../../lib/commit
 // See lib/committeeSectors.js for the full methodology disclosure — this is
 // a jurisdiction/timing overlap heuristic, not proof of misconduct.
 
-const BASE = 'https://api.congress.gov/v3'
-const KEY = process.env.CONGRESS_API_KEY
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
 
 const getSupabase = () => createClient(
@@ -24,35 +23,44 @@ const getSupabase = () => createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Congress N started in the year 1789 + (N-1)*2, and covers that year plus the next.
-const congressToStartYear = (n) => 1789 + (n - 1) * 2
+/**
+ * Committee seats for a member, from public.committee_memberships.
+ *
+ * This used to call Congress.gov /member/{bioguideId} and read
+ * `terms[].memberOf[]`. That field does not exist in the v3 response — see the
+ * official MemberEndpoint docs — so the loop never ran and this function
+ * returned [] for every member in Congress. With no committees, the scorer
+ * below had nothing to match trades against and answered "None flagged" for
+ * everyone, with a 200 and no error anywhere. Congress.gov exposes no
+ * per-member committee endpoint, so the data now comes from the
+ * unitedstates/congress-legislators dataset via scripts/ingest-committees.mjs.
+ *
+ * Tenure is the current Congress only, because the upstream file is a snapshot
+ * with no history. That is enforced here rather than assumed: `congress` is
+ * both the query filter and the source of the returned year window.
+ */
+async function fetchCommitteesWithTenure(supabase, bioguideId, congress) {
+  const { data, error } = await supabase
+    .from('committee_memberships')
+    .select('committee_name, subcommittee_name, match_name, chamber, title, congress')
+    .eq('bioguide_id', bioguideId)
+    .eq('congress', congress)
 
-async function fetchCommitteesWithTenure(bioguideId) {
-  if (!KEY) return []
-  const res = await fetch(`${BASE}/member/${bioguideId}?format=json&api_key=${KEY}`, {
-    next: { revalidate: 21600 },
-  })
-  if (!res.ok) return []
-  const json = await res.json()
-  const terms = json.member?.terms || []
-  const byName = {}
-  for (const term of terms) {
-    const congress = term.congress
-    for (const c of (term.memberOf || [])) {
-      if (!c.name) continue
-      if (!byName[c.name]) {
-        byName[c.name] = { name: c.name, chamber: c.chamber, startCongress: congress, endCongress: congress }
-      } else {
-        if (congress < byName[c.name].startCongress) byName[c.name].startCongress = congress
-        if (congress > byName[c.name].endCongress) byName[c.name].endCongress = congress
-      }
-    }
+  if (error) {
+    console.error('conflict-score committee lookup failed:', error.message)
+    return []
   }
-  return Object.values(byName).map((c) => ({
-    ...c,
-    tenureStartYear: congressToStartYear(c.startCongress),
-    tenureEndYear: congressToStartYear(c.endCongress) + 1,
-    sectors: sectorsForCommittee(c.name).map((s) => s.sector),
+
+  const startYear = congressToStartYear(congress)
+  return (data || []).map((c) => ({
+    name: c.match_name,
+    committeeName: c.committee_name,
+    subcommitteeName: c.subcommittee_name,
+    chamber: c.chamber,
+    title: c.title,
+    tenureStartYear: startYear,
+    tenureEndYear: startYear + 1,
+    sectors: sectorsForCommittee(c.match_name).map((s) => s.sector),
   }))
 }
 
@@ -103,15 +111,22 @@ export async function GET(request) {
 
   try {
     const supabase = getSupabase()
+    const congress = currentCongress()
     const [committees, trades] = await Promise.all([
-      fetchCommitteesWithTenure(bioguideId),
+      fetchCommitteesWithTenure(supabase, bioguideId, congress),
       fetchTradesForBioguide(supabase, bioguideId),
     ])
 
     const relevantCommittees = committees.filter((c) => c.sectors.length > 0)
 
+    // Only trades inside the scored window can ever be flagged. Counting the
+    // rest as "reviewed" would overstate the work the score represents.
+    const windowStartYear = congressToStartYear(congress)
+    const inWindow = (t) => t.year != null && t.year >= windowStartYear && t.year <= windowStartYear + 1
+    const eligibleTrades = trades.filter((t) => t.ticker && inWindow(t))
+
     const flagged = []
-    for (const trade of trades) {
+    for (const trade of eligibleTrades) {
       if (!trade.ticker || !trade.year) continue
       for (const committee of relevantCommittees) {
         const inTenure = trade.year >= committee.tenureStartYear && trade.year <= committee.tenureEndYear
@@ -133,12 +148,22 @@ export async function GET(request) {
       bioguideId,
       score,
       tier,
-      committees: relevantCommittees.map(({ name, chamber, tenureStartYear, tenureEndYear, sectors }) => ({
-        name, chamber, tenureStartYear, tenureEndYear, sectors,
+      congress,
+      scoredYears: [windowStartYear, windowStartYear + 1],
+      committees: relevantCommittees.map(({ name, committeeName, subcommitteeName, chamber, title, tenureStartYear, tenureEndYear, sectors }) => ({
+        name, committeeName, subcommitteeName, chamber, title, tenureStartYear, tenureEndYear, sectors,
       })),
       flaggedTrades: flagged,
-      totalTradesReviewed: trades.length,
-      methodology: 'Flags a trade when its ticker falls in a sector overseen by a committee the member served on at the time of the trade. This is a jurisdiction/timing overlap, not proof of misconduct or nonpublic information — treat it as a starting point for further reading, not a verdict.',
+      totalTradesReviewed: eligibleTrades.length,
+      totalTradesOnFile: trades.length,
+      methodology:
+        `Flags a trade when its ticker falls in a sector overseen by a committee the member sat on, ` +
+        `and the trade was made during the ${congress}th Congress (${windowStartYear}–${windowStartYear + 1}). ` +
+        `Committee rosters come from the unitedstates/congress-legislators dataset, which records current ` +
+        `assignments only — so trades from earlier Congresses are shown under "on file" but deliberately ` +
+        `not scored, rather than being matched against a seat the member may not have held at the time. ` +
+        `This is a jurisdiction/timing overlap, not proof of misconduct or nonpublic information — treat it ` +
+        `as a starting point for further reading, not a verdict.`,
     }, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' },
     })
