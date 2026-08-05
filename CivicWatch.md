@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: August 3, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: August 4, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -24,6 +24,62 @@
 > branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
 > session treat the backup as a repo in the first place. Its content is not unique — those commits'
 > work reached this repo by another route. Retiring it would make the backup behave like a backup.
+
+---
+
+## ⚡ Recent Work — August 4, 2026
+
+### ADA Compliance Audit (Deep Analysis)
+- **Scope:** Full WCAG 2.1 AA compliance review performed today
+- **Status:** ❌ Would fail DOJ Title III audit
+- **Critical Gaps Identified:**
+  - Form labels not associated to inputs (zero `htmlFor` attributes) — hits refund form, search, settings
+  - Only 13 ARIA attributes across ~1,180 div elements and 104 buttons
+  - No `:focus` or `:focus-visible` styling; modal has `outline: none` → keyboard trap
+  - Modal has no Escape handler, no focus trap/restore
+  - No skip-to-content link or `aria-live` regions
+  - Congressional trading data rendered as divs (only 1 `<table>` in whole app, in admin)
+  - No `prefers-reduced-motion` support (three.js Capitol scene, scroll animations)
+  - No accessibility statement page (privacy/terms/refund exist)
+  - No a11y tooling or CI gate; Lighthouse ✅ checklist still has "100 Accessibility" unchecked
+- **Legal Risk:** Demand letters over these gaps (unlabeled forms, keyboard traps, missing focus) are routine for paid public-facing consumer products
+- **High-Impact Fixes:** Label associations, focus styles, skip link, modal keyboard handling (~4 hours, would clear most automated scanner flags)
+- **Session:** "Civicwatch ADA compliance"
+
+### Committee Memberships Feature (Ready to Deploy)
+- **Status:** Built and tested, 5 commits created, not yet pushed/deployed
+- **Work Completed:**
+  - Created `committee_memberships` table with migrations (applied to local production)
+  - Extracted `currentCongress` to shared module (`lib/congressSession.js`)
+  - Built ingest script (`scripts/ingest-committees.mjs`) for YAML data
+  - Fixed broken `/api/conflict-score` and related routes to use table
+  - Verified tenures scoped to 119th Congress; `totalTradesReviewed` counts only eligible trades
+  - Mapped 27 of 43 committees to sectors; gaps: Appropriations, Environment & Public Works, Education & Workforce
+- **Blockers:** Needs manual `node scripts/ingest-committees.mjs --apply` on Mac (sandbox blocks GitHub egress)
+- **Session:** "Civicwatch.app analysis and fixes"
+
+### Photo Field Bug Fix (Deployed)
+- **Issue:** `/api/congress` not emitting `photo` field → map sidebar showing initials instead of portraits
+- **Fix:** Updated route to include photo field
+- **Commit:** `ab7f52c` — "fix: emit photo field from /api/congress so map rep list renders portraits"
+- **Status:** ✅ Live in production
+- **Verified:** 6 images now render in map sidebar where 0 did before
+- **Session:** "Site issues after recent update"
+
+### 🚨 Critical: Deployment Pipeline Unblocked (6 Weeks of Work Ready)
+- **Issue:** Git-triggered deployments broken since June 20 due to `*/15` X-bot cron exceeding Hobby plan limits
+- **Root Cause:** Every deployment since June 20 was rejected at Vercel config validation (before build ever started)
+- **Production Status:** Running June 20 code for 6 weeks straight; none of July's feature work deployed
+  - Conflict Score, `/trades`, `/accountability` routes built but not live
+  - Return-on-trade data built but not live
+  - Committee alerts built but not live
+  - Stripe pricing fix built but not live
+  - `metadataBase` fix built but not live
+- **Fix Applied:** Removed sub-daily X-bot cron from `vercel.json`; documented in `docs/vercel-cron-limits.md`
+- **Restore Options:** GitHub Actions on `*/15` schedule (free, same cadence), manual CURL trigger, or skip bot entirely
+- **Note:** Deliberately NOT downgraded to daily — query window is "last 2 hours"; daily would drop 22 hours of disclosures silently
+- **Status:** ✅ **READY TO DEPLOY** — Run `npx vercel --prod` to ship 6 weeks of accumulated work at once
+- **Session:** "App monetization strategy"
 
 ---
 
@@ -970,7 +1026,28 @@ All emails on GoDaddy.com domain.
 - [x] **`npm run build` passes** (exit 0) — first verified build since July 8.
 - [x] **Wallet Pro activation restored** (`4629403`) — `invoice.paid` handler, scoped to the subscribe-instant path.
 
-### 🔴 Critical — before the next deploy
+### 🚨 CRITICAL — Deployment Pipeline Unblocked (Aug 4, 2026)
+
+- [ ] **Deploy 6 weeks of pending work with `npx vercel --prod`** (unblocked after cron fix)
+  - Conflict Score, `/trades`, `/accountability`, return-on-trade, committee alerts all ready
+  - Stripe pricing separation (June 20 blocker removed Aug 4)
+  - `metadataBase` OG image fix ready
+- [ ] **Run committee ingest script on Mac with `npm install && node --env-file=.env.local scripts/ingest-committees.mjs --apply`** (5 commits pending push after this runs)
+- [ ] **Verify Stripe integration after deployment** — confirm real card lands on `prod_UKGZ8zZ87dnryG` and webhook grants `tier: 'pro'`
+- [ ] **Fix X-bot cron** — removed sub-daily cron that was blocking all deployments; restore via GitHub Actions on `*/15` schedule (see docs/vercel-cron-limits.md)
+
+### 🔴 Critical — ADA Compliance (Legal Risk)
+
+- [ ] **Start with high-impact fixes** — form label associations + focus styles + skip link + modal keyboard handling (~4 hours)
+  - Would clear most automated scanner flags and address majority of DOJ Title III demand letter risks
+  - Form labels are zero `htmlFor` attributes; impacts refund form, search, settings
+  - No `:focus` or `:focus-visible` styling anywhere
+  - Modal has no Escape handler or focus trap/restore
+  - No skip-to-content link or `aria-live` regions
+- [ ] **Add a11y tooling to CI** (jsx-a11y rules + automated scanner)
+- [ ] **Create accessibility statement page**
+
+### ⚠️ Critical — before the next deploy
 
 - [x] **Committee memberships migration applied (2026-08-03).** Migration `010_committee_memberships` deployed to production; ingest script `scripts/ingest-committees.mjs` ready — **still needs to run on Mac** (sandbox blocks raw.githubusercontent.com). Command: `npm install && node --env-file=.env.local scripts/ingest-committees.mjs --apply`
 - [ ] **Confirm `CONGRESS_API_KEY` is set in Vercel.** Both committee and legislation alerts return 0 without it — silently.
