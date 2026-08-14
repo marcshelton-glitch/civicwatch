@@ -4,7 +4,7 @@
 > The first real-time civic intelligence platform for American voters.  
 > Non-partisan · Built in the USA · [civicwatch.app](https://civicwatch.app)
 
-**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: August 4, 2026
+**Status: LIVE** · Repo: `~/Projects/civicwatch` (GitHub: `marcshelton-glitch/civicwatch`) · Last updated: August 13, 2026
 
 > ### ⚠️ Read this before trusting any "uncommitted work" note below
 > **`~/Projects/civicwatch` is the one true working copy** (`~/civicwatch` symlinks here). It tracks
@@ -24,6 +24,53 @@
 > branches, 6 local-only commits, one stale stash). It has a real `origin` remote, which is what let a
 > session treat the backup as a repo in the first place. Its content is not unique — those commits'
 > work reached this repo by another route. Retiring it would make the backup behave like a backup.
+
+---
+
+## ⚡ Recent Work — August 13, 2026
+
+### Committee Memberships Feature — Ready to Deploy (Session: "Civicwatch.app analysis and fixes")
+- **Status:** Built and tested, 5 commits created, not yet pushed to GitHub
+- **Work Completed:**
+  - Created `committee_memberships` table with SQL migration (applied to local Supabase, indexes and read-only RLS verified)
+  - Extracted `currentCongress` Congress arithmetic to shared module (`lib/congressSession.js`) to prevent drift between ingest and query routes
+  - Built ingest script (`scripts/ingest-committees.mjs`) to pull committee YAML data (both full committees `HSAG` and subcommittees `HSAG22`), join them, verify shapes, and write to table
+  - Fixed broken `/api/conflict-score` and related routes to read from `committee_memberships` table
+  - Verified tenure scoping to 119th Congress; `totalTradesReviewed` counts only eligible trades; older trades shown but not scored
+  - Committee-to-sector mapping: 27 of 43 committees mapped; gaps identified: Appropriations (especially critical), Environment and Public Works, Education and Workforce
+  - Ingest script prints coverage report on every run
+- **Critical Blocker:** Sandbox blocks GitHub egress (`raw.githubusercontent.com`). Ingest script must run on Mac:
+  ```bash
+  cd ~/Projects/civicwatch
+  npm install                                                    # picks up js-yaml
+  node --env-file=.env.local scripts/ingest-committees.mjs       # dry-run: prints coverage report
+  node --env-file=.env.local scripts/ingest-committees.mjs --apply
+  ```
+  After applying, `/api/conflict-score?bioguideId=F000450` should return real committee memberships and flagged trades where ticker overlaps.
+- **Next Step:** Run ingest on Mac after pushing the commits; then `/api/conflict-score` and `/committee` alerts become live.
+
+### ADA Compliance Audit (Comprehensive WCAG 2.1 AA Review)
+- **Session:** "Civicwatch ADA compliance"
+- **Scope:** Full accessibility audit performed; tested against WCAG 2.1 AA (the standard courts and DOJ guidance use for Title III ADA web claims)
+- **Status:** ❌ **Would fail DOJ audit today**
+- **Critical Gaps Identified:**
+  1. **Form labels not associated to inputs** — zero `htmlFor` attributes in entire app. Labels sit as siblings — `<label>Name</label><input>` — so screen readers announce "edit text, blank." Hits: refund form, search form, settings panel. **WCAG 1.3.1 / 3.3.2 / 4.1.2**
+  2. **Minimal ARIA coverage** — only 13 ARIA attributes across ~1,180 `<div>` elements and 104 `<button>` tags
+  3. **No `:focus` or `:focus-visible` styling** — modal has `outline: none` → keyboard users lose focus indicator
+  4. **Modal is a keyboard trap** — no Escape handler, no focus trap/restore. **WCAG 2.1.2**
+  5. **No skip-to-content link** — keyboard users must tab through all nav before reaching main
+  6. **No `tabIndex` management** or `aria-live` regions — filter/search result updates silent to screen readers
+  7. **Data rendered as divs** — congressional trading table data uses `<div>` grid, not semantic `<table>`. Only 1 `<table>` in entire app (admin). **Critical barrier for a product whose value is trading tables.**
+  8. **No `prefers-reduced-motion` support** — three.js Capitol scene + scroll animations ignore user preference
+  9. **No accessibility statement page** — privacy, terms, refund policy exist; accessibility statement missing
+  10. **No a11y tooling or CI gate** — only jsx-a11y in eslint-config-next. Lighthouse ✅ checklist still has "100 Accessibility" unchecked.
+- **Legal Risk:** Demand letters over these gaps (unlabeled forms, keyboard traps, missing focus indicators, data-as-divs) are routine for paid public-facing consumer products. Not legal advice; confirm with counsel.
+- **High-Impact Fixes (Est. 4 hours, clears most automated scanner flags):**
+  1. Associate form labels (`htmlFor` + IDs on inputs)
+  2. Add focus styling (`:focus-visible` on buttons, form inputs, links)
+  3. Add skip-to-content link + `tabIndex` management
+  4. Add modal Escape handler + focus trap/restore (see `react-aria` or `focus-lock`)
+- **Recommendation:** Prioritize label associations and focus styling before next user-facing release; data-as-divs and ARIA coverage are longer-term.
 
 ---
 
