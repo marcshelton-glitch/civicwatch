@@ -1,0 +1,111 @@
+# ============================================================
+# House Financial Disclosure Ingestion — GitHub Action
+#
+# Replaces manually running ingest-loop.sh on Marc's Mac. Runs
+# scripts/ingest-disclosures.mjs on a schedule instead, straight
+# from CI, so trades/net-worth keep refreshing whether or not the
+# laptop is open. See docs/automate-ingest.md for the full writeup
+# and docs/prelaunch-audit-2026-08-03.md item 3.
+#
+# Phases run in sequence each time:
+#   1. index    — current-year House Clerk filings index (fast, incremental)
+#   2. trades   — parse unprocessed PTRs into fd_trades
+#   3. networth — parse unprocessed Annual FDs into fd_net_worth
+#
+# Each phase is idempotent (upsert on doc_id / doc_id+transaction_id),
+# so overlapping or re-run windows are safe.
+#
+# SETUP (one-time):
+# 1. Add secrets: github.com/marcshelton-glitch/civicwatch/settings/secrets/actions
+#    NEXT_PUBLIC_SUPABASE_URL       — same value as Vercel
+#    SUPABASE_SERVICE_ROLE_KEY      — same value as Vercel (server-only, bypasses RLS)
+# 2. That's it — no vercel.json entry, no Vercel plan requirement. This runs
+#    on GitHub's free Actions minutes (ubuntu-latest, public-repo runners).
+# ============================================================
+name: Ingest House Disclosures
+
+on:
+  schedule:
+    # Every 6 hours, offset from the hour so it doesn't stack with other
+    # scheduled jobs at :00.
+    - cron: '13 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Index phase: single year to (re)index. Leave blank for current year. Use "all" to backfill 2008-present (slow, one-time).'
+        required: false
+        default: ''
+      trades_limit:
+        description: 'Max unprocessed PTR filings to parse this run'
+        required: false
+        default: '200'
+      networth_limit:
+        description: 'Max unprocessed Annual FD filings to parse this run'
+        required: false
+        default: '100'
+
+concurrency:
+  group: ingest-house
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    name: Ingest House disclosures
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve index year
+        id: year
+        run: |
+          INPUT="${{ github.event.inputs.year }}"
+          if [ "$INPUT" = "all" ]; then
+            echo "flag=" >> "$GITHUB_OUTPUT"
+          elif [ -n "$INPUT" ]; then
+            echo "flag=--year=$INPUT" >> "$GITHUB_OUTPUT"
+          else
+            echo "flag=--year=$(date -u +%Y)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 'Phase 1: index'
+        id: index
+        continue-on-error: true
+        run: node scripts/ingest-disclosures.mjs --phase=index ${{ steps.year.outputs.flag }}
+
+      - name: 'Phase 2: trades'
+        id: trades
+        continue-on-error: true
+        run: >
+          node scripts/ingest-disclosures.mjs --phase=trades
+          --limit=${{ github.event.inputs.trades_limit || '200' }}
+
+      - name: 'Phase 3: networth'
+        id: networth
+        continue-on-error: true
+        run: >
+          node scripts/ingest-disclosures.mjs --phase=networth
+          --limit=${{ github.event.inputs.networth_limit || '100' }}
+
+      - name: Fail run if any phase failed
+        if: steps.index.outcome == 'failure' || steps.trades.outcome == 'failure' || steps.networth.outcome == 'failure'
+        run: |
+          echo "index=${{ steps.index.outcome }} trades=${{ steps.trades.outcome }} networth=${{ steps.networth.outcome }}"
+          exit 1

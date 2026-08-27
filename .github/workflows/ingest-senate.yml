@@ -1,0 +1,103 @@
+# ============================================================
+# Senate STOCK Act Ingestion — GitHub Action
+#
+# Replaces manually running ingest-senate-loop.sh / run-pipelines.sh on
+# Marc's Mac. senate_trades and senate_net_worth currently sit at 0 rows
+# in production because nothing has been scheduled to run this — see
+# docs/prelaunch-audit-2026-08-03.md item 8 and docs/automate-ingest.md.
+#
+# Runs once daily rather than every 6 hours like the House workflow:
+# efdsearch.senate.gov is a CSRF-protected Django endpoint that's more
+# fragile under load (see scripts/probe-senate-efts.mjs and the 503
+# backoff logic in ingest-senate-networth.mjs) — a gentler cadence is
+# deliberate, not a compromise.
+#
+# ingest-senate-networth.mjs shells out to `pdftotext` (poppler-utils),
+# which isn't on the default ubuntu-latest image — installed below.
+#
+# SETUP (one-time): same two secrets as ingest-house.yml
+#    NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+# (github.com/marcshelton-glitch/civicwatch/settings/secrets/actions)
+# ============================================================
+name: Ingest Senate Disclosures
+
+on:
+  schedule:
+    # Once daily, offset from the House workflow and from the existing
+    # Vercel cron (send-alerts runs at 13:00 UTC).
+    - cron: '47 8 * * *'
+  workflow_dispatch:
+    inputs:
+      trades_limit:
+        description: 'Max PTR filings to fetch this run'
+        required: false
+        default: '100'
+      networth_limit:
+        description: 'Max Annual FD filings to fetch this run'
+        required: false
+        default: '100'
+
+concurrency:
+  group: ingest-senate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    name: Ingest Senate disclosures
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install poppler-utils (pdftotext)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Probe efdsearch.senate.gov
+        id: probe
+        continue-on-error: true
+        run: |
+          STATUS=$(node scripts/probe-senate-efts.mjs)
+          echo "status=$STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Senate search endpoint not live (status: $STATUS) — skipping this run, next schedule will retry."
+            exit 1
+          fi
+
+      - name: PTR trades
+        id: trades
+        if: steps.probe.outcome == 'success'
+        continue-on-error: true
+        run: >
+          node scripts/ingest-senate-trades.mjs
+          --limit=${{ github.event.inputs.trades_limit || '100' }}
+
+      - name: Net worth (Annual FD)
+        id: networth
+        if: steps.probe.outcome == 'success'
+        continue-on-error: true
+        run: >
+          node scripts/ingest-senate-networth.mjs
+          --limit=${{ github.event.inputs.networth_limit || '100' }} --skip-existing
+
+      - name: Fail run if a phase failed (probe outage is not a failure)
+        if: steps.probe.outcome == 'success' && (steps.trades.outcome == 'failure' || steps.networth.outcome == 'failure')
+        run: |
+          echo "trades=${{ steps.trades.outcome }} networth=${{ steps.networth.outcome }}"
+          exit 1
