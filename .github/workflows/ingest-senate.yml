@@ -8,12 +8,36 @@
 #
 # Runs once daily rather than every 6 hours like the House workflow:
 # efdsearch.senate.gov is a CSRF-protected Django endpoint that's more
-# fragile under load (see scripts/probe-senate-efts.mjs and the 503
-# backoff logic in ingest-senate-networth.mjs) — a gentler cadence is
-# deliberate, not a compromise.
+# fragile under load — a gentler cadence is deliberate, not a compromise.
 #
-# ingest-senate-networth.mjs shells out to `pdftotext` (poppler-utils),
+# 2026-08-29: probe/trades/networth scripts now drive a real headless
+# Chromium session (Playwright) instead of raw fetch(). The raw-fetch
+# version was blocked by the site's bot defense essentially 100% of the
+# time (soft 503s indistinguishable from a maintenance page) even though
+# the identical flow through a real browser worked cleanly every time it
+# was tested manually — see docs/senate-waf-2026-08-29.md. Everything
+# below `scripts/lib/senate-efd-browser.mjs` (parsing, DB upserts) is
+# unchanged; only how bytes get fetched changed. `playwright install
+# chromium` below is what makes that possible in CI — it's the same
+# reason poppler-utils is installed for pdftotext.
+#
+# This sandbox could not verify the new flow end-to-end before this was
+# committed: its own network egress blocks both efdsearch.senate.gov and
+# the Playwright browser-download CDN, so the very first run of this
+# workflow after merging is the real test. Watch it — see
+# docs/senate-waf-2026-08-29.md for what "working" vs "still blocked"
+# looks like in the logs.
+#
+# ingest-senate-networth.mjs also shells out to `pdftotext` (poppler-utils),
 # which isn't on the default ubuntu-latest image — installed below.
+#
+# Dependency install uses `npm install` here (not `npm ci`), scoped to just
+# this workflow: package.json now lists `playwright`, but the committed
+# package-lock.json couldn't be updated in the same change (it's a ~330KB
+# generated file that the tooling used to prepare this commit couldn't
+# transfer whole — see docs/senate-waf-2026-08-29.md). `npm ci` would fail
+# on that mismatch; `npm install` resolves and installs it directly. This
+# is a temporary gap — see the doc for the one-command follow-up.
 #
 # SETUP (one-time): same two secrets as ingest-house.yml
 #    NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -64,18 +88,24 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install poppler-utils (pdftotext)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Probe efdsearch.senate.gov
         id: probe
         continue-on-error: true
         run: |
+          set +e
           STATUS=$(node scripts/probe-senate-efts.mjs)
+          RC=$?
+          set -e
           echo "status=$STATUS"
-          if [ "$STATUS" != "200" ]; then
+          if [ "$RC" -ne 0 ] || [ "$STATUS" != "200" ]; then
             echo "Senate search endpoint not live (status: $STATUS) — skipping this run, next schedule will retry."
             exit 1
           fi
