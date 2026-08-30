@@ -22,6 +22,22 @@
  * previous script used singular `filer_type`/`report_type` fields in a
  * format the real UI never actually sends; this was a second, independent
  * bug on top of the WAF blocking.
+ *
+ * Update (same day, after the WAF fix's first live run): the search
+ * response row shape and the individual-report data format have BOTH
+ * changed since these scripts were originally written — the site has been
+ * redesigned. Confirmed live:
+ *   - Search rows are 5 columns [first_name, last_name, office, link_html,
+ *     date_filed], not the previously-assumed 6 with a separate trailing
+ *     link column.
+ *   - There is no more per-report `data.json` API and no more PDF filings.
+ *     Every report (PTR and Annual FD alike) is now a plain HTML page at
+ *     /search/view/{ptr|annual}/{uuid}/ with the report's tables rendered
+ *     directly in the DOM, each identified by a <caption> (e.g. "List of
+ *     transactions added to this report", "List of assets added to this
+ *     report", "List of liabilities added to this report").
+ * `scrapeReportTables` below reads those tables directly instead of
+ * fetching a data.json or downloading/parsing a PDF.
  */
 
 import { chromium } from 'playwright'
@@ -196,9 +212,57 @@ export async function downloadBinary(context, url) {
 }
 
 /**
+ * Navigate to a filing's HTML view page (/search/view/ptr/{uuid}/ or
+ * /search/view/annual/{uuid}/) and return every table on the page as
+ * { caption, headers, rows }, where `rows` is an array of plain-text cell
+ * arrays (one per <tbody><tr>). Callers find the table they want by its
+ * caption text (e.g. "List of assets added to this report") — this is the
+ * only structure the live site actually renders these reports in now;
+ * there is no separate JSON API and no PDF.
+ */
+export async function scrapeReportTables(context, hrefOrUrl) {
+  const url = hrefOrUrl.startsWith('http') ? hrefOrUrl : `${SENATE_BASE}${hrefOrUrl}`
+  const page = await context.newPage()
+  try {
+    const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    if (!res || !res.ok()) {
+      const status = res ? res.status() : null
+      const err = new Error(`GET ${url} failed: ${status ?? 'no response'}`)
+      err.is503 = status === 503
+      throw err
+    }
+    return await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('table')).map((t) => {
+        const caption = t.querySelector('caption')?.textContent.trim() ?? null
+        const headers = Array.from(t.querySelectorAll('thead th')).map((th) => th.textContent.trim())
+        const rows = Array.from(t.querySelectorAll('tbody tr')).map((tr) =>
+          Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.replace(/\s+/g, ' ').trim())
+        )
+        return { caption, headers, rows }
+      })
+    })
+  } finally {
+    await page.close()
+  }
+}
+
+/**
+ * Find a table (from scrapeReportTables) by its exact caption text.
+ * Returns null if no table with that caption is present on the page —
+ * which is the normal case when a filer answered "No" to that section.
+ */
+export function findTableByCaption(tables, captionText) {
+  return tables.find((t) => t.caption === captionText) ?? null
+}
+
+/**
  * Resolve the actual PDF URL behind a filing link, which may point straight
  * at a .pdf or at an HTML viewer page that embeds one. Inspects the real
  * rendered DOM (iframe/embed/object/a) rather than regexing raw HTML.
+ *
+ * Kept for reference / a possible legacy edge case, but unused by the
+ * current scripts as of 2026-08-29 — live filings are HTML now, not PDF
+ * (see module header). Not exercised or re-verified against the live site.
  */
 export async function resolvePdfUrl(context, hrefOrUrl) {
   if (/\.pdf(\?|$)/i.test(hrefOrUrl)) {
