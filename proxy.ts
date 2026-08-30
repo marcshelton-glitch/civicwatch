@@ -43,6 +43,19 @@ const isPublicRoute = createRouteMatcher([
   // pricing page has therefore never rendered for the exact audience it exists
   // to persuade. Returns an aggregate integer only; no customer data.
   '/api/pro-count(.*)',
+  // Same bug class as /api/pro-count above: app/api/funnel-event/route.js was
+  // deliberately written with no auth requirement (`auth().catch(() => ({
+  // userId: null }))`) because signed-out visitors click "Go Pro" too, and
+  // trackPurchase() itself doesn't gate on being logged in. But this route
+  // was never added here, so Clerk middleware 401'd every anonymous call
+  // before the route's own no-auth-required logic ever ran — meaning every
+  // upgrade-CTA click from a signed-out visitor, and any trackPurchase() call
+  // that fires without an active session, silently never reached
+  // funnel_events. Confirmed via a live diagnostic POST returning 401 before
+  // this fix. Pixel events (Meta/TikTok) are unaffected by this — they run
+  // client-side and don't hit this endpoint's auth gate — only the
+  // first-party Supabase click/purchase log was blocked.
+  '/api/funnel-event(.*)',
   '/refund-policy(.*)',
   '/robots.txt',
   '/sitemap.xml',
