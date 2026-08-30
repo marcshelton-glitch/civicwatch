@@ -17,12 +17,18 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://clerk.civicwatch.app https://*.clerk.accounts.dev https://vercel.live https://va.vercel-scripts.com https://challenges.cloudflare.com https://www.googletagmanager.com",
+              // connect.facebook.net (Meta Pixel: fbevents.js) and analytics.tiktok.com
+              // (TikTok Pixel: events.js) added 2026-08-29 — conversion-tracking audit
+              // found both pixel <script> tags were rendering with a valid pixel ID but
+              // silently CSP-blocked from ever loading, so fbq/ttq stayed in queue-stub
+              // mode and no PageView/Purchase event ever reached Meta or TikTok. See
+              // lib/funnel-track.js and .env.example's "Fix this BEFORE any paid spend" note.
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://clerk.civicwatch.app https://*.clerk.accounts.dev https://vercel.live https://va.vercel-scripts.com https://challenges.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net https://analytics.tiktok.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: https://www.google-analytics.com",
               "worker-src 'self' blob:",
-              "connect-src 'self' https://*.supabase.co https://api.clerk.dev https://clerk.civicwatch.app https://*.clerk.accounts.dev https://*.clerk.com wss://clerk.civicwatch.app wss://*.clerk.accounts.dev wss://*.clerk.com https://vercel.live https://va.vercel-scripts.com https://cdn.jsdelivr.net https://www.govtrack.us https://api.mobilize.us https://cicero.azavea.com https://api.stripe.com https://projects.propublica.org https://o4511420226142208.ingest.us.sentry.io https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com",
+              "connect-src 'self' https://*.supabase.co https://api.clerk.dev https://clerk.civicwatch.app https://*.clerk.accounts.dev https://*.clerk.com wss://clerk.civicwatch.app wss://*.clerk.accounts.dev wss://*.clerk.com https://vercel.live https://va.vercel-scripts.com https://cdn.jsdelivr.net https://www.govtrack.us https://api.mobilize.us https://cicero.azavea.com https://api.stripe.com https://projects.propublica.org https://o4511420226142208.ingest.us.sentry.io https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com https://analytics.tiktok.com https://business-api.tiktok.com",
               "frame-src https://js.stripe.com https://hooks.stripe.com https://vercel.live https://challenges.cloudflare.com",
               "object-src 'none'",
               "base-uri 'self'",
