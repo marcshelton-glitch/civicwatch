@@ -2,18 +2,19 @@
 /**
  * Ingest Senate Annual Financial Disclosure net worth data from efdsearch.senate.gov
  *
- * The Senate eFD search uses a CSRF-protected Django POST endpoint.
- * Flow:
- *   1. GET /search/home/  → csrftoken cookie + CSRF token in form
- *   2. POST /search/home/ → accept terms → sessionid cookie
- *   3. GET /search/       → fresh CSRF for search form
- *   4. POST /search/report/data/ with filer_type=1 (Senator), report_type=7 (Annual FD)
- *   5. For each filing, fetch the viewer page to locate the PDF URL
- *   6. Download PDF → pdftotext -layout → parse Schedule A (assets) + Schedule D (liabilities)
- *   7. Upsert rows into senate_net_worth
+ * Rewritten 2026-08-29 to drive a real headless browser session (Playwright)
+ * instead of raw fetch(). See docs/senate-waf-2026-08-29.md for why: the
+ * site's bot defense blocked the raw-fetch session/search/download flow
+ * essentially 100% of the time, while the identical flow through a real
+ * browser worked cleanly. Session management, search, PDF-URL resolution,
+ * and the PDF download itself now all go through
+ * scripts/lib/senate-efd-browser.mjs so every request carries a real
+ * browser fingerprint. The PDF text extraction (pdftotext), Schedule A/D
+ * parsing, and Supabase upsert are unchanged from the previous version.
  *
- * 503 retry: exponential backoff starting at 30 s, up to 5 retries (30s→60s→120s→240s→480s).
- * The session is refreshed before each retry so stale CSRF tokens don't block recovery.
+ * 503 retry: exponential backoff starting at 30s, up to 5 retries
+ * (30s→60s→120s→240s→480s). On retry, the whole browser session is closed
+ * and re-opened (fresh cookies/CSRF) rather than reusing stale state.
  *
  * Usage:
  *   node --env-file=../.env.local scripts/ingest-senate-networth.mjs \
@@ -31,6 +32,12 @@ import { createClient } from '@supabase/supabase-js'
 import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { writeFile, unlink } from 'fs/promises'
+import {
+  openSenateSession,
+  searchReports,
+  resolvePdfUrl,
+  downloadBinary,
+} from './lib/senate-efd-browser.mjs'
 
 const execFileAsync = promisify(execFile)
 
@@ -38,8 +45,6 @@ const execFileAsync = promisify(execFile)
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const BASE = 'https://efdsearch.senate.gov'
-const UA   = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
 const BATCH = 100  // DataTables page size (max the site allows)
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -61,63 +66,18 @@ const YEAR          = args.year ? parseInt(args.year, 10) : 0
 const DRY_RUN       = !!args['dry-run']
 const SKIP_EXISTING = !!args['skip-existing']
 
-// ── Session management ───────────────────────────────────────────────────────
+// ── Browser session holder + 503 retry ──────────────────────────────────────
+//
+// Module-level so withRetry can transparently close and re-open it.
 
-function parseCookies(headers) {
-  const jar = {}
-  const raw = headers.getSetCookie?.() ?? [headers.get('set-cookie') ?? '']
-  for (const line of raw) {
-    const m = line.match(/^([^=]+)=([^;]*)/)
-    if (m) jar[m[1].trim()] = m[2].trim()
-  }
-  return jar
-}
-
-function cookieStr(jar) {
-  return Object.entries(jar).map(([k, v]) => `${k}=${v}`).join('; ')
-}
-
-function extractCsrf(html) {
-  return html.match(/csrfmiddlewaretoken[^>]+value="([^"]+)"/)?.[1] ?? null
-}
-
-async function getSession() {
-  const r1 = await fetch(`${BASE}/search/home/`, { headers: { 'User-Agent': UA } })
-  if (!r1.ok) throw new Error(`GET /search/home/ failed: ${r1.status}`)
-  const html1 = await r1.text()
-  const jar1  = parseCookies(r1.headers)
-  const csrf1 = extractCsrf(html1) ?? jar1.csrftoken
-  if (!csrf1) throw new Error('No CSRF token on home page')
-
-  const r2 = await fetch(`${BASE}/search/home/`, {
-    method: 'POST', redirect: 'manual',
-    headers: {
-      'User-Agent': UA, 'Referer': `${BASE}/search/home/`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Cookie': cookieStr(jar1),
-    },
-    body: `csrfmiddlewaretoken=${encodeURIComponent(csrf1)}&prohibition_agreement=1`,
-  })
-  const jar2 = { ...jar1, ...parseCookies(r2.headers) }
-
-  const r3 = await fetch(`${BASE}/search/`, {
-    headers: { 'User-Agent': UA, 'Cookie': cookieStr(jar2) },
-  })
-  if (!r3.ok) throw new Error(`GET /search/ failed: ${r3.status}`)
-  const html3 = await r3.text()
-  const jar3  = { ...jar2, ...parseCookies(r3.headers) }
-  const csrf3 = extractCsrf(html3) ?? jar3.csrftoken
-  if (!csrf3) throw new Error('No CSRF token on search page')
-
-  return { csrf: csrf3, cookies: jar3 }
-}
-
-// ── 503 retry + session refresh ──────────────────────────────────────────────
+let session = null  // { browser, context, page }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
-// Module-level session so withRetry can refresh it transparently
-let session = null
+async function refreshSession() {
+  if (session?.browser) await session.browser.close().catch(() => {})
+  session = await openSenateSession()
+}
 
 async function withRetry(fn, label = 'request') {
   const MAX_RETRIES = 5
@@ -134,7 +94,7 @@ async function withRetry(fn, label = 'request') {
         console.log(`\n  [503] ${label} — site in maintenance, retry ${attempt + 1}/${MAX_RETRIES} in ${timeStr}`)
         await sleep(delay)
         console.log('  Refreshing session after wait...')
-        session = await getSession()
+        await refreshSession()
         console.log('  Session refreshed, retrying...')
       } else {
         throw e
@@ -142,45 +102,6 @@ async function withRetry(fn, label = 'request') {
     }
   }
 }
-
-function throw503(status) {
-  const e = new Error(`HTTP ${status}`)
-  e.is503 = (status === 503)
-  throw e
-}
-
-// ── Search ───────────────────────────────────────────────────────────────────
-
-async function searchAnnual(lastName, start) {
-  const body = new URLSearchParams({
-    csrfmiddlewaretoken:  session.csrf,
-    first_name:           '',
-    last_name:            lastName,
-    filer_type:           '1',   // Senator
-    report_type:          '7',   // Annual FD
-    submitted_start_date: YEAR ? `01/01/${YEAR}` : '',
-    submitted_end_date:   YEAR ? `12/31/${YEAR}` : '',
-    draw:   '1',
-    start:  String(start),
-    length: String(BATCH),
-  })
-
-  const res = await fetch(`${BASE}/search/report/data/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Referer':      `${BASE}/search/`,
-      'X-CSRFToken':  session.csrf,
-      'Cookie':       cookieStr(session.cookies),
-      'User-Agent':   UA,
-    },
-    body: body.toString(),
-  })
-  if (!res.ok) throw503(res.status)
-  return res.json()
-}
-
-// ── PDF resolution ───────────────────────────────────────────────────────────
 
 function extractHref(linkHtml) {
   return linkHtml?.match(/href="([^"]+)"/)?.[1] ?? null
@@ -190,53 +111,7 @@ function extractUuid(str) {
   return str?.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)?.[1] ?? null
 }
 
-async function resolvePdfUrl(linkHtml) {
-  const href = extractHref(linkHtml)
-  if (!href) return null
-
-  // Direct PDF link
-  if (/\.pdf(\?|$)/i.test(href)) {
-    return href.startsWith('http') ? href : `${BASE}${href}`
-  }
-
-  const uuid = extractUuid(href) ?? extractUuid(linkHtml)
-  if (!uuid) return null
-
-  // Fetch the viewer/detail page to find the embedded PDF URL
-  const viewerUrl = href.startsWith('http') ? href : `${BASE}${href}`
-  const res = await fetch(viewerUrl, {
-    headers: { 'User-Agent': UA, 'Cookie': cookieStr(session.cookies) },
-  })
-  if (!res.ok) {
-    if (res.status === 503) throw503(503)
-    return null
-  }
-  const html = await res.text()
-
-  // Look for a PDF URL in iframe src, embed src, object data, or <a href>
-  const pdfMatch = html.match(
-    /(?:src|data|href)="([^"]*(?:annual|report|document|filing)[^"]*\.pdf[^"]*)"/i
-  ) ?? html.match(/(?:src|data|href)="([^"]+\.pdf[^"]*)"/i)
-  if (pdfMatch) {
-    const u = pdfMatch[1]
-    return u.startsWith('http') ? u : `${BASE}${u}`
-  }
-
-  // Some eFD responses send the PDF directly (Content-Type: application/pdf)
-  if (res.headers.get('content-type')?.includes('pdf')) return viewerUrl
-
-  return null
-}
-
-// ── PDF download + text extraction ───────────────────────────────────────────
-
-async function downloadPdf(pdfUrl) {
-  const res = await fetch(pdfUrl, {
-    headers: { 'User-Agent': UA, 'Cookie': cookieStr(session.cookies) },
-  })
-  if (!res.ok) throw503(res.status)
-  return Buffer.from(await res.arrayBuffer())
-}
+// ── PDF text extraction ───────────────────────────────────────────────────────
 
 async function pdfToText(buf, tag) {
   const tmp = `/tmp/senate_fd_${tag}_${Date.now()}.pdf`
@@ -311,12 +186,9 @@ function parseNetWorth(rawText) {
 
   const RANGE_RE = /(?:Over\s+\$[\d,]+|\$[\d,]+(?:\.\d+)?\s*[-–]\s*\$[\d,]+(?:\.\d+)?)/gi
 
-  // Isolate Schedule A up to the next schedule or end of text
   const schedA = text.match(/SCHEDULE\s+A\b[\s\S]*?(?=SCHEDULE\s+[B-Z]\b|$)/i)?.[0] ?? ''
-  // Isolate Schedule D up to the next schedule or end of text
   const schedD = text.match(/SCHEDULE\s+D\b[\s\S]*?(?=SCHEDULE\s+[E-Z]\b|$)/i)?.[0] ?? ''
 
-  // Lines that are clearly headers / metadata — skip them
   const SKIP_RE = /^\s*(?:schedule\b|asset name|asset type|owner|type|year|creditor|none\b|exclud|attach|source|note|http|\*|=+|-{5}|gross income|income type|current value|date)/i
 
   let assetsMin = 0, assetsMax = 0, assetCount = 0
@@ -325,7 +197,6 @@ function parseNetWorth(rawText) {
       if (SKIP_RE.test(line)) continue
       const ranges = [...line.matchAll(RANGE_RE)].map(m => m[0])
       if (!ranges.length) continue
-      // First range on the line = Current Value (asset value column)
       const { min, max } = parseRange(ranges[0])
       if (min !== null) {
         assetsMin += min
@@ -341,7 +212,6 @@ function parseNetWorth(rawText) {
       if (SKIP_RE.test(line)) continue
       const ranges = [...line.matchAll(RANGE_RE)].map(m => m[0])
       if (!ranges.length) continue
-      // Last range on the line = liability amount owed
       const { min, max } = parseRange(ranges[ranges.length - 1])
       if (min !== null) {
         liabMin += min
@@ -378,7 +248,6 @@ function parseMDY(str) {
 }
 
 function reportYearFromFilingDate(filingDateStr) {
-  // Annual FDs cover the previous calendar year (filed mid-year for prior Dec 31)
   const y = filingDateStr?.match(/(\d{4})/)?.[1]
   return y ? parseInt(y, 10) - 1 : new Date().getFullYear() - 1
 }
@@ -386,11 +255,10 @@ function reportYearFromFilingDate(filingDateStr) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function run() {
-  console.log('Senate Annual FD net worth ingestion')
+  console.log('Senate Annual FD net worth ingestion (Playwright)')
   console.log(`  senator=${SENATOR || 'all'}  year=${YEAR || 'all'}  limit=${LIMIT}${DRY_RUN ? '  DRY-RUN' : ''}${SKIP_EXISTING ? '  skip-existing' : ''}`)
   console.log()
 
-  // Fetch existing filing_ids if --skip-existing
   let existingIds = new Set()
   if (SKIP_EXISTING) {
     const { data } = await db.from('senate_net_worth').select('filing_id')
@@ -399,142 +267,161 @@ async function run() {
   }
 
   console.log('Establishing session...')
-  session = await withRetry(() => getSession(), 'session')
+  await withRetry(() => refreshSession(), 'session')
   console.log('Session established.')
   console.log()
 
-  // First page to discover total count
-  const firstPage = await withRetry(() => searchAnnual(SENATOR, 0), 'initial search')
-  const total = firstPage.recordsTotal ?? (firstPage.data ?? []).length
-  console.log(`Found ${total} Annual FD filings`)
+  try {
+    const submittedStart = YEAR ? `01/01/${YEAR}` : '01/01/2012'
+    const submittedEnd   = YEAR ? `12/31/${YEAR}` : ''
 
-  // Paginate through all results up to LIMIT
-  const filings = [...(firstPage.data ?? [])]
-  for (let start = BATCH; start < Math.min(total, LIMIT); start += BATCH) {
-    await sleep(600)
-    const page = await withRetry(() => searchAnnual(SENATOR, start), `page start=${start}`)
-    filings.push(...(page.data ?? []))
-    console.log(`  fetched ${filings.length}/${Math.min(total, LIMIT)}`)
-  }
-
-  const toProcess = filings.slice(0, LIMIT)
-  console.log(`\nProcessing ${toProcess.length} filings...\n`)
-
-  let ok = 0, noData = 0, failed = 0, skipped = 0
-
-  for (const row of toProcess) {
-    // DataTables row: [first_name, last_name, office, report_type_label, date_filed, link_html]
-    const [firstName, lastName, office, , dateFiled, linkHtml] = row
-    const uuid        = extractUuid(extractHref(linkHtml) ?? '') ?? extractUuid(linkHtml ?? '')
-    const filingDate  = parseMDY(dateFiled)
-    const rYear       = reportYearFromFilingDate(dateFiled)
-    const state       = office?.match(/\(([A-Z]{2})\)/)?.[1] ?? null
-    const label       = `[${dateFiled}] ${lastName}, ${firstName}`
-
-    process.stdout.write(`  ${label}... `)
-
-    // Skip if already in DB
-    if (SKIP_EXISTING && uuid && existingIds.has(uuid)) {
-      console.log('already ingested')
-      skipped++
-      continue
-    }
-
-    if (!linkHtml) {
-      console.log('no link')
-      skipped++
-      continue
-    }
-
-    // Resolve PDF URL (with retry for 503 during maintenance)
-    let pdfUrl
-    try {
-      pdfUrl = await withRetry(() => resolvePdfUrl(linkHtml), `resolve PDF ${uuid ?? 'unknown'}`)
-    } catch (e) {
-      console.log(`PDF resolve error: ${e.message}`)
-      failed++
-      continue
-    }
-
-    if (!pdfUrl) {
-      console.log('PDF URL not found in viewer page')
-      noData++
-      continue
-    }
-
-    // Download PDF
-    let pdfBuf
-    try {
-      pdfBuf = await withRetry(() => downloadPdf(pdfUrl), `download ${uuid ?? 'pdf'}`)
-    } catch (e) {
-      console.log(`download failed: ${e.message}`)
-      failed++
-      continue
-    }
-
-    // Extract text with pdftotext
-    let text
-    try {
-      text = await pdfToText(pdfBuf, uuid ?? `${lastName}_${rYear}`)
-    } catch (e) {
-      console.log(`pdftotext failed: ${e.message}`)
-      failed++
-      continue
-    }
-
-    // Parse Schedule A and D
-    const parsed = parseNetWorth(text)
-
-    if (parsed.nwMin === null && parsed.assetsMin === null) {
-      console.log(`no data (${parsed.assetCount} asset rows, ${parsed.liabCount} liability rows in text)`)
-      noData++
-      continue
-    }
-
-    const nwMid = parsed.nwMin !== null
-      ? Math.round((parsed.nwMin + (parsed.nwMax ?? parsed.nwMin)) / 2)
-      : null
-    console.log(
-      `NW ~$${nwMid != null ? (nwMid / 1e6).toFixed(1) + 'M' : '?'} ` +
-      `[${parsed.assetCount}a ${parsed.liabCount}l] conf=${parsed.confidence}`
+    const firstPage = await withRetry(
+      () => searchReports(session.page, {
+        lastName: SENATOR, reportTypes: [7], filerTypes: [1],
+        submittedStart, submittedEnd, start: 0, length: BATCH, draw: 1,
+      }),
+      'initial search',
     )
+    const total = firstPage.recordsTotal ?? (firstPage.data ?? []).length
+    console.log(`Found ${total} Annual FD filings`)
 
-    if (DRY_RUN) { ok++; continue }
-
-    const { error } = await db.from('senate_net_worth').upsert({
-      filing_id:       uuid,
-      last_name:       (lastName  ?? '').trim(),
-      first_name:      (firstName ?? '').trim(),
-      state,
-      report_year:     rYear,
-      filing_date:     filingDate,
-      pdf_url:         pdfUrl,
-      assets_min:      parsed.assetsMin,
-      assets_max:      parsed.assetsMax,
-      liabilities_min: parsed.liabMin,
-      liabilities_max: parsed.liabMax,
-      net_worth_min:   parsed.nwMin,
-      net_worth_max:   parsed.nwMax,
-      asset_count:     parsed.assetCount,
-      liability_count: parsed.liabCount,
-      source:          'senate_efd',
-      confidence:      parsed.confidence,
-    }, { onConflict: 'filing_id', ignoreDuplicates: false })
-
-    if (error) {
-      console.error(`  DB error: ${error.message}`)
-      failed++
-    } else {
-      ok++
+    const filings = [...(firstPage.data ?? [])]
+    let draw = 2
+    for (let start = BATCH; start < Math.min(total, LIMIT); start += BATCH) {
+      await sleep(600)
+      const pageResult = await withRetry(
+        () => searchReports(session.page, {
+          lastName: SENATOR, reportTypes: [7], filerTypes: [1],
+          submittedStart, submittedEnd, start, length: BATCH, draw: draw++,
+        }),
+        `page start=${start}`,
+      )
+      filings.push(...(pageResult.data ?? []))
+      console.log(`  fetched ${filings.length}/${Math.min(total, LIMIT)}`)
     }
 
-    await sleep(500)  // polite delay between requests
-  }
+    const toProcess = filings.slice(0, LIMIT)
+    console.log(`\nProcessing ${toProcess.length} filings...\n`)
 
-  console.log()
-  console.log(`Done — ok=${ok}, no data=${noData}, failed=${failed}, skipped=${skipped}`)
-  if (noData > 0) {
-    console.log(`Tip: "no data" means pdftotext found no Schedule A/D rows — likely a scanned PDF.`)
+    let ok = 0, noData = 0, failed = 0, skipped = 0
+
+    for (const row of toProcess) {
+      const [firstName, lastName, office, , dateFiled, linkHtml] = row
+      const uuid        = extractUuid(extractHref(linkHtml) ?? '') ?? extractUuid(linkHtml ?? '')
+      const filingDate  = parseMDY(dateFiled)
+      const rYear       = reportYearFromFilingDate(dateFiled)
+      const state       = office?.match(/\(([A-Z]{2})\)/)?.[1] ?? null
+      const label       = `[${dateFiled}] ${lastName}, ${firstName}`
+
+      process.stdout.write(`  ${label}... `)
+
+      if (SKIP_EXISTING && uuid && existingIds.has(uuid)) {
+        console.log('already ingested')
+        skipped++
+        continue
+      }
+
+      if (!linkHtml) {
+        console.log('no link')
+        skipped++
+        continue
+      }
+
+      const href = extractHref(linkHtml)
+      let pdfUrl
+      try {
+        pdfUrl = await withRetry(
+          () => resolvePdfUrl(session.context, href),
+          `resolve PDF ${uuid ?? 'unknown'}`,
+        )
+      } catch (e) {
+        console.log(`PDF resolve error: ${e.message}`)
+        failed++
+        continue
+      }
+
+      if (!pdfUrl) {
+        console.log('PDF URL not found in viewer page')
+        noData++
+        continue
+      }
+
+      let pdfBuf
+      try {
+        pdfBuf = await withRetry(
+          () => downloadBinary(session.context, pdfUrl),
+          `download ${uuid ?? 'pdf'}`,
+        )
+      } catch (e) {
+        console.log(`download failed: ${e.message}`)
+        failed++
+        continue
+      }
+
+      let text
+      try {
+        text = await pdfToText(pdfBuf, uuid ?? `${lastName}_${rYear}`)
+      } catch (e) {
+        console.log(`pdftotext failed: ${e.message}`)
+        failed++
+        continue
+      }
+
+      const parsed = parseNetWorth(text)
+
+      if (parsed.nwMin === null && parsed.assetsMin === null) {
+        console.log(`no data (${parsed.assetCount} asset rows, ${parsed.liabCount} liability rows in text)`)
+        noData++
+        continue
+      }
+
+      const nwMid = parsed.nwMin !== null
+        ? Math.round((parsed.nwMin + (parsed.nwMax ?? parsed.nwMin)) / 2)
+        : null
+      console.log(
+        `NW ~$${nwMid != null ? (nwMid / 1e6).toFixed(1) + 'M' : '?'} ` +
+        `[${parsed.assetCount}a ${parsed.liabCount}l] conf=${parsed.confidence}`
+      )
+
+      if (DRY_RUN) { ok++; continue }
+
+      const { error } = await db.from('senate_net_worth').upsert({
+        filing_id:       uuid,
+        last_name:       (lastName  ?? '').trim(),
+        first_name:      (firstName ?? '').trim(),
+        state,
+        report_year:     rYear,
+        filing_date:     filingDate,
+        pdf_url:         pdfUrl,
+        assets_min:      parsed.assetsMin,
+        assets_max:      parsed.assetsMax,
+        liabilities_min: parsed.liabMin,
+        liabilities_max: parsed.liabMax,
+        net_worth_min:   parsed.nwMin,
+        net_worth_max:   parsed.nwMax,
+        asset_count:     parsed.assetCount,
+        liability_count: parsed.liabCount,
+        source:          'senate_efd',
+        confidence:      parsed.confidence,
+      }, { onConflict: 'filing_id', ignoreDuplicates: false })
+
+      if (error) {
+        console.error(`  DB error: ${error.message}`)
+        failed++
+      } else {
+        ok++
+      }
+
+      await sleep(500)
+    }
+
+    console.log()
+    console.log(`Done — ok=${ok}, no data=${noData}, failed=${failed}, skipped=${skipped}`)
+    if (noData > 0) {
+      console.log(`Tip: "no data" means pdftotext found no Schedule A/D rows — likely a scanned PDF.`)
+    }
+  } finally {
+    if (session?.browser) await session.browser.close().catch(() => {})
   }
 }
 
