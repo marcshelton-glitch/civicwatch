@@ -115,3 +115,106 @@ backfill (both include senator name/date/amount; the newer one covers
 more schedule types) if Marc wants a non-empty baseline while this fix
 proves itself — not implemented here since it wasn't part of what was
 approved.
+
+## Round two: the WAF fix worked, but the site had also been redesigned
+
+The first live run after the fix above (`Ingest Senate Disclosures #7`,
+manually dispatched) came back green — "Success" in the GitHub Actions UI.
+Marc reported this as working. It wasn't: `senate_trades` and
+`senate_net_worth` were both still at 0 rows in Supabase. That gap between
+a green checkmark and actual data is fully explained by
+`ingest-senate.yml`'s own design — the trades/net-worth steps run with
+`continue-on-error: true` so a probe outage (the original WAF scenario)
+doesn't fail the whole job, and the final "fail run if a phase failed"
+step only fires when `steps.probe.outcome == 'success'` **and** a phase
+outcome is literally `'failure'`. A phase that runs, throws no error, and
+simply inserts zero rows reports `'success'` — so the job as a whole goes
+green even when it accomplishes nothing. Reading the actual step logs
+showed the real picture: probe `status=200` (the WAF fix genuinely
+worked), then PTR trades "Found 1689 PTR filings ... inserted: 0, skipped:
+1689", and net worth "Found 1599 Annual FD filings ... Processing 100
+filings" with every single one logging "no link".
+
+Root cause, confirmed by instrumenting a real authenticated browser session
+against the live site directly (fetch() calls and DOM queries executed in
+the actual page context, not guessed from old markup): the site had been
+redesigned independently of the WAF issue, in ways that broke every
+filing-level assumption downstream of the search call.
+
+1. **Search result rows are 5 columns, not 6.** The live DataTables
+   response for `/search/report/data/` is
+   `[first_name, last_name, office, link_html, date_filed]`. The old code
+   destructured a 6th, separate trailing link field that never existed in
+   this shape — `link_html` (containing the filing's href) was silently
+   `undefined`, which is why every row logged "no link" and was skipped
+   before any per-filing fetch was even attempted.
+2. **The per-report `data.json` API is gone.** Both
+   `/search/report/ptr/{uuid}/data.json` and
+   `/search/view/ptr/{uuid}/data.json` return live 404s. There is no JSON
+   endpoint for an individual filing's line items anymore.
+3. **PDFs are gone.** Every report — PTR and Annual FD alike — is now a
+   fully server-rendered HTML page. There is nothing to download or run
+   `pdftotext` against.
+4. **The href path changed.** Real links point to `/search/view/ptr/{uuid}/`
+   and `/search/view/annual/{uuid}/`. The old UUID-extraction regex looked
+   for `/search/report/ptr/` — a path that was never real — so even had
+   `link_html` been read correctly, the UUID match would still have failed.
+
+Each filing's data now lives directly in the view page's DOM, as
+`<table>` elements identified by a `<caption>` (e.g. "List of transactions
+added to this report", "List of assets added to this report", "List of
+liabilities added to this report"). Annual FD reports are organized into
+numbered "Parts" (1 Honoraria, 2 Earned Income, 3 Assets, 4a/4b PTR
+Summary/Transactions, 5 Gifts, 6 Travel, 7 Liabilities, 8 Positions, 9
+Agreements, 10 Compensation), all rendered as plain HTML tables.
+
+### The fix
+
+`scripts/lib/senate-efd-browser.mjs` gained `scrapeReportTables(context,
+hrefOrUrl)`, which navigates to a filing's view page and returns every
+table on it as `{ caption, headers, rows }` — plain-text cells, read
+straight from the rendered DOM. `findTableByCaption` looks one up by its
+exact caption text; a `null` result is the normal case for a filer who
+answered "No" to that section, not an error. `resolvePdfUrl` /
+`downloadBinary` are left in the module (now documented as legacy/unused)
+rather than deleted, in case a rare edge case still needs them, but
+neither script calls them anymore.
+
+`scripts/ingest-senate-trades.mjs` now destructures the real 5-column
+search row, extracts the href from `link_html`, matches the UUID against
+`/search/view/ptr/`, and reads trade line items from the "List of
+transactions added to this report" table (9 cells per row: `#,
+Transaction Date, Owner, Ticker, Asset Name, Asset Type, Type, Amount,
+Comment`) — using the real Ticker column directly instead of regexing a
+ticker out of the asset name string, which is more reliable than the old
+approach.
+
+`scripts/ingest-senate-networth.mjs` had its entire PDF pipeline
+(`resolvePdfUrl` → `downloadBinary` → `pdftotext` → regex-based
+`parseNetWorth`) removed and replaced with `scrapeReportTables` +
+`computeNetWorth`/`sumRangeColumn`, which sum dollar-range values directly
+out of the live Assets table (value at cell index 4; rows showing `--`
+are parent/grouping rows like a brokerage account whose real range lives
+on numbered sub-rows, e.g. "2.1" — skipped because they carry no
+independent value) and Liabilities table (amount at cell index 7). The
+dollar-range string format itself (`$1,001 - $15,000`, "Over $50,000,000",
+etc.) is unchanged from before, so `parseRange`/`AMOUNT_MAP` needed no
+changes. The `pdf_url` column now stores the resolved view-page URL rather
+than a literal PDF link — a naming mismatch left as-is rather than
+renaming a production column over a doc-only concern.
+
+This second round could only be diagnosed by actually reading the report
+pages live — the original rewrite's design (get a real browser session
+past the WAF) was correct, but a script can only be as right as its
+assumptions about the site's current markup, and those assumptions had
+gone stale independently of the WAF problem it was built to solve.
+
+### The verification-status lesson
+
+A green "Success" status on this workflow proves the job didn't crash — it
+does not prove any row landed in the database. Given the intentional
+`continue-on-error` design (necessary so a genuine site outage doesn't
+mark the whole scheduled job as broken), the only real signal is checking
+`senate_trades` / `senate_net_worth` row counts directly, or reading the
+step-level logs for `inserted:` / `ok=` counts greater than zero. Trust
+the data, not the checkmark.
