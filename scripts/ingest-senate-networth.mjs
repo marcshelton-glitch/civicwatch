@@ -6,11 +6,28 @@
  * instead of raw fetch(). See docs/senate-waf-2026-08-29.md for why: the
  * site's bot defense blocked the raw-fetch session/search/download flow
  * essentially 100% of the time, while the identical flow through a real
- * browser worked cleanly. Session management, search, PDF-URL resolution,
- * and the PDF download itself now all go through
- * scripts/lib/senate-efd-browser.mjs so every request carries a real
- * browser fingerprint. The PDF text extraction (pdftotext), Schedule A/D
- * parsing, and Supabase upsert are unchanged from the previous version.
+ * browser worked cleanly.
+ *
+ * Update (same day, first live run after the WAF fix): the fix above
+ * worked — the probe and search both succeeded, and pagination found the
+ * real 1,599 Annual FD filings — but every single one came back "no link".
+ * Root cause, confirmed live: the site has been redesigned since this
+ * script was written.
+ *   1. The search response row is 5 columns
+ *      [first_name, last_name, office, link_html, date_filed], not the
+ *      previously-assumed 6 columns with a separate trailing link column.
+ *      `linkHtml` was always `undefined` under the old destructuring.
+ *   2. Annual FD filings are no longer PDFs at all. Each report is now a
+ *      plain HTML page at /search/view/annual/{uuid}/ with numbered
+ *      "Parts" rendered directly in the DOM — Part 3 ("List of assets
+ *      added to this report") and Part 7 ("List of liabilities added to
+ *      this report") are what this script needs. There is nothing left to
+ *      download or run pdftotext on.
+ * Both are fixed below: the search row is destructured to its real 5
+ * fields, and net worth is computed directly from the live HTML tables via
+ * scrapeReportTables() — no PDF, no pdftotext, no regex-over-linearized-text
+ * guessing. This is more reliable than the old approach, not just a port of
+ * it: real cell boundaries instead of scraping ranges out of PDF text.
  *
  * 503 retry: exponential backoff starting at 30s, up to 5 retries
  * (30s→60s→120s→240s→480s). On retry, the whole browser session is closed
@@ -29,17 +46,11 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
-import { writeFile, unlink } from 'fs/promises'
 import {
   openSenateSession,
   searchReports,
-  resolvePdfUrl,
-  downloadBinary,
+  scrapeReportTables,
 } from './lib/senate-efd-browser.mjs'
-
-const execFileAsync = promisify(execFile)
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -111,22 +122,6 @@ function extractUuid(str) {
   return str?.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)?.[1] ?? null
 }
 
-// ── PDF text extraction ───────────────────────────────────────────────────────
-
-async function pdfToText(buf, tag) {
-  const tmp = `/tmp/senate_fd_${tag}_${Date.now()}.pdf`
-  await writeFile(tmp, buf)
-  try {
-    const { stdout } = await execFileAsync(
-      'pdftotext', ['-layout', tmp, '-'],
-      { maxBuffer: 25 * 1024 * 1024 }
-    )
-    return stdout
-  } finally {
-    await unlink(tmp).catch(() => {})
-  }
-}
-
 // ── Amount parsing ───────────────────────────────────────────────────────────
 
 const AMOUNT_MAP = [
@@ -157,85 +152,61 @@ function parseRange(str) {
   return { min: null, max: null }
 }
 
-// ── Net worth parser ─────────────────────────────────────────────────────────
+// ── Net worth computation from live HTML tables ─────────────────────────────
 //
-// Senate Annual FD PDFs have this structure when linearized by pdftotext -layout:
+// Verified live 2026-08-29 against a real Annual FD view page
+// (/search/view/annual/{uuid}/). Two tables matter:
 //
-//   SCHEDULE A: ASSETS AND "UNEARNED" INCOME
-//   ...headers...
-//   FIDELITY TOTAL MARKET    JT   MF  2010  $50,001 - $100,000   Dividends  $1,001 - $2,500
-//   RENTAL PROPERTY (MA)     SP   RP  2001  $500,001 - $1,000,000  Rent     $15,001 - $50,000
+//   caption "List of assets added to this report"
+//   row cells: [asset_number, asset_name, asset_type, owner, value, income_type, income]
+//   ("value" is "--" for a parent/grouping row like a brokerage account —
+//   the actual dollar range lives on its numbered sub-rows, e.g. "2.1",
+//   "2.2" — so grouping rows are naturally skipped by only summing rows
+//   that have a real range in the value column.)
 //
-//   SCHEDULE B: TRANSACTIONS
-//   SCHEDULE D: LIABILITIES
-//   BANK OF AMERICA MORTGAGE  M  2012  $250,001 - $500,000
+//   caption "List of liabilities added to this report"
+//   row cells: [_, liability_number, incurred, debtor, type, points, rate_term, amount, creditor, comments]
 //
-// Strategy for Schedule A:
-//   - Per line, the FIRST dollar range is the "Current Value" (asset value column).
-//   - The optional SECOND range is gross income — we ignore it.
-//
-// Strategy for Schedule D:
-//   - Per line, the LAST dollar range is the liability amount owed.
+// A filer who answered "No" to a section simply won't have that table on
+// the page at all — findTableByCaption returning null is the normal case,
+// not an error.
 
-function parseNetWorth(rawText) {
-  // Strip null bytes (PDF font encoding artifact common in Senate FDs)
-  // and repair line-broken ranges like "$50,001 -\n$100,000"
-  const text = rawText
-    .replace(/\x00/g, '')
-    .replace(/(\$[\d,]+)\s*[-–]\s*\n\s*(\$[\d,]+)/g, '$1 - $2')
-
-  const RANGE_RE = /(?:Over\s+\$[\d,]+|\$[\d,]+(?:\.\d+)?\s*[-–]\s*\$[\d,]+(?:\.\d+)?)/gi
-
-  const schedA = text.match(/SCHEDULE\s+A\b[\s\S]*?(?=SCHEDULE\s+[B-Z]\b|$)/i)?.[0] ?? ''
-  const schedD = text.match(/SCHEDULE\s+D\b[\s\S]*?(?=SCHEDULE\s+[E-Z]\b|$)/i)?.[0] ?? ''
-
-  const SKIP_RE = /^\s*(?:schedule\b|asset name|asset type|owner|type|year|creditor|none\b|exclud|attach|source|note|http|\*|=+|-{5}|gross income|income type|current value|date)/i
-
-  let assetsMin = 0, assetsMax = 0, assetCount = 0
-  if (schedA && !/none\s*(or\s*less|disclosed)/i.test(schedA)) {
-    for (const line of schedA.split('\n')) {
-      if (SKIP_RE.test(line)) continue
-      const ranges = [...line.matchAll(RANGE_RE)].map(m => m[0])
-      if (!ranges.length) continue
-      const { min, max } = parseRange(ranges[0])
-      if (min !== null) {
-        assetsMin += min
-        assetsMax += (max ?? min)
-        assetCount++
-      }
-    }
+function sumRangeColumn(rows, valueIndex) {
+  let min = 0, max = 0, count = 0
+  for (const row of rows) {
+    const cell = row[valueIndex]
+    if (!cell || cell === '--') continue
+    const { min: rMin, max: rMax } = parseRange(cell)
+    if (rMin === null) continue
+    min += rMin
+    max += (rMax ?? rMin)
+    count++
   }
+  return { min, max, count }
+}
 
-  let liabMin = 0, liabMax = 0, liabCount = 0
-  if (schedD && !/none\s*(or\s*less|disclosed)/i.test(schedD)) {
-    for (const line of schedD.split('\n')) {
-      if (SKIP_RE.test(line)) continue
-      const ranges = [...line.matchAll(RANGE_RE)].map(m => m[0])
-      if (!ranges.length) continue
-      const { min, max } = parseRange(ranges[ranges.length - 1])
-      if (min !== null) {
-        liabMin += min
-        liabMax += (max ?? min)
-        liabCount++
-      }
-    }
-  }
+function computeNetWorth(tables) {
+  const assetsTable = tables.find((t) => t.caption === 'List of assets added to this report')
+  const liabTable   = tables.find((t) => t.caption === 'List of liabilities added to this report')
 
-  if (!assetCount && !liabCount) {
+  const assets = assetsTable ? sumRangeColumn(assetsTable.rows, 4) : { min: 0, max: 0, count: 0 }
+  const liabs  = liabTable   ? sumRangeColumn(liabTable.rows, 7)   : { min: 0, max: 0, count: 0 }
+
+  if (!assets.count && !liabs.count) {
     return { assetsMin: null, assetsMax: null, liabMin: null, liabMax: null, nwMin: null, nwMax: null, assetCount: 0, liabCount: 0, confidence: 'low' }
   }
 
-  const confidence = assetCount >= 5 ? 'high' : assetCount >= 1 ? 'medium' : 'low'
+  const confidence = assets.count >= 5 ? 'high' : assets.count >= 1 ? 'medium' : 'low'
 
   return {
-    assetsMin:  assetCount ? assetsMin : null,
-    assetsMax:  assetCount ? assetsMax : null,
-    liabMin:    liabCount  ? liabMin   : null,
-    liabMax:    liabCount  ? liabMax   : null,
-    nwMin:      assetCount ? assetsMin - (liabCount ? liabMax : 0) : null,
-    nwMax:      assetCount ? assetsMax - (liabCount ? liabMin : 0) : null,
-    assetCount,
-    liabCount,
+    assetsMin:  assets.count ? assets.min : null,
+    assetsMax:  assets.count ? assets.max : null,
+    liabMin:    liabs.count  ? liabs.min  : null,
+    liabMax:    liabs.count  ? liabs.max  : null,
+    nwMin:      assets.count ? assets.min - (liabs.count ? liabs.max : 0) : null,
+    nwMax:      assets.count ? assets.max - (liabs.count ? liabs.min : 0) : null,
+    assetCount: assets.count,
+    liabCount:  liabs.count,
     confidence,
   }
 }
@@ -306,8 +277,12 @@ async function run() {
     let ok = 0, noData = 0, failed = 0, skipped = 0
 
     for (const row of toProcess) {
-      const [firstName, lastName, office, , dateFiled, linkHtml] = row
-      const uuid        = extractUuid(extractHref(linkHtml) ?? '') ?? extractUuid(linkHtml ?? '')
+      // Live search row (verified 2026-08-29): 5 columns —
+      // [first_name, last_name, office, link_html, date_filed]. There is
+      // no separate trailing "link" column.
+      const [firstName, lastName, office, linkHtml, dateFiled] = row
+      const href        = extractHref(linkHtml)
+      const uuid        = extractUuid(href ?? '') ?? extractUuid(linkHtml ?? '')
       const filingDate  = parseMDY(dateFiled)
       const rYear       = reportYearFromFilingDate(dateFiled)
       const state       = office?.match(/\(([A-Z]{2})\)/)?.[1] ?? null
@@ -321,56 +296,30 @@ async function run() {
         continue
       }
 
-      if (!linkHtml) {
+      if (!href) {
         console.log('no link')
         skipped++
         continue
       }
 
-      const href = extractHref(linkHtml)
-      let pdfUrl
+      const reportUrl = href.startsWith('http') ? href : `https://efdsearch.senate.gov${href}`
+
+      let tables
       try {
-        pdfUrl = await withRetry(
-          () => resolvePdfUrl(session.context, href),
-          `resolve PDF ${uuid ?? 'unknown'}`,
+        tables = await withRetry(
+          () => scrapeReportTables(session.context, href),
+          `scrape report ${uuid ?? 'unknown'}`,
         )
       } catch (e) {
-        console.log(`PDF resolve error: ${e.message}`)
+        console.log(`scrape failed: ${e.message}`)
         failed++
         continue
       }
 
-      if (!pdfUrl) {
-        console.log('PDF URL not found in viewer page')
-        noData++
-        continue
-      }
+      const parsed = computeNetWorth(tables)
 
-      let pdfBuf
-      try {
-        pdfBuf = await withRetry(
-          () => downloadBinary(session.context, pdfUrl),
-          `download ${uuid ?? 'pdf'}`,
-        )
-      } catch (e) {
-        console.log(`download failed: ${e.message}`)
-        failed++
-        continue
-      }
-
-      let text
-      try {
-        text = await pdfToText(pdfBuf, uuid ?? `${lastName}_${rYear}`)
-      } catch (e) {
-        console.log(`pdftotext failed: ${e.message}`)
-        failed++
-        continue
-      }
-
-      const parsed = parseNetWorth(text)
-
-      if (parsed.nwMin === null && parsed.assetsMin === null) {
-        console.log(`no data (${parsed.assetCount} asset rows, ${parsed.liabCount} liability rows in text)`)
+      if (parsed.assetCount === 0 && parsed.liabCount === 0) {
+        console.log('no data (no asset/liability tables on this report)')
         noData++
         continue
       }
@@ -392,7 +341,7 @@ async function run() {
         state,
         report_year:     rYear,
         filing_date:     filingDate,
-        pdf_url:         pdfUrl,
+        pdf_url:         reportUrl,
         assets_min:      parsed.assetsMin,
         assets_max:      parsed.assetsMax,
         liabilities_min: parsed.liabMin,
@@ -418,7 +367,7 @@ async function run() {
     console.log()
     console.log(`Done — ok=${ok}, no data=${noData}, failed=${failed}, skipped=${skipped}`)
     if (noData > 0) {
-      console.log(`Tip: "no data" means pdftotext found no Schedule A/D rows — likely a scanned PDF.`)
+      console.log(`Tip: "no data" means the report page had no assets/liabilities tables — check it answered "No" to those sections rather than a scrape bug.`)
     }
   } finally {
     if (session?.browser) await session.browser.close().catch(() => {})
