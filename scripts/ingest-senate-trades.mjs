@@ -16,16 +16,32 @@
  * (singular, bare values). The live UI actually sends `filer_types=[1]` /
  * `report_types=[11]` (plural, JSON-array-encoded strings) and a
  * `submitted_start_date` with a time component (`MM/DD/YYYY 00:00:00`).
- * Whether that alone explains any of the historical empty results is
- * unknown — the WAF block meant no request ever got far enough to tell —
- * but it's fixed now regardless.
+ *
+ * Update (same day, first live run after the WAF fix): the fix above
+ * worked — the probe and search both succeeded, and pagination found the
+ * real 1,689 PTR filings — but every single one still came back skipped.
+ * Root cause was two more site changes, confirmed live:
+ *   1. The search response row is 5 columns
+ *      [first_name, last_name, office, link_html, date_filed], not the
+ *      previously-assumed 6 columns with a separate trailing link column.
+ *      `link_html` was always `undefined` under the old destructuring.
+ *   2. There is no more `/search/report/ptr/{uuid}/data.json` endpoint
+ *      (confirmed 404 live) — individual trade line items are now only
+ *      available as an HTML table on the report's own view page at
+ *      /search/view/ptr/{uuid}/ (note: "view", not "report" — the old
+ *      UUID-matching regex looked for "/search/report/ptr/" and would
+ *      never have matched the real href either).
+ * Both are fixed below: the row is destructured to its real 5 fields, and
+ * trade rows are scraped from the "List of transactions added to this
+ * report" table on the view page via scrapeReportTables(), which also
+ * gives a real Ticker column instead of regexing it out of the asset name.
  *
  * Usage:
  *   node --env-file=../.env.local scripts/ingest-senate-trades.mjs [--senator=<lastName>] [--limit=50] [--year=2024]
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { searchReports, fetchJson, SENATE_BASE, withSenateSession } from './lib/senate-efd-browser.mjs'
+import { searchReports, SENATE_BASE, withSenateSession, scrapeReportTables } from './lib/senate-efd-browser.mjs'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -107,9 +123,13 @@ async function run() {
     let inserted = 0, skipped = 0, failed = 0
 
     for (const filing of filings) {
-      // DataTables row: [first_name, last_name, office, report_type, date_filed, link]
-      const [firstName, lastName, office, , dateFiled, linkHtml] = filing
-      const uuidMatch = linkHtml?.match(/\/search\/report\/ptr\/([0-9a-f-]{36})\//)
+      // Live search row (verified 2026-08-29): 5 columns —
+      // [first_name, last_name, office, link_html, date_filed]. There is
+      // no separate trailing "link" column; link_html is index 3.
+      const [firstName, lastName, office, linkHtml, dateFiled] = filing
+      const href = linkHtml?.match(/href="([^"]+)"/)?.[1]
+      // Real href is /search/view/ptr/{uuid}/ ("view", not "report").
+      const uuidMatch = href?.match(/\/search\/view\/ptr\/([0-9a-f-]{36})\//)
       if (!uuidMatch) { skipped++; continue }
 
       const uuid = uuidMatch[1]
@@ -119,27 +139,31 @@ async function run() {
         : null
 
       const state = office?.match(/\(([A-Z]{2})\)/)?.[1] ?? null
-      const ptrUrl = `${SENATE_BASE}/search/report/ptr/${uuid}/`
+      const ptrUrl = href.startsWith('http') ? href : `${SENATE_BASE}${href}`
 
-      let tradeData
+      let tables
       try {
-        tradeData = await fetchJson(page, `${SENATE_BASE}/search/report/ptr/${uuid}/data.json`)
+        tables = await scrapeReportTables(context, href)
       } catch (e) {
         console.error(`  [${uuid}] fetch error: ${e.message}`)
         failed++
         continue
       }
 
-      if (!tradeData?.data?.length) {
+      // Live table (verified 2026-08-29): caption "List of transactions
+      // added to this report", 9 columns —
+      // [#, Transaction Date, Owner, Ticker, Asset Name, Asset Type, Type, Amount, Comment]
+      const txTable = tables.find((t) => t.caption === 'List of transactions added to this report')
+
+      if (!txTable?.rows?.length) {
         console.log(`  [${uuid}] ${lastName} — no trade rows`)
         skipped++
         continue
       }
 
       const rows = []
-      for (const td of tradeData.data) {
-        // Columns: [transaction_date, owner, asset_name, asset_type, transaction_type, amount, comment]
-        const [txDateRaw, owner, assetName, , txType, amountRaw] = td
+      for (const cells of txTable.rows) {
+        const [, txDateRaw, owner, ticker, assetName, , txType, amountRaw] = cells
         const { min, max, str: amtStr } = parseAmount(amountRaw)
 
         let txDate = null
@@ -151,9 +175,6 @@ async function run() {
             txDate = txDateRaw
           }
         }
-
-        const tickerMatch = assetName?.match(/\(([A-Z]{1,5})\)/)
-        const ticker = tickerMatch?.[1] ?? null
 
         const txNorm = /purchase/i.test(txType || '') ? 'Purchase'
           : /sale/i.test(txType || '') ? 'Sale'
@@ -170,7 +191,7 @@ async function run() {
           transaction_date: txDate,
           owner:            (owner || '').trim() || null,
           asset_name:       (assetName || '').trim() || null,
-          ticker,
+          ticker:           (ticker || '').trim() || null,
           transaction_type: txNorm,
           amount_min:       min,
           amount_max:       max,
