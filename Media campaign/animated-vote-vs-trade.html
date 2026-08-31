@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CivicWatch — Animated Vote vs. Trade</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1f2e;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .card-wrapper {
+    width: 100vmin;
+    height: 100vmin;
+    transform: scale(var(--preview-scale, 0.85));
+    transform-origin: top left;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* ---- Card ---- */
+  .card {
+    width: 100vmin;
+    height: 100vmin;
+    background: #0d1117;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top-bar {
+    height: 0.56vmin;
+    background: linear-gradient(90deg, #ef4444, #22c55e);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Header strip */
+  .header-strip {
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 2.04vmin 5.93vmin;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards 0s;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .eyebrow {
+    font-size: 1.2vmin;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .rep-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.93vmin;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 0.74vmin 1.85vmin;
+  }
+
+  .rep-avatar-small {
+    width: 2.59vmin;
+    height: 2.59vmin;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a5c, #2563a8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.02vmin;
+    font-weight: 800;
+    color: white;
+  }
+
+  .rep-chip-name {
+    font-size: 1.3vmin;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .party-d {
+    font-size: 1.02vmin;
+    font-weight: 700;
+    background: #2563eb;
+    color: white;
+    padding: 0.19vmin 0.74vmin;
+    border-radius: 0.37vmin;
+  }
+
+  /* ---- Main split area ---- */
+  .main-split {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left panel */
+  .panel-vote {
+    flex: 1;
+    background: linear-gradient(160deg, #1a0a0a 0%, #0f0505 100%);
+    padding: 5.19vmin 4.81vmin;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    overflow: hidden;
+    transform: translateX(-100%);
+    animation: panelVoteIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards 0.3s;
+  }
+
+  @keyframes panelVoteIn {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
+
+  .panel-vote::before {
+    content: '';
+    position: absolute;
+    top: -9.26vmin; left: -9.26vmin;
+    width: 37.04vmin; height: 37.04vmin;
+    background: radial-gradient(circle, rgba(239,68,68,0.12) 0%, transparent 70%);
+  }
+
+  /* Right panel */
+  .panel-trade {
+    flex: 1;
+    background: linear-gradient(160deg, #061208 0%, #030c05 100%);
+    padding: 5.19vmin 4.81vmin;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transform: translateX(100%);
+    animation: panelTradeIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards 2.0s;
+  }
+
+  @keyframes panelTradeIn {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+
+  .panel-trade::before {
+    content: '';
+    position: absolute;
+    bottom: -9.26vmin; right: -9.26vmin;
+    width: 37.04vmin; height: 37.04vmin;
+    background: radial-gradient(circle, rgba(34,197,94,0.1) 0%, transparent 70%);
+  }
+
+  /* VS connector */
+  .vs-connector {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    animation: vsBadgeIn 0.2s cubic-bezier(0.34,1.56,0.64,1) forwards 0.9s;
+  }
+
+  @keyframes vsBadgeIn {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+  }
+
+  .vs-line-top {
+    width: 0.19vmin;
+    height: 7.41vmin;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.2));
+  }
+
+  .vs-badge {
+    background: #0d1117;
+    border: 0.19vmin solid rgba(255,255,255,0.15);
+    border-radius: 50%;
+    width: 5.93vmin;
+    height: 5.93vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.48vmin;
+    font-weight: 900;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  .vs-line-bottom {
+    width: 0.19vmin;
+    height: 7.41vmin;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent);
+  }
+
+  /* Then badge — pulses in */
+  .then-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(-50% + 12.96vmin));
+    z-index: 20;
+    background: #0d1117;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 0.56vmin 1.48vmin;
+    font-size: 1.11vmin;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    white-space: nowrap;
+    opacity: 0;
+    animation: pulseBadge 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards 3.0s;
+  }
+
+  @keyframes pulseBadge {
+    0%   { opacity: 0; transform: translate(-50%, calc(-50% + 12.96vmin)) scale(0.5); }
+    70%  { opacity: 1; transform: translate(-50%, calc(-50% + 12.96vmin)) scale(1.05); }
+    100% { opacity: 1; transform: translate(-50%, calc(-50% + 12.96vmin)) scale(1.0); }
+  }
+
+  /* Panel content */
+  .panel-tag {
+    font-size: 1.11vmin;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 2.59vmin;
+    display: flex;
+    align-items: center;
+    gap: 0.74vmin;
+  }
+
+  .tag-vote { color: #f87171; }
+  .tag-trade { color: #4ade80; }
+
+  .action-word {
+    font-size: 6.3vmin;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 2.59vmin;
+  }
+
+  .action-against { color: #ef4444; }
+  .action-bought  { color: #22c55e; text-shadow: 0 0 3.7vmin rgba(34,197,94,0.3); }
+
+  .panel-detail-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 1.48vmin;
+    padding: 2.59vmin 2.96vmin;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .detail-label {
+    font-size: 1.11vmin;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 1.3vmin;
+  }
+
+  .bill-name {
+    font-size: 2.41vmin;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+    margin-bottom: 1.48vmin;
+  }
+
+  .bill-desc {
+    font-size: 1.39vmin;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+    margin-bottom: 1.85vmin;
+  }
+
+  .date-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.56vmin;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 100px;
+    padding: 0.56vmin 1.3vmin;
+    font-size: 1.2vmin;
+    font-weight: 600;
+    color: #fca5a5;
+  }
+
+  .date-tag-green {
+    background: rgba(34,197,94,0.1);
+    border-color: rgba(34,197,94,0.2);
+    color: #86efac;
+  }
+
+  .stock-amount {
+    font-size: 4.81vmin;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 0.74vmin;
+    text-shadow: 0 0 2.78vmin rgba(34,197,94,0.25);
+  }
+
+  .stock-ticker-row {
+    display: flex;
+    align-items: center;
+    gap: 1.11vmin;
+    margin-bottom: 1.3vmin;
+  }
+
+  .stock-ticker-large {
+    font-size: 2.59vmin;
+    font-weight: 800;
+    color: white;
+  }
+
+  .stock-name {
+    font-size: 1.48vmin;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .vote-result-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.56vmin;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 0.56vmin;
+    padding: 0.74vmin 1.3vmin;
+    font-size: 1.3vmin;
+    font-weight: 700;
+    color: #f87171;
+    margin-bottom: 1.85vmin;
+  }
+
+  /* Bottom strip */
+  .bottom-strip {
+    background: rgba(255,255,255,0.02);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 1.85vmin 5.93vmin;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards 2.3s;
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 1.11vmin;
+  }
+
+  .brand-icon {
+    width: 3.52vmin;
+    height: 3.52vmin;
+    background: #22c55e;
+    border-radius: 0.83vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-name { font-size: 1.67vmin; font-weight: 800; color: white; }
+  .brand-url  { font-size: 1.2vmin; color: rgba(255,255,255,0.3); }
+
+  .tagline-text {
+    font-size: 1.3vmin;
+    color: rgba(255,255,255,0.22);
+    text-align: right;
+    max-width: 25.9vmin;
+    line-height: 1.55;
+    font-style: italic;
+  }
+
+  /* ---- Control panel ---- */
+  .control-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #1e2530;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .control-panel label {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .control-panel input[type=range] {
+    width: 90px;
+    accent-color: #22c55e;
+    cursor: pointer;
+  }
+
+  .replay-btn {
+    background: #22c55e;
+    color: #0d1117;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+
+  .replay-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="control-panel">
+  <label>Scale</label>
+  <input type="range" min="0.3" max="1.0" step="0.05" value="0.85" id="scaleSlider">
+  <button class="replay-btn" id="replayBtn">&#8635; Replay</button>
+</div>
+
+<div class="card-wrapper" id="cardWrapper">
+  <div class="card" id="card">
+    <div class="top-bar"></div>
+
+    <div class="header-strip">
+      <div class="eyebrow">⚡ Disclosed in Public Records</div>
+      <div class="rep-chip">
+        <div class="rep-avatar-small">MR</div>
+        <span class="rep-chip-name">Rep. Michael Rivera</span>
+        <span class="party-d">D</span>
+      </div>
+    </div>
+
+    <div class="main-split">
+
+      <!-- VS connector -->
+      <div class="vs-connector">
+        <div class="vs-line-top"></div>
+        <div class="vs-badge">VS</div>
+        <div class="vs-line-bottom"></div>
+      </div>
+
+      <!-- Left: Vote -->
+      <div class="panel-vote">
+        <div class="panel-tag tag-vote">
+          <svg width="1.3vmin" height="1.3vmin" viewBox="0 0 14 14" fill="none" style="width:1.3vmin;height:1.3vmin;flex-shrink:0">
+            <circle cx="7" cy="7" r="6.5" stroke="#ef4444" stroke-width="1.5"/>
+            <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          March 3, 2026 — House Roll Call
+        </div>
+
+        <div class="action-word action-against">VOTED<br>AGAINST</div>
+
+        <div class="panel-detail-card">
+          <div class="detail-label">Bill</div>
+          <div class="bill-name">H.R. 7842 — Tech Accountability<br>&amp; Market Fairness Act</div>
+          <div class="bill-desc">Would require disclosure of tech exec stock trades and ban congressional stock ownership in covered companies.</div>
+          <div class="vote-result-chip">
+            <svg width="1.11vmin" height="1.11vmin" viewBox="0 0 12 12" fill="none" style="width:1.11vmin;height:1.11vmin">
+              <path d="M2 6L5 9L10 3" stroke="#f87171" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            Final Vote: FAILED 198–237
+          </div>
+          <div class="date-tag">📅 March 3, 2026</div>
+        </div>
+      </div>
+
+      <!-- Right: Trade -->
+      <div class="panel-trade">
+        <div class="panel-tag tag-trade">
+          <svg width="1.3vmin" height="1.3vmin" viewBox="0 0 14 14" fill="none" style="width:1.3vmin;height:1.3vmin;flex-shrink:0">
+            <circle cx="7" cy="7" r="6.5" stroke="#22c55e" stroke-width="1.5"/>
+            <path d="M7 3.5V7.5L9.5 9.5" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          March 4, 2026 — The Very Next Day
+        </div>
+
+        <div class="action-word action-bought">BOUGHT<br>STOCK</div>
+
+        <div class="panel-detail-card">
+          <div class="detail-label">Disclosed Trade</div>
+          <div class="stock-amount" id="stockAmount">$0</div>
+          <div class="stock-ticker-row">
+            <div class="stock-ticker-large">GOOG</div>
+            <div class="stock-name">Alphabet Inc. (Google)</div>
+          </div>
+          <div class="bill-desc">Purchase disclosed 12 days later via mandatory House Financial Disclosure. The bill he voted against would have banned this trade.</div>
+          <div class="date-tag date-tag-green">📅 March 4, 2026 — 24 hrs later</div>
+        </div>
+      </div>
+
+      <!-- Floating then badge -->
+      <div class="then-badge">⏱ One day later</div>
+    </div>
+
+    <div class="bottom-strip">
+      <div class="brand-lockup">
+        <div class="brand-icon">
+          <svg width="1.85vmin" height="1.85vmin" viewBox="0 0 24 24" fill="none" style="width:1.85vmin;height:1.85vmin">
+            <circle cx="12" cy="8" r="4" stroke="#0d1117" stroke-width="2.2"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0d1117" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">CivicWatch</div>
+          <div class="brand-url">civicwatch.app</div>
+        </div>
+      </div>
+      <div class="tagline-text">Your representatives work for you.<br>Start holding them to it.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const slider = document.getElementById('scaleSlider');
+  const wrapper = document.getElementById('cardWrapper');
+
+  function applyScale(v) {
+    wrapper.style.transform = `scale(${v})`;
+  }
+  applyScale(slider.value);
+  slider.addEventListener('input', () => applyScale(slider.value));
+
+  // Count-up for $250,000
+  function countUp(el, target, duration, prefix) {
+    const start = Date.now();
+    function step() {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOut
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(eased * target);
+      el.textContent = prefix + value.toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  let loopTimer = null;
+
+  function startAnimation() {
+    const card = document.getElementById('card');
+    const parent = card.parentNode;
+    const clone = card.cloneNode(true);
+    parent.replaceChild(clone, card);
+
+    // Count up amount at 2.6s for 0.5s
+    setTimeout(() => {
+      const amountEl = clone.querySelector('#stockAmount');
+      if (amountEl) countUp(amountEl, 250000, 500, '$');
+    }, 2600);
+
+    if (loopTimer) clearTimeout(loopTimer);
+    loopTimer = setTimeout(startAnimation, 9000);
+  }
+
+  startAnimation();
+
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (loopTimer) clearTimeout(loopTimer);
+    startAnimation();
+  });
+</script>
+</body>
+</html>

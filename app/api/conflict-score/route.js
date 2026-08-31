@@ -142,12 +142,26 @@ export async function GET(request) {
     }
 
     const score = flagged.length
-    const tier = score === 0 ? 'None flagged' : score <= 2 ? 'Low' : score <= 5 ? 'Medium' : 'High'
+    // A score of 0 means two very different things and they must not be
+    // conflated: "we checked this member's trades and found no overlap" vs.
+    // "we have no resolved trades for this member to check in the first
+    // place" (bioguide_id backfill gap, or a member who simply hasn't filed
+    // this Congress). Collapsing both into "None flagged" told a paying
+    // subscriber "clean bill of health" when the honest answer for the
+    // second case is "we don't know." trades.length (not eligibleTrades,
+    // which is windowed to the current Congress) is the right test — a
+    // member with only prior-Congress trades on file still has data, just
+    // none in the scored window.
+    const hasAnyTradeData = trades.length > 0
+    const tier = !hasAnyTradeData
+      ? 'No trade data on file'
+      : score === 0 ? 'None flagged' : score <= 2 ? 'Low' : score <= 5 ? 'Medium' : 'High'
 
     return NextResponse.json({
       bioguideId,
       score,
       tier,
+      hasAnyTradeData,
       congress,
       scoredYears: [windowStartYear, windowStartYear + 1],
       committees: relevantCommittees.map(({ name, committeeName, subcommitteeName, chamber, title, tenureStartYear, tenureEndYear, sectors }) => ({
@@ -156,7 +170,11 @@ export async function GET(request) {
       flaggedTrades: flagged,
       totalTradesReviewed: eligibleTrades.length,
       totalTradesOnFile: trades.length,
-      methodology:
+      methodology: !hasAnyTradeData
+        ? `We don't yet have this member's trade disclosures matched to their record — this is a data ` +
+          `coverage gap, not a clean bill of health. Check back as ingestion catches up, or see the ` +
+          `member's raw filings if any are listed above.`
+        :
         `Flags a trade when its ticker falls in a sector overseen by a committee the member sat on, ` +
         `and the trade was made during the ${congress}th Congress (${windowStartYear}–${windowStartYear + 1}). ` +
         `Committee rosters come from the unitedstates/congress-legislators dataset, which records current ` +

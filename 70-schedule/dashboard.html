@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CivicWatch — All Gantt Charts</title>
+<style>
+  :root{
+    --navy:#0A0E1E; --navy-mid:#111827; --navy-light:#1B2A6B;
+    --gold:#D4AF37; --gold-dim:rgba(212,175,55,0.15);
+    --off-white:#F0EDE4; --gray:#8892A4; --border:rgba(212,175,55,0.18);
+    --green:#4CAF50; --red:#f87171;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; background:var(--navy); color:var(--off-white);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif; }
+  header{
+    padding:14px 24px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    background:rgba(10,14,30,0.95);
+  }
+  header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:0.3px; }
+  header h1 .sub{ color:var(--gray); font-weight:500; font-size:12px; margin-left:8px; }
+  nav.tabs{ display:flex; gap:8px; }
+  nav.tabs button{
+    padding:8px 16px; border-radius:8px; border:1px solid var(--border);
+    background:transparent; color:var(--gray); font-size:13px; font-weight:600; cursor:pointer;
+  }
+  nav.tabs button.active{ background:var(--gold-dim); color:var(--gold); border-color:var(--gold); }
+
+  .summary-strip{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:1px;
+    background:var(--border); border-bottom:1px solid var(--border);
+  }
+  .summary-card{ background:var(--navy-mid); padding:14px 20px; }
+  .summary-card .label{ font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--gray); margin-bottom:6px; }
+  .summary-card .row{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .summary-card .pct{ font-size:22px; font-weight:800; color:var(--gold); }
+  .summary-card .detail{ font-size:12px; color:var(--gray); }
+  .summary-card .detail b{ color:var(--off-white); font-weight:600; }
+  .summary-card .variance.late{ color:var(--red); }
+  .summary-card .variance.ontrack{ color:var(--green); }
+  .snapshot-note{ font-size:10.5px; color:var(--gray); margin-top:6px; opacity:0.8; }
+
+  .frame-wrap{ position:relative; height:calc(100vh - 128px); }
+  iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; display:none; background:#fff; }
+  iframe.active{ display:block; }
+
+  .frame-wrap .empty-hint{
+    display:none; position:absolute; inset:0; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; color:var(--gray); font-size:13px; text-align:center; padding:40px;
+  }
+  .frame-wrap .empty-hint.show{ display:flex; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏛️ CivicWatch — All Gantt Charts<span class="sub">one screen, both tracks</span></h1>
+  <nav class="tabs">
+    <button id="tab-product" class="active" onclick="showTab('product')">💰 Product Roadmap</button>
+    <button id="tab-marketing" onclick="showTab('marketing')">📣 Marketing Campaign</button>
+  </nav>
+</header>
+
+<!--
+  Snapshot numbers below are baked in at generation time, not fetched live —
+  most browsers block fetch() against local files opened via file://, which
+  is exactly why the two source tools (gantt.html / civicwatch-marketing-gantt.html)
+  never read their own state files back in either; they only ever write to them.
+  The snapshot strip is a fast at-a-glance summary. The interactive chart below
+  it — inside the iframe — IS the live, current, editable source of truth for
+  whichever project's tab is open; use it directly rather than trusting the
+  strip once you've made changes there.
+
+  To refresh this strip: re-run the same read that produced it (read
+  70-schedule/gantt-state.json for product; for marketing, export/autosave
+  civicwatch-marketing-gantt.html's state, or ask Claude to regenerate it the
+  same way it built the first one) and update the two .pct/.detail blocks
+  below with the new totals.
+-->
+<div class="summary-strip">
+  <div class="summary-card">
+    <div class="label">Product Roadmap — 70-schedule/gantt.html</div>
+    <div class="row">
+      <span class="pct">43%</span>
+      <span class="detail"><b>15 / 35</b> tasks done · 5 need attention</span>
+    </div>
+    <div class="detail">Launch: planned <b>Aug 20</b> → projected <b>Aug 29</b> <span class="variance late">(+9d)</span></div>
+    <div class="snapshot-note">Snapshot from 70-schedule/gantt-state.json, generated 2026-08-13.</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Marketing Campaign — marketing/civicwatch-marketing-gantt.html</div>
+    <div class="row">
+      <span class="pct">2%</span>
+      <span class="detail"><b>1 / 41</b> tasks done · 40 need attention</span>
+    </div>
+    <div class="detail">Election Day push: planned <b>Nov 3</b> → projected <b>Nov 26</b> <span class="variance late">(+23d)</span></div>
+    <div class="snapshot-note">Snapshot from Media campaign/civicwatch-marketing-gantt-state.json, generated 2026-08-20 (first real export — file was empty before this).</div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <iframe id="frame-product" class="active" src="gantt.html" title="Product Roadmap Gantt"></iframe>
+  <iframe id="frame-marketing" src="../marketing/civicwatch-marketing-gantt.html" title="Marketing Campaign Gantt"></iframe>
+</div>
+
+<script>
+function showTab(which){
+  document.getElementById('frame-product').classList.toggle('active', which==='product');
+  document.getElementById('frame-marketing').classList.toggle('active', which==='marketing');
+  document.getElementById('tab-product').classList.toggle('active', which==='product');
+  document.getElementById('tab-marketing').classList.toggle('active', which==='marketing');
+}
+</script>
+
+</body>
+</html>

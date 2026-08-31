@@ -55,11 +55,11 @@ on:
       trades_limit:
         description: 'Max PTR filings to fetch this run'
         required: false
-        default: '100'
+        default: '2000'
       networth_limit:
         description: 'Max Annual FD filings to fetch this run'
         required: false
-        default: '100'
+        default: '2000'
 
 concurrency:
   group: ingest-senate
@@ -72,7 +72,7 @@ jobs:
   ingest:
     name: Ingest Senate disclosures
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -116,7 +116,7 @@ jobs:
         continue-on-error: true
         run: >
           node scripts/ingest-senate-trades.mjs
-          --limit=${{ github.event.inputs.trades_limit || '100' }}
+          --limit=${{ github.event.inputs.trades_limit || '2000' }}
 
       - name: Net worth (Annual FD)
         id: networth
@@ -124,7 +124,7 @@ jobs:
         continue-on-error: true
         run: >
           node scripts/ingest-senate-networth.mjs
-          --limit=${{ github.event.inputs.networth_limit || '100' }} --skip-existing
+          --limit=${{ github.event.inputs.networth_limit || '2000' }} --skip-existing
 
       - name: Fail run if a phase failed (probe outage is not a failure)
         if: steps.probe.outcome == 'success' && (steps.trades.outcome == 'failure' || steps.networth.outcome == 'failure')

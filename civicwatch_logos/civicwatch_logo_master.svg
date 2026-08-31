@@ -1,0 +1,100 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="38%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#1a2a5e"/>
+      <stop offset="100%" stop-color="#0A1628"/>
+    </radialGradient>
+    <clipPath id="circle">
+      <circle cx="256" cy="256" r="252"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="256" cy="256" r="256" fill="#0A1628"/>
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+
+  <!-- Gold border ring -->
+  <circle cx="256" cy="256" r="246" fill="none" stroke="#D4AF37" stroke-width="2.5" opacity="0.4"/>
+
+  <!-- ══════════════════════════════════════════
+       C SHAPE  (arc ring, opening on right ≈ ±48°)
+       C center: (215, 256)  outer r=152  inner r=95
+       Opening angle ±48° → cos48°≈0.669  sin48°≈0.743
+       Outer top:    215+152×0.669 , 256-152×0.743 = 316.7, 143.1  → (317,143)
+       Outer bottom: 316.7, 368.9                                    → (317,369)
+       Inner top:    215+95×0.669  , 256-95×0.743  = 278.6, 185.4  → (279,185)
+       Inner bottom: 278.6, 326.6                                    → (279,327)
+  ══════════════════════════════════════════ -->
+  <path d="M 317,143
+           A 152,152 0 1,0 317,369
+           L 279,327
+           A  95, 95 0 1,1 279,185
+           Z"
+        fill="white"/>
+
+  <!-- ══════════════════════════════════════════
+       CAPITOL DOME  — centred in the C's opening
+       Opening centre ≈ (330, 256).  Dome ~60 wide, 70 tall.
+  ══════════════════════════════════════════ -->
+  <g transform="translate(330,247)" fill="white">
+    <!-- Finial / flag pole -->
+    <rect x="-1.5" y="-43" width="3" height="14" rx="1.5"/>
+    <!-- Lantern cylinder -->
+    <rect x="-5"   y="-29" width="10" height="13" rx="2"/>
+    <!-- Dome cap (shallow arch) -->
+    <path d="M -18,-16 Q 0,-36 18,-16 Z"/>
+    <!-- Dome body (two quarter-ellipse sides) -->
+    <path d="M -22,-4 Q -24,4 -21,8 L 21,8 Q 24,4 22,-4 Z"/>
+    <!-- Cornice / entablature -->
+    <rect x="-26" y="8"  width="52" height="7"  rx="1.5"/>
+    <!-- Portico roof -->
+    <rect x="-30" y="15" width="60" height="5"  rx="1"/>
+    <!-- Steps -->
+    <rect x="-26" y="20" width="52" height="5" rx="1"/>
+    <rect x="-21" y="25" width="42" height="5" rx="1"/>
+    <rect x="-16" y="30" width="32" height="5" rx="1"/>
+  </g>
+
+  <!-- ══════════════════════════════════════════
+       W  SHAPE  (geometric bold, right of C)
+       Overall bounds: x 278-454 , y 150-385
+       Built as a filled polygon:
+
+       Outer left top    → inner left top
+        ↘                  ↙
+       left valley bottom (centre-left)
+        ↗                  ↖
+       centre peak         centre peak (inner)
+        ↘                  ↙
+       right valley bottom (centre-right)
+        ↗                  ↖
+       inner right top  ← outer right top
+  ══════════════════════════════════════════ -->
+  <polygon
+    points="
+      278,152  312,152
+      358,365  389,240
+      420,365  452,152
+      420,152  389,295
+      358,295  325,152
+    "
+    fill="white"
+    clip-path="url(#circle)"/>
+
+  <!-- ══════════════════════════════════════════
+       GOLD ACCENT  — bold diagonal slash on W's right leg
+       The right outer leg of W runs from (420,152) to (452,152) at top
+       to roughly (452,152) → (420,365) at bottom.
+       Gold parallelogram overlays the rightmost stroke of W.
+  ══════════════════════════════════════════ -->
+  <polygon
+    points="419,152  452,152  452,365  419,365"
+    fill="#D4AF37"
+    clip-path="url(#circle)"/>
+
+  <!-- ══════════════════════════════════════════
+       INNER GOLD DETAILS — small accent on dome finial
+  ══════════════════════════════════════════ -->
+  <circle cx="330" cy="204" r="4" fill="#D4AF37"/>
+
+</svg>

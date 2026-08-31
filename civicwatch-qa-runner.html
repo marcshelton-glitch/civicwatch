@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicWatch QA Test Runner</title>
+<style>
+:root { color-scheme: light }
+* { box-sizing: border-box; margin: 0; padding: 0 }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f8f9fa; color: #111; padding: 24px; font-size: 14px }
+h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; color: #111 }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 20px }
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px }
+.metric { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; text-align: center }
+.metric-num { font-size: 24px; font-weight: 600; color: #111 }
+.metric-num.pass { color: #16a34a }
+.metric-num.fail { color: #dc2626 }
+.metric-num.pct { color: #2563eb }
+.metric-label { font-size: 11px; color: #888; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em }
+.progress-wrap { height: 5px; background: #e5e7eb; border-radius: 3px; margin-bottom: 16px; overflow: hidden }
+.progress-fill { height: 100%; background: #16a34a; border-radius: 3px; transition: width 0.3s }
+.controls { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center }
+button { font-family: inherit; font-size: 13px; padding: 6px 14px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #374151; cursor: pointer; transition: background 0.15s }
+button:hover { background: #f3f4f6 }
+button.report-btn { background: #2563eb; color: #fff; border-color: #2563eb }
+button.report-btn:hover { background: #1d4ed8 }
+.section { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; overflow: hidden }
+.section-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; cursor: pointer; user-select: none }
+.section-title { flex: 1; font-size: 14px; font-weight: 600; color: #111 }
+.section-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #e5e7eb; color: #555 }
+.section-prog { font-size: 11px; color: #888 }
+.chevron { font-size: 14px; color: #aaa; transition: transform 0.2s }
+.chevron.open { transform: rotate(180deg) }
+.items-wrap { display: block }
+.item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #f3f4f6 }
+.item:last-child { border-bottom: none }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; flex-shrink: 0 }
+.dot.p { background: #16a34a }
+.dot.f { background: #dc2626 }
+.dot.s { background: #9ca3af }
+.item-text { flex: 1; font-size: 13px; color: #374151; line-height: 1.4 }
+.item-text.p { color: #15803d }
+.item-text.f { color: #b91c1c }
+.item-text.s { color: #9ca3af }
+.btns { display: flex; gap: 5px; flex-shrink: 0 }
+.btn-p, .btn-f, .btn-s { font-family: inherit; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 6px; cursor: pointer; border: 1px solid; transition: background 0.12s }
+.btn-p { border-color: #86efac; color: #15803d; background: transparent }
+.btn-p:hover, .btn-p.on { background: #dcfce7 }
+.btn-f { border-color: #fca5a5; color: #b91c1c; background: transparent }
+.btn-f:hover, .btn-f.on { background: #fee2e2 }
+.btn-s { border-color: #d1d5db; color: #6b7280; background: transparent }
+.btn-s:hover, .btn-s.on { background: #f3f4f6 }
+</style>
+</head>
+<body>
+
+<h1>CivicWatch QA Test Runner</h1>
+<p class="subtitle">civicwatch.app — mark each item as you test it in Chrome</p>
+
+<div class="summary" id="summary"></div>
+<div class="progress-wrap"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+<div class="controls">
+  <button onclick="resetAll()">Reset all</button>
+  <button onclick="passSection()">Pass visible section</button>
+  <button class="report-btn" onclick="reportFails()">Copy failed items</button>
+</div>
+
+<div id="root"></div>
+
+<script>
+var DATA = [
+  { t: "Landing page", items: [
+    "Logo click — goes to home or dashboard",
+    '"Go to Dashboard" hero CTA button works',
+    '"See How It Works" ghost button responds',
+    "Nav: About link navigates correctly",
+    "Nav: Leaderboard link navigates correctly",
+    "Nav: Constitution link navigates correctly",
+    'Nav: "Go to Dashboard" CTA works',
+    "Trade ticker scrolls automatically",
+    "Stat counters animate when scrolled into view",
+    "Feature cards tilt on hover",
+    "Preview card tilts on hover",
+    'Free plan: "Explore Free" button responds',
+    'Pro plan: "Start Pro" button responds',
+    '"Explore Live Data" footer CTA works',
+    "Footer links load correct pages (About / Terms / Privacy / Sign Up)"
+  ]},
+  { t: "Authentication", items: [
+    "Sign In button visible when logged out",
+    "Sign In click opens Clerk modal",
+    "Email / password entry works in modal",
+    "Sign Up flow creates a new account",
+    "Nav avatar appears after signing in",
+    "Avatar click opens Settings panel",
+    "Sign Out button visible at bottom of panel",
+    "Sign Out actually logs the user out"
+  ]},
+  { t: "Dashboard — search & navigation", items: [
+    "Rep search bar filters the list as you type",
+    "Search results are clickable",
+    "Rep card click loads their full profile",
+    "State filter dropdown filters correctly",
+    "Compare mode toggle activates second search",
+    "Second rep loads correctly in compare view"
+  ]},
+  { t: "Rep profile — all tabs", items: [
+    "Overview tab — wealth, bio summary, trades snapshot",
+    "Bio tab — service history with district year ranges",
+    "Votes tab — bill names and YEA / NAY shown",
+    "Trades tab — STOCK Act filings display",
+    "Today's Docket tab — floor votes / hearings",
+    "Town Hall tab — upcoming events",
+    "Nonprofits tab — affiliations list",
+    "AI Analysis tab — Pro gate / lock shown for free users",
+    "Alerts tab — Track My Rep setup",
+    "Constitution tab — full text renders"
+  ]},
+  { t: "District map", items: [
+    "National map renders all 50 states",
+    "State click drills into district view",
+    "District click loads rep in sidebar",
+    "Back button returns to national map",
+    "State abbreviation labels visible",
+    "District hover highlight works"
+  ]},
+  { t: "Leaderboard", items: [
+    "Page loads without error",
+    "Rankings list is not empty",
+    "Rep row click opens their profile"
+  ]},
+  { t: "Settings panel", items: [
+    "Panel opens from nav avatar",
+    "Tracked reps list shows correctly",
+    "Untrack (X) button removes rep from list",
+    "Plan badge shows Free or Pro correctly",
+    "Manage Billing button present for Pro users",
+    "Panel closes cleanly",
+    "Sign Out button is functional"
+  ]},
+  { t: "Pro & upgrade flow", items: [
+    "Pro page loads — no 404",
+    "Go Pro button initiates upgrade / payment flow",
+    "AI Analysis tab locked for free / logged-out users",
+    "Coming Soon badges visible on unbuilt features"
+  ]},
+  { t: "Other pages & edge cases", items: [
+    "About page loads",
+    "Privacy policy page loads",
+    "Terms page loads",
+    "Constitution page loads directly",
+    "Bad URL shows 404 — no crash",
+    "Rep photos load or initials fallback displays",
+    "No console errors on dashboard load",
+    "Mobile nav collapses / hamburger menu works"
+  ]}
+];
+
+var ST = {};
+var IDS = [];
+var openSections = {};
+
+DATA.forEach(function(sec, si) {
+  openSections[si] = true;
+  sec.items.forEach(function(_, ii) {
+    IDS.push(si + '-' + ii);
+  });
+});
+
+function total() { return IDS.length; }
+function counts() {
+  var p = 0, f = 0, s = 0;
+  IDS.forEach(function(id) {
+    var v = ST[id];
+    if (v === 'p') p++;
+    else if (v === 'f') f++;
+    else if (v === 's') s++;
+  });
+  return { p: p, f: f, s: s };
+}
+
+function updateSummary() {
+  var c = counts(), tot = total(), tested = c.p + c.f + c.s;
+  var pct = Math.round(tested / tot * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('summary').innerHTML =
+    metric(tot, 'Total checks', '') +
+    metric(c.p, 'Passed', 'pass') +
+    metric(c.f, 'Failed', 'fail') +
+    metric(pct + '%', 'Coverage', 'pct');
+}
+function metric(n, label, cls) {
+  return '<div class="metric"><div class="metric-num ' + cls + '">' + n + '</div><div class="metric-label">' + label + '</div></div>';
+}
+
+function mark(id, val) {
+  ST[id] = ST[id] === val ? null : val;
+  var v = ST[id] || '';
+  var dot = document.getElementById('dot-' + id);
+  var txt = document.getElementById('txt-' + id);
+  var bp = document.getElementById('bp-' + id);
+  var bf = document.getElementById('bf-' + id);
+  var bs = document.getElementById('bs-' + id);
+  if (!dot) return;
+  dot.className = 'dot' + (v ? ' ' + v : '');
+  txt.className = 'item-text' + (v ? ' ' + v : '');
+  bp.className = 'btn-p' + (v === 'p' ? ' on' : '');
+  bf.className = 'btn-f' + (v === 'f' ? ' on' : '');
+  bs.className = 'btn-s' + (v === 's' ? ' on' : '');
+  updateSummary();
+  updateSectionProg(id.split('-')[0]);
+}
+
+function updateSectionProg(si) {
+  var secIds = IDS.filter(function(id) { return id.split('-')[0] === String(si); });
+  var done = secIds.filter(function(id) { return ST[id]; }).length;
+  var el = document.getElementById('sprog-' + si);
+  if (el) el.textContent = done + ' / ' + secIds.length;
+}
+
+function toggleSection(si) {
+  openSections[si] = !openSections[si];
+  document.getElementById('items-' + si).style.display = openSections[si] ? 'block' : 'none';
+  var ch = document.getElementById('chev-' + si);
+  if (ch) ch.className = 'chevron' + (openSections[si] ? ' open' : '');
+}
+
+function passSection() {
+  var active = Object.keys(openSections).filter(function(k) { return openSections[k]; });
+  active.forEach(function(si) {
+    IDS.filter(function(id) { return id.split('-')[0] === String(si); }).forEach(function(id) {
+      ST[id] = 'p';
+      var dot = document.getElementById('dot-' + id);
+      var txt = document.getElementById('txt-' + id);
+      var bp = document.getElementById('bp-' + id);
+      var bf = document.getElementById('bf-' + id);
+      var bs = document.getElementById('bs-' + id);
+      if (dot) { dot.className = 'dot p'; txt.className = 'item-text p'; bp.className = 'btn-p on'; bf.className = 'btn-f'; bs.className = 'btn-s'; }
+    });
+    updateSectionProg(si);
+  });
+  updateSummary();
+}
+
+function resetAll() {
+  ST = {};
+  render();
+}
+
+function reportFails() {
+  var lines = ['CivicWatch QA — Failed Items\n'];
+  DATA.forEach(function(sec, si) {
+    var fails = [];
+    sec.items.forEach(function(item, ii) {
+      if (ST[si + '-' + ii] === 'f') fails.push('  - ' + item);
+    });
+    if (fails.length) { lines.push(sec.t + ':'); fails.forEach(function(f) { lines.push(f); }); lines.push(''); }
+  });
+  if (lines.length === 1) { lines.push('No failures recorded yet.'); }
+  var txt = lines.join('\n');
+  navigator.clipboard.writeText(txt).then(function() { alert('Failed items copied to clipboard!'); }).catch(function() { alert(txt); });
+}
+
+function render() {
+  var html = '';
+  DATA.forEach(function(sec, si) {
+    var secIds = IDS.filter(function(id) { return id.split('-')[0] === String(si); });
+    html += '<div class="section">';
+    html += '<div class="section-header" onclick="toggleSection(' + si + ')">';
+    html += '<span class="section-title">' + sec.t + '</span>';
+    html += '<span class="section-prog" id="sprog-' + si + '">0 / ' + sec.items.length + '</span>';
+    html += '<span class="section-badge">' + sec.items.length + '</span>';
+    html += '<span class="chevron open" id="chev-' + si + '">&#8964;</span>';
+    html += '</div>';
+    html += '<div class="items-wrap" id="items-' + si + '">';
+    sec.items.forEach(function(item, ii) {
+      var id = si + '-' + ii;
+      html += '<div class="item">';
+      html += '<div class="dot" id="dot-' + id + '"></div>';
+      html += '<div class="item-text" id="txt-' + id + '">' + item + '</div>';
+      html += '<div class="btns">';
+      html += '<button class="btn-p" id="bp-' + id + '" onclick="mark(\'' + id + '\',\'p\')">Pass</button>';
+      html += '<button class="btn-f" id="bf-' + id + '" onclick="mark(\'' + id + '\',\'f\')">Fail</button>';
+      html += '<button class="btn-s" id="bs-' + id + '" onclick="mark(\'' + id + '\',\'s\')">Skip</button>';
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('root').innerHTML = html;
+  updateSummary();
+}
+
+render();
+</script>
+</body>
+</html>

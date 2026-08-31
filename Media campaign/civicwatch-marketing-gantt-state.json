@@ -1,0 +1,872 @@
+{
+  "project": "civicwatch-marketing",
+  "standardVersion": "1.0.0",
+  "provenance": "Regenerated 2026-08-20 by running the scheduling engine copied verbatim from marketing/civicwatch-marketing-gantt.html in Node (the file was previously 0 bytes -- the tool only writes this file via its in-browser Save/Autosave button, which had never been used; it does not read this file back in, so its own localStorage state is unaffected by this regeneration). Task 1 ('Audit paywall & upgrade funnel') is marked done with actual dates 2026-08-20, the day the audit (docs/paywall-funnel-audit.md) and its fixes were completed -- the only task with file evidence. All other 40 tasks are left pending; none have been started. If you use the interactive tool in-browser and mark tasks done there, re-export/autosave to resync this file, otherwise it will drift from the tool's live state.",
+  "exportedAt": "2026-08-21T00:15:37.449Z",
+  "today": "2026-08-20",
+  "totals": {
+    "total": 41,
+    "done": 1,
+    "remaining": 40,
+    "pctDone": 2
+  },
+  "launch": {
+    "planned": "2026-11-03",
+    "projected": "2026-11-26",
+    "varianceDays": 23
+  },
+  "needsAttentionCount": 40,
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Audit paywall & upgrade funnel",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-07-27",
+        "end": "2026-07-28"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-20"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-20",
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 2,
+      "name": "Rewrite pricing page copy & value props",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-07-29",
+        "end": "2026-07-31"
+      },
+      "scheduled": {
+        "start": "2026-08-21",
+        "end": "2026-08-23"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Audit paywall & upgrade funnel"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Add contextual upgrade prompts (AI Analysis, Wealth tabs)",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-08-03",
+        "end": "2026-08-05"
+      },
+      "scheduled": {
+        "start": "2026-08-26",
+        "end": "2026-08-28"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Audit paywall & upgrade funnel"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Install conversion funnel analytics",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-07-28",
+        "end": "2026-07-29"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-21"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 5,
+      "name": "Set up Search Console + submit sitemap",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-07-28",
+        "end": "2026-07-28"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-20"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 6,
+      "name": "Launch \"Founding Member\" offer ($4.99/mo lifetime, first 100)",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-08-03",
+        "end": "2026-08-04"
+      },
+      "scheduled": {
+        "start": "2026-08-26",
+        "end": "2026-08-27"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Rewrite pricing page copy & value props"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Set up Stripe coupon + urgency countdown banner",
+      "phase": "Monetization Foundation",
+      "planned": {
+        "start": "2026-08-05",
+        "end": "2026-08-06"
+      },
+      "scheduled": {
+        "start": "2026-08-28",
+        "end": "2026-08-29"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Launch \"Founding Member\" offer ($4.99/mo lifetime, first 100)"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Keyword research: congress trading, net worth, STOCK Act",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-07-28",
+        "end": "2026-07-30"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-22"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Set up Search Console + submit sitemap"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Cornerstone page: \"How to track congressional stock trades\"",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-03",
+        "end": "2026-08-06"
+      },
+      "scheduled": {
+        "start": "2026-08-26",
+        "end": "2026-08-29"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Keyword research: congress trading, net worth, STOCK Act"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Cornerstone page: \"STOCK Act explained\"",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-07",
+        "end": "2026-08-09"
+      },
+      "scheduled": {
+        "start": "2026-08-30",
+        "end": "2026-09-01"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Keyword research: congress trading, net worth, STOCK Act"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Programmatic SEO pass on rep-profile pages",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-10",
+        "end": "2026-08-14"
+      },
+      "scheduled": {
+        "start": "2026-09-02",
+        "end": "2026-09-06"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Keyword research: congress trading, net worth, STOCK Act"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Add schema.org structured data to rep pages",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-17",
+        "end": "2026-08-19"
+      },
+      "scheduled": {
+        "start": "2026-09-09",
+        "end": "2026-09-11"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Programmatic SEO pass on rep-profile pages"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Blog: \"8,000+ trades filed last Congress \u2014 what it means\"",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-20",
+        "end": "2026-08-21"
+      },
+      "scheduled": {
+        "start": "2026-09-12",
+        "end": "2026-09-13"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Cornerstone page: \"How to track congressional stock trades\""
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Submit to civic-tech & startup directories",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-24",
+        "end": "2026-08-26"
+      },
+      "scheduled": {
+        "start": "2026-08-24",
+        "end": "2026-08-26"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 15,
+      "name": "Backlink outreach to civics educators & transparency blogs",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-08-27",
+        "end": "2026-08-31"
+      },
+      "scheduled": {
+        "start": "2026-09-19",
+        "end": "2026-09-23"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Blog: \"8,000+ trades filed last Congress \u2014 what it means\""
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Hub page: \"2026 Midterm Candidates & Their Trades\"",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-09-08",
+        "end": "2026-09-12"
+      },
+      "scheduled": {
+        "start": "2026-10-01",
+        "end": "2026-10-05"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Programmatic SEO pass on rep-profile pages"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Weekly blog cadence begins (1 post/wk through election)",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-09-15",
+        "end": "2026-10-26"
+      },
+      "scheduled": {
+        "start": "2026-10-08",
+        "end": "2026-11-18"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Blog: \"8,000+ trades filed last Congress \u2014 what it means\""
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Mid-campaign SEO health check",
+      "phase": "Content & SEO Engine",
+      "planned": {
+        "start": "2026-10-13",
+        "end": "2026-10-14"
+      },
+      "scheduled": {
+        "start": "2026-11-05",
+        "end": "2026-11-06"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Set up Search Console + submit sitemap"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Audit & tune @CivicWatchAlerts bot copy/format",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-07-28",
+        "end": "2026-07-29"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-21"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 20,
+      "name": "Set up build-in-public founder account cadence",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-07-30",
+        "end": "2026-07-31"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-21"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 21,
+      "needsAttention": true,
+      "attentionReason": "slipped 21d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 21,
+      "name": "Create tweet templates for high-engagement trades",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-08-01",
+        "end": "2026-08-02"
+      },
+      "scheduled": {
+        "start": "2026-08-24",
+        "end": "2026-08-25"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Audit & tune @CivicWatchAlerts bot copy/format"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Daily organic posting rhythm begins (3x/day)",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-08-03",
+        "end": "2026-10-31"
+      },
+      "scheduled": {
+        "start": "2026-08-24",
+        "end": "2026-11-21"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 21,
+      "needsAttention": true,
+      "attentionReason": "slipped 21d due to an upstream delay",
+      "dependsOn": [
+        "Set up build-in-public founder account cadence"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Weekly \"Congress Trading Digest\" thread",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-08-10",
+        "end": "2026-11-07"
+      },
+      "scheduled": {
+        "start": "2026-09-02",
+        "end": "2026-11-30"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Create tweet templates for high-engagement trades"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Reply-guy engagement on political/finance accounts",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-08-10",
+        "end": "2026-11-07"
+      },
+      "scheduled": {
+        "start": "2026-08-31",
+        "end": "2026-11-28"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 21,
+      "needsAttention": true,
+      "attentionReason": "slipped 21d due to an upstream delay",
+      "dependsOn": [
+        "Set up build-in-public founder account cadence"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "Growth loop: RT + follow for a free month of Pro",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-08-24",
+        "end": "2026-08-28"
+      },
+      "scheduled": {
+        "start": "2026-09-16",
+        "end": "2026-09-20"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Launch \"Founding Member\" offer ($4.99/mo lifetime, first 100)"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Election-week bot upgrade: same-day alerts + \"who traded before this vote\"",
+      "phase": "X / Twitter Growth",
+      "planned": {
+        "start": "2026-10-06",
+        "end": "2026-10-15"
+      },
+      "scheduled": {
+        "start": "2026-10-29",
+        "end": "2026-11-07"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Audit & tune @CivicWatchAlerts bot copy/format",
+        "Weekly \"Congress Trading Digest\" thread"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "Prep Product Hunt assets (tagline, gallery, demo GIF)",
+      "phase": "Launch Communities",
+      "planned": {
+        "start": "2026-08-10",
+        "end": "2026-08-13"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-23"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 10,
+      "needsAttention": true,
+      "attentionReason": "slipped 10d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 28,
+      "name": "Line up hunters/supporters in civic-tech communities",
+      "phase": "Launch Communities",
+      "planned": {
+        "start": "2026-08-14",
+        "end": "2026-08-18"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-24"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 6,
+      "needsAttention": true,
+      "attentionReason": "slipped 6d due to an upstream delay",
+      "dependsOn": []
+    },
+    {
+      "id": 29,
+      "name": "Launch on Product Hunt",
+      "phase": "Launch Communities",
+      "planned": {
+        "start": "2026-08-25",
+        "end": "2026-08-25"
+      },
+      "scheduled": {
+        "start": "2026-09-04",
+        "end": "2026-09-04"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 10,
+      "needsAttention": true,
+      "attentionReason": "slipped 10d due to an upstream delay",
+      "dependsOn": [
+        "Prep Product Hunt assets (tagline, gallery, demo GIF)",
+        "Line up hunters/supporters in civic-tech communities"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "Post \"Show HN: CivicWatch\"",
+      "phase": "Launch Communities",
+      "planned": {
+        "start": "2026-08-26",
+        "end": "2026-08-26"
+      },
+      "scheduled": {
+        "start": "2026-09-05",
+        "end": "2026-09-05"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 10,
+      "needsAttention": true,
+      "attentionReason": "slipped 10d due to an upstream delay",
+      "dependsOn": [
+        "Launch on Product Hunt"
+      ]
+    },
+    {
+      "id": 31,
+      "name": "Post to relevant subreddits",
+      "phase": "Launch Communities",
+      "planned": {
+        "start": "2026-08-27",
+        "end": "2026-08-29"
+      },
+      "scheduled": {
+        "start": "2026-09-06",
+        "end": "2026-09-08"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 10,
+      "needsAttention": true,
+      "attentionReason": "slipped 10d due to an upstream delay",
+      "dependsOn": [
+        "Launch on Product Hunt"
+      ]
+    },
+    {
+      "id": 32,
+      "name": "Respond to every PH / HN / Reddit comment",
+      "phase": "Launch Communities",
+      "planned": {
+        "start": "2026-08-25",
+        "end": "2026-08-27"
+      },
+      "scheduled": {
+        "start": "2026-09-04",
+        "end": "2026-09-06"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 10,
+      "needsAttention": true,
+      "attentionReason": "slipped 10d due to an upstream delay",
+      "dependsOn": [
+        "Launch on Product Hunt"
+      ]
+    },
+    {
+      "id": 33,
+      "name": "Build \"Election Night Live\" dashboard (results + last trades before vote)",
+      "phase": "Midterm Election Moment",
+      "planned": {
+        "start": "2026-10-13",
+        "end": "2026-10-22"
+      },
+      "scheduled": {
+        "start": "2026-11-05",
+        "end": "2026-11-14"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Election-week bot upgrade: same-day alerts + \"who traded before this vote\""
+      ]
+    },
+    {
+      "id": 34,
+      "name": "Election-eve content package: \"How your rep voted this term\"",
+      "phase": "Midterm Election Moment",
+      "planned": {
+        "start": "2026-10-20",
+        "end": "2026-10-24"
+      },
+      "scheduled": {
+        "start": "2026-11-12",
+        "end": "2026-11-16"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Hub page: \"2026 Midterm Candidates & Their Trades\""
+      ]
+    },
+    {
+      "id": 35,
+      "name": "Coordinate election-week posting calendar (X / bot / blog)",
+      "phase": "Midterm Election Moment",
+      "planned": {
+        "start": "2026-10-23",
+        "end": "2026-10-26"
+      },
+      "scheduled": {
+        "start": "2026-11-15",
+        "end": "2026-11-18"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Weekly \"Congress Trading Digest\" thread",
+        "Build \"Election Night Live\" dashboard (results + last trades before vote)"
+      ]
+    },
+    {
+      "id": 36,
+      "name": "\ud83d\uddf3\ufe0f Election Day content push \u2014 live thread + dashboard promo",
+      "phase": "Midterm Election Moment",
+      "planned": {
+        "start": "2026-11-03",
+        "end": "2026-11-03"
+      },
+      "scheduled": {
+        "start": "2026-11-26",
+        "end": "2026-11-26"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Build \"Election Night Live\" dashboard (results + last trades before vote)",
+        "Coordinate election-week posting calendar (X / bot / blog)"
+      ]
+    },
+    {
+      "id": 37,
+      "name": "Post-election recap: \"What Congress traded during the midterms\"",
+      "phase": "Midterm Election Moment",
+      "planned": {
+        "start": "2026-11-04",
+        "end": "2026-11-07"
+      },
+      "scheduled": {
+        "start": "2026-11-27",
+        "end": "2026-11-30"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "\ud83d\uddf3\ufe0f Election Day content push \u2014 live thread + dashboard promo"
+      ]
+    },
+    {
+      "id": 38,
+      "name": "Convert traffic spike: upgrade banner + Founding Member deadline",
+      "phase": "Monetize & Sustain",
+      "planned": {
+        "start": "2026-11-03",
+        "end": "2026-11-09"
+      },
+      "scheduled": {
+        "start": "2026-11-26",
+        "end": "2026-12-02"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Set up Stripe coupon + urgency countdown banner",
+        "\ud83d\uddf3\ufe0f Election Day content push \u2014 live thread + dashboard promo"
+      ]
+    },
+    {
+      "id": 39,
+      "name": "Analyze funnel data from election traffic",
+      "phase": "Monetize & Sustain",
+      "planned": {
+        "start": "2026-11-10",
+        "end": "2026-11-12"
+      },
+      "scheduled": {
+        "start": "2026-12-03",
+        "end": "2026-12-05"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Install conversion funnel analytics",
+        "Convert traffic spike: upgrade banner + Founding Member deadline"
+      ]
+    },
+    {
+      "id": 40,
+      "name": "Retro: what worked, plan 2028-cycle content calendar",
+      "phase": "Monetize & Sustain",
+      "planned": {
+        "start": "2026-11-17",
+        "end": "2026-11-19"
+      },
+      "scheduled": {
+        "start": "2026-12-10",
+        "end": "2026-12-12"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Analyze funnel data from election traffic"
+      ]
+    },
+    {
+      "id": 41,
+      "name": "Set ongoing SEO/X cadence for post-election off-season",
+      "phase": "Monetize & Sustain",
+      "planned": {
+        "start": "2026-11-20",
+        "end": "2026-11-23"
+      },
+      "scheduled": {
+        "start": "2026-12-13",
+        "end": "2026-12-16"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 23,
+      "needsAttention": true,
+      "attentionReason": "slipped 23d due to an upstream delay",
+      "dependsOn": [
+        "Retro: what worked, plan 2028-cycle content calendar"
+      ]
+    }
+  ]
+}

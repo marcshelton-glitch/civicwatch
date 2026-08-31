@@ -54,11 +54,49 @@ function fetchBuffer(url) {
 
 function parseDate(str) {
   if (!str) return null
-  const clean = str.toString().trim().replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2')
-  const d = new Date(clean)
+  const s = str.toString().trim()
+
+  // House Clerk data gives us either "M/D/YYYY" (PDF text, XML FilingDate) or
+  // an already-ISO "YYYY-MM-DD". Extract the components explicitly rather than
+  // string-munging into ISO shape and handing the result to `new Date()` —
+  // that used to construct the date as UTC midnight while the checks below
+  // read it back with `.getFullYear()`/`.setHours()`, which are LOCAL time.
+  // On any server west of UTC that shifts every date back a day, so
+  // e.g. "01/01/2000" round-tripped as Dec 31 1999 and got wrongly rejected
+  // by the year<2000 guard below. Building and reading the date in UTC
+  // throughout removes the server-timezone dependency entirely.
+  let year, month, day
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  const iso   = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (slash) {
+    [, month, day, year] = slash
+  } else if (iso) {
+    [, year, month, day] = iso
+  } else {
+    return null
+  }
+  year = Number(year); month = Number(month); day = Number(day)
+
+  const d = new Date(Date.UTC(year, month - 1, day))
   if (isNaN(d)) return null
-  const year = d.getFullYear()
-  if (year < 2000 || year > 2030) return null  // reject bond maturity dates
+
+  // Date.UTC silently rolls over invalid days (e.g. Feb 30 -> Mar 1/2) instead
+  // of rejecting them — a bad OCR/regex read would otherwise become a
+  // plausible-looking wrong date instead of getting caught here.
+  if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) {
+    return null
+  }
+
+  if (year < 2000) return null  // reject bond maturity dates read as the transaction date
+
+  // A PTR/annual FD is always filed after the transaction happened, so the
+  // transaction date can never be later than the moment we're parsing it.
+  // (The old check only rejected years past 2030, which itself became a
+  // future date once the calendar caught up — that's how 27 bad rows got in.)
+  const now = new Date()
+  const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  if (d.getTime() > todayUTC) return null
+
   return d.toISOString().split('T')[0]
 }
 
@@ -135,13 +173,19 @@ function parsePTRTransactions(text) {
     const ownerMatch = b.match(/^(SP|JT|DC)\s+/m)
     const owner = ownerMatch ? ownerMatch[1] : 'self'
 
-    // Transaction type: P / S / E immediately followed (possibly via tab) by a date
+    // Transaction type: P / S / E immediately followed (possibly via tab) by a date.
+    // typeMatch[2] IS the real transaction date column — use it directly. Bond/note
+    // asset names routinely embed their own coupon/maturity date in MM/DD/YYYY form
+    // (e.g. "...4.25000% 10/15/2030"), and since the asset name sits before this
+    // column in the raw text, scanning the whole block for "the first date" (as this
+    // code used to) picks up that maturity date instead of the real trade date. That
+    // mix-up is what produced the 27 future-dated fd_trades rows fixed in 2026-08.
     const typeMatch = b.match(/\b([PSE])\s+(\d{2}\/\d{2}\/\d{4})/)
     if (!typeMatch) continue
     const rawType = typeMatch[1]
     const txType = rawType === 'P' ? 'Purchase' : rawType === 'S' ? 'Sale' : 'Exchange'
 
-    // Dates
+    // Sanity guard: skip blocks with no date-shaped text at all (not real transaction rows).
     const dates = [...b.matchAll(/\b(\d{2}\/\d{2}\/\d{4})\b/g)].map(m => m[1])
     if (!dates[0]) continue
 
@@ -167,7 +211,7 @@ function parsePTRTransactions(text) {
 
     const { min, max } = parseAmountRange(amountStr)
     transactions.push({
-      transaction_date: parseDate(dates[0]),
+      transaction_date: parseDate(typeMatch[2]),
       owner,
       asset_name: assetName,
       ticker,

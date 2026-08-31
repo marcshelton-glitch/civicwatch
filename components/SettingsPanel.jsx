@@ -2,6 +2,8 @@
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { getUserTier, TIER_LABELS } from '@/lib/tier-utils'
+import PushNotificationToggle from './PushNotificationToggle'
+import { trackUpgradeClick } from '@/lib/funnel-track'
 
 export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack, isPro, tier: tierProp }) {
   const { user } = useUser()
@@ -64,6 +66,15 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
           </div>
         )}
 
+        {/* Voter Pro+: push notifications */}
+        {isPaid && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ color: '#c9a84c', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Push Notifications</div>
+            <div style={{ color: '#8899aa', fontSize: 12, marginBottom: 10, lineHeight: 1.4 }}>Get a browser notification the moment a tracked rep files a new trade.</div>
+            <PushNotificationToggle style={{ width: '100%', justifyContent: 'center' }} />
+          </div>
+        )}
+
         {/* Voter Pro+: billing */}
         {isPaid && (
           <div style={{ marginBottom: 20 }}>
@@ -75,9 +86,19 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
         {/* Free: upgrade CTA. CivicWatch sells one paid plan — Pro, $9.99/mo.
             This block previously advertised "from $3.99/mo" and a Civic Pack
             upsell, both carried over from the California Candidate Calculator's
-            pricing. Free users saw $3.99 here and $9.99 on /pro. */}
+            pricing. Free users saw $3.99 here and $9.99 on /pro.
+
+            "Stock trade conflict analysis" was pulled from this list on
+            2026-08-20 (see docs/paywall-funnel-audit.md, Finding 5) because
+            fd_trades.bioguide_id was NULL on ~52% of rows, including sitting
+            Ways & Means/Appropriations members with real trade volume
+            (Doggett, Chu, Lee). Restored 2026-08-26: bioguide_id coverage is
+            now ~96%, /pro's comingSoon flag is off, and /api/conflict-score
+            now returns an explicit "No trade data on file" tier for the
+            remaining gap instead of a misleading "None flagged" — so the
+            claim below is honest even for the small slice still unresolved. */}
         {!isPaid && (
-          <a href="/pro" style={{ display: 'block', background: 'linear-gradient(135deg, #1a3a1a, #0d2a0d)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none' }}>
+          <a href="/pro" onClick={() => trackUpgradeClick('settings_upsell')} style={{ display: 'block', background: 'linear-gradient(135deg, #1a3a1a, #0d2a0d)', border: '1px solid #c9a84c', borderRadius: 8, padding: 16, textDecoration: 'none' }}>
             <div style={{ color: '#c9a84c', fontWeight: 700, marginBottom: 10, textAlign: 'center' }}>★ Upgrade to Pro — $9.99/mo</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
@@ -85,6 +106,7 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
                 '🔔 Real-time alerts for tracked reps',
                 '🤖 Full AI accountability reports',
                 '📈 Stock trade conflict analysis',
+                '⭐ Track any representative',
               ].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b0bac8' }}>
                   <span style={{ color: '#c9a84c', fontSize: 10 }}>✓</span>

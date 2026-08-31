@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useState } from 'react'
 import ProCountBanner from '@/components/ProCountBanner'
+import { trackUpgradeClick } from '@/lib/funnel-track'
 
 const S = {
   navy:      '#0A0E1E',
@@ -41,7 +42,6 @@ const PRO_FEATURES = [
     icon: '🔍',
     title: 'Trade Conflict Analysis',
     desc: 'Deep-dive into stock trades cross-referenced against committee assignments and pending legislation. See which trades raise questions about information asymmetry.',
-    comingSoon: true,
   },
   {
     icon: '📈',
@@ -111,7 +111,8 @@ export default function ProPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (location) => {
+    trackUpgradeClick(location)
     if (!isSignedIn) { openSignIn(); return }
     setLoading(true)
     setError(null)
@@ -223,7 +224,7 @@ export default function ProPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-              <button className="cta-btn" onClick={handleUpgrade} disabled={loading}>
+              <button className="cta-btn" onClick={() => handleUpgrade('pro_hero')} disabled={loading}>
                 {loading ? 'Redirecting to Stripe…' : '★ Go Pro'}
               </button>
               <div style={{ fontSize: 12, color: S.gray }}>Cancel anytime · No contracts · Stripe-secured checkout</div>
@@ -291,7 +292,7 @@ export default function ProPage() {
                       ★ Manage Pro Subscription
                     </button>
                   ) : (
-                    <button className="cta-btn" onClick={handleUpgrade} disabled={loading} style={{ width: '100%', padding: '13px 24px', fontSize: 14 }}>
+                    <button className="cta-btn" onClick={() => handleUpgrade('pro_comparison_card')} disabled={loading} style={{ width: '100%', padding: '13px 24px', fontSize: 14 }}>
                       {loading ? 'Redirecting…' : '★ Go Pro'}
                     </button>
                   )}
@@ -340,7 +341,7 @@ export default function ProPage() {
             Your $9.99/mo keeps the servers running, the data updated, and the AI models paid for. No ads, no data brokering, no sponsored content — just the data.
           </p>
           {!isPro && (
-            <button className="cta-btn" onClick={handleUpgrade} disabled={loading}>
+            <button className="cta-btn" onClick={() => handleUpgrade('pro_mission_section')} disabled={loading}>
               {loading ? 'Redirecting…' : '★ Go Pro'}
             </button>
           )}
@@ -380,7 +381,7 @@ export default function ProPage() {
             <p style={{ fontSize: 15, color: S.grayLight, marginBottom: 32, lineHeight: 1.7 }}>
               Join CivicWatch Pro and get the full picture on every representative in Congress.
             </p>
-            <button className="cta-btn" onClick={handleUpgrade} disabled={loading} style={{ fontSize: 17, padding: '18px 48px' }}>
+            <button className="cta-btn" onClick={() => handleUpgrade('pro_bottom_cta')} disabled={loading} style={{ fontSize: 17, padding: '18px 48px' }}>
               {loading ? 'Redirecting…' : '★ Go Pro'}
             </button>
             <div style={{ marginTop: 16, fontSize: 12, color: S.gray }}>Cancel anytime · Stripe-secured · No ads ever</div>

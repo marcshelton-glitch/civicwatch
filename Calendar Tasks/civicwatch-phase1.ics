@@ -1,0 +1,118 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//CivicWatch//Gantt//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260630
+DTEND;VALUE=DATE:20260701
+SUMMARY:🔧 [P1] Add VAPID env vars to Vercel (NEXT_PUBLIC_VAPID_PUBLIC_KEY\, VAPID_PRIVATE_KEY)
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260630-1@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260701
+DTEND;VALUE=DATE:20260702
+SUMMARY:🔧 [P1] Write push_subscriptions Supabase migration (table: user_id\, endpoint\, keys)
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260701-2@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260702
+DTEND;VALUE=DATE:20260703
+SUMMARY:🔧 [P1] Wire service worker registration in _app or layout.js
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260702-3@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260703
+DTEND;VALUE=DATE:20260704
+SUMMARY:🔧 [P1] Implement /api/push/subscribe endpoint with Clerk auth check
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260703-4@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260704
+DTEND;VALUE=DATE:20260705
+SUMMARY:🔧 [P1] Implement /api/push/send endpoint — send Web Push via web-push library
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260704-5@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260705
+DTEND;VALUE=DATE:20260706
+SUMMARY:🔧 [P1] Test push notification end-to-end on Chrome + Safari
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260705-6@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260706
+DTEND;VALUE=DATE:20260707
+SUMMARY:🔧 [P1] Backfill bioguide_id for 97 null rows in fd_net_worth table
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260706-7@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260707
+DTEND;VALUE=DATE:20260708
+SUMMARY:🔧 [P1] Finish congress/route.js caching layer (Redis or in-memory LRU\, 5min TTL)
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260707-8@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260708
+DTEND;VALUE=DATE:20260709
+SUMMARY:🔧 [P1] Add RLS policies for push_subscriptions table
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260708-9@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260709
+DTEND;VALUE=DATE:20260710
+SUMMARY:🔧 [P1] Audit all Supabase RLS policies — verify no data leaks
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260709-10@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260710
+DTEND;VALUE=DATE:20260711
+SUMMARY:🔧 [P1] Run K6 load test at 50 VUs — document baseline p95 latency
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260710-11@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260711
+DTEND;VALUE=DATE:20260712
+SUMMARY:🔧 [P1] Fix any load test failures — add rate limiting to hot API routes
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260711-12@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260712
+DTEND;VALUE=DATE:20260713
+SUMMARY:🔧 [P1] Set up Better Stack uptime monitor for civicwatch.app + /api/health
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260712-13@civicwatch.app
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20260713
+DTEND;VALUE=DATE:20260714
+SUMMARY:🔧 [P1] Verify Clerk webhook secret in Vercel\, test user.created event
+DESCRIPTION:Phase 1: Infrastructure & Auth\nCivicWatch Launch Task
+CATEGORIES:CivicWatch,Phase1
+UID:civicwatch-20260713-14@civicwatch.app
+END:VEVENT
+END:VCALENDAR

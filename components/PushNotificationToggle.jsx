@@ -8,8 +8,6 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)))
 }
 
-const STORAGE_KEY = 'push_enabled'
-
 export default function PushNotificationToggle({ style }) {
   const [supported, setSupported] = useState(false)
   const [enabled, setEnabled] = useState(false)
@@ -19,7 +17,14 @@ export default function PushNotificationToggle({ style }) {
     if (typeof window === 'undefined') return
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return
     setSupported(true)
-    setEnabled(localStorage.getItem(STORAGE_KEY) === 'true')
+    // Derive state from the real subscription, not a cached flag — a stale
+    // localStorage value (permission revoked in browser settings, site data
+    // cleared, different device) would otherwise show "Alerts on" when there
+    // is no live subscription underneath it.
+    navigator.serviceWorker.ready
+      .then(reg => reg.pushManager.getSubscription())
+      .then(sub => setEnabled(!!sub))
+      .catch(() => {})
   }, [])
 
   async function enable() {
@@ -46,7 +51,6 @@ export default function PushNotificationToggle({ style }) {
 
       if (!res.ok) throw new Error('Failed to save subscription')
 
-      localStorage.setItem(STORAGE_KEY, 'true')
       setEnabled(true)
     } catch (err) {
       console.error('PushNotificationToggle: enable failed', err)
@@ -70,7 +74,6 @@ export default function PushNotificationToggle({ style }) {
         await subscription.unsubscribe()
       }
 
-      localStorage.removeItem(STORAGE_KEY)
       setEnabled(false)
     } catch (err) {
       console.error('PushNotificationToggle: disable failed', err)

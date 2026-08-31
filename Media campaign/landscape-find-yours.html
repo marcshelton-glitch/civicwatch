@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>CivicWatch — Find Yours (Landscape)</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1920px;
+    height: 1080px;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Subtle grid */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.05) 1px, transparent 1px);
+    background-size: 72px 72px;
+    pointer-events: none;
+  }
+
+  /* Primary glow: centered on right half (map area) */
+  .bg-glow-map {
+    position: absolute;
+    top: 50%;
+    left: 75%;
+    transform: translate(-50%, -50%);
+    width: 1100px;
+    height: 800px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.11) 0%, transparent 62%);
+    pointer-events: none;
+  }
+
+  /* Secondary glow left */
+  .bg-glow-left {
+    position: absolute;
+    top: 30%;
+    left: -100px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Top bar */
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    height: 6px;
+    background: linear-gradient(90deg, #22c55e, #16a34a 50%, #22c55e);
+    flex-shrink: 0;
+  }
+
+  /* Two-column layout */
+  .main-layout {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+    display: flex;
+  }
+
+  /* ---- LEFT COLUMN ---- */
+  .col-left {
+    width: 900px;
+    flex-shrink: 0;
+    padding: 72px 80px 64px 96px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Eyebrow */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: #22c55e;
+    margin-bottom: 36px;
+  }
+
+  .eyebrow-dot {
+    width: 7px;
+    height: 7px;
+    background: #22c55e;
+    border-radius: 50%;
+  }
+
+  /* Big headline */
+  .headline {
+    font-size: 100px;
+    font-weight: 900;
+    color: white;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+
+  .headline .accent {
+    color: #22c55e;
+    display: block;
+  }
+
+  /* Sub line */
+  .sub-line {
+    font-size: 22px;
+    color: rgba(255,255,255,0.38);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    margin-bottom: 52px;
+  }
+
+  /* Search bar */
+  .search-wrapper {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 36px;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(34,197,94,0.38);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 0 0 8px rgba(34,197,94,0.05), 0 24px 60px rgba(0,0,0,0.45);
+  }
+
+  .search-icon-wrap {
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.28);
+    flex-shrink: 0;
+  }
+
+  .search-input-mock {
+    flex: 1;
+    padding: 26px 8px;
+    font-size: 22px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.01em;
+    line-height: 1;
+    font-family: inherit;
+    font-weight: 400;
+  }
+
+  .search-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 24px;
+    background: #22c55e;
+    margin-left: 2px;
+    border-radius: 1px;
+    position: relative;
+    top: 5px;
+  }
+
+  .search-btn {
+    background: #22c55e;
+    margin: 10px;
+    border-radius: 16px;
+    width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 0;
+    flex-shrink: 0;
+  }
+
+  /* Trust items in a row */
+  .trust-row {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    margin-bottom: auto;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.38);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .trust-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(34,197,94,0.14);
+    border: 1px solid rgba(34,197,94,0.32);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Brand lockup bottom left */
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 52px;
+  }
+
+  .brand-icon {
+    width: 52px;
+    height: 52px;
+    background: #22c55e;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .brand-url {
+    font-size: 15px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 400;
+  }
+
+  /* ---- RIGHT COLUMN: MAP ---- */
+  .col-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 48px 72px 48px 48px;
+  }
+
+  .map-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex: 1;
+  }
+
+  .map-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 720px;
+    height: 480px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.13) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  /* civicwatch.app watermark bottom right */
+  .map-watermark {
+    position: absolute;
+    bottom: 16px;
+    right: 0;
+    font-size: 26px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-map"></div>
+  <div class="bg-glow-left"></div>
+  <div class="top-bar"></div>
+
+  <div class="main-layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="col-left">
+
+      <div class="eyebrow">
+        <div class="eyebrow-dot"></div>
+        Free · Updated Daily · No Account Required
+        <div class="eyebrow-dot"></div>
+      </div>
+
+      <div class="headline">
+        Find your rep's trades
+        <span class="accent">in 10 seconds.</span>
+      </div>
+
+      <div class="sub-line">Search 535 representatives &nbsp;·&nbsp; Free &nbsp;·&nbsp; Updated Daily</div>
+
+      <!-- Search bar -->
+      <div class="search-wrapper">
+        <div class="search-bar">
+          <div class="search-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 22 22" fill="none">
+              <circle cx="9.5" cy="9.5" r="7" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+              <path d="M15 15L19 19" stroke="rgba(255,255,255,0.28)" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="search-input-mock">
+            Enter your zip code or rep's name...<span class="search-cursor"></span>
+          </div>
+          <div class="search-btn">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12H19M13 6L19 12L13 18" stroke="#0d1117" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust row -->
+      <div class="trust-row">
+        <div class="trust-item">
+          <div class="trust-check">
+            <svg width="12" height="12" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5L4 7L8 3" stroke="#22c55e" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          Official government filings
+        </div>
+        <div class="trust-item">
+          <div class="trust-check">
+            <svg width="12" height="12" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5L4 7L8 3" stroke="#22c55e" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          Updated within 24 hours
+        </div>
+        <div class="trust-item">
+          <div class="trust-check">
+            <svg width="12" height="12" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5L4 7L8 3" stroke="#22c55e" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          All 535 members · Both chambers
+        </div>
+      </div>
+
+      <!-- Brand lockup -->
+      <div class="brand-lockup">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="#0d1117" stroke-width="2.2"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0d1117" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="19" cy="6" r="2.5" fill="#0d1117"/>
+            <path d="M17.5 6L18.5 7L20.5 5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">CivicWatch</div>
+          <div class="brand-url">civicwatch.app</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: MAP -->
+    <div class="col-right">
+      <div class="map-container">
+        <div class="map-glow"></div>
+
+        <svg width="880" height="600" viewBox="0 0 880 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+          <!-- Main USA outline — stylized, data-network aesthetic -->
+          <path d="M 82,186 L 95,148 L 128,120 L 168,104 L 210,92 L 262,82 L 318,76
+                   L 378,74 L 436,76 L 492,82 L 530,78 L 566,64 L 600,68
+                   L 632,76 L 652,94 L 670,116 L 684,142
+                   L 696,168 L 704,196 L 706,228 L 700,256
+                   L 688,276 L 668,292 L 644,304 L 614,312
+                   L 580,316 L 546,314 L 514,308 L 484,300
+                   L 454,294 L 422,294 L 392,302 L 366,310
+                   L 338,316 L 308,314 L 278,306 L 246,294
+                   L 212,278 L 176,258 L 138,234 L 104,212 Z"
+                fill="rgba(34,197,94,0.06)"
+                stroke="rgba(34,197,94,0.22)"
+                stroke-width="1.8"
+                stroke-linejoin="round"/>
+
+          <!-- Alaska -->
+          <path d="M 84,390 L 68,370 L 50,360 L 34,364 L 26,382 L 32,400 L 52,412 L 74,414 Z"
+                fill="rgba(34,197,94,0.05)"
+                stroke="rgba(34,197,94,0.15)"
+                stroke-width="1.5"/>
+
+          <!-- Hawaii -->
+          <ellipse cx="170" cy="456" rx="20" ry="11" fill="rgba(34,197,94,0.05)" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+          <ellipse cx="200" cy="464" rx="14" ry="8"  fill="rgba(34,197,94,0.05)" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+          <ellipse cx="226" cy="468" rx="9"  ry="6"  fill="rgba(34,197,94,0.05)" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+
+          <!-- Internal state boundary lines (subtle) -->
+          <!-- A few key dividers suggesting state structure -->
+          <line x1="210" y1="92"  x2="212" y2="278" stroke="rgba(34,197,94,0.07)" stroke-width="1"/>
+          <line x1="318" y1="76"  x2="308" y2="314" stroke="rgba(34,197,94,0.07)" stroke-width="1"/>
+          <line x1="436" y1="76"  x2="422" y2="294" stroke="rgba(34,197,94,0.07)" stroke-width="1"/>
+          <line x1="566" y1="64"  x2="546" y2="314" stroke="rgba(34,197,94,0.07)" stroke-width="1"/>
+          <line x1="82"  y1="186" x2="706" y2="196" stroke="rgba(34,197,94,0.06)" stroke-width="1" stroke-dasharray="4 6"/>
+
+          <!-- Rep dots — scattered across states, more dense than original -->
+          <!-- Pacific NW -->
+          <circle cx="128" cy="118" r="5" fill="#22c55e" opacity="0.55"/>
+          <circle cx="152" cy="138" r="3.5" fill="#22c55e" opacity="0.42"/>
+          <!-- CA coast -->
+          <circle cx="108" cy="180" r="4" fill="#22c55e" opacity="0.50"/>
+          <circle cx="112" cy="220" r="3" fill="#22c55e" opacity="0.38"/>
+          <circle cx="118" cy="252" r="3.5" fill="#22c55e" opacity="0.42"/>
+          <!-- Mountain West -->
+          <circle cx="188" cy="140" r="4" fill="#22c55e" opacity="0.45"/>
+          <circle cx="216" cy="168" r="3.5" fill="#22c55e" opacity="0.40"/>
+          <circle cx="194" cy="204" r="3" fill="#22c55e" opacity="0.35"/>
+          <!-- Southwest -->
+          <circle cx="188" cy="264" r="4" fill="#22c55e" opacity="0.45"/>
+          <circle cx="220" cy="284" r="3" fill="#22c55e" opacity="0.38"/>
+          <!-- Great Plains -->
+          <circle cx="294" cy="128" r="3.5" fill="#22c55e" opacity="0.42"/>
+          <circle cx="330" cy="150" r="4" fill="#22c55e" opacity="0.48"/>
+          <circle cx="316" cy="188" r="3" fill="#22c55e" opacity="0.38"/>
+          <circle cx="300" cy="240" r="3.5" fill="#22c55e" opacity="0.42"/>
+          <!-- Midwest -->
+          <circle cx="400" cy="130" r="4.5" fill="#22c55e" opacity="0.52"/>
+          <circle cx="430" cy="158" r="3.5" fill="#22c55e" opacity="0.44"/>
+          <circle cx="460" cy="140" r="3" fill="#22c55e" opacity="0.38"/>
+          <circle cx="382" cy="188" r="4" fill="#22c55e" opacity="0.48"/>
+          <circle cx="416" cy="210" r="3.5" fill="#22c55e" opacity="0.42"/>
+          <circle cx="450" cy="200" r="3" fill="#22c55e" opacity="0.36"/>
+          <!-- South Central -->
+          <circle cx="346" cy="270" r="4" fill="#22c55e" opacity="0.46"/>
+          <circle cx="376" cy="290" r="3.5" fill="#22c55e" opacity="0.40"/>
+          <circle cx="418" cy="278" r="3" fill="#22c55e" opacity="0.36"/>
+          <!-- South / Gulf -->
+          <circle cx="476" cy="270" r="4" fill="#22c55e" opacity="0.46"/>
+          <circle cx="508" cy="286" r="3" fill="#22c55e" opacity="0.38"/>
+          <circle cx="446" cy="294" r="3.5" fill="#22c55e" opacity="0.40"/>
+          <!-- Southeast -->
+          <circle cx="552" cy="254" r="4" fill="#22c55e" opacity="0.48"/>
+          <circle cx="580" cy="272" r="3.5" fill="#22c55e" opacity="0.42"/>
+          <circle cx="556" cy="294" r="3" fill="#22c55e" opacity="0.35"/>
+          <!-- Mid-Atlantic -->
+          <circle cx="614" cy="166" r="4" fill="#22c55e" opacity="0.50"/>
+          <circle cx="638" cy="194" r="3.5" fill="#22c55e" opacity="0.44"/>
+          <circle cx="618" cy="220" r="3" fill="#22c55e" opacity="0.38"/>
+          <!-- Northeast -->
+          <circle cx="652" cy="130" r="4.5" fill="#22c55e" opacity="0.55"/>
+          <circle cx="672" cy="112" r="3.5" fill="#22c55e" opacity="0.48"/>
+          <circle cx="682" cy="148" r="3" fill="#22c55e" opacity="0.40"/>
+          <circle cx="694" cy="170" r="2.5" fill="#22c55e" opacity="0.35"/>
+
+          <!-- HIGHLIGHTED CENTER DOT (you are here / home district) -->
+          <circle cx="394" cy="220" r="10" fill="#22c55e" opacity="0.95"/>
+          <circle cx="394" cy="220" r="20" fill="rgba(34,197,94,0.18)" stroke="rgba(34,197,94,0.35)" stroke-width="1.5"/>
+          <circle cx="394" cy="220" r="32" fill="rgba(34,197,94,0.08)" stroke="rgba(34,197,94,0.18)" stroke-width="1"/>
+          <!-- Pin arrow above highlight -->
+          <path d="M394 182 L394 204" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+          <polygon points="394,174 388,184 400,184" fill="#22c55e" opacity="0.8"/>
+
+          <!-- Network connection lines from center dot to clusters -->
+          <line x1="394" y1="220" x2="128" y2="118" stroke="rgba(34,197,94,0.16)" stroke-width="1.5" stroke-dasharray="5 5"/>
+          <line x1="394" y1="220" x2="652" y2="130" stroke="rgba(34,197,94,0.14)" stroke-width="1.5" stroke-dasharray="5 5"/>
+          <line x1="394" y1="220" x2="552" y2="254" stroke="rgba(34,197,94,0.13)" stroke-width="1.2" stroke-dasharray="4 5"/>
+          <line x1="394" y1="220" x2="188" y2="264" stroke="rgba(34,197,94,0.12)" stroke-width="1.2" stroke-dasharray="4 5"/>
+          <line x1="394" y1="220" x2="294" y2="128" stroke="rgba(34,197,94,0.11)" stroke-width="1" stroke-dasharray="4 6"/>
+          <line x1="394" y1="220" x2="476" y2="270" stroke="rgba(34,197,94,0.11)" stroke-width="1" stroke-dasharray="4 6"/>
+          <line x1="394" y1="220" x2="614" y2="166" stroke="rgba(34,197,94,0.10)" stroke-width="1" stroke-dasharray="4 6"/>
+          <line x1="394" y1="220" x2="108" y2="180" stroke="rgba(34,197,94,0.09)" stroke-width="1" stroke-dasharray="3 6"/>
+
+          <!-- Bottom label -->
+          <text x="394" y="540" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="16" font-family="system-ui" font-weight="600" letter-spacing="0.12em">535 REPRESENTATIVES · 435 HOUSE · 100 SENATE</text>
+
+          <!-- Stat pills bottom of map -->
+          <rect x="164" y="508" width="200" height="34" rx="17" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <text x="264" y="530" text-anchor="middle" fill="rgba(255,255,255,0.42)" font-size="14" font-family="system-ui">
+            <tspan fill="#22c55e" font-weight="700">$2.8B+</tspan>
+            <tspan> trades tracked</tspan>
+          </text>
+
+          <rect x="432" y="508" width="170" height="34" rx="17" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <text x="517" y="530" text-anchor="middle" fill="rgba(255,255,255,0.42)" font-size="14" font-family="system-ui">
+            <tspan fill="#22c55e" font-weight="700">Free</tspan>
+            <tspan> forever</tspan>
+          </text>
+        </svg>
+
+        <div class="map-watermark">civicwatch.app</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

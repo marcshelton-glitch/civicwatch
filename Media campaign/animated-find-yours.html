@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CivicWatch — Find Yours (Animated)</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #07090f;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .card-wrap {
+    transform-origin: center center;
+    transition: transform 0.2s ease;
+  }
+
+  .card {
+    width: 100vmin;
+    height: 100vmin;
+    background: #0d1117;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6vmin 7vmin 10vmin;
+    gap: 2.6vmin;
+  }
+
+  .bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.04) 1px, transparent 1px);
+    background-size: 6.67vmin 6.67vmin;
+    pointer-events: none;
+  }
+
+  .bg-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vmin; height: 80vmin;
+    background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 0.55vmin;
+    background: linear-gradient(90deg, #22c55e, #16a34a 50%, #22c55e);
+    z-index: 10;
+  }
+
+  /* ── Brand top ── */
+  .brand-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9vmin;
+    opacity: 0;
+    position: relative; z-index: 2;
+  }
+
+  .brand-icon {
+    width: 5.6vmin; height: 5.6vmin;
+    background: #22c55e;
+    border-radius: 1.2vmin;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .brand-name {
+    font-size: 2.4vmin; font-weight: 800; color: white; letter-spacing: -0.01em;
+  }
+
+  .brand-tagline {
+    font-size: 1.1vmin; color: rgba(255,255,255,0.3); letter-spacing: 0.02em;
+  }
+
+  /* ── Map ── */
+  .map-container {
+    position: relative; z-index: 2;
+    opacity: 0;
+  }
+
+  /* ── Headline ── */
+  .headline {
+    font-size: 4.5vmin; font-weight: 900;
+    color: white;
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    max-width: 84vmin;
+    opacity: 0;
+    transform: translateY(3vmin);
+    position: relative; z-index: 2;
+  }
+
+  .headline .accent {
+    color: #22c55e;
+    text-shadow: 0 0 4vmin rgba(34,197,94,0.45);
+  }
+
+  /* ── Search bar ── */
+  .search-bar-wrap {
+    width: 82vmin;
+    opacity: 0;
+    transform: scale(0.95);
+    position: relative; z-index: 2;
+  }
+
+  .search-bar {
+    display: flex; align-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(34,197,94,0.4);
+    border-radius: 1.1vmin;
+    padding: 1.3vmin 1.7vmin;
+    gap: 0.4vmin;
+  }
+
+  .search-icon {
+    color: rgba(255,255,255,0.3);
+    font-size: 1.4vmin;
+    margin-right: 0.5vmin;
+  }
+
+  .search-text {
+    font-size: 1.55vmin; color: rgba(255,255,255,0.7);
+    flex: 1;
+  }
+
+  .cursor {
+    font-size: 1.55vmin; color: #22c55e; font-weight: 300;
+    animation: none;
+  }
+
+  .search-btn {
+    background: #22c55e; color: #0d1117;
+    border: none; cursor: pointer;
+    width: 3.7vmin; height: 3.7vmin;
+    border-radius: 0.7vmin;
+    font-size: 1.7vmin; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Trust & pills ── */
+  .trust-row {
+    display: flex; gap: 2.8vmin;
+    opacity: 0;
+    position: relative; z-index: 2;
+  }
+
+  .trust-item {
+    display: flex; align-items: center; gap: 0.7vmin;
+    font-size: 1.15vmin; color: rgba(255,255,255,0.4);
+  }
+
+  .trust-check {
+    width: 1.6vmin; height: 1.6vmin;
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #22c55e; font-size: 0.85vmin; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .stat-pills {
+    display: flex; gap: 1.4vmin;
+    opacity: 0;
+    position: relative; z-index: 2;
+  }
+
+  .stat-pill {
+    background: rgba(34,197,94,0.07);
+    border: 1px solid rgba(34,197,94,0.18);
+    border-radius: 100vmin;
+    padding: 0.65vmin 1.5vmin;
+    font-size: 1.05vmin; font-weight: 700;
+    color: #4ade80;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Footer ── */
+  .card-footer {
+    position: absolute;
+    bottom: 2.8vmin; left: 7vmin; right: 7vmin;
+    display: flex; justify-content: space-between; align-items: center;
+    opacity: 0; z-index: 2;
+  }
+
+  .brand-lockup-sm {
+    display: flex; align-items: center; gap: 1.1vmin;
+  }
+
+  .brand-icon-sm {
+    width: 3.6vmin; height: 3.6vmin;
+    background: #22c55e; border-radius: 0.85vmin;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .bname-sm { font-size: 1.65vmin; font-weight: 800; color: white; }
+  .burl-sm  { font-size: 1.1vmin; color: rgba(255,255,255,0.3); }
+
+  .tagline-sm {
+    font-size: 1.1vmin; color: rgba(255,255,255,0.18);
+    text-align: right; max-width: 24vmin;
+    line-height: 1.55; font-style: italic;
+  }
+
+  /* ════════ KEYFRAMES ════════ */
+  @keyframes iconPop {
+    0%   { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+    65%  { transform: scale(1.08) rotate(2deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(3vmin); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes searchReveal {
+    from { opacity: 0; transform: scale(0.93); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes borderPulse {
+    0%,100% { border-color: rgba(34,197,94,0.4); box-shadow: none; }
+    50%      { border-color: rgba(34,197,94,0.9); box-shadow: 0 0 2.5vmin rgba(34,197,94,0.25); }
+  }
+
+  @keyframes cursorBlink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0; }
+  }
+
+  /* ── Playing state ── */
+  .card.playing .brand-top        { animation: iconPop 0.45s 0.1s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .card.playing .map-container    { animation: fadeIn 0.5s 0.55s ease both; }
+  .card.playing .headline         { animation: fadeUp 0.45s 1.95s ease both; }
+  .card.playing .search-bar-wrap  { animation: searchReveal 0.35s 2.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .card.playing .search-bar       { animation: borderPulse 0.75s 2.45s ease 1; }
+  .card.playing .cursor           { animation: cursorBlink 0.65s 2.6s step-end infinite; }
+  .card.playing .trust-row        { animation: fadeIn 0.3s 2.8s ease both; }
+  .card.playing .stat-pills       { animation: fadeIn 0.3s 3.05s ease both; }
+  .card.playing .card-footer      { animation: fadeIn 0.3s 3.2s ease both; }
+
+  /* ════════ CONTROLS ════════ */
+  .controls {
+    position: fixed;
+    bottom: 1.5rem; left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(13,17,23,0.92);
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 100vmax;
+    padding: 0.75rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    backdrop-filter: blur(12px);
+    font-family: -apple-system, sans-serif;
+    white-space: nowrap;
+  }
+
+  .controls label {
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .controls input[type=range] { width: 7rem; accent-color: #22c55e; cursor: pointer; }
+
+  #scaleLabel { color: rgba(255,255,255,0.45); font-size: 0.75rem; min-width: 3rem; }
+
+  .replay-btn {
+    background: #22c55e; color: #0d1117;
+    border: none; cursor: pointer;
+    font-size: 0.73rem; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.5rem 1.25rem;
+    border-radius: 100vmax;
+    transition: opacity 0.15s;
+  }
+  .replay-btn:hover { opacity: 0.82; }
+</style>
+</head>
+<body>
+
+<div class="card-wrap" id="cardWrap">
+  <div class="card" id="card">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="top-bar"></div>
+
+    <!-- Brand -->
+    <div class="brand-top">
+      <div class="brand-icon">
+        <svg width="56%" height="56%" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" stroke="#0d1117" stroke-width="2.4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0d1117" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-name">CivicWatch</div>
+      <div class="brand-tagline">civicwatch.app</div>
+    </div>
+
+    <!-- USA Map -->
+    <div class="map-container">
+      <svg viewBox="0 0 500 220" width="52vmin" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="dotGlow">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="pinGlow">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Pacific NW -->
+        <circle class="map-dot" cx="58"  cy="42"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="82"  cy="36"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="72"  cy="60"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="100" cy="50"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- California / Southwest -->
+        <circle class="map-dot" cx="72"  cy="95"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="90"  cy="120" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="110" cy="105" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="125" cy="130" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="145" cy="145" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Mountain West -->
+        <circle class="map-dot" cx="152" cy="70"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="170" cy="55"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="178" cy="85"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="192" cy="110" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Great Plains -->
+        <circle class="map-dot" cx="218" cy="60"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="238" cy="78"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="220" cy="100" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="240" cy="120" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Center highlighted (Texas) with pin -->
+        <polygon points="253,108 246,125 260,125" fill="#22c55e" opacity="0.92"/>
+        <circle class="map-dot center-dot" cx="253" cy="142" r="6" fill="#22c55e" filter="url(#pinGlow)"/>
+        <!-- Upper Midwest -->
+        <circle class="map-dot" cx="265" cy="52"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="288" cy="62"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="272" cy="82"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="292" cy="95"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="272" cy="112" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- South Central -->
+        <circle class="map-dot" cx="295" cy="135" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="315" cy="148" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Great Lakes / Midwest East -->
+        <circle class="map-dot" cx="320" cy="70"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="340" cy="58"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="345" cy="85"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Southeast -->
+        <circle class="map-dot" cx="350" cy="130" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="368" cy="148" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="385" cy="155" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Northeast -->
+        <circle class="map-dot" cx="375" cy="72"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="395" cy="60"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="410" cy="75"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="420" cy="55"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="432" cy="68"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="395" cy="95"  r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Mid-Atlantic -->
+        <circle class="map-dot" cx="405" cy="108" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Florida -->
+        <circle class="map-dot" cx="388" cy="175" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <!-- Alaska / Hawaii (inset positions) -->
+        <circle class="map-dot" cx="72"  cy="195" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="160" cy="200" r="3.5" fill="rgba(255,255,255,0.18)"/>
+        <circle class="map-dot" cx="178" cy="200" r="3.5" fill="rgba(255,255,255,0.18)"/>
+      </svg>
+    </div>
+
+    <!-- Headline -->
+    <div class="headline">
+      Find your rep's <span class="accent">trades</span><br>in 10 seconds.
+    </div>
+
+    <!-- Search bar -->
+    <div class="search-bar-wrap">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <span class="search-text">Texas 23rd District</span>
+        <span class="cursor" id="cursor">|</span>
+        <button class="search-btn">→</button>
+      </div>
+    </div>
+
+    <!-- Trust -->
+    <div class="trust-row">
+      <div class="trust-item">
+        <div class="trust-check">✓</div>
+        No account required
+      </div>
+      <div class="trust-item">
+        <div class="trust-check">✓</div>
+        Updated daily from Gov sources
+      </div>
+      <div class="trust-item">
+        <div class="trust-check">✓</div>
+        100% public record data
+      </div>
+    </div>
+
+    <!-- Stat pills -->
+    <div class="stat-pills">
+      <div class="stat-pill">$2.8B+ trades tracked</div>
+      <div class="stat-pill">535 members covered</div>
+      <div class="stat-pill">Free forever</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <div class="brand-lockup-sm">
+        <div class="brand-icon-sm">
+          <svg width="56%" height="56%" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="#0d1117" stroke-width="2.4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0d1117" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="bname-sm">CivicWatch</div>
+          <div class="burl-sm">civicwatch.app</div>
+        </div>
+      </div>
+      <div class="tagline-sm">Your representatives work for you.<br>Start holding them to it.</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <label>Size</label>
+  <input type="range" min="25" max="150" value="100" id="scaleSlider">
+  <span id="scaleLabel">100%</span>
+  <button class="replay-btn" id="replayBtn">↺ Replay</button>
+</div>
+
+<script>
+const CENTER_X = 253, CENTER_Y = 142;
+
+function getDots() {
+  return Array.from(document.querySelectorAll('.map-dot:not(.center-dot)'));
+}
+
+function animateDots(startDelay) {
+  const dots = getDots();
+  const sorted = dots.map(d => ({
+    el: d,
+    dist: Math.hypot(
+      parseFloat(d.getAttribute('cx')) - CENTER_X,
+      parseFloat(d.getAttribute('cy')) - CENTER_Y
+    )
+  })).sort((a, b) => a.dist - b.dist);
+
+  sorted.forEach((item, i) => {
+    setTimeout(() => {
+      item.el.setAttribute('fill', '#22c55e');
+      item.el.setAttribute('r', '4.5');
+      item.el.style.filter = 'drop-shadow(0 0 3px rgba(34,197,94,0.75))';
+    }, startDelay + i * 38);
+  });
+}
+
+function resetDots() {
+  getDots().forEach(d => {
+    d.setAttribute('fill', 'rgba(255,255,255,0.18)');
+    d.setAttribute('r', '3.5');
+    d.style.filter = '';
+  });
+}
+
+function playAnimation() {
+  const card = document.getElementById('card');
+  card.classList.remove('playing');
+  resetDots();
+  void card.offsetWidth;
+  card.classList.add('playing');
+  animateDots(550);
+}
+
+let loopTimer;
+function startLoop() {
+  clearTimeout(loopTimer);
+  loopTimer = setTimeout(() => { playAnimation(); startLoop(); }, 6500);
+}
+
+document.getElementById('replayBtn').addEventListener('click', () => {
+  clearTimeout(loopTimer);
+  playAnimation();
+  startLoop();
+});
+
+document.getElementById('scaleSlider').addEventListener('input', function () {
+  const v = this.value / 100;
+  document.getElementById('cardWrap').style.transform = `scale(${v})`;
+  document.getElementById('scaleLabel').textContent = this.value + '%';
+});
+
+playAnimation();
+startLoop();
+</script>
+</body>
+</html>

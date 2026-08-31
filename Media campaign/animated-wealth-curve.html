@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CivicWatch — Animated Wealth Curve</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1f2e;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .card-wrapper {
+    width: 100vmin;
+    height: 100vmin;
+    transform: scale(var(--preview-scale, 0.85));
+    transform-origin: top left;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .card {
+    width: 100vmin;
+    height: 100vmin;
+    background: #0d1117;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.04) 1px, transparent 1px);
+    background-size: 6.67vmin 6.67vmin;
+  }
+
+  .bg-glow {
+    position: absolute;
+    bottom: -9.26vmin;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 83.3vmin;
+    height: 46.3vmin;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0;
+    animation: bgFade 0.5s ease forwards 0s;
+  }
+
+  @keyframes bgFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    height: 0.56vmin;
+    background: linear-gradient(90deg, #22c55e, #16a34a 50%, #22c55e);
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: calc(100% - 0.56vmin);
+    display: flex;
+    flex-direction: column;
+    padding: 5.56vmin 7.41vmin 5.19vmin;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4.07vmin;
+    opacity: 0;
+    animation: bgFade 0.5s ease forwards 0s;
+  }
+
+  .eyebrow {
+    font-size: 1.2vmin;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #22c55e;
+  }
+
+  .source-badge {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 0.74vmin 1.85vmin;
+    color: rgba(255,255,255,0.45);
+    font-size: 1.2vmin;
+    font-weight: 500;
+  }
+
+  /* Headline */
+  .headline-block {
+    margin-bottom: 4.44vmin;
+    opacity: 0;
+    transform: translateY(1.85vmin);
+    animation: headlineUp 0.5s ease forwards 0.5s;
+  }
+
+  @keyframes headlineUp {
+    from { opacity: 0; transform: translateY(1.85vmin); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .headline {
+    font-size: 4.26vmin;
+    font-weight: 900;
+    color: white;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    max-width: 75.9vmin;
+    margin-bottom: 1.48vmin;
+  }
+
+  .headline em { color: #22c55e; font-style: normal; }
+
+  .sub {
+    font-size: 1.67vmin;
+    color: rgba(255,255,255,0.45);
+    font-weight: 400;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 0;
+    margin-bottom: 3.7vmin;
+  }
+
+  .stat-item {
+    flex: 1;
+    padding: 1.85vmin 2.59vmin;
+    border-left: 1px solid rgba(255,255,255,0.07);
+    opacity: 0;
+  }
+
+  .stat-item:first-child { border-left: none; padding-left: 0; }
+
+  /* Stagger stat reveals via JS class injection */
+  .stat-item.visible { opacity: 1; }
+
+  .stat-value {
+    font-size: 3.33vmin;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 0.56vmin;
+  }
+
+  .stat-value.red   { color: #ef4444; }
+  .stat-value.white { color: white; }
+
+  .stat-label {
+    font-size: 1.2vmin;
+    color: rgba(255,255,255,0.35);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Chart container */
+  .chart-container {
+    flex: 1;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 1.85vmin;
+    padding: 2.96vmin 3.7vmin 2.59vmin;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    animation: bgFade 0.3s ease forwards 2.2s;
+  }
+
+  .chart-title {
+    font-size: 1.2vmin;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 0.74vmin;
+  }
+
+  .chart-rep {
+    font-size: 1.57vmin;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 2.22vmin;
+  }
+
+  .chart-area {
+    flex: 1;
+    position: relative;
+  }
+
+  svg.chart-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* Individual bar animation */
+  .bar-animated {
+    transform-origin: bottom;
+    transform-box: fill-box;
+    transform: scaleY(0);
+  }
+
+  .salary-note {
+    position: absolute;
+    top: 1.11vmin;
+    right: 0;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 0.74vmin;
+    padding: 0.74vmin 1.3vmin;
+    font-size: 1.2vmin;
+    color: #fca5a5;
+    font-weight: 600;
+  }
+
+  /* Trend line draw */
+  .trend-line {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 2.96vmin;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    animation: bgFade 0.3s ease forwards 4.2s;
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 1.11vmin;
+  }
+
+  .brand-icon {
+    width: 3.7vmin;
+    height: 3.7vmin;
+    background: #22c55e;
+    border-radius: 0.93vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-name { font-size: 1.76vmin; font-weight: 800; color: white; }
+  .brand-url  { font-size: 1.2vmin; color: rgba(255,255,255,0.3); }
+
+  .tagline-text {
+    font-size: 1.3vmin;
+    color: rgba(255,255,255,0.2);
+    text-align: right;
+    max-width: 25.9vmin;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ---- Control panel ---- */
+  .control-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #1e2530;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .control-panel label {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .control-panel input[type=range] {
+    width: 90px;
+    accent-color: #22c55e;
+    cursor: pointer;
+  }
+
+  .replay-btn {
+    background: #22c55e;
+    color: #0d1117;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+
+  .replay-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="control-panel">
+  <label>Scale</label>
+  <input type="range" min="0.3" max="1.0" step="0.05" value="0.85" id="scaleSlider">
+  <button class="replay-btn" id="replayBtn">&#8635; Replay</button>
+</div>
+
+<div class="card-wrapper" id="cardWrapper">
+  <div class="card" id="card">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="top-bar"></div>
+
+    <div class="wrapper">
+      <div class="header">
+        <div class="eyebrow">🏛 Financial Disclosure Analysis</div>
+        <div class="source-badge">Source: House Ethics Office · 2021–2026</div>
+      </div>
+
+      <div class="headline-block">
+        <div class="headline">How did their net worth<br>grow <em>340%</em> on a $174,000 salary?</div>
+        <div class="sub">Rep. Sarah Johnson (D-CA) · Net Worth 2021–2026</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-item" id="stat0">
+          <div class="stat-value white" id="sv0">$0</div>
+          <div class="stat-label">2021 Net Worth</div>
+        </div>
+        <div class="stat-item" id="stat1">
+          <div class="stat-value" id="sv1">$0</div>
+          <div class="stat-label">2026 Net Worth</div>
+        </div>
+        <div class="stat-item" id="stat2">
+          <div class="stat-value" id="sv2">+0%</div>
+          <div class="stat-label">5-Year Growth</div>
+        </div>
+        <div class="stat-item" id="stat3">
+          <div class="stat-value red" id="sv3">$0</div>
+          <div class="stat-label">Annual Salary</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Reported Net Worth</div>
+        <div class="chart-rep">Rep. Sarah Johnson · California 12th District</div>
+        <div class="chart-area">
+          <div class="salary-note">📊 Salary alone: $870K total over 5 yrs</div>
+          <svg class="chart-svg" id="chartSvg" viewBox="0 0 920 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <!-- Y-axis gridlines + labels -->
+            <line x1="60" y1="10" x2="60" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <line x1="60" y1="10" x2="920" y2="10" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4 4"/>
+            <line x1="60" y1="90" x2="920" y2="90" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4 4"/>
+            <line x1="60" y1="170" x2="920" y2="170" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4 4"/>
+            <line x1="60" y1="240" x2="920" y2="240" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <text x="50" y="14" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="13" font-family="system-ui">$3M</text>
+            <text x="50" y="94" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="13" font-family="system-ui">$2M</text>
+            <text x="50" y="174" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="13" font-family="system-ui">$1M</text>
+            <text x="50" y="244" text-anchor="end" fill="rgba(255,255,255,0.3)" font-size="13" font-family="system-ui">$0</text>
+
+            <defs>
+              <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#22c55e" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#16a34a" stop-opacity="0.7"/>
+              </linearGradient>
+              <filter id="barGlow">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Bars — animated via JS -->
+            <rect id="bar0" class="bar-animated" x="80"  y="187.7" width="90" height="52.3"  rx="6" fill="url(#barGrad)" opacity="0.55"/>
+            <rect id="bar1" class="bar-animated" x="210" y="168"   width="90" height="72"    rx="6" fill="url(#barGrad)" opacity="0.65"/>
+            <rect id="bar2" class="bar-animated" x="340" y="129"   width="90" height="111"   rx="6" fill="url(#barGrad)" opacity="0.75"/>
+            <rect id="bar3" class="bar-animated" x="470" y="87"    width="90" height="153"   rx="6" fill="url(#barGrad)" opacity="0.85"/>
+            <rect id="bar4" class="bar-animated" x="600" y="45"    width="90" height="195"   rx="6" fill="url(#barGrad)" opacity="0.9"/>
+            <rect id="bar5" class="bar-animated" x="730" y="11"    width="90" height="229"   rx="6" fill="url(#barGrad)" filter="url(#barGlow)"/>
+
+            <!-- Value labels -->
+            <text x="125" y="180" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="13" font-family="system-ui" font-weight="600">$682K</text>
+            <text x="255" y="161" text-anchor="middle" fill="rgba(255,255,255,0.50)" font-size="13" font-family="system-ui" font-weight="600">$940K</text>
+            <text x="385" y="122" text-anchor="middle" fill="rgba(255,255,255,0.60)" font-size="13" font-family="system-ui" font-weight="600">$1.45M</text>
+            <text x="515" y="80"  text-anchor="middle" fill="rgba(255,255,255,0.70)" font-size="13" font-family="system-ui" font-weight="600">$2.0M</text>
+            <text x="645" y="38"  text-anchor="middle" fill="rgba(255,255,255,0.80)" font-size="13" font-family="system-ui" font-weight="600">$2.55M</text>
+            <text x="775" y="6"   text-anchor="middle" fill="#22c55e"               font-size="14" font-family="system-ui" font-weight="800">$2.99M</text>
+
+            <!-- X labels -->
+            <text x="125" y="258" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="14" font-family="system-ui" font-weight="600">2021</text>
+            <text x="255" y="258" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="14" font-family="system-ui" font-weight="600">2022</text>
+            <text x="385" y="258" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="14" font-family="system-ui" font-weight="600">2023</text>
+            <text x="515" y="258" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="14" font-family="system-ui" font-weight="600">2024</text>
+            <text x="645" y="258" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="14" font-family="system-ui" font-weight="600">2025</text>
+            <text x="775" y="258" text-anchor="middle" fill="#22c55e"              font-size="14" font-family="system-ui" font-weight="700">2026</text>
+
+            <!-- Trend line — drawn via JS -->
+            <polyline id="trendLine" class="trend-line"
+              points="125,187.7 255,168 385,129 515,87 645,45 775,11"
+              fill="none"
+              stroke="#22c55e"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              opacity="0.5"
+              stroke-dasharray="6 4"
+            />
+
+            <!-- Salary line -->
+            <line x1="80" y1="227" x2="830" y2="227" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.5"/>
+            <text x="840" y="231" fill="#fca5a5" font-size="11" font-family="system-ui">Salary</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="brand-lockup">
+          <div class="brand-icon">
+            <svg width="2.04vmin" height="2.04vmin" viewBox="0 0 24 24" fill="none" style="width:2.04vmin;height:2.04vmin">
+              <circle cx="12" cy="8" r="4" stroke="#0d1117" stroke-width="2.2"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0d1117" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-name">CivicWatch</div>
+            <div class="brand-url">civicwatch.app</div>
+          </div>
+        </div>
+        <div class="tagline-text">Your representatives work for you.<br>Start holding them to it.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const slider = document.getElementById('scaleSlider');
+  const wrapper = document.getElementById('cardWrapper');
+  function applyScale(v) { wrapper.style.transform = `scale(${v})`; }
+  applyScale(slider.value);
+  slider.addEventListener('input', () => applyScale(slider.value));
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function countTo(el, target, duration, formatter) {
+    const start = Date.now();
+    function tick() {
+      const t = Math.min((Date.now() - start) / duration, 1);
+      el.textContent = formatter(Math.round(easeOut(t) * target));
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function animateBar(bar, duration) {
+    const start = Date.now();
+    function tick() {
+      const t = Math.min((Date.now() - start) / duration, 1);
+      bar.style.transform = `scaleY(${easeOut(t)})`;
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function animateTrendLine(line, totalLength, duration) {
+    // Use SVG getTotalLength-style via manual length
+    line.style.strokeDasharray = totalLength;
+    line.style.strokeDashoffset = totalLength;
+    const start = Date.now();
+    function tick() {
+      const t = Math.min((Date.now() - start) / duration, 1);
+      line.style.strokeDashoffset = totalLength * (1 - easeOut(t));
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  let loopTimer = null;
+  const LOOP_DURATION = 7500;
+
+  function startAnimation() {
+    const card = document.getElementById('card');
+    const parent = card.parentNode;
+    const clone = card.cloneNode(true);
+    parent.replaceChild(clone, card);
+
+    // Stats count-up at 1.0s, staggered
+    const statDefs = [
+      { id: 'sv0', target: 682,    delay: 0,   duration: 1200, fmt: v => `$${v}K` },
+      { id: 'sv1', target: 299,    delay: 100, duration: 1200, fmt: v => `$${(v/100).toFixed(2)}M` },
+      { id: 'sv2', target: 340,    delay: 200, duration: 1200, fmt: v => `+${v}%` },
+      { id: 'sv3', target: 174,    delay: 300, duration: 1200, fmt: v => `$${v}K` },
+    ];
+
+    statDefs.forEach(({ id, target, delay, duration, fmt }) => {
+      setTimeout(() => {
+        const el = clone.querySelector('#' + id);
+        const item = el && el.closest('.stat-item');
+        if (item) item.style.opacity = '1';
+        if (el) countTo(el, target, duration, fmt);
+      }, 1000 + delay);
+    });
+
+    // Bar animations at 2.5s, staggered 0.2s each
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        const bar = clone.querySelector('#bar' + i);
+        if (bar) animateBar(bar, 600);
+      }, 2500 + i * 200);
+    }
+
+    // Trend line at 3.8s
+    setTimeout(() => {
+      const line = clone.querySelector('#trendLine');
+      if (line) {
+        // Approximate total path length for these points
+        animateTrendLine(line, 750, 400);
+      }
+    }, 3800);
+
+    if (loopTimer) clearTimeout(loopTimer);
+    loopTimer = setTimeout(startAnimation, LOOP_DURATION);
+  }
+
+  startAnimation();
+
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    if (loopTimer) clearTimeout(loopTimer);
+    startAnimation();
+  });
+</script>
+</body>
+</html>

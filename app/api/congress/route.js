@@ -7,6 +7,7 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { enrichTradesWithReturns } from '../../../lib/stockPrice'
 import { currentCongress } from '../../../lib/congressSession'
+import { isRateLimitedDurable } from '../../../lib/rateLimit'
 
 // ── Supabase client factory (server-only) ─────────────────────────────────────
 const getSupabase = () => createClient(
@@ -193,7 +194,22 @@ export async function GET(request) {
     || request.headers.get('x-real-ip')
     || 'anonymous'
 
+  // Fast, cheap, per-instance check first — catches repeat hits landing on
+  // the same warm Vercel function instance without a DB round trip.
   if (isRateLimited(rateLimitKey)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please slow down.' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    )
+  }
+
+  // Durable, cross-instance check — the in-memory Map above only limits
+  // requests landing on ONE serverless instance; under real concurrent
+  // traffic Vercel spins up many, each with its own empty Map. This is the
+  // backstop that actually enforces the limit globally per user/IP. See
+  // lib/rateLimit.js for why this exists (task was marked done in June via
+  // a migration that nothing ever queried).
+  if (await isRateLimitedDurable(rateLimitKey, 'congress', MAX_CALLS, WINDOW_MS / 1000)) {
     return NextResponse.json(
       { error: 'Too many requests. Please slow down.' },
       { status: 429, headers: { 'Retry-After': '60' } }

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>CivicWatch — Trade Card</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Subtle grid texture */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.05) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  /* Glow */
+  .bg-glow {
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .bg-glow-2 {
+    position: absolute;
+    bottom: -300px;
+    left: -150px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Top accent bar */
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    height: 6px;
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 50%, #22c55e 100%);
+  }
+
+  /* Main layout */
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: calc(100% - 6px);
+    display: flex;
+    flex-direction: column;
+    padding: 64px 80px 60px;
+  }
+
+  /* ---- Header ---- */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 52px;
+  }
+
+  .disclosure-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #22c55e;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .disclosure-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: none;
+  }
+
+  .date-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 10px 22px;
+    color: rgba(255,255,255,0.55);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---- Rep section ---- */
+  .rep-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-bottom: 48px;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a3a5c, #2563a8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.95);
+    border: 3px solid rgba(255,255,255,0.12);
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  .rep-meta { flex: 1; }
+
+  .rep-name {
+    font-size: 40px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .badge-r {
+    background: #dc2626;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 5px 14px;
+    border-radius: 6px;
+  }
+
+  .badge-state {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.65);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+  }
+
+  .badge-committee {
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+    color: #4ade80;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+  }
+
+  /* ---- Divider ---- */
+  .hr {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    margin-bottom: 44px;
+  }
+
+  /* ---- Trade block ---- */
+  .trade-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 52px 52px 44px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Corner accent */
+  .trade-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 180px; height: 4px;
+    background: #22c55e;
+    border-radius: 0 0 4px 0;
+  }
+
+  .trade-type-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+  }
+
+  .trade-type {
+    font-size: 88px;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    text-shadow: 0 0 60px rgba(34,197,94,0.3);
+  }
+
+  .amount-col {
+    text-align: right;
+  }
+
+  .amount-label-text {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 8px;
+  }
+
+  .amount-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.01em;
+  }
+
+  .ticker-row {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 36px;
+  }
+
+  .ticker {
+    font-size: 64px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .company-name {
+    font-size: 22px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+  }
+
+  .trade-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: auto;
+  }
+
+  .filed-info {
+    color: rgba(255,255,255,0.3);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .filed-info strong {
+    color: rgba(255,255,255,0.55);
+    font-weight: 600;
+  }
+
+  .verified-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #4ade80;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-icon {
+    width: 44px;
+    height: 44px;
+    background: #22c55e;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .brand-text-col { line-height: 1.2; }
+
+  .brand-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-url {
+    font-size: 14px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 400;
+  }
+
+  .tagline-text {
+    font-size: 14px;
+    color: rgba(255,255,255,0.25);
+    text-align: right;
+    max-width: 300px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+  <div class="top-bar"></div>
+
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+      <div class="disclosure-label">
+        <div class="disclosure-dot"></div>
+        Congressional Disclosure
+      </div>
+      <div class="date-chip">June 15, 2026</div>
+    </div>
+
+    <!-- Rep info -->
+    <div class="rep-row">
+      <div class="avatar">JS</div>
+      <div class="rep-meta">
+        <div class="rep-name">Rep. John Smith</div>
+        <div class="badges">
+          <span class="badge-r">REPUBLICAN</span>
+          <span class="badge-state">Texas · 23rd District</span>
+          <span class="badge-committee">Finance Committee</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <!-- Trade card -->
+    <div class="trade-block">
+      <div class="trade-type-row">
+        <div class="trade-type">BUY</div>
+        <div class="amount-col">
+          <div class="amount-label-text">Reported Amount</div>
+          <div class="amount-value">$50,001 – $100,000</div>
+        </div>
+      </div>
+
+      <div class="ticker-row">
+        <div class="ticker">NVDA</div>
+        <div class="company-name">NVIDIA Corporation</div>
+      </div>
+
+      <div class="trade-detail-row">
+        <div class="filed-info">
+          Trade date <strong>June 15, 2026</strong><br>
+          Filed <strong>July 2, 2026</strong> · House Financial Disclosures Act
+        </div>
+        <div class="verified-badge">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7L5.5 10.5L12 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Public Record
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="brand-lockup">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="#0d1117" stroke-width="2.2"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0d1117" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="19" cy="6" r="2.5" fill="#0d1117"/>
+            <path d="M17.5 6L18.5 7L20.5 5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text-col">
+          <div class="brand-name">CivicWatch</div>
+          <div class="brand-url">civicwatch.app</div>
+        </div>
+      </div>
+      <div class="tagline-text">Your representatives work for you.<br>Start holding them to it.</div>
+    </div>
+  </div>
+</body>
+</html>

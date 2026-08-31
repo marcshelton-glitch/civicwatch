@@ -44,24 +44,36 @@ export async function GET() {
       })
     }
 
+    // ── Count real subscribers only ──────────────────────────────────────────
+    // status: 'all' previously included `incomplete`, `incomplete_expired`, and
+    // `canceled` subscriptions created this month — checkouts that were
+    // abandoned or failed and never actually converted. Those inflated the
+    // "N Americans went Pro this month" social-proof claim on /pro with people
+    // who did not, in fact, go Pro. CivicWatch has no trial period today, but
+    // 'trialing' is counted too so this doesn't quietly regress if one is
+    // added later. The Stripe list API only accepts one `status` value at a
+    // time (not an array), hence the two passes.
     let count = 0
-    let hasMore = true
-    let startingAfter = undefined
 
-    while (hasMore) {
-      const params = {
-        price: priceId,
-        created: { gte: monthStart },
-        limit: 100,
-        status: 'all',
-      }
-      if (startingAfter) params.starting_after = startingAfter
+    for (const status of ['active', 'trialing']) {
+      let hasMore = true
+      let startingAfter = undefined
 
-      const page = await stripe.subscriptions.list(params)
-      count += page.data.length
-      hasMore = page.has_more
-      if (hasMore && page.data.length > 0) {
-        startingAfter = page.data[page.data.length - 1].id
+      while (hasMore) {
+        const params = {
+          price: priceId,
+          created: { gte: monthStart },
+          limit: 100,
+          status,
+        }
+        if (startingAfter) params.starting_after = startingAfter
+
+        const page = await stripe.subscriptions.list(params)
+        count += page.data.length
+        hasMore = page.has_more
+        if (hasMore && page.data.length > 0) {
+          startingAfter = page.data[page.data.length - 1].id
+        }
       }
     }
 

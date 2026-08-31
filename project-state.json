@@ -1,0 +1,36 @@
+{
+  "project": "civicwatch",
+  "standardVersion": "1.0.0",
+  "generatedAt": "2026-08-13T18:00:00.000000Z",
+  "stage": "pre-launch",
+  "profile": "server",
+  "health": {
+    "schedule": "at-risk",
+    "twelveFactor": {
+      "pass": 4,
+      "partial": 7,
+      "fail": 1,
+      "na": 0,
+      "byDesign": 0
+    },
+    "docs": {
+      "total": 21,
+      "active": 3,
+      "draft": 18,
+      "stale": 0
+    },
+    "risks": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    }
+  },
+  "launch": {
+    "planned": "2026-08-20",
+    "projected": "2026-08-29",
+    "varianceDays": 9
+  },
+  "decisionsPending": 2,
+  "nextMilestone": "Merge fix/prelaunch-revenue-and-security to main (Gantt #18, planned 2026-08-13)"
+}

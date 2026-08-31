@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CivicWatch — Marketing Rollout 2026</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3250;
+  --text:#e2e8f0;--muted:#8892a4;--accent:#3b82f6;--today:#facc15;--launch:#ef4444;--early:#22c55e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;overflow-x:hidden}
+
+/* TOOLBAR */
+#toolbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#toolbar h1{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;margin-right:4px}
+#toolbar h1 span{color:var(--accent)}
+#search{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:12px;width:180px}
+#search:focus{outline:none;border-color:var(--accent)}
+.ph-btn{padding:4px 10px;border-radius:20px;border:1px solid;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.ph-btn.active{opacity:1}
+.ph-btn.inactive{opacity:.35}
+#toolbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+#export-all{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+#export-all:hover{background:#2563eb}
+#reset-btn{background:none;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+#reset-btn:hover{color:var(--text);border-color:var(--launch)}
+#export-progress{background:none;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+#export-progress:hover{background:var(--accent);color:#fff}
+#autosave-btn{background:none;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+#autosave-btn:hover{color:var(--text);border-color:var(--accent)}
+#autosave-btn.active{color:var(--early);border-color:var(--early)}
+#legend{display:flex;gap:12px;align-items:center;font-size:11px;color:var(--muted)}
+#legend span{display:flex;align-items:center;gap:4px}
+#legend .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* STATS */
+#stats{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:24px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+#stats b{color:var(--text)}
+
+/* MAIN LAYOUT */
+#app{display:flex;position:relative}
+
+/* LABEL COLUMN */
+#label-col{width:230px;min-width:230px;flex-shrink:0;border-right:1px solid var(--border)}
+.ph-header-label{padding:8px 10px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.task-label{height:30px;padding:0 10px 0 20px;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background .1s}
+.task-label:hover{background:var(--surface2)}
+.task-label.done .task-name{text-decoration:line-through;opacity:.4}
+.task-check{width:14px;height:14px;border-radius:3px;border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.task-check.checked{background:var(--accent);border-color:var(--accent)}
+.task-check.checked::after{content:'✓';color:#fff;font-size:9px}
+.task-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.task-badge{font-size:9px;font-weight:700;flex-shrink:0}
+
+/* GANTT WRAP */
+#gantt-wrap{flex:1;overflow-x:auto;position:relative}
+#gantt-inner{position:relative;min-width:max-content}
+
+/* DATE HEADER */
+#date-header{height:36px;position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column}
+.month-cell{border-right:1px solid var(--border);display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.week-row{height:18px;display:flex;border-bottom:1px solid var(--border)}
+.week-cell{border-right:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:flex-start;padding-left:3px;font-size:9px;color:var(--muted);flex-shrink:0}
+
+/* GANTT ROWS */
+.ph-header-gantt{height:30px;border-bottom:1px solid var(--border);position:relative}
+.task-row{height:30px;border-bottom:1px solid rgba(255,255,255,.03);position:relative}
+.task-bar{position:absolute;top:7px;height:16px;border-radius:4px;cursor:pointer;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;transition:filter .15s;min-width:6px}
+.task-bar:hover{filter:brightness(1.2)}
+.task-bar.done{opacity:.4}
+.task-bar.shifted{box-shadow:0 0 0 1px #f59e0b}
+
+/* VERTICAL MARKERS */
+.vline{position:absolute;top:0;bottom:0;width:2px;pointer-events:none;z-index:40}
+.vline-today{background:var(--today)}
+.vline-launch{background:var(--launch)}
+.vline-label{position:absolute;top:2px;font-size:9px;font-weight:700;white-space:nowrap;padding:1px 4px;border-radius:3px}
+
+/* SIDE PANEL */
+#panel{width:290px;min-width:290px;border-left:1px solid var(--border);background:var(--surface);display:none;flex-direction:column;position:sticky;top:54px;max-height:calc(100vh - 54px);overflow-y:auto}
+#panel.open{display:flex}
+#panel-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+#panel-title{font-size:14px;font-weight:700;line-height:1.4}
+#panel-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+#panel-close:hover{color:var(--text)}
+#panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.prow{display:flex;gap:8px;font-size:12px}
+.prow dt{color:var(--muted);min-width:66px;flex-shrink:0}
+.prow dd{color:var(--text)}
+.panel-btn{display:block;width:100%;padding:8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-align:center}
+.btn-cal{background:var(--accent);color:#fff}
+.btn-cal:hover{background:#2563eb}
+.btn-phase-cal{background:var(--surface2);color:var(--text);border:1px solid var(--border);margin-top:4px}
+.btn-phase-cal:hover{border-color:var(--accent);color:var(--accent)}
+.btn-link{background:var(--surface2);color:var(--accent);border:1px solid var(--accent)}
+.btn-link:hover{background:var(--accent);color:#fff}
+.btn-plain{background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-top:4px}
+.btn-plain:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ATTACHMENTS */
+.att-section{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.att-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.dropzone{border:1px dashed var(--border);border-radius:6px;padding:10px;font-size:11px;color:var(--muted);text-align:center;cursor:pointer;transition:all .15s}
+.dropzone:hover,.dropzone.drag{border-color:var(--accent);color:var(--accent);background:var(--surface2)}
+.att-row{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 6px;border-radius:4px;background:var(--surface2)}
+.att-icon{flex-shrink:0}
+.att-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-size{color:var(--muted);flex-shrink:0;font-size:10px}
+.att-open{color:var(--accent);text-decoration:none;flex-shrink:0;padding:2px 4px;border-radius:3px}
+.att-open:hover{background:var(--accent);color:#fff}
+.att-remove{background:none;border:none;color:var(--muted);cursor:pointer;flex-shrink:0;padding:2px 4px;font-size:11px;border-radius:3px}
+.att-remove:hover{color:#fff;background:var(--launch)}
+.task-badge.att-count{color:var(--muted)!important}
+
+/* COL GRID LINES */
+.col-grid{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.04);pointer-events:none}
+
+/* HIDDEN */
+.ph-group.hidden .task-row,.ph-group.hidden .task-label,.ph-group.hidden .ph-header-label,.ph-group.hidden .ph-header-gantt{display:none}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1>🏛️ <span>CivicWatch</span> Rollout 2026</h1>
+  <input id="search" type="text" placeholder="Search tasks…" oninput="applyFilters()">
+  <div id="phase-toggles"></div>
+  <div id="legend">
+    <span><span class="dot" style="background:var(--today)"></span>Today</span>
+    <span><span class="dot" style="background:var(--launch)"></span>Election Day (planned)</span>
+  </div>
+  <div id="toolbar-right">
+    <button id="reset-btn" onclick="resetAll()">↺ Reset progress</button>
+    <button id="export-progress" onclick="exportProgressSnapshot()">📤 Export Progress for Claude</button>
+    <button id="autosave-btn" onclick="handleAutosaveClick()">🔗 Enable autosave</button>
+    <button id="export-all" onclick="exportAll()">📅 Export All to Calendar</button>
+  </div>
+</div>
+
+<div id="stats">
+  <span>Tasks: <b id="s-total">0</b></span>
+  <span>Done: <b id="s-done">0</b></span>
+  <span>Remaining: <b id="s-rem">0</b></span>
+  <span>Progress: <b id="s-pct">0%</b></span>
+  <span>Election Day: <b id="s-launch">Nov 3, 2026</b></span>
+  <span>Days to Election: <b id="s-days">—</b></span>
+</div>
+
+<div id="app">
+  <div id="label-col"></div>
+  <div id="gantt-wrap">
+    <div id="gantt-inner">
+      <div id="date-header"></div>
+      <div id="gantt-rows"></div>
+    </div>
+  </div>
+  <div id="panel">
+    <div id="panel-header">
+      <div id="panel-title">Task Detail</div>
+      <button id="panel-close" onclick="closePanel()">×</button>
+    </div>
+    <div id="panel-body"></div>
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const DAY_W   = 18;
+const LS_KEY  = 'cw-mkt-state-v1';
+const LS_KEY_OLD = 'cw-mkt-done-old';
+
+// Canonical dates as strings to avoid TZ issues
+const START_S  = '2026-07-27';
+const END_S    = '2026-11-23';
+const LAUNCH_S = '2026-11-03';
+
+function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(s, n){
+  const d = parseDate(s);
+  d.setDate(d.getDate() + n);
+  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+}
+function fmtDate(s){
+  const d = parseDate(s);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function daysUntil(s){
+  const diff = parseDate(s) - TODAY;
+  const n = Math.ceil(diff/864e5);
+  if(n===0) return 'Today';
+  if(n>0) return `in ${n} days`;
+  return `${Math.abs(n)} days ago`;
+}
+
+// TODAY is read from the real system clock every time the page loads — never
+// hardcoded — so the yellow "Today" line always lands on the actual date.
+const now_ = new Date();
+const TODAY   = new Date(now_.getFullYear(), now_.getMonth(), now_.getDate());
+const TODAY_S = [TODAY.getFullYear(), String(TODAY.getMonth()+1).padStart(2,'0'), String(TODAY.getDate()).padStart(2,'0')].join('-');
+
+const START  = parseDate(START_S);
+const END    = parseDate(END_S);
+const LAUNCH = parseDate(LAUNCH_S);
+
+// ─── PHASES ──────────────────────────────────────────────────────────────────
+const PHASES = {
+  1: { name:'Monetization Foundation',  emoji:'💰', color:'#D4AF37', dates:'Jul 27 – Aug 6'  },
+  2: { name:'Content & SEO Engine',     emoji:'📝', color:'#16a34a', dates:'Jul 28 – Oct 26'  },
+  3: { name:'X / Twitter Growth',       emoji:'🐦', color:'#1d9bf0', dates:'Jul 28 – Nov 7'   },
+  4: { name:'Launch Communities',       emoji:'🚀', color:'#f97316', dates:'Aug 10 – Aug 29'  },
+  5: { name:'Midterm Election Moment',  emoji:'🗳️', color:'#B22234', dates:'Oct 13 – Nov 7'   },
+  6: { name:'Monetize & Sustain',       emoji:'📈', color:'#7c3aed', dates:'Nov 3 – Nov 23'   },
+};
+
+// ─── TASKS (41 total) ─────────────────────────────────────────────────────────
+// Each: { id, phase, name, date:'YYYY-MM-DD', days, note?, deps?:[ids], links?:{website,folder,form} }
+// deps = tasks that must finish before this one can start. Every dep id is LOWER
+// than its own id, so a single forward pass (in id order) is enough to reschedule.
+// links are best-effort official portals / project-folder paths — double check
+// gov/grant deep-links before relying on them, since agencies reshuffle URLs.
+const TASKS = [
+  // PHASE 1 — Monetization Foundation
+  { id:1,  phase:1, name:'Audit paywall & upgrade funnel',        date:'2026-07-27', days:2,
+    note:'Zero ad budget — every leak in the free-to-Pro path is lost revenue you cannot afford yet.' },
+  { id:2,  phase:1, name:'Rewrite pricing page copy & value props', date:'2026-07-29', days:3, deps:[1] },
+  { id:3,  phase:1, name:'Add contextual upgrade prompts (AI Analysis, Wealth tabs)', date:'2026-08-03', days:3, deps:[1] },
+  { id:4,  phase:1, name:'Install conversion funnel analytics',   date:'2026-07-28', days:2,
+    links:{ website:'https://vercel.com/analytics' } },
+  { id:5,  phase:1, name:'Set up Search Console + submit sitemap', date:'2026-07-28', days:1,
+    links:{ website:'https://search.google.com/search-console' } },
+  { id:6,  phase:1, name:'Launch "Founding Member" offer ($4.99/mo lifetime, first 100)', date:'2026-08-03', days:2, deps:[2],
+    note:'Cash-flow lever — first revenue has to come from urgency and scarcity, not ad spend.' },
+  { id:7,  phase:1, name:'Set up Stripe coupon + urgency countdown banner', date:'2026-08-05', days:2, deps:[6],
+    links:{ website:'https://dashboard.stripe.com/coupons' } },
+
+  // PHASE 2 — Content & SEO Engine
+  { id:8,  phase:2, name:'Keyword research: congress trading, net worth, STOCK Act', date:'2026-07-28', days:3, deps:[5],
+    links:{ website:'https://trends.google.com/trends/' } },
+  { id:9,  phase:2, name:'Cornerstone page: "How to track congressional stock trades"', date:'2026-08-03', days:4, deps:[8] },
+  { id:10, phase:2, name:'Cornerstone page: "STOCK Act explained"', date:'2026-08-07', days:3, deps:[8] },
+  { id:11, phase:2, name:'Programmatic SEO pass on rep-profile pages', date:'2026-08-10', days:5, deps:[8],
+    note:'Meta titles/descriptions per representative — long-tail traffic at zero marginal cost.' },
+  { id:12, phase:2, name:'Add schema.org structured data to rep pages', date:'2026-08-17', days:3, deps:[11],
+    links:{ website:'https://schema.org/Person' } },
+  { id:13, phase:2, name:'Blog: "8,000+ trades filed last Congress — what it means"', date:'2026-08-20', days:2, deps:[9],
+    links:{ folder:'media/voiceover_scripts.md' } },
+  { id:14, phase:2, name:'Submit to civic-tech & startup directories', date:'2026-08-24', days:3,
+    links:{ website:'https://www.saashub.com/' } },
+  { id:15, phase:2, name:'Backlink outreach to civics educators & transparency blogs', date:'2026-08-27', days:5, deps:[13] },
+  { id:16, phase:2, name:'Hub page: "2026 Midterm Candidates & Their Trades"', date:'2026-09-08', days:5, deps:[11] },
+  { id:17, phase:2, name:'Weekly blog cadence begins (1 post/wk through election)', date:'2026-09-15', days:42, deps:[13],
+    note:'Sustained cadence carries through election week without falling off.' },
+  { id:18, phase:2, name:'Mid-campaign SEO health check', date:'2026-10-13', days:2, deps:[5],
+    links:{ website:'https://search.google.com/search-console' } },
+
+  // PHASE 3 — X / Twitter Growth
+  { id:19, phase:3, name:'Audit & tune @CivicWatchAlerts bot copy/format', date:'2026-07-28', days:2,
+    links:{ folder:'docs/x-bot-setup.md' } },
+  { id:20, phase:3, name:'Set up build-in-public founder account cadence', date:'2026-07-30', days:2,
+    links:{ website:'https://x.com/' } },
+  { id:21, phase:3, name:'Create tweet templates for high-engagement trades', date:'2026-08-01', days:2, deps:[19] },
+  { id:22, phase:3, name:'Daily organic posting rhythm begins (3x/day)', date:'2026-08-03', days:90, deps:[20],
+    note:'3x/day: one trade-alert amplification, one civic-education tip, one reply/engagement.',
+    links:{ website:'https://buffer.com/' } },
+  { id:23, phase:3, name:'Weekly "Congress Trading Digest" thread', date:'2026-08-10', days:90, deps:[21] },
+  { id:24, phase:3, name:'Reply-guy engagement on political/finance accounts', date:'2026-08-10', days:90, deps:[20] },
+  { id:25, phase:3, name:'Growth loop: RT + follow for a free month of Pro', date:'2026-08-24', days:5, deps:[6],
+    note:'Costs nothing but one month of Pro access per redemption — no ad spend required.',
+    links:{ website:'https://dashboard.stripe.com/coupons' } },
+  { id:26, phase:3, name:'Election-week bot upgrade: same-day alerts + "who traded before this vote"', date:'2026-10-06', days:10, deps:[19,23],
+    note:'Turns each disclosure into a shareable "before or after the vote?" narrative.',
+    links:{ folder:'docs/x-bot-setup.md' } },
+
+  // PHASE 4 — Launch Communities
+  { id:27, phase:4, name:'Prep Product Hunt assets (tagline, gallery, demo GIF)', date:'2026-08-10', days:4,
+    links:{ website:'https://www.canva.com/' } },
+  { id:28, phase:4, name:'Line up hunters/supporters in civic-tech communities', date:'2026-08-14', days:5 },
+  { id:29, phase:4, name:'Launch on Product Hunt', date:'2026-08-25', days:1, deps:[27,28],
+    links:{ website:'https://www.producthunt.com/posts/new' } },
+  { id:30, phase:4, name:'Post "Show HN: CivicWatch"', date:'2026-08-26', days:1, deps:[29],
+    links:{ website:'https://news.ycombinator.com/showhn.html' } },
+  { id:31, phase:4, name:'Post to relevant subreddits', date:'2026-08-27', days:3, deps:[29],
+    links:{ website:'https://www.reddit.com/' } },
+  { id:32, phase:4, name:'Respond to every PH / HN / Reddit comment', date:'2026-08-25', days:3, deps:[29] },
+
+  // PHASE 5 — Midterm Election Moment
+  { id:33, phase:5, name:'Build "Election Night Live" dashboard (results + last trades before vote)', date:'2026-10-13', days:10, deps:[26],
+    note:'This is the moment CivicWatch was built for — real-time trades and votes as results come in.' },
+  { id:34, phase:5, name:'Election-eve content package: "How your rep voted this term"', date:'2026-10-20', days:5, deps:[16] },
+  { id:35, phase:5, name:'Coordinate election-week posting calendar (X / bot / blog)', date:'2026-10-23', days:4, deps:[23,33] },
+  { id:36, phase:5, name:'🗳️ Election Day content push — live thread + dashboard promo', date:'2026-11-03', days:1, deps:[33,35],
+    note:'Peak search interest of the year for "who is my representative" — capture it.',
+    links:{ website:'https://x.com/CivicWatchAlerts' } },
+  { id:37, phase:5, name:'Post-election recap: "What Congress traded during the midterms"', date:'2026-11-04', days:4, deps:[36] },
+
+  // PHASE 6 — Monetize & Sustain
+  { id:38, phase:6, name:'Convert traffic spike: upgrade banner + Founding Member deadline', date:'2026-11-03', days:7, deps:[7,36],
+    note:'Election traffic is a one-time spike; the Founding Member deadline turns attention into recurring revenue before it fades.',
+    links:{ website:'https://dashboard.stripe.com/' } },
+  { id:39, phase:6, name:'Analyze funnel data from election traffic', date:'2026-11-10', days:3, deps:[4,38],
+    links:{ website:'https://vercel.com/analytics' } },
+  { id:40, phase:6, name:'Retro: what worked, plan 2028-cycle content calendar', date:'2026-11-17', days:3, deps:[39] },
+  { id:41, phase:6, name:'Set ongoing SEO/X cadence for post-election off-season', date:'2026-11-20', days:4, deps:[40] },
+];
+
+// ─── SCHEDULING ENGINE ─────────────────────────────────────────────────────────
+// ORIG_END: baseline end date per task, computed once from the plan above.
+const ORIG_END = {};
+TASKS.forEach(t => ORIG_END[t.id] = addDays(t.date, (t.days||1)-1));
+
+// LAG[t][p]: how many days after p's ORIGINAL end, t was ORIGINALLY scheduled to
+// start. Can be negative (planned overlap). This offset is preserved when p's
+// actual completion shifts — that's what makes "late" or "early" cascade.
+const LAG = {};
+TASKS.forEach(t=>{
+  LAG[t.id] = {};
+  (t.deps||[]).forEach(pid=>{
+    LAG[t.id][pid] = Math.round((parseDate(t.date) - parseDate(ORIG_END[pid]))/864e5);
+  });
+});
+
+// Live state: which tasks are done, and what date they actually started/ended.
+let doneSet     = new Set();
+let actualStart = {};
+let actualEnd   = {};
+
+function loadState(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if(raw){
+      doneSet = new Set(raw.done||[]);
+      actualStart = raw.actualStart||{};
+      actualEnd   = raw.actualEnd||{};
+      return;
+    }
+  }catch(e){}
+  // migrate from the older checkbox-only version if present
+  try{
+    const old = JSON.parse(localStorage.getItem(LS_KEY_OLD)||'null');
+    if(old && Array.isArray(old) && old.length){
+      old.forEach(id=>{
+        const t = TASKS.find(x=>x.id===id);
+        if(t){ doneSet.add(id); actualStart[id]=t.date; actualEnd[id]=ORIG_END[id]; }
+      });
+      saveState();
+    }
+  }catch(e){}
+}
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify({ done:[...doneSet], actualStart, actualEnd }));
+  writeAutosaveFile();
+}
+
+// computeSchedule(): pure function — TASKS + LAG + current done/actual state
+// in, {id:{start,end}} out. Completed tasks are frozen at their actual dates;
+// everything downstream of them is recomputed from those actual dates, so
+// finishing early pulls dependents in and finishing late pushes them out.
+//
+// AUTO-PUSH RULE: an unfinished task can never end in the past. If a pending
+// task's scheduled end date has slipped behind TODAY without being checked
+// off, it slides forward to start TODAY (full duration preserved) and every
+// dependent recalculates from there. Tasks still inside their window (start
+// has passed but the end hasn't) are left alone — they can still finish on
+// time. Because TODAY is read from the system clock, the whole chart
+// re-baselines itself every time the page loads.
+function computeSchedule(){
+  const sched = {};
+  TASKS.forEach(t=>{
+    if(doneSet.has(t.id)){
+      sched[t.id] = { start: actualStart[t.id] || t.date, end: actualEnd[t.id] || ORIG_END[t.id] };
+    } else {
+      sched[t.id] = { start: t.date, end: ORIG_END[t.id] };
+    }
+  });
+  // Single forward pass in id order — valid because every dep id < its task id.
+  TASKS.forEach(t=>{
+    if(doneSet.has(t.id)) return;               // history is fixed
+    let newStart = sched[t.id].start;
+    (t.deps||[]).forEach(pid=>{
+      const lag = LAG[t.id][pid] || 0;
+      const candidate = addDays(sched[pid].end, lag);
+      if(parseDate(candidate) > parseDate(newStart)) newStart = candidate;
+    });
+    let newEnd = addDays(newStart, (t.days||1)-1);
+    // Auto-push: overdue and not checked off → restart today.
+    if(parseDate(newEnd) < TODAY){
+      newStart = TODAY_S;
+      newEnd   = addDays(newStart, (t.days||1)-1);
+    }
+    sched[t.id] = { start:newStart, end:newEnd };
+  });
+  return sched;
+}
+
+function virtualTask(t, s){
+  const spanDays = Math.round((parseDate(s.end)-parseDate(s.start))/864e5)+1;
+  return Object.assign({}, t, { date:s.start, days:spanDays });
+}
+
+// ─── ATTACHMENTS ────────────────────────────────────────────────────────────────
+// Files are stored in IndexedDB, keyed to this exact HTML file's browser origin.
+// They persist across reloads of this same file, but they're LOCAL to this
+// browser + file path — download anything important as a backup, and note that
+// moving/renaming this file or clearing browser data won't carry them along.
+const IDB_NAME='cw-mkt-attachments-db', IDB_VERSION=2, IDB_STORE='files', IDB_HANDLE_STORE='handles';
+let idbPromise = null;
+function getIDB(){
+  if(!window.indexedDB) return Promise.reject(new Error('IndexedDB unavailable'));
+  if(idbPromise) return idbPromise;
+  idbPromise = new Promise((resolve,reject)=>{
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = e=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE)){
+        const store = db.createObjectStore(IDB_STORE,{keyPath:'fileId'});
+        store.createIndex('byTask','taskId',{unique:false});
+      }
+      if(!db.objectStoreNames.contains(IDB_HANDLE_STORE)){
+        db.createObjectStore(IDB_HANDLE_STORE,{keyPath:'key'});
+      }
+    };
+    req.onsuccess = e=>resolve(e.target.result);
+    req.onerror   = ()=>reject(req.error);
+  });
+  return idbPromise;
+}
+function idbPutHandle(handle){
+  return getIDB().then(db=>new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_HANDLE_STORE,'readwrite');
+    tx.objectStore(IDB_HANDLE_STORE).put({key:'autosave-file', handle});
+    tx.oncomplete = ()=>resolve();
+    tx.onerror    = ()=>reject(tx.error);
+  }));
+}
+function idbGetHandle(){
+  return getIDB().then(db=>new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_HANDLE_STORE,'readonly');
+    const req = tx.objectStore(IDB_HANDLE_STORE).get('autosave-file');
+    req.onsuccess = ()=>resolve(req.result ? req.result.handle : null);
+    req.onerror   = ()=>reject(req.error);
+  }));
+}
+function idbAllForTask(taskId){
+  return getIDB().then(db=>new Promise((resolve,reject)=>{
+    const tx  = db.transaction(IDB_STORE,'readonly');
+    const idx = tx.objectStore(IDB_STORE).index('byTask');
+    const req = idx.getAll(IDBKeyRange.only(taskId));
+    req.onsuccess = ()=>resolve(req.result||[]);
+    req.onerror   = ()=>reject(req.error);
+  }));
+}
+function idbAllRecords(){
+  return getIDB().then(db=>new Promise((resolve,reject)=>{
+    const tx  = db.transaction(IDB_STORE,'readonly');
+    const req = tx.objectStore(IDB_STORE).getAll();
+    req.onsuccess = ()=>resolve(req.result||[]);
+    req.onerror   = ()=>reject(req.error);
+  }));
+}
+function idbPut(record){
+  return getIDB().then(db=>new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(record);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror    = ()=>reject(tx.error);
+  }));
+}
+function idbDelete(fileId){
+  return getIDB().then(db=>new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).delete(fileId);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror    = ()=>reject(tx.error);
+  }));
+}
+
+let attachmentCounts = {};
+function refreshAttachmentCounts(){
+  return idbAllRecords().then(records=>{
+    attachmentCounts = {};
+    records.forEach(r=>{ attachmentCounts[r.taskId] = (attachmentCounts[r.taskId]||0)+1; });
+  });
+}
+
+function humanSize(bytes){
+  if(bytes<1024) return bytes+' B';
+  if(bytes<1024*1024) return (bytes/1024).toFixed(1)+' KB';
+  return (bytes/1024/1024).toFixed(1)+' MB';
+}
+function fileIcon(type){
+  if((type||'').startsWith('image/')) return '🖼️';
+  if(type==='application/pdf') return '📄';
+  if((type||'').includes('word')) return '📝';
+  return '📎';
+}
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload  = ()=>resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addAttachmentFiles(taskId, fileList){
+  const files = Array.from(fileList||[]);
+  if(!files.length) return;
+  for(const file of files){
+    if(file.size > 20*1024*1024){
+      alert(`"${file.name||'file'}" is over 20MB and was skipped — try a smaller scan or a compressed PDF.`);
+      continue;
+    }
+    try{
+      const dataUrl = await fileToDataURL(file);
+      const rec = {
+        fileId: 'att-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
+        taskId, name: file.name || `pasted-screenshot-${Date.now()}.png`,
+        type: file.type || 'application/octet-stream',
+        size: file.size, dataUrl, addedAt: new Date().toISOString()
+      };
+      await idbPut(rec);
+      attachmentCounts[taskId] = (attachmentCounts[taskId]||0)+1;
+    }catch(e){
+      alert('Could not save this attachment — attachments may be unavailable in this browser/context.');
+      break;
+    }
+  }
+  if(activeId===taskId) renderAttachmentSection(taskId);
+  buildRows(computeSchedule());
+  applyFilters();
+}
+
+async function removeAttachment(fileId, taskId){
+  try{ await idbDelete(fileId); }catch(e){}
+  attachmentCounts[taskId] = Math.max(0,(attachmentCounts[taskId]||1)-1);
+  renderAttachmentSection(taskId);
+  buildRows(computeSchedule());
+  applyFilters();
+}
+
+async function renderAttachmentSection(taskId){
+  const container = document.getElementById('panel-attachments');
+  if(!container) return; // panel closed/switched before this resolved
+  let files = [];
+  try{ files = await idbAllForTask(taskId); }
+  catch(e){
+    container.innerHTML = `<div style="color:var(--muted);font-size:11px">Attachments aren't available in this browser/context.</div>`;
+    return;
+  }
+  files.sort((a,b)=> a.addedAt < b.addedAt ? 1 : -1);
+  container.innerHTML = files.length ? files.map(f=>`
+    <div class="att-row">
+      <span class="att-icon">${fileIcon(f.type)}</span>
+      <span class="att-name" title="${f.name}">${f.name}</span>
+      <span class="att-size">${humanSize(f.size)}</span>
+      <a class="att-open" href="${f.dataUrl}" target="_blank" rel="noopener" download="${f.name}" title="Open / download">⤓</a>
+      <button class="att-remove" onclick="removeAttachment('${f.fileId}',${taskId})" title="Remove">✕</button>
+    </div>
+  `).join('') : `<div style="color:var(--muted);font-size:11px">No files yet.</div>`;
+}
+
+function wireAttachmentUI(id){
+  const dz = document.getElementById(`dropzone-${id}`);
+  const input = document.getElementById(`file-input-${id}`);
+  if(!dz || !input) return;
+  dz.onclick = ()=> input.click();
+  input.onchange = ()=>{ addAttachmentFiles(id, input.files); input.value=''; };
+  dz.ondragover  = e=>{ e.preventDefault(); dz.classList.add('drag'); };
+  dz.ondragleave = ()=> dz.classList.remove('drag');
+  dz.ondrop = e=>{ e.preventDefault(); dz.classList.remove('drag'); addAttachmentFiles(id, e.dataTransfer.files); };
+}
+
+// ─── DONE ACTIONS ───────────────────────────────────────────────────────────────
+function quickToggleDone(id){
+  if(doneSet.has(id)){ markPending(id); return; }
+  const sched = computeSchedule();
+  actualStart[id] = sched[id].start;
+  actualEnd[id]   = sched[id].end;   // quick-check = "finished on schedule"
+  doneSet.add(id);
+  saveState();
+  renderAll();
+}
+
+function markDoneFlow(id){
+  const sched = computeSchedule();
+  const t = TASKS.find(x=>x.id===id);
+  const already = doneSet.has(id);
+  const defaultDate = already ? actualEnd[id] : sched[id].end;
+  const input = window.prompt(
+    `Actual completion date for:\n"${t.name}"\n\nScheduled end was ${fmtDate(sched[id].end)}.\nEnter the real date (YYYY-MM-DD) — earlier = ahead of schedule, later = behind:`,
+    defaultDate
+  );
+  if(input===null) return;
+  const clean = input.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(clean)){ alert('Please use YYYY-MM-DD format.'); return; }
+  if(!already) actualStart[id] = sched[id].start;
+  actualEnd[id] = clean;
+  doneSet.add(id);
+  saveState();
+  renderAll();
+  openPanel(id);
+}
+
+function markPending(id){
+  doneSet.delete(id);
+  delete actualStart[id];
+  delete actualEnd[id];
+  saveState();
+  renderAll();
+}
+
+function resetAll(){
+  if(!confirm('Reset all progress? This clears every completion date and un-does any rescheduling.')) return;
+  doneSet = new Set();
+  actualStart = {};
+  actualEnd = {};
+  saveState();
+  renderAll();
+}
+
+// ─── ICS EXPORT (always uses the LIVE, rescheduled dates) ──────────────────────
+function icsDate(s){ return s.replace(/-/g,''); }
+function uid(){ return 'cw-'+Date.now()+'-'+Math.random().toString(36).slice(2,8); }
+
+function generateICS(tasks){
+  const now = new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const cals = tasks.map(t=>{
+    const ph = PHASES[t.phase];
+    const endDate = addDays(t.date, t.days||1);
+    const linkLines = [];
+    if(t.links){
+      if(t.links.website) linkLines.push(`Website: ${t.links.website}`);
+      if(t.links.form)    linkLines.push(`Form: ${t.links.form}`);
+      if(t.links.folder)  linkLines.push(`Folder: ${t.links.folder}`);
+    }
+    const desc = [
+      `Phase: ${ph.emoji} ${ph.name}`,
+      t.note ? `Note: ${t.note}` : '',
+      `Duration: ${t.days||1} day(s)`,
+      `Start: ${fmtDate(t.date)}`,
+      ...linkLines,
+      '',
+      'Created by CivicWatch Marketing Gantt — civicwatch.app'
+    ].filter(Boolean).join('\\n');
+
+    return [
+      'BEGIN:VEVENT',
+      `UID:${uid()}@civicwatch.app`,
+      `DTSTAMP:${now}`,
+      `DTSTART;VALUE=DATE:${icsDate(t.date)}`,
+      `DTEND;VALUE=DATE:${icsDate(endDate)}`,
+      `SUMMARY:${ph.emoji} ${t.name}`,
+      `DESCRIPTION:${desc}`,
+      t.links && t.links.website ? `URL:${t.links.website}` : '',
+      `CATEGORIES:CivicWatch,${ph.name}`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT'
+    ].filter(Boolean).join('\r\n');
+  }).join('\r\n');
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//CivicWatch//Marketing Rollout 2026//EN',
+    'CALSCALE:GREGORIAN',
+    'X-WR-CALNAME:CivicWatch Marketing Rollout 2026',
+    cals,
+    'END:VCALENDAR'
+  ].join('\r\n');
+}
+
+function dlICS(content, fname){
+  const blob = new Blob([content],{type:'text/calendar'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+function exportAll(){
+  const sched = computeSchedule();
+  dlICS(generateICS(TASKS.map(t=>virtualTask(t, sched[t.id]))), 'civicwatch-marketing-all-tasks.ics');
+}
+
+// ─── PROGRESS SNAPSHOT (for Claude to read) ─────────────────────────────────
+// Completion state lives only in this browser's localStorage — Claude can't
+// see it just by reading this HTML file. This button dumps the live state
+// (done/pending, actual vs planned dates, at-risk flags) to a small JSON file
+// so Claude can read it on request and report what's done / what needs
+// attention, without needing browser automation.
+function buildSnapshot(){
+  const sched = computeSchedule();
+  const total = TASKS.length;
+  const doneCount = TASKS.filter(t=>doneSet.has(t.id)).length;
+  const launchStart = sched[36].start;
+  const launchVarDays = Math.round((parseDate(launchStart) - LAUNCH)/864e5);
+
+  const tasks = TASKS.map(t=>{
+    const s = sched[t.id];
+    const isDone = doneSet.has(t.id);
+    const varDays = isDone
+      ? Math.round((parseDate(actualEnd[t.id]) - parseDate(ORIG_END[t.id]))/864e5)
+      : Math.round((parseDate(s.start) - parseDate(t.date))/864e5);
+    const overdue = !isDone && parseDate(s.end) < TODAY;
+    const behindSchedule = varDays > 3;
+    return {
+      id: t.id,
+      name: t.name,
+      phase: PHASES[t.phase].name,
+      planned: { start: t.date, end: ORIG_END[t.id] },
+      scheduled: { start: s.start, end: s.end },
+      status: isDone ? 'done' : 'pending',
+      actualCompletionDate: isDone ? actualEnd[t.id] : null,
+      varianceDays: varDays,
+      needsAttention: overdue || behindSchedule,
+      attentionReason: overdue ? 'past scheduled end date, not marked done'
+        : behindSchedule ? `slipped ${varDays}d due to an upstream delay` : null,
+      dependsOn: (t.deps||[]).map(id=>TASKS.find(x=>x.id===id).name)
+    };
+  });
+
+  return {
+    exportedAt: new Date().toISOString(),
+    today: TODAY_S,
+    totals: { total, done: doneCount, remaining: total-doneCount, pctDone: Math.round(doneCount/total*100) },
+    launch: { planned: LAUNCH_S, projected: launchStart, varianceDays: launchVarDays },
+    needsAttentionCount: tasks.filter(t=>t.needsAttention).length,
+    tasks
+  };
+}
+
+function exportProgressSnapshot(){
+  const blob = new Blob([JSON.stringify(buildSnapshot(), null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'civicwatch-marketing-gantt-state.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  alert('Saved civicwatch-marketing-gantt-state.json — keep it in your project folder, then just ask Claude to check your rollout progress.');
+}
+
+// ─── AUTOSAVE (File System Access API — Chrome/Edge only) ──────────────────────
+// Once enabled, every state change writes the same progress snapshot straight
+// to civicwatch-marketing-gantt-state.json on disk, so Claude always sees current state
+// without you re-exporting by hand. The file handle is remembered in IndexedDB
+// across reloads, but the browser always re-checks permission each session —
+// if it was revoked (or this is a new browser profile), the button asks you
+// to reconnect with one click.
+let fsHandle = null;
+let autosaveEnabled = false;
+
+async function writeAutosaveFile(){
+  if(!fsHandle || !autosaveEnabled) return;
+  try{
+    const perm = await fsHandle.queryPermission({mode:'readwrite'});
+    if(perm !== 'granted'){ autosaveEnabled = false; updateAutosaveBtn(); return; }
+    const writable = await fsHandle.createWritable();
+    await writable.write(JSON.stringify(buildSnapshot(), null, 2));
+    await writable.close();
+  }catch(e){
+    console.warn('Autosave write failed', e);
+  }
+}
+
+async function enableAutosave(){
+  if(!window.showSaveFilePicker){
+    alert('Autosave needs the File System Access API, which Chrome and Edge support but Safari and Firefox don\'t. Use "Export Progress for Claude" instead on this browser.');
+    return;
+  }
+  try{
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'civicwatch-marketing-gantt-state.json',
+      types: [{ description:'JSON', accept:{'application/json':['.json']} }]
+    });
+    fsHandle = handle;
+    autosaveEnabled = true;
+    await idbPutHandle(handle);
+    await writeAutosaveFile();
+  }catch(e){
+    if(e.name !== 'AbortError') console.warn('Autosave setup failed', e);
+  }
+  updateAutosaveBtn();
+}
+
+async function handleAutosaveClick(){
+  if(autosaveEnabled) return; // already syncing — nothing to do
+  if(fsHandle){
+    try{
+      const perm = await fsHandle.requestPermission({mode:'readwrite'});
+      if(perm === 'granted'){
+        autosaveEnabled = true;
+        await writeAutosaveFile();
+        updateAutosaveBtn();
+        return;
+      }
+    }catch(e){ /* fall through to re-pick a file below */ }
+  }
+  enableAutosave();
+}
+
+async function tryRestoreAutosave(){
+  if(!window.showSaveFilePicker) { updateAutosaveBtn(); return; }
+  try{
+    const handle = await idbGetHandle();
+    if(!handle) { updateAutosaveBtn(); return; }
+    fsHandle = handle;
+    const perm = await handle.queryPermission({mode:'readwrite'});
+    autosaveEnabled = perm === 'granted';
+  }catch(e){ /* handle no longer valid — leave autosave off */ }
+  updateAutosaveBtn();
+}
+
+function updateAutosaveBtn(){
+  const btn = document.getElementById('autosave-btn');
+  if(!btn) return;
+  if(!window.showSaveFilePicker){
+    btn.style.display = 'none';
+    return;
+  }
+  if(autosaveEnabled){
+    btn.textContent = '🔗 Autosave on';
+    btn.title = 'Writing progress straight to civicwatch-marketing-gantt-state.json on every change';
+    btn.classList.add('active');
+  } else if(fsHandle){
+    btn.textContent = '🔗 Reconnect autosave';
+    btn.title = 'File access needs to be re-granted — click to resume';
+    btn.classList.remove('active');
+  } else {
+    btn.textContent = '🔗 Enable autosave';
+    btn.title = 'Auto-write progress to a JSON file Claude can read, on every change';
+    btn.classList.remove('active');
+  }
+}
+function exportTaskById(id){
+  const sched = computeSchedule();
+  const t = TASKS.find(x=>x.id===id);
+  dlICS(generateICS([virtualTask(t, sched[id])]), `civicwatch-task-${id}.ics`);
+}
+function exportPhase(ph){
+  const sched = computeSchedule();
+  const ts = TASKS.filter(t=>t.phase===ph).map(t=>virtualTask(t, sched[t.id]));
+  dlICS(generateICS(ts), `civicwatch-phase-${ph}-${PHASES[ph].name.toLowerCase().replace(/\s+/g,'-')}.ics`);
+}
+
+// ─── PANEL ────────────────────────────────────────────────────────────────────
+let activeId = null;
+function openPanel(id){
+  activeId = id;
+  const sched = computeSchedule();
+  const t  = TASKS.find(x=>x.id===id);
+  const ph = PHASES[t.phase];
+  const s  = sched[id];
+  const isDone = doneSet.has(id);
+  const varDays = isDone
+    ? Math.round((parseDate(actualEnd[id]) - parseDate(ORIG_END[id]))/864e5)
+    : Math.round((parseDate(s.start) - parseDate(t.date))/864e5);
+  const varColor = varDays>0 ? 'var(--launch)' : (varDays<0 ? 'var(--early)' : 'var(--muted)');
+  const varLabel = varDays===0 ? '' :
+    ` <span style="color:${varColor};font-weight:700">(${varDays>0?'+':''}${varDays}d ${varDays>0?'late':'early'})</span>`;
+
+  let linksHtml = '';
+  if(t.links){
+    if(t.links.website) linksHtml += `<button class="panel-btn btn-link" onclick="window.open('${t.links.website}','_blank')">🌐 Open Website</button>`;
+    if(t.links.form)    linksHtml += `<button class="panel-btn btn-link" onclick="window.open('${t.links.form}','_blank')">📝 Open Form</button>`;
+    if(t.links.folder)  linksHtml += `<div class="prow"><dt>Folder</dt><dd style="word-break:break-all;color:var(--muted)">📁 ${t.links.folder}</dd></div>`;
+  }
+
+  const depsHtml = (t.deps && t.deps.length)
+    ? `<div class="prow"><dt>Depends on</dt><dd>${t.deps.map(pid=>TASKS.find(x=>x.id===pid).name).join(', ')}</dd></div>`
+    : '';
+  const dependentsIds = TASKS.filter(x=>(x.deps||[]).includes(id)).map(x=>x.id);
+  const dependentsHtml = dependentsIds.length
+    ? `<div class="prow"><dt>Blocks</dt><dd>${dependentsIds.map(did=>TASKS.find(x=>x.id===did).name).join(', ')}</dd></div>`
+    : '';
+
+  document.getElementById('panel-title').textContent = t.name;
+  document.getElementById('panel-body').innerHTML = `
+    <dl>
+      <div class="prow"><dt>Phase</dt><dd>${ph.emoji} ${ph.name}</dd></div>
+      <div class="prow"><dt>Planned</dt><dd>${fmtDate(t.date)} → ${fmtDate(ORIG_END[t.id])}</dd></div>
+      <div class="prow"><dt>Scheduled</dt><dd>${fmtDate(s.start)} → ${fmtDate(s.end)}${varLabel}</dd></div>
+      <div class="prow"><dt>Duration</dt><dd>${t.days||1} day(s)</dd></div>
+      ${depsHtml}
+      ${dependentsHtml}
+      ${t.note?`<div class="prow"><dt>Note</dt><dd style="color:var(--muted)">${t.note}</dd></div>`:''}
+      <div class="prow"><dt>Status</dt><dd>${isDone?`✅ Done (${fmtDate(actualEnd[id])})`:'⏳ Pending'}</dd></div>
+    </dl>
+    ${linksHtml}
+    <div class="att-section">
+      <div class="att-label">📎 Attachments</div>
+      <div id="dropzone-${id}" class="dropzone">Drop files, click to browse, or paste a screenshot (⌘V)</div>
+      <input type="file" id="file-input-${id}" multiple style="display:none">
+      <div id="panel-attachments">Loading…</div>
+    </div>
+    <button class="panel-btn btn-cal" onclick="exportTaskById(${id})">📅 Add to Apple Calendar</button>
+    <button class="panel-btn btn-phase-cal" onclick="exportPhase(${t.phase})">📅 Export All Phase ${t.phase} Tasks</button>
+    ${isDone
+      ? `<button class="panel-btn btn-plain" onclick="markDoneFlow(${id})">✏️ Edit completion date</button>
+         <button class="panel-btn btn-plain" onclick="markPending(${id})">↩ Mark Pending</button>`
+      : `<button class="panel-btn btn-plain" onclick="markDoneFlow(${id})">✓ Mark Done…</button>`
+    }
+  `;
+  document.getElementById('panel').classList.add('open');
+  wireAttachmentUI(id);
+  renderAttachmentSection(id);
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  activeId=null;
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────────
+let phaseFilter = new Set(Object.keys(PHASES).map(Number));
+
+function togglePhase(btn, ph){
+  if(phaseFilter.has(ph)){
+    phaseFilter.delete(ph);
+    btn.classList.remove('active');
+    btn.classList.add('inactive');
+  } else {
+    phaseFilter.add(ph);
+    btn.classList.remove('inactive');
+    btn.classList.add('active');
+  }
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  document.querySelectorAll('.ph-group').forEach(g=>{
+    const ph = +g.dataset.phase;
+    if(!phaseFilter.has(ph)){ g.classList.add('hidden'); return; }
+    g.classList.remove('hidden');
+    g.querySelectorAll('[data-id]').forEach(el=>{
+      const id = +el.dataset.id;
+      const t = TASKS.find(x=>x.id===id);
+      const visible = !q || t.name.toLowerCase().includes(q) || (t.note||'').toLowerCase().includes(q);
+      el.style.display = visible ? '' : 'none';
+    });
+  });
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+function updateStats(sched){
+  const total = TASKS.length;
+  const d = TASKS.filter(t=>doneSet.has(t.id)).length;
+  const rem = total - d;
+  const pct = Math.round(d/total*100);
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-done').textContent  = d;
+  document.getElementById('s-rem').textContent   = rem;
+  document.getElementById('s-pct').textContent   = pct+'%';
+
+  const launchStart = sched[36].start;
+  const daysLeft = Math.ceil((parseDate(launchStart) - TODAY)/864e5);
+  document.getElementById('s-days').textContent = daysLeft > 0 ? daysLeft : 'LAUNCHED!';
+
+  const launchVar = Math.round((parseDate(launchStart) - LAUNCH)/864e5);
+  const launchEl = document.getElementById('s-launch');
+  if(launchVar===0){
+    launchEl.textContent = fmtDate(LAUNCH_S);
+  } else {
+    const color = launchVar>0 ? 'var(--launch)' : 'var(--early)';
+    launchEl.innerHTML = `${fmtDate(launchStart)} <span style="color:${color}">(${launchVar>0?'+':''}${launchVar}d vs plan)</span>`;
+  }
+}
+
+// ─── DYNAMIC RENDER WINDOW (chart widens if a slip pushes past the plan) ──────
+let RENDER_START = START, RENDER_END = END, RENDER_TOTAL_DAYS, RENDER_W;
+function dateToX(s){ return Math.round((parseDate(s) - RENDER_START)/864e5) * DAY_W; }
+
+// ─── BUILD DATE HEADER ────────────────────────────────────────────────────────
+function buildDateHeader(){
+  const hdr = document.getElementById('date-header');
+  hdr.innerHTML = '';
+  hdr.style.width = RENDER_W+'px';
+
+  const monthRow = document.createElement('div');
+  monthRow.style.cssText = 'display:flex;height:18px;border-bottom:1px solid var(--border)';
+  let cur = new Date(RENDER_START);
+  while(cur <= RENDER_END){
+    const m = cur.getMonth();
+    const label = cur.toLocaleDateString('en-US',{month:'short',year:'2-digit'});
+    let days = 0;
+    const tmp = new Date(cur);
+    while(tmp <= RENDER_END && tmp.getMonth()===m){
+      days++;
+      tmp.setDate(tmp.getDate()+1);
+    }
+    const cell = document.createElement('div');
+    cell.className = 'month-cell';
+    cell.style.width = (days*DAY_W)+'px';
+    cell.textContent = label;
+    monthRow.appendChild(cell);
+    cur.setMonth(m+1,1);
+  }
+  hdr.appendChild(monthRow);
+
+  const weekRow = document.createElement('div');
+  weekRow.className = 'week-row';
+  weekRow.style.height = '18px';
+  cur = new Date(RENDER_START);
+  while(cur <= RENDER_END){
+    const cell = document.createElement('div');
+    cell.className = 'week-cell';
+    cell.style.width = (7*DAY_W)+'px';
+    const d = cur.getDate();
+    const mo = cur.toLocaleDateString('en-US',{month:'short'});
+    cell.textContent = `${mo} ${d}`;
+    weekRow.appendChild(cell);
+    cur.setDate(cur.getDate()+7);
+  }
+  hdr.appendChild(weekRow);
+}
+
+// ─── BUILD ROWS ───────────────────────────────────────────────────────────────
+function buildRows(sched){
+  const labelCol  = document.getElementById('label-col');
+  const ganttRows = document.getElementById('gantt-rows');
+  const inner     = document.getElementById('gantt-inner');
+  labelCol.innerHTML = '';
+  ganttRows.innerHTML = '';
+  inner.style.width = RENDER_W+'px';
+
+  // Phase toggles (rebuilt each time so active/inactive state matches phaseFilter)
+  const togglesDiv = document.getElementById('phase-toggles');
+  togglesDiv.innerHTML = '';
+  const togglesRow = document.createElement('div');
+  togglesRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap';
+  Object.entries(PHASES).forEach(([phN, ph])=>{
+    const btn = document.createElement('button');
+    btn.className = 'ph-btn ' + (phaseFilter.has(+phN) ? 'active' : 'inactive');
+    btn.style.cssText = `background:${ph.color}22;color:${ph.color};border-color:${ph.color}`;
+    btn.textContent = `${ph.emoji} ${ph.name}`;
+    btn.onclick = ()=>togglePhase(btn, +phN);
+    togglesRow.appendChild(btn);
+  });
+  togglesDiv.appendChild(togglesRow);
+
+  // Column grid lines (weekly)
+  const gridContainer = document.createElement('div');
+  gridContainer.style.cssText = `position:absolute;top:0;left:0;width:${RENDER_W}px;bottom:0;pointer-events:none;z-index:1`;
+  let gd = new Date(RENDER_START);
+  while(gd <= RENDER_END){
+    const line = document.createElement('div');
+    line.className = 'col-grid';
+    line.style.left = (Math.round((gd-RENDER_START)/864e5)*DAY_W)+'px';
+    gridContainer.appendChild(line);
+    gd.setDate(gd.getDate()+7);
+  }
+  ganttRows.appendChild(gridContainer);
+
+  // Rows by phase
+  Object.entries(PHASES).forEach(([phN, ph])=>{
+    const phNum = +phN;
+    const phaseTasks = TASKS.filter(t=>t.phase===phNum);
+
+    const group = document.createElement('div');
+    group.className = 'ph-group' + (phaseFilter.has(phNum) ? '' : ' hidden');
+    group.dataset.phase = phNum;
+
+    const labelGroup = document.createElement('div');
+    labelGroup.className = 'ph-group' + (phaseFilter.has(phNum) ? '' : ' hidden');
+    labelGroup.dataset.phase = phNum;
+
+    const lHead = document.createElement('div');
+    lHead.className = 'ph-header-label';
+    lHead.style.cssText = `color:${ph.color};border-left:3px solid ${ph.color};height:30px`;
+    lHead.innerHTML = `<span>${ph.emoji}</span><span style="flex:1">${ph.name}</span><span style="font-size:10px;color:var(--muted);font-weight:400">${ph.dates}</span>`;
+    labelGroup.appendChild(lHead);
+
+    const gHead = document.createElement('div');
+    gHead.className = 'ph-header-gantt';
+    gHead.style.height = '30px';
+    group.appendChild(gHead);
+
+    phaseTasks.forEach(t=>{
+      const s = sched[t.id];
+      const isDone = doneSet.has(t.id);
+      const varDays = isDone
+        ? Math.round((parseDate(actualEnd[t.id]) - parseDate(ORIG_END[t.id]))/864e5)
+        : Math.round((parseDate(s.start) - parseDate(t.date))/864e5);
+
+      // Label row
+      const lr = document.createElement('div');
+      lr.className = 'task-label' + (isDone?' done':'');
+      lr.dataset.id = t.id;
+      lr.onclick = ()=>openPanel(t.id);
+      const ck = document.createElement('div');
+      ck.className = 'task-check'+(isDone?' checked':'');
+      ck.onclick = e=>{ e.stopPropagation(); quickToggleDone(t.id); };
+      const nm = document.createElement('span');
+      nm.className = 'task-name';
+      nm.textContent = t.name;
+      lr.appendChild(ck);
+      lr.appendChild(nm);
+      if(varDays!==0){
+        const badge = document.createElement('span');
+        badge.className = 'task-badge';
+        badge.style.color = varDays>0 ? '#ef4444' : '#22c55e';
+        badge.title = isDone
+          ? `Finished ${Math.abs(varDays)}d ${varDays>0?'late':'early'}`
+          : `Rescheduled ${varDays>0?'+':''}${varDays}d by an upstream task`;
+        badge.textContent = (varDays>0?'+':'')+varDays+'d';
+        lr.appendChild(badge);
+      }
+      if(attachmentCounts[t.id]){
+        const att = document.createElement('span');
+        att.className = 'task-badge att-count';
+        att.title = `${attachmentCounts[t.id]} attachment(s)`;
+        att.textContent = '📎'+attachmentCounts[t.id];
+        lr.appendChild(att);
+      }
+      labelGroup.appendChild(lr);
+
+      // Gantt row
+      const gr = document.createElement('div');
+      gr.className = 'task-row'+(isDone?' done':'');
+      gr.dataset.id = t.id;
+      gr.onclick = ()=>openPanel(t.id);
+
+      const spanDays = Math.round((parseDate(s.end)-parseDate(s.start))/864e5)+1;
+      const bar = document.createElement('div');
+      bar.className = 'task-bar'+(isDone?' done':'')+(varDays!==0?' shifted':'');
+      bar.dataset.id = t.id;
+      const barW = Math.max(spanDays*DAY_W - 2, 4);
+      bar.style.cssText = `left:${dateToX(s.start)+1}px;width:${barW}px;background:${ph.color}cc;border:1px solid ${ph.color}`;
+      if(barW > 80) bar.textContent = t.name;
+      else if(barW > 30) bar.textContent = t.name.slice(0,8)+'…';
+      bar.title = t.name + (varDays!==0 ? ` (${varDays>0?'+':''}${varDays}d vs plan)` : '');
+      bar.onclick = e=>{ e.stopPropagation(); openPanel(t.id); };
+
+      gr.appendChild(bar);
+      group.appendChild(gr);
+    });
+
+    labelCol.appendChild(labelGroup);
+    ganttRows.appendChild(group);
+  });
+
+  // Vertical markers
+  function addVLine(date_s, cls, label, labelColor, lineColor){
+    const x = dateToX(date_s);
+    const line = document.createElement('div');
+    line.className = `vline ${cls}`;
+    line.style.left = x+'px';
+    if(lineColor) line.style.background = lineColor;
+    const lbl = document.createElement('div');
+    lbl.className = 'vline-label';
+    lbl.style.cssText = `left:${x+4}px;color:${labelColor};background:var(--bg)`;
+    lbl.textContent = label;
+    ganttRows.appendChild(line);
+    ganttRows.appendChild(lbl);
+  }
+  addVLine(TODAY_S,  'vline-today',  `▲ Today ${fmtDate(TODAY_S).replace(/, \d{4}$/,'')}`, '#facc15');
+  addVLine(LAUNCH_S, 'vline-launch', '🗳️ Election Day (planned)', '#ef4444');
+
+  const launchSched = sched[36];
+  if(launchSched.start !== LAUNCH_S){
+    const late = parseDate(launchSched.start) > LAUNCH;
+    const c = late ? '#f97316' : '#22c55e';
+    addVLine(launchSched.start, 'vline-projected', `🗳️ Projected: ${fmtDate(launchSched.start)}`, c, c);
+  }
+}
+
+// ─── RENDER ORCHESTRATOR ────────────────────────────────────────────────────────
+function renderAll(){
+  const sched = computeSchedule();
+
+  let minD = START, maxD = END;
+  Object.values(sched).forEach(s=>{
+    const sd = parseDate(s.start), ed = parseDate(s.end);
+    if(sd < minD) minD = sd;
+    if(ed > maxD) maxD = ed;
+  });
+  RENDER_START = minD;
+  RENDER_END   = maxD;
+  RENDER_TOTAL_DAYS = Math.round((RENDER_END-RENDER_START)/864e5) + 1;
+  RENDER_W = RENDER_TOTAL_DAYS * DAY_W;
+
+  buildDateHeader();
+  buildRows(sched);
+  updateStats(sched);
+  applyFilters();
+  if(activeId!==null) openPanel(activeId);
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+loadState();
+refreshAttachmentCounts().catch(()=>{ /* IndexedDB unavailable in this context — attachments will show as unavailable */ }).finally(renderAll);
+tryRestoreAutosave();
+
+// Paste a screenshot (⌘V) anywhere while a task panel is open to attach it directly.
+document.addEventListener('paste', e=>{
+  if(activeId===null) return;
+  const items = e.clipboardData && e.clipboardData.items;
+  if(!items) return;
+  const files = [];
+  for(const item of items){
+    if(item.kind==='file'){
+      const f = item.getAsFile();
+      if(f) files.push(f);
+    }
+  }
+  if(files.length){
+    e.preventDefault();
+    addAttachmentFiles(activeId, files);
+  }
+});
+</script>
+</body>
+</html>

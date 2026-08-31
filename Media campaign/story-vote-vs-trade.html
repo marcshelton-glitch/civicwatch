@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>CivicWatch — Story: Vote vs. Trade</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Background ---- */
+  /* Red glow upper area */
+  .bg-glow-red {
+    position: absolute;
+    top: -100px;
+    left: -200px;
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(circle, rgba(239,68,68,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Green glow lower area */
+  .bg-glow-green {
+    position: absolute;
+    bottom: -200px;
+    right: -200px;
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(circle, rgba(34,197,94,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Grid */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 72px 72px;
+    pointer-events: none;
+  }
+
+  /* 6px gradient top bar */
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    height: 6px;
+    background: linear-gradient(90deg, #ef4444 0%, #b91c1c 50%, transparent 100%);
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+     TOP ZONE (vote) — ~860px
+  ============================================================ */
+  .top-zone {
+    position: relative;
+    z-index: 5;
+    height: 860px;
+    flex-shrink: 0;
+    background: linear-gradient(170deg, #140606 0%, #0d1117 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 56px 90px 64px;
+    overflow: hidden;
+  }
+
+  /* Subtle red texture overlay */
+  .top-zone::before {
+    content: '';
+    position: absolute;
+    top: -150px; left: -150px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(239,68,68,0.09) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Header row */
+  .eyebrow {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .rep-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 10px 24px;
+    margin-bottom: 52px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .rep-avatar-small {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a5c, #2563a8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .rep-chip-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .party-d {
+    font-size: 13px;
+    font-weight: 700;
+    background: #2563eb;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 5px;
+  }
+
+  .voted-against {
+    font-size: 72px;
+    font-weight: 900;
+    color: #ef4444;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 0 60px rgba(239,68,68,0.3);
+  }
+
+  .bill-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(239,68,68,0.15);
+    border-radius: 20px;
+    padding: 36px 40px;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .bill-card-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 16px;
+  }
+
+  .bill-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+    margin-bottom: 24px;
+  }
+
+  .date-chip-red {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 100px;
+    padding: 10px 22px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fca5a5;
+    align-self: flex-start;
+  }
+
+  /* ============================================================
+     CENTER DIVIDER — ~100px
+  ============================================================ */
+  .center-divider {
+    position: relative;
+    z-index: 10;
+    height: 100px;
+    flex-shrink: 0;
+    background: #0d1117;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timing-badge {
+    background: #0d1117;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 16px 40px;
+    font-size: 22px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow:
+      0 0 0 8px #0d1117,
+      0 0 40px rgba(0,0,0,0.6);
+  }
+
+  .timing-badge span {
+    color: #ffffff;
+  }
+
+  /* ============================================================
+     BOTTOM ZONE (trade) — ~860px
+  ============================================================ */
+  .bottom-zone {
+    position: relative;
+    z-index: 5;
+    flex: 1;
+    background: linear-gradient(10deg, #030c05 0%, #0d1117 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 56px 90px 60px;
+    overflow: hidden;
+  }
+
+  .bottom-zone::before {
+    content: '';
+    position: absolute;
+    bottom: -150px; right: -150px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(34,197,94,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .bought-stock {
+    font-size: 72px;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 0 60px rgba(34,197,94,0.35);
+  }
+
+  .big-amount {
+    font-size: 100px;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 2;
+    text-shadow:
+      0 0 60px rgba(34,197,94,0.5),
+      0 0 120px rgba(34,197,94,0.25);
+  }
+
+  .stock-ticker-line {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .stock-company-name {
+    font-size: 20px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .date-chip-green {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 100px;
+    padding: 10px 22px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #86efac;
+    align-self: flex-start;
+    margin-bottom: 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .bottom-url-row {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .url-line {
+    font-size: 24px;
+    font-weight: 700;
+    color: #22c55e;
+    letter-spacing: -0.01em;
+  }
+
+  .url-line span {
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+  }
+
+  .swipe-up {
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-red"></div>
+  <div class="bg-glow-green"></div>
+
+  <!-- 6px top bar -->
+  <div class="top-bar"></div>
+
+  <!-- ===== TOP ZONE — VOTE ===== -->
+  <div class="top-zone">
+    <div class="eyebrow">⚡ Public Record</div>
+
+    <div class="rep-chip">
+      <div class="rep-avatar-small">MR</div>
+      <span class="rep-chip-name">Rep. Michael Rivera</span>
+      <span class="party-d">D</span>
+    </div>
+
+    <div class="voted-against">VOTED<br>AGAINST</div>
+
+    <div class="bill-card">
+      <div class="bill-card-label">Bill</div>
+      <div class="bill-name">H.R. 7842 — Tech Accountability Act</div>
+      <div class="date-chip-red">📅 March 3, 2026</div>
+    </div>
+  </div>
+
+  <!-- ===== CENTER DIVIDER ===== -->
+  <div class="center-divider">
+    <div class="timing-badge">⏱ <span>THE VERY NEXT DAY</span></div>
+  </div>
+
+  <!-- ===== BOTTOM ZONE — TRADE ===== -->
+  <div class="bottom-zone">
+    <div class="bought-stock">BOUGHT<br>STOCK</div>
+
+    <div class="big-amount">$250,000</div>
+
+    <div class="stock-ticker-line">GOOG — Alphabet Inc.</div>
+    <div class="stock-company-name">Alphabet Inc. (Google)</div>
+
+    <div class="date-chip-green">📅 March 4, 2026</div>
+
+    <div class="bottom-url-row">
+      <div class="url-line">civicwatch.app <span>— search your rep</span></div>
+      <div class="swipe-up">↑ Tap to see their full trade history</div>
+    </div>
+  </div>
+</body>
+</html>

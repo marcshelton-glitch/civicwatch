@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicWatch — Your Representatives, Accountable</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07070f;
+  --bg2:#0d0d1a;
+  --surface:rgba(255,255,255,0.03);
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --accent:#7c7cff;
+  --accent2:#a78bfa;
+  --glow:rgba(124,124,255,0.15);
+  --text:#f0f4ff;
+  --muted:#64748b;
+  --dim:#1e293b;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;height:60px;
+  background:rgba(7,7,15,0.7);
+  backdrop-filter:blur(20px);
+  border-bottom:0.5px solid var(--border);
+}
+.nav-logo{
+  font-size:13px;font-weight:600;letter-spacing:0.12em;
+  color:var(--text);text-decoration:none;opacity:0.9;
+}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{
+  font-size:13px;color:var(--muted);text-decoration:none;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{
+  font-size:13px;font-weight:500;
+  color:var(--text);text-decoration:none;
+  border:0.5px solid var(--border2);
+  padding:7px 16px;border-radius:8px;
+  background:var(--surface);
+  transition:all 0.2s;
+}
+.nav-cta:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.2)}
+
+/* HERO */
+.hero{
+  position:relative;
+  height:100vh;min-height:700px;
+  display:flex;align-items:center;
+  overflow:hidden;
+}
+#hero-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  will-change:transform;
+}
+.hero-content{
+  position:relative;z-index:2;
+  max-width:580px;
+  padding:0 2.5rem;
+  margin-left:max(2.5rem, calc(50vw - 680px));
+  will-change:transform;
+}
+.live-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:500;letter-spacing:0.1em;
+  color:var(--accent2);
+  margin-bottom:1.75rem;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent2);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.hero-content h1{
+  font-size:clamp(42px,5vw,64px);
+  font-weight:700;line-height:1.1;
+  letter-spacing:-0.03em;
+  margin-bottom:1.5rem;
+  color:#fff;
+}
+.hero-content h1 .highlight{
+  background:linear-gradient(135deg,#818cf8,#c084fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-content p{
+  font-size:17px;
+  color:rgba(240,244,255,0.55);
+  line-height:1.75;
+  margin-bottom:2.25rem;
+  max-width:480px;
+}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:10px;
+  font-size:14px;font-weight:600;
+  color:#fff;text-decoration:none;
+  background:var(--accent);
+  box-shadow:0 0 30px rgba(124,124,255,0.3);
+  transition:all 0.2s;
+}
+.btn-primary:hover{background:#6a6af0;transform:translateY(-1px);box-shadow:0 0 40px rgba(124,124,255,0.4)}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:10px;
+  font-size:14px;font-weight:500;
+  color:rgba(240,244,255,0.7);text-decoration:none;
+  border:0.5px solid var(--border2);
+  background:var(--surface);
+  transition:all 0.2s;
+}
+.btn-ghost:hover{background:rgba(255,255,255,0.06);color:#fff}
+.scroll-hint{
+  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  opacity:0.35;animation:bounce 2s ease-in-out infinite;
+}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.scroll-hint span{font-size:11px;letter-spacing:0.1em;color:var(--muted)}
+.scroll-line{width:1px;height:32px;background:linear-gradient(to bottom,var(--muted),transparent)}
+
+/* TICKER */
+.ticker-wrap{
+  overflow:hidden;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);
+  background:rgba(124,124,255,0.03);padding:14px 0;
+}
+.ticker{
+  display:flex;width:max-content;
+  animation:ticker 28s linear infinite;
+}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{
+  display:flex;align-items:center;gap:8px;
+  padding:0 2.5rem;white-space:nowrap;
+  font-size:12px;font-weight:500;letter-spacing:0.04em;
+  color:var(--muted);
+}
+.ticker-item .name{color:rgba(240,244,255,0.65)}
+.ticker-buy{color:#34d399}
+.ticker-sell{color:#f87171}
+
+/* SECTIONS */
+section{padding:6rem 2.5rem}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-label{
+  font-size:11px;font-weight:600;letter-spacing:0.15em;
+  color:var(--accent2);margin-bottom:1rem;
+  text-transform:uppercase;
+}
+.section-title{
+  font-size:clamp(30px,4vw,46px);
+  font-weight:700;line-height:1.15;
+  letter-spacing:-0.025em;color:#fff;
+  margin-bottom:0.75rem;
+}
+.section-sub{
+  font-size:17px;color:rgba(240,244,255,0.45);
+  max-width:540px;line-height:1.7;margin-bottom:3.5rem;
+}
+
+/* STATS */
+.stats{padding:4rem 2.5rem;background:var(--bg2)}
+.stats-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--border);border-radius:14px;overflow:hidden;
+}
+.stat-card{
+  background:var(--bg2);padding:2.5rem 2rem;
+  display:flex;flex-direction:column;gap:0.5rem;
+  transition:background 0.3s;
+  perspective:1000px;
+}
+.stat-card:hover{background:#0f0f20}
+.stat-num{
+  font-size:clamp(28px,3vw,42px);font-weight:700;
+  letter-spacing:-0.03em;color:#fff;
+}
+.stat-label{font-size:13px;color:var(--muted);line-height:1.4}
+.stat-accent{color:var(--accent)}
+
+/* FEATURES */
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);
+  border-radius:16px;overflow:hidden;
+}
+.feature-card{
+  background:var(--bg);
+  padding:2.25rem;
+  display:flex;flex-direction:column;gap:1rem;
+  transition:background 0.25s;
+  transform-style:preserve-3d;
+  cursor:default;
+  position:relative;overflow:hidden;
+}
+.feature-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(124,124,255,0.06),transparent 60%);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+.feature-card:hover::before{opacity:1}
+.feature-card:hover{background:#0b0b18}
+.feature-icon{
+  font-size:22px;width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;border:0.5px solid var(--border2);
+  background:var(--surface);
+}
+.feature-card h3{
+  font-size:16px;font-weight:600;color:#fff;letter-spacing:-0.01em;
+}
+.feature-card p{font-size:14px;color:var(--muted);line-height:1.7}
+.feature-card.reveal{opacity:0;transform:translateY(24px)}
+.feature-card.revealed{
+  opacity:1;transform:translateY(0);
+  transition:opacity 0.55s ease,transform 0.55s ease;
+}
+
+/* LIVE PREVIEW */
+.preview-section{
+  background:var(--bg2);
+  padding:6rem 2.5rem;
+}
+.preview-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.preview-card{
+  background:rgba(255,255,255,0.02);
+  border:0.5px solid var(--border2);
+  border-radius:18px;overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform 0.4s ease,box-shadow 0.4s ease;
+  box-shadow:0 24px 80px rgba(0,0,0,0.4),0 0 0 0.5px rgba(124,124,255,0.1);
+}
+.preview-card:hover{
+  box-shadow:0 32px 100px rgba(0,0,0,0.5),0 0 40px rgba(124,124,255,0.08),0 0 0 0.5px rgba(124,124,255,0.2);
+}
+.preview-header{
+  padding:1.25rem 1.5rem;
+  background:rgba(124,124,255,0.06);
+  border-bottom:0.5px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.preview-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:#fff;
+}
+.preview-header-info{flex:1}
+.preview-name{font-size:13px;font-weight:600;color:#fff}
+.preview-sub{font-size:11px;color:var(--muted)}
+.preview-badge{
+  font-size:10px;font-weight:600;letter-spacing:0.08em;
+  padding:3px 8px;border-radius:5px;
+  background:rgba(52,211,153,0.12);color:#34d399;border:0.5px solid rgba(52,211,153,0.2);
+}
+.preview-body{padding:1.5rem}
+.preview-metric{
+  display:flex;align-items:baseline;gap:8px;margin-bottom:1.5rem;
+  padding-bottom:1.5rem;border-bottom:0.5px solid var(--border);
+}
+.metric-val{font-size:36px;font-weight:700;color:#34d399;letter-spacing:-0.03em}
+.metric-label{font-size:13px;color:var(--muted)}
+.preview-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem}
+.preview-row{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;
+}
+.vote-label{flex:1;color:rgba(240,244,255,0.65)}
+.vote-yea{color:#34d399;font-weight:600;font-size:11px;letter-spacing:0.05em}
+.vote-nay{color:#f87171;font-weight:600;font-size:11px;letter-spacing:0.05em}
+.trade-rows{display:flex;flex-direction:column;gap:8px}
+.trade-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;
+}
+.trade-ticker{font-weight:600;color:#fff;min-width:36px}
+.trade-action-buy{
+  font-size:10px;font-weight:600;letter-spacing:0.06em;
+  padding:2px 6px;border-radius:4px;
+  background:rgba(52,211,153,0.12);color:#34d399;
+}
+.trade-action-sell{
+  font-size:10px;font-weight:600;letter-spacing:0.06em;
+  padding:2px 6px;border-radius:4px;
+  background:rgba(248,113,113,0.12);color:#f87171;
+}
+.trade-amount{color:var(--muted);margin-left:auto}
+.preview-text h2{font-size:clamp(28px,3.5vw,40px);font-weight:700;letter-spacing:-0.025em;color:#fff;line-height:1.2;margin-bottom:1.25rem}
+.preview-text p{font-size:16px;color:rgba(240,244,255,0.5);line-height:1.75;margin-bottom:2rem}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:780px}
+.pricing-card{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:16px;padding:2rem;
+  transform-style:preserve-3d;
+  transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s;
+  cursor:default;
+}
+.pricing-card.featured{
+  border-color:rgba(124,124,255,0.4);
+  background:rgba(124,124,255,0.04);
+  box-shadow:0 0 50px rgba(124,124,255,0.08);
+}
+.pricing-tier{font-size:11px;font-weight:600;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem}
+.pricing-tier.featured-label{color:var(--accent2)}
+.pricing-price{
+  font-size:40px;font-weight:700;letter-spacing:-0.04em;
+  color:#fff;margin-bottom:0.5rem;
+}
+.pricing-price span{font-size:16px;font-weight:400;color:var(--muted)}
+.pricing-desc{font-size:13px;color:var(--muted);margin-bottom:1.75rem;line-height:1.6}
+.pricing-features{display:flex;flex-direction:column;gap:10px;margin-bottom:2rem}
+.pricing-feature{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:rgba(240,244,255,0.7);
+}
+.pricing-feature .check{color:#34d399;font-size:14px}
+.pricing-btn{
+  width:100%;padding:11px;border-radius:9px;
+  font-size:13px;font-weight:600;cursor:pointer;border:none;
+  transition:all 0.2s;
+}
+.pricing-btn.free{
+  background:var(--surface);border:0.5px solid var(--border2);color:var(--text);
+}
+.pricing-btn.free:hover{background:rgba(255,255,255,0.07)}
+.pricing-btn.pro{
+  background:var(--accent);color:#fff;
+  box-shadow:0 0 20px rgba(124,124,255,0.3);
+}
+.pricing-btn.pro:hover{background:#6a6af0;box-shadow:0 0 30px rgba(124,124,255,0.4);transform:translateY(-1px)}
+
+/* FOOTER CTA */
+.footer-cta{
+  text-align:center;padding:7rem 2.5rem;
+  background:var(--bg2);
+  border-top:0.5px solid var(--border);
+  border-bottom:0.5px solid var(--border);
+}
+.footer-cta h2{font-size:clamp(28px,4vw,52px);font-weight:700;letter-spacing:-0.03em;color:#fff;margin-bottom:1rem;line-height:1.2}
+.footer-cta p{font-size:17px;color:rgba(240,244,255,0.45);margin-bottom:2.5rem}
+
+/* FOOTER */
+footer{
+  padding:2.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:0.5px solid var(--border);
+}
+footer p{font-size:12px;color:var(--muted)}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--text)}
+
+/* GRADIENT ORB */
+.hero-orb{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:55vw;max-width:700px;height:100%;
+  background:radial-gradient(ellipse at 70% 50%,rgba(99,102,241,0.07),transparent 70%);
+  pointer-events:none;z-index:1;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">CIVICWATCH™</a>
+  <div class="nav-links">
+    <a href="#">About</a>
+    <a href="#">Leaderboard</a>
+    <a href="#">Constitution</a>
+    <a href="#" class="nav-cta">Go to Dashboard →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-orb"></div>
+  <div class="hero-content" id="hero-content">
+    <div class="live-badge">
+      <span class="live-dot"></span>
+      LIVE · CONGRESS.GOV · STOCK ACT DISCLOSURES
+    </div>
+    <h1>See exactly how your<br><span class="highlight">Elected Representatives</span><br>voted, traded,<br>and got rich.</h1>
+    <p>CivicWatch pulls live voting records, STOCK Act trade disclosures, and financial filings — then puts them in plain English. No spin. No party line. Just the record.</p>
+    <div class="hero-btns">
+      <a href="#" class="btn-primary">Go to Dashboard →</a>
+      <a href="#" class="btn-ghost">See How It Works</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <div class="ticker-item"><span class="name">Sen. Warren</span>&nbsp;·&nbsp;NVDA&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $15,001–$50,000</div>
+    <div class="ticker-item"><span class="name">Rep. Pelosi</span>&nbsp;·&nbsp;AAPL&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $500,001–$1M</div>
+    <div class="ticker-item"><span class="name">Sen. Tuberville</span>&nbsp;·&nbsp;TSLA&nbsp;<span class="ticker-sell">SELL</span>&nbsp;· $50,001–$100,000</div>
+    <div class="ticker-item"><span class="name">Rep. McCaul</span>&nbsp;·&nbsp;MSFT&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $100,001–$250,000</div>
+    <div class="ticker-item"><span class="name">Sen. Manchin</span>&nbsp;·&nbsp;JPM&nbsp;<span class="ticker-sell">SELL</span>&nbsp;· $15,001–$50,000</div>
+    <div class="ticker-item"><span class="name">Rep. Gaetz</span>&nbsp;·&nbsp;GLD&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $50,001–$100,000</div>
+    <div class="ticker-item"><span class="name">Sen. Loeffler</span>&nbsp;·&nbsp;DIS&nbsp;<span class="ticker-sell">SELL</span>&nbsp;· $250,001–$500,000</div>
+    <div class="ticker-item"><span class="name">Rep. Collins</span>&nbsp;·&nbsp;AMZN&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $100,001–$250,000</div>
+    <div class="ticker-item"><span class="name">Sen. Warren</span>&nbsp;·&nbsp;NVDA&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $15,001–$50,000</div>
+    <div class="ticker-item"><span class="name">Rep. Pelosi</span>&nbsp;·&nbsp;AAPL&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $500,001–$1M</div>
+    <div class="ticker-item"><span class="name">Sen. Tuberville</span>&nbsp;·&nbsp;TSLA&nbsp;<span class="ticker-sell">SELL</span>&nbsp;· $50,001–$100,000</div>
+    <div class="ticker-item"><span class="name">Rep. McCaul</span>&nbsp;·&nbsp;MSFT&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $100,001–$250,000</div>
+    <div class="ticker-item"><span class="name">Sen. Manchin</span>&nbsp;·&nbsp;JPM&nbsp;<span class="ticker-sell">SELL</span>&nbsp;· $15,001–$50,000</div>
+    <div class="ticker-item"><span class="name">Rep. Gaetz</span>&nbsp;·&nbsp;GLD&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $50,001–$100,000</div>
+    <div class="ticker-item"><span class="name">Sen. Loeffler</span>&nbsp;·&nbsp;DIS&nbsp;<span class="ticker-sell">SELL</span>&nbsp;· $250,001–$500,000</div>
+    <div class="ticker-item"><span class="name">Rep. Collins</span>&nbsp;·&nbsp;AMZN&nbsp;<span class="ticker-buy">BUY</span>&nbsp;· $100,001–$250,000</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num"><span class="stat-accent">$</span><span data-count="174" data-suffix="K" id="stat0">0</span></div>
+      <div class="stat-label">Average congressional salary</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><span class="stat-accent">$</span><span data-count="1.9" data-suffix="M" data-float id="stat1">0</span></div>
+      <div class="stat-label">Average member net worth</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><span data-count="3847" id="stat2">0</span></div>
+      <div class="stat-label">STOCK Act trades in 2024</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><span data-count="535" id="stat3">0</span></div>
+      <div class="stat-label">Members tracked</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">What CivicWatch tracks</div>
+    <h2 class="section-title">Everything they'd rather<br>you didn't know</h2>
+    <p class="section-sub">Six layers of accountability data, aggregated from official government sources and made searchable in seconds.</p>
+    <div class="features-grid" id="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚖️</div>
+        <h3>Voting Records</h3>
+        <p>Every vote, every bill. See exactly where your representative stood — and how it compares to their campaign promises.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">💰</div>
+        <h3>Stock Trade Disclosures</h3>
+        <p>STOCK Act filings made readable. Cross-referenced against committee assignments and legislative activity.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📈</div>
+        <h3>Wealth Trajectory</h3>
+        <p>Net worth before and after office. The numbers that the financial disclosure forms bury in fine print.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Accountability Reports</h3>
+        <p>Nonpartisan AI analysis of each member's full record — trades, votes, wealth, and peer standing — in plain English.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔔</div>
+        <h3>Track My Rep™ Alerts</h3>
+        <p>Get notified the moment your representative votes, discloses a trade, or schedules a town hall.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🗺️</div>
+        <h3>District Map</h3>
+        <p>Find every federal and local representative for any state. Click to explore their full profile instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE PREVIEW -->
+<div class="preview-section">
+  <div class="preview-inner section-inner">
+    <div class="preview-card" id="preview-card">
+      <div class="preview-header">
+        <div class="preview-avatar">NP</div>
+        <div class="preview-header-info">
+          <div class="preview-name">Pelosi, Nancy</div>
+          <div class="preview-sub">U.S. Representative · California · District 11</div>
+        </div>
+        <div class="preview-badge">LIVE</div>
+      </div>
+      <div class="preview-body">
+        <div class="preview-metric">
+          <div class="metric-val">+625%</div>
+          <div class="metric-label">Wealth change in office<br><span style="font-size:11px;color:#475569">$1.2M → $8.7M · 35 years</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div>
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:#475569;margin-bottom:10px">RECENT VOTES</div>
+            <div class="preview-rows">
+              <div class="preview-row"><span class="vote-label">Inflation Reduction Act</span><span class="vote-yea">YEA</span></div>
+              <div class="preview-row"><span class="vote-label">Healthcare Expansion</span><span class="vote-yea">YEA</span></div>
+              <div class="preview-row"><span class="vote-label">Border Security Act</span><span class="vote-nay">NAY</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.1em;color:#475569;margin-bottom:10px">STOCK ACT</div>
+            <div class="trade-rows">
+              <div class="trade-row"><span class="trade-ticker">NVDA</span><span class="trade-action-buy">BUY</span><span class="trade-amount">$45K</span></div>
+              <div class="trade-row"><span class="trade-ticker">AAPL</span><span class="trade-action-buy">BUY</span><span class="trade-amount">$1M</span></div>
+              <div class="trade-row"><span class="trade-ticker">TSLA</span><span class="trade-action-sell">SELL</span><span class="trade-amount">$31K</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="preview-text">
+      <div class="section-label">Live data preview</div>
+      <h2>The record,<br>unfiltered</h2>
+      <p>Real STOCK Act filings, voting histories, and wealth trajectories — surfaced from official government data and presented in plain English. No editorializing. Just the facts.</p>
+      <a href="#" class="btn-primary" style="display:inline-flex">Explore Live Data →</a>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Accountability shouldn't<br>cost a fortune</h2>
+    <p class="section-sub">Start free. Upgrade when you want the full picture.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card" id="price0">
+        <div class="pricing-tier">FREE</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-desc">Everything you need to start holding your representatives accountable.</div>
+        <div class="pricing-features">
+          <div class="pricing-feature"><span class="check">✓</span> Browse all 535 representatives</div>
+          <div class="pricing-feature"><span class="check">✓</span> Full voting records</div>
+          <div class="pricing-feature"><span class="check">✓</span> STOCK Act trade disclosures</div>
+          <div class="pricing-feature"><span class="check">✓</span> District map</div>
+          <div class="pricing-feature"><span class="check">✓</span> Constitution reference</div>
+        </div>
+        <button class="pricing-btn free">Explore Free — No Login Needed</button>
+      </div>
+      <div class="pricing-card featured" id="price1">
+        <div class="pricing-tier featured-label">★ PRO — MOST POPULAR</div>
+        <div class="pricing-price">$9.99<span>/mo</span></div>
+        <div class="pricing-desc">The full accountability picture, powered by AI.</div>
+        <div class="pricing-features">
+          <div class="pricing-feature"><span class="check">✓</span> Everything in Free</div>
+          <div class="pricing-feature"><span class="check">✓</span> Full AI accountability reports</div>
+          <div class="pricing-feature"><span class="check">✓</span> Trade conflict analysis</div>
+          <div class="pricing-feature"><span class="check">✓</span> Wealth trajectory deep-dive</div>
+          <div class="pricing-feature"><span class="check">✓</span> Track My Rep™ alerts</div>
+          <div class="pricing-feature"><span class="check">✓</span> Priority support</div>
+        </div>
+        <button class="pricing-btn pro">Start Pro — $9.99/mo</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<div class="footer-cta">
+  <h2>Your representatives work<br>for you.</h2>
+  <p>Start holding them to it.</p>
+  <a href="#" class="btn-primary" style="display:inline-flex;margin:0 auto">Explore Live Data — No Login →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 CivicWatch™. Data from Congress.gov, House Clerk STOCK Act Disclosures, Senate Financial Disclosures.</p>
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Terms</a>
+    <a href="#">Privacy</a>
+    <a href="#">Sign Up</a>
+  </div>
+</footer>
+
+<script>
+// ─── THREE.JS CAPITOL + PARTICLES ───────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setClearColor(0x000000,0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, canvas.offsetWidth/canvas.offsetHeight, 0.1, 100);
+  camera.position.set(0,1,10);
+  camera.lookAt(0,0.5,0);
+
+  function resize(){
+    const w = canvas.offsetWidth, h = canvas.offsetHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  // Materials
+  const lineMat = new THREE.LineBasicMaterial({color:0x7c7cff,transparent:true,opacity:0.55});
+  const lineMatDim = new THREE.LineBasicMaterial({color:0x7c7cff,transparent:true,opacity:0.25});
+  const wireMat = new THREE.MeshBasicMaterial({color:0x7c7cff,wireframe:true,transparent:true,opacity:0.15});
+  const solidMat = new THREE.MeshBasicMaterial({color:0x7c7cff,transparent:true,opacity:0.45});
+
+  function edges(geo,mat){return new THREE.LineSegments(new THREE.EdgesGeometry(geo),mat||lineMat);}
+
+  // Build Capitol
+  const capitol = new THREE.Group();
+
+  // Base platform / steps
+  const base1 = edges(new THREE.BoxGeometry(7.2,0.2,3.0),lineMatDim);
+  base1.position.y = -0.9;
+  capitol.add(base1);
+  const base2 = edges(new THREE.BoxGeometry(6.6,0.2,2.7),lineMatDim);
+  base2.position.y = -0.7;
+  capitol.add(base2);
+
+  // Main body
+  const body = edges(new THREE.BoxGeometry(6.2,1.4,2.4));
+  body.position.y = 0.1;
+  capitol.add(body);
+
+  // Left wing
+  const lw = edges(new THREE.BoxGeometry(2.4,1.1,2.0),lineMatDim);
+  lw.position.set(-4.3,-0.05,0);
+  capitol.add(lw);
+
+  // Right wing
+  const rw = edges(new THREE.BoxGeometry(2.4,1.1,2.0),lineMatDim);
+  rw.position.set(4.3,-0.05,0);
+  capitol.add(rw);
+
+  // Left portico
+  const lp = edges(new THREE.BoxGeometry(1.2,0.15,2.0),lineMatDim);
+  lp.position.set(-4.3,0.5,0);
+  capitol.add(lp);
+
+  // Right portico
+  const rp = edges(new THREE.BoxGeometry(1.2,0.15,2.0),lineMatDim);
+  rp.position.set(4.3,0.5,0);
+  capitol.add(rp);
+
+  // Rotunda base block
+  const rtBase = edges(new THREE.BoxGeometry(2.0,0.4,2.0));
+  rtBase.position.y = 0.9;
+  capitol.add(rtBase);
+
+  // Rotunda drum (12-sided cylinder)
+  const drum = edges(new THREE.CylinderGeometry(0.85,0.85,0.9,12));
+  drum.position.y = 1.5;
+  capitol.add(drum);
+
+  // Columns around rotunda (front face, 6 columns)
+  for(let i=0;i<6;i++){
+    const angle = (i/5)*Math.PI; // 0..PI (front half)
+    const col = edges(new THREE.CylinderGeometry(0.05,0.05,0.9,6),lineMatDim);
+    col.position.set(Math.cos(angle)*0.9,1.5,Math.sin(angle)*0.9);
+    capitol.add(col);
+  }
+
+  // Dome sphere (top half only)
+  const domeMesh = new THREE.Mesh(new THREE.SphereGeometry(0.88,20,10,0,Math.PI*2,0,Math.PI*0.52),wireMat);
+  domeMesh.position.y = 2.0;
+  capitol.add(domeMesh);
+
+  // Dome base ring
+  const domeRing = edges(new THREE.CylinderGeometry(0.88,0.88,0.12,20));
+  domeRing.position.y = 2.0;
+  capitol.add(domeRing);
+
+  // Lantern
+  const lantern = edges(new THREE.CylinderGeometry(0.16,0.2,0.38,10));
+  lantern.position.y = 2.88;
+  capitol.add(lantern);
+
+  // Statue of Freedom (small sphere on top)
+  const statueMesh = new THREE.Mesh(new THREE.SphereGeometry(0.11,8,6),solidMat);
+  statueMesh.position.y = 3.27;
+  capitol.add(statueMesh);
+
+  // Position capitol to right side of scene
+  capitol.position.set(3.2,-0.5,0);
+  scene.add(capitol);
+
+  // ── PARTICLES ──
+  const pCount = 700;
+  const pos = new Float32Array(pCount*3);
+  const vel = new Float32Array(pCount*3);
+  for(let i=0;i<pCount;i++){
+    pos[i*3]   = (Math.random()-0.5)*22;
+    pos[i*3+1] = (Math.random()-0.5)*14;
+    pos[i*3+2] = (Math.random()-0.5)*8 - 2;
+    vel[i*3]   = (Math.random()-0.5)*0.002;
+    vel[i*3+1] = (Math.random()-0.5)*0.001;
+    vel[i*3+2] = 0;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const pMat = new THREE.PointsMaterial({color:0x818cf8,size:0.04,transparent:true,opacity:0.5});
+  const particles = new THREE.Points(pGeo,pMat);
+  scene.add(particles);
+
+  // Mouse parallax on 3D scene
+  let mouseX=0,mouseY=0;
+  document.addEventListener('mousemove',e=>{
+    mouseX = (e.clientX/window.innerWidth - 0.5)*2;
+    mouseY = (e.clientY/window.innerHeight - 0.5)*2;
+  });
+
+  // Animate
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t += 0.008;
+
+    // Rotate capitol
+    capitol.rotation.y += 0.0025;
+
+    // Float capitol
+    capitol.position.y = -0.5 + Math.sin(t*0.6)*0.12;
+
+    // Subtle camera parallax with mouse
+    camera.position.x += (mouseX * 0.6 - camera.position.x) * 0.03;
+    camera.position.y += (-mouseY * 0.3 + 1.0 - camera.position.y) * 0.03;
+    camera.lookAt(0, 0.5, 0);
+
+    // Drift particles
+    const pPos = pGeo.attributes.position.array;
+    for(let i=0;i<pCount;i++){
+      pPos[i*3]   += vel[i*3];
+      pPos[i*3+1] += vel[i*3+1];
+      // Wrap
+      if(pPos[i*3] > 11) pPos[i*3] = -11;
+      if(pPos[i*3] < -11) pPos[i*3] = 11;
+      if(pPos[i*3+1] > 7) pPos[i*3+1] = -7;
+      if(pPos[i*3+1] < -7) pPos[i*3+1] = 7;
+    }
+    pGeo.attributes.position.needsUpdate = true;
+
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+// ─── PARALLAX SCROLL ─────────────────────────────────────────────────────────
+const heroContent = document.getElementById('hero-content');
+const heroCanvas = document.getElementById('hero-canvas');
+const heroOrb = document.querySelector('.hero-orb');
+
+window.addEventListener('scroll', ()=>{
+  const sy = window.scrollY;
+  if(sy < window.innerHeight){
+    heroContent.style.transform = `translateY(${sy * 0.28}px)`;
+    heroContent.style.opacity = 1 - sy / (window.innerHeight * 0.75);
+    heroCanvas.style.transform = `translateY(${sy * 0.12}px)`;
+    if(heroOrb) heroOrb.style.transform = `translateY(calc(-50% + ${sy * 0.18}px))`;
+  }
+}, {passive:true});
+
+// ─── COUNTER ANIMATION ───────────────────────────────────────────────────────
+function animateCounter(el, target, suffix, isFloat, dur){
+  const start = performance.now();
+  function step(now){
+    const p = Math.min((now-start)/dur,1);
+    const ease = 1 - Math.pow(1-p,3);
+    const val = isFloat ? (ease*target).toFixed(1) : Math.round(ease*target).toLocaleString();
+    el.textContent = val + suffix;
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+const statsObserver = new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){
+    animateCounter(document.getElementById('stat0'),174,'K',false,1800);
+    animateCounter(document.getElementById('stat1'),1.9,'M',true,2000);
+    animateCounter(document.getElementById('stat2'),3847,'',false,2200);
+    animateCounter(document.getElementById('stat3'),535,'',false,1600);
+    statsObserver.disconnect();
+  }
+},{threshold:0.3});
+statsObserver.observe(document.querySelector('.stats-grid'));
+
+// ─── FEATURE CARD SCROLL REVEAL ──────────────────────────────────────────────
+const cards = document.querySelectorAll('.feature-card.reveal');
+const revealObs = new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      const delay = [...cards].indexOf(e.target) * 80;
+      setTimeout(()=>e.target.classList.add('revealed'), delay);
+      revealObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.15});
+cards.forEach(c=>revealObs.observe(c));
+
+// ─── FEATURE CARD TILT + GLOW ────────────────────────────────────────────────
+document.querySelectorAll('.feature-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX-r.left)/r.width;
+    const y = (e.clientY-r.top)/r.height;
+    const rx = (y - 0.5) * -10;
+    const ry = (x - 0.5) * 10;
+    card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(8px)`;
+    card.style.transition = 'none';
+    card.style.setProperty('--mx', `${x*100}%`);
+    card.style.setProperty('--my', `${y*100}%`);
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform = 'perspective(900px) rotateX(0) rotateY(0) translateZ(0)';
+    card.style.transition = 'transform 0.5s ease';
+  });
+});
+
+// ─── PREVIEW CARD 3D TILT ────────────────────────────────────────────────────
+const previewCard = document.getElementById('preview-card');
+if(previewCard){
+  previewCard.addEventListener('mousemove',e=>{
+    const r = previewCard.getBoundingClientRect();
+    const x = (e.clientX-r.left)/r.width - 0.5;
+    const y = (e.clientY-r.top)/r.height - 0.5;
+    previewCard.style.transform = `perspective(1200px) rotateY(${x*12}deg) rotateX(${-y*8}deg) translateZ(16px)`;
+    previewCard.style.transition = 'none';
+  });
+  previewCard.addEventListener('mouseleave',()=>{
+    previewCard.style.transform = 'perspective(1200px) rotateY(0) rotateX(0) translateZ(0)';
+    previewCard.style.transition = 'transform 0.6s ease';
+  });
+}
+
+// ─── PRICING CARD TILT ───────────────────────────────────────────────────────
+[0,1].forEach(i=>{
+  const card = document.getElementById(`price${i}`);
+  if(!card) return;
+  card.addEventListener('mousemove',e=>{
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX-r.left)/r.width - 0.5;
+    const y = (e.clientY-r.top)/r.height - 0.5;
+    card.style.transform = `perspective(1000px) rotateY(${x*8}deg) rotateX(${-y*6}deg) translateZ(10px)`;
+    card.style.transition = 'none';
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform = '';
+    card.style.transition = 'transform 0.5s ease, box-shadow 0.3s ease, border-color 0.3s';
+  });
+});
+</script>
+</body>
+</html>

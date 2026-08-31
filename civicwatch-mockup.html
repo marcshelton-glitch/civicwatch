@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicWatch — Premium Redesign Mockup</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', '-apple-system', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+          },
+          colors: {
+            canvas: '#0A0A0B',
+            surface: '#111113',
+            elevated: '#1A1A1E',
+            divide: '#222226',
+            accent: '#C8922A',
+          },
+          keyframes: {
+            shimmer: {
+              '0%': { backgroundPosition: '-400px 0' },
+              '100%': { backgroundPosition: '400px 0' },
+            },
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(6px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          },
+          animation: {
+            shimmer: 'shimmer 1.6s ease-in-out infinite',
+            fadeUp: 'fadeUp 0.3s ease forwards',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #0A0A0B; margin: 0; font-family: 'Outfit', -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    .shimmer-bg {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 400px 100%;
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .fade-up { animation: fadeUp 0.35s ease forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .rep-card { transition: background 150ms ease, border-color 150ms ease; }
+    .rep-card:hover { background: #1A1A1E; border-color: rgba(255,255,255,0.14); }
+    .nav-item { transition: background 150ms ease, color 150ms ease; }
+    .nav-item:hover { background: rgba(255,255,255,0.04); }
+    .pill-btn { transition: all 150ms ease; cursor: pointer; }
+    .pill-btn:hover:not(.active) { border-color: rgba(255,255,255,0.14); color: #A1A1AA; }
+    .cta-btn { transition: filter 120ms ease, transform 120ms ease; cursor: pointer; }
+    .cta-btn:hover { filter: brightness(1.1); }
+    .cta-btn:active { transform: translateY(1px); }
+    .ghost-btn { transition: background 150ms ease, color 150ms ease; cursor: pointer; }
+    .ghost-btn:hover { background: rgba(200,146,42,0.12); }
+    .tracked-btn { transition: all 150ms ease; cursor: pointer; }
+    .tracked-btn:hover { opacity: 0.8; }
+    select { appearance: none; }
+    .view-tab { cursor: pointer; transition: all 150ms ease; }
+    .mockup-switcher { position: fixed; top: 16px; right: 16px; z-index: 1000; display: flex; gap: 8px; }
+    .mockup-tab { padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 150ms ease; border: 1px solid rgba(255,255,255,0.12); color: #71717A; background: #111113; }
+    .mockup-tab.active { background: rgba(200,146,42,0.15); color: #C8922A; border-color: rgba(200,146,42,0.4); }
+    .mockup-tab:hover:not(.active) { color: #A1A1AA; border-color: rgba(255,255,255,0.2); }
+    .search-input:focus { outline: none; border-color: #C8922A; box-shadow: 0 0 0 2px rgba(200,146,42,0.2); }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+// ── Icons ──────────────────────────────────────────────────────────────────
+const IconUsers = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const IconMap = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+    <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+  </svg>
+);
+const IconBell = ({ dot }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{position:'relative'}}>
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    {dot && <circle cx="18" cy="6" r="4" fill="#C8922A" stroke="#0A0A0B" strokeWidth="1.5"/>}
+  </svg>
+);
+const IconScroll = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+  </svg>
+);
+const IconSearch = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const IconChevron = ({ dir = 'down' }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: dir === 'up' ? 'rotate(180deg)' : dir === 'left' ? 'rotate(90deg)' : dir === 'right' ? 'rotate(-90deg)' : 'none' }}>
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+const IconTrendUp = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+    <polyline points="17 6 23 6 23 12"/>
+  </svg>
+);
+const IconShield = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>
+);
+const IconStar = ({ filled }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+);
+const IconCircle = ({ color, size = 8 }) => (
+  <div style={{ width: size, height: size, borderRadius: '50%', background: color, flexShrink: 0 }} />
+);
+const IconLogout = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const IconActivity = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+  </svg>
+);
+
+// ── Data ───────────────────────────────────────────────────────────────────
+const REPS = [
+  {
+    id: 1, name: "Chuck Schumer", title: "U.S. Senator", state: "New York", district: null,
+    party: "D", chamber: "Senate", level: "federal", tracked: true,
+    recentVote: "S.4068 — National Security Supplemental Appropriations Act",
+    voteCount: 1847, tradeCount: 7, lastActive: "14h ago",
+    conflictScore: 43, conflictRisk: "moderate",
+    avatar: "CS", netWorth: "$1.2M–$4.1M", yearsInOffice: 27,
+  },
+  {
+    id: 2, name: "Mitch McConnell", title: "U.S. Senator", state: "Kentucky", district: null,
+    party: "R", chamber: "Senate", level: "federal", tracked: true,
+    recentVote: "S.Amdt.1887 — Border Security and Immigration Reform",
+    voteCount: 2341, tradeCount: 14, lastActive: "2d ago",
+    conflictScore: 71, conflictRisk: "high",
+    avatar: "MM", netWorth: "$11.1M–$34.9M", yearsInOffice: 38,
+  },
+  {
+    id: 3, name: "Nancy Pelosi", title: "U.S. Representative", state: "California", district: "CA-11",
+    party: "D", chamber: "House", level: "federal", tracked: false,
+    recentVote: "H.R.8270 — Advancing American AI Act",
+    voteCount: 3192, tradeCount: 31, lastActive: "3d ago",
+    conflictScore: 88, conflictRisk: "high",
+    avatar: "NP", netWorth: "$46.4M–$203.1M", yearsInOffice: 36,
+  },
+  {
+    id: 4, name: "John Fetterman", title: "U.S. Senator", state: "Pennsylvania", district: null,
+    party: "D", chamber: "Senate", level: "federal", tracked: false,
+    recentVote: "S.3894 — Ukraine Security Supplemental",
+    voteCount: 412, tradeCount: 0, lastActive: "1d ago",
+    conflictScore: 8, conflictRisk: "low",
+    avatar: "JF", netWorth: "$8.2K–$65K", yearsInOffice: 2,
+  },
+  {
+    id: 5, name: "Lisa Murkowski", title: "U.S. Senator", state: "Alaska", district: null,
+    party: "R", chamber: "Senate", level: "federal", tracked: false,
+    recentVote: "S.3751 — ALASKA Act of 2024",
+    voteCount: 1623, tradeCount: 3, lastActive: "5d ago",
+    conflictScore: 19, conflictRisk: "low",
+    avatar: "LM", netWorth: "$720K–$2.3M", yearsInOffice: 22,
+  },
+];
+
+const PARTY_COLOR = { D: '#3B82F6', R: '#EF4444', I: '#8B5CF6' };
+const PARTY_LABEL = { D: 'DEM', R: 'REP', I: 'IND' };
+
+const CONFLICT_COLOR = { low: '#52525B', moderate: '#C8922A', high: '#EF4444' };
+
+// ── Components ─────────────────────────────────────────────────────────────
+
+const Avatar = ({ initials, size = 36 }) => (
+  <div style={{
+    width: size, height: size, borderRadius: '50%',
+    background: 'rgba(255,255,255,0.07)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0, fontSize: size * 0.33, fontWeight: 700,
+    color: '#A1A1AA', letterSpacing: '0.03em',
+  }}>
+    {initials}
+  </div>
+);
+
+const PartyBadge = ({ party }) => (
+  <span className="mono" style={{
+    fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+    padding: '2px 6px', borderRadius: 4,
+    background: PARTY_COLOR[party],
+    color: '#fff',
+  }}>
+    {PARTY_LABEL[party]}
+  </span>
+);
+
+const ConflictBadge = ({ score, risk }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+    <div style={{
+      width: 28, height: 28, borderRadius: '50%',
+      border: `2px solid ${CONFLICT_COLOR[risk]}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span className="mono" style={{ fontSize: 9, fontWeight: 600, color: CONFLICT_COLOR[risk] }}>
+        {score}
+      </span>
+    </div>
+  </div>
+);
+
+const StockActBadge = ({ count }) => count > 0 ? (
+  <span className="mono" style={{
+    fontSize: 9, fontWeight: 600, letterSpacing: '0.08em',
+    padding: '2px 7px', borderRadius: 3,
+    background: 'rgba(200,146,42,0.15)',
+    color: '#C8922A', border: '1px solid rgba(200,146,42,0.3)',
+  }}>
+    ACTIVE FILING
+  </span>
+) : null;
+
+const SkeletonCard = ({ delay = 0 }) => (
+  <div style={{
+    background: '#111113', border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: 6, padding: '16px 20px',
+    display: 'flex', alignItems: 'center', gap: 16,
+    opacity: 0, animation: `fadeUp 0.3s ease ${delay}ms forwards`,
+  }}>
+    <div style={{ width: 3, height: 56, borderRadius: 2 }} className="shimmer-bg" />
+    <div style={{ width: 36, height: 36, borderRadius: '50%' }} className="shimmer-bg" />
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ width: '35%', height: 14, borderRadius: 3 }} className="shimmer-bg" />
+      <div style={{ width: '55%', height: 11, borderRadius: 3 }} className="shimmer-bg" />
+    </div>
+    <div style={{ width: 120, height: 11, borderRadius: 3 }} className="shimmer-bg" />
+    <div style={{ width: 60, height: 36, borderRadius: 6 }} className="shimmer-bg" />
+  </div>
+);
+
+const RepCard = ({ rep, delay = 0, onSelect }) => {
+  const [tracked, setTracked] = useState(rep.tracked);
+  return (
+    <div
+      className="rep-card"
+      onClick={() => onSelect(rep)}
+      style={{
+        background: '#111113',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 6, padding: '0 20px 0 0',
+        display: 'flex', alignItems: 'center', gap: 0,
+        cursor: 'pointer',
+        opacity: 0, animation: `fadeUp 0.35s ease ${delay}ms forwards`,
+      }}
+    >
+      {/* Party bar */}
+      <div style={{
+        width: 3, alignSelf: 'stretch', borderRadius: '6px 0 0 6px',
+        background: PARTY_COLOR[rep.party], flexShrink: 0,
+      }} />
+
+      {/* Content */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px 14px 16px' }}>
+        <Avatar initials={rep.avatar} />
+
+        {/* Name + role */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#F4F4F5', whiteSpace: 'nowrap' }}>
+              {rep.name}
+            </span>
+            <PartyBadge party={rep.party} />
+            {rep.tradeCount > 0 && <StockActBadge count={rep.tradeCount} />}
+          </div>
+          <div style={{ fontSize: 13, color: '#71717A', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span>{rep.title}</span>
+            <span style={{ color: '#3F3F46' }}>·</span>
+            <span>{rep.district ? `${rep.state} ${rep.district}` : rep.state}</span>
+          </div>
+        </div>
+
+        {/* Recent vote */}
+        <div style={{ width: 260, display: 'none' }} className="recent-vote">
+          <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#52525B', marginBottom: 3 }}>
+            LAST VOTE
+          </div>
+          <div style={{ fontSize: 12, color: '#71717A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {rep.recentVote}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexShrink: 0 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#52525B', marginBottom: 2 }}>VOTES</div>
+            <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: '#F4F4F5' }}>
+              {rep.voteCount.toLocaleString()}
+            </div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#52525B', marginBottom: 2 }}>TRADES</div>
+            <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: rep.tradeCount > 0 ? '#C8922A' : '#F4F4F5' }}>
+              {rep.tradeCount}
+            </div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <ConflictBadge score={rep.conflictScore} risk={rep.conflictRisk} />
+          </div>
+        </div>
+
+        {/* Track button */}
+        <button
+          className="tracked-btn"
+          onClick={e => { e.stopPropagation(); setTracked(t => !t); }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+            border: tracked ? '1px solid rgba(200,146,42,0.5)' : '1px solid rgba(255,255,255,0.1)',
+            background: tracked ? 'rgba(200,146,42,0.12)' : 'transparent',
+            color: tracked ? '#C8922A' : '#52525B',
+            cursor: 'pointer', flexShrink: 0,
+          }}
+        >
+          <IconStar filled={tracked} />
+          <span>{tracked ? 'Tracked' : 'Track'}</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── Profile Panel ──────────────────────────────────────────────────────────
+const ProfilePanel = ({ rep, onClose }) => {
+  if (!rep) return null;
+  const tabs = ['Overview', 'Votes', 'Trades', 'AI Analysis'];
+  const [tab, setTab] = useState('Overview');
+
+  return (
+    <div style={{
+      width: 380, flexShrink: 0,
+      background: '#111113',
+      borderLeft: '1px solid rgba(255,255,255,0.07)',
+      display: 'flex', flexDirection: 'column',
+      height: '100%', overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{ padding: '20px 24px 0', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <Avatar initials={rep.avatar} size={44} />
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#F4F4F5', marginBottom: 2 }}>{rep.name}</div>
+              <div style={{ fontSize: 13, color: '#71717A' }}>{rep.title} · {rep.state}</div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+            color: '#71717A', borderRadius: 6, width: 32, height: 32,
+            cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>×</button>
+        </div>
+
+        {/* Stat pills */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {[
+            { label: 'VOTES', val: rep.voteCount.toLocaleString() },
+            { label: 'TRADES', val: rep.tradeCount, accent: rep.tradeCount > 0 },
+            { label: 'YRS IN OFFICE', val: rep.yearsInOffice },
+          ].map(s => (
+            <div key={s.label} style={{
+              flex: 1, background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 6, padding: '8px 12px', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#52525B', marginBottom: 3 }}>{s.label}</div>
+              <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: s.accent ? '#C8922A' : '#F4F4F5' }}>{s.val}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 0 }}>
+          {tabs.map(t => (
+            <button key={t} onClick={() => setTab(t)} className="view-tab" style={{
+              flex: 1, padding: '10px 0', fontSize: 12, fontWeight: 600,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: tab === t ? '#C8922A' : '#52525B',
+              borderBottom: tab === t ? '2px solid #C8922A' : '2px solid transparent',
+              transition: 'all 150ms ease',
+            }}>{t}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+        {tab === 'Overview' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Conflict score */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B' }}>CONFLICT OF INTEREST SCORE</span>
+                <span style={{ fontSize: 11, color: '#52525B' }}>Pro</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  border: `3px solid ${CONFLICT_COLOR[rep.conflictRisk]}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span className="mono" style={{ fontSize: 18, fontWeight: 700, color: CONFLICT_COLOR[rep.conflictRisk] }}>
+                    {rep.conflictScore}
+                  </span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: CONFLICT_COLOR[rep.conflictRisk], marginBottom: 3, textTransform: 'capitalize' }}>
+                    {rep.conflictRisk} Risk
+                  </div>
+                  <div style={{ fontSize: 12, color: '#52525B', lineHeight: 1.5 }}>
+                    Based on sector overlap between<br/>committee assignments and disclosures.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Net worth */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B', marginBottom: 8 }}>NET WORTH (ESTIMATED)</div>
+              <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: '#F4F4F5' }}>{rep.netWorth}</div>
+              <div style={{ fontSize: 12, color: '#52525B', marginTop: 4 }}>Per financial disclosure filings</div>
+            </div>
+
+            {/* Recent vote */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B', marginBottom: 8 }}>MOST RECENT VOTE</div>
+              <div style={{ fontSize: 13, color: '#A1A1AA', lineHeight: 1.6 }}>{rep.recentVote}</div>
+              <div className="mono" style={{ fontSize: 11, color: '#52525B', marginTop: 6 }}>{rep.lastActive}</div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'Votes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {['AYE', 'NAY', 'AYE', 'AYE', 'NAY'].map((vote, i) => (
+              <div key={i} style={{
+                display: 'flex', gap: 12, alignItems: 'flex-start',
+                padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)',
+              }}>
+                <span className="mono" style={{
+                  fontSize: 10, fontWeight: 700, padding: '3px 7px', borderRadius: 4,
+                  background: vote === 'AYE' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                  color: vote === 'AYE' ? '#4ADE80' : '#F87171',
+                  flexShrink: 0,
+                }}>{vote}</span>
+                <div>
+                  <div style={{ fontSize: 13, color: '#A1A1AA', lineHeight: 1.5, marginBottom: 3 }}>
+                    {rep.recentVote}
+                  </div>
+                  <div className="mono" style={{ fontSize: 11, color: '#52525B' }}>
+                    {['Apr 15', 'Apr 11', 'Apr 3', 'Mar 28', 'Mar 19'][i]}, 2025
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'Trades' && (
+          <div>
+            {rep.tradeCount === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525B' }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#71717A', marginBottom: 6 }}>No STOCK Act filings</div>
+                <div style={{ fontSize: 12, lineHeight: 1.6 }}>No trades disclosed under the STOCK Act during the current period.</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {Array.from({length: Math.min(rep.tradeCount, 4)}).map((_, i) => (
+                  <div key={i} style={{
+                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(200,146,42,0.15)',
+                    borderRadius: 8, padding: 14,
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: '#F4F4F5' }}>
+                        {['NVDA', 'MSFT', 'META', 'AMZN'][i]}
+                      </span>
+                      <span className="mono" style={{
+                        fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 4,
+                        background: i % 2 === 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                        color: i % 2 === 0 ? '#4ADE80' : '#F87171',
+                      }}>{i % 2 === 0 ? 'BUY' : 'SELL'}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#71717A' }}>
+                      Amount: $1,001 – $15,000 · Filed {['14', '23', '31', '12'][i]} days late
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'AI Analysis' && (
+          <div style={{
+            background: 'rgba(200,146,42,0.06)', border: '1px solid rgba(200,146,42,0.2)',
+            borderRadius: 8, padding: 20, textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 24, marginBottom: 10 }}>⚡</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#F4F4F5', marginBottom: 8 }}>Pro Feature</div>
+            <div style={{ fontSize: 13, color: '#71717A', lineHeight: 1.6, marginBottom: 16 }}>
+              AI-powered conflict scoring, wealth trajectory analysis, committee-to-portfolio overlap detection, and peer comparisons.
+            </div>
+            <button className="cta-btn" style={{
+              background: '#C8922A', color: '#0A0A0B', fontSize: 13, fontWeight: 700,
+              padding: '10px 20px', borderRadius: 6, border: 'none', cursor: 'pointer',
+            }}>Upgrade to Pro — $9.99/mo</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── Alert Feed View ────────────────────────────────────────────────────────
+const AlertsView = () => {
+  const alerts = [
+    { type: 'trade', rep: 'Nancy Pelosi', detail: 'New STOCK Act filing: NVDA — Purchase, $1,001–$15,000', time: '2h ago', severity: 'high' },
+    { type: 'vote', rep: 'Chuck Schumer', detail: 'Voted AYE on S.4068 — National Security Supplemental Appropriations Act', time: '14h ago', severity: 'neutral' },
+    { type: 'trade', rep: 'Mitch McConnell', detail: 'New STOCK Act filing: LMT — Purchase, $15,001–$50,000', time: '1d ago', severity: 'high' },
+    { type: 'vote', rep: 'Lisa Murkowski', detail: 'Voted NAY on S.Amdt.1887 — Border Security and Immigration Reform', time: '2d ago', severity: 'neutral' },
+    { type: 'conflict', rep: 'Nancy Pelosi', detail: 'Conflict score updated: 88/100 (High Risk) — Tech committee overlap detected', time: '3d ago', severity: 'high' },
+  ];
+
+  return (
+    <div style={{ padding: '28px 32px', maxWidth: 800 }}>
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B', marginBottom: 6 }}>ACCOUNTABILITY FEED</div>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', margin: 0 }}>Alerts</h1>
+      </div>
+      <p style={{ fontSize: 14, color: '#71717A', marginTop: 6, marginBottom: 28 }}>
+        Activity from representatives you're tracking.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {alerts.map((a, i) => (
+          <div key={i} className="rep-card" style={{
+            display: 'flex', gap: 16, padding: '16px 20px',
+            background: '#111113', border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 6, cursor: 'pointer',
+            borderLeft: `3px solid ${a.severity === 'high' ? '#EF4444' : a.type === 'vote' ? '#3B82F6' : 'rgba(255,255,255,0.12)'}`,
+          }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 6, flexShrink: 0,
+              background: a.severity === 'high' ? 'rgba(239,68,68,0.1)' : a.type === 'vote' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: a.severity === 'high' ? '#EF4444' : a.type === 'vote' ? '#3B82F6' : '#71717A',
+            }}>
+              {a.type === 'trade' ? <IconTrendUp /> : a.type === 'vote' ? <IconScroll /> : <IconShield />}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#F4F4F5' }}>{a.rep}</span>
+                <span className="mono" style={{
+                  fontSize: 9, fontWeight: 600, letterSpacing: '0.06em',
+                  padding: '2px 6px', borderRadius: 3, textTransform: 'uppercase',
+                  background: a.type === 'trade' ? 'rgba(200,146,42,0.12)' : 'rgba(59,130,246,0.1)',
+                  color: a.type === 'trade' ? '#C8922A' : '#3B82F6',
+                }}>{a.type}</span>
+              </div>
+              <div style={{ fontSize: 13, color: '#71717A', lineHeight: 1.5 }}>{a.detail}</div>
+            </div>
+            <div className="mono" style={{ fontSize: 11, color: '#52525B', flexShrink: 0, paddingTop: 2 }}>{a.time}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Main Dashboard View ────────────────────────────────────────────────────
+const DashboardView = ({ onSelectRep, selectedRep }) => {
+  const [levelFilter, setLevelFilter] = useState('all');
+  const [partyFilter, setPartyFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [searchVal, setSearchVal] = useState('');
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 1400);
+    return () => clearTimeout(t);
+  }, []);
+
+  const filtered = REPS.filter(r => {
+    if (levelFilter !== 'all' && r.level !== levelFilter) return false;
+    if (partyFilter !== 'all' && r.party.toLowerCase() !== partyFilter[0].toLowerCase()) return false;
+    if (searchVal && !r.name.toLowerCase().includes(searchVal.toLowerCase())) return false;
+    return true;
+  });
+
+  return (
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Sub-header / filters */}
+        <div style={{
+          padding: '12px 32px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          background: 'rgba(10,10,11,0.85)', backdropFilter: 'blur(10px)',
+          position: 'sticky', top: 0, zIndex: 10,
+        }}>
+          {/* Search */}
+          <div style={{ position: 'relative', marginRight: 8 }}>
+            <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#52525B', pointerEvents: 'none' }}>
+              <IconSearch />
+            </div>
+            <input
+              className="search-input"
+              value={searchVal}
+              onChange={e => setSearchVal(e.target.value)}
+              placeholder="Search representatives…"
+              style={{
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 6, height: 34, paddingLeft: 34, paddingRight: 14,
+                fontSize: 13, color: '#F4F4F5', width: 220,
+                fontFamily: 'Outfit, sans-serif',
+              }}
+            />
+          </div>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
+
+          {/* Level pills */}
+          {['all', 'federal', 'state'].map(l => (
+            <button key={l} className={`pill-btn ${levelFilter === l ? 'active' : ''}`}
+              onClick={() => setLevelFilter(l)}
+              style={{
+                height: 32, padding: '0 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+                border: levelFilter === l ? '1px solid rgba(200,146,42,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                background: levelFilter === l ? 'rgba(200,146,42,0.12)' : 'transparent',
+                color: levelFilter === l ? '#C8922A' : '#52525B',
+                cursor: 'pointer', textTransform: 'capitalize',
+              }}>
+              {l === 'all' ? 'All Levels' : l.charAt(0).toUpperCase() + l.slice(1)}
+            </button>
+          ))}
+
+          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)' }} />
+
+          {/* Party pills */}
+          {[{v:'all',l:'All Parties'},{v:'democrat',l:'Democrat'},{v:'republican',l:'Republican'}].map(p => (
+            <button key={p.v} className={`pill-btn ${partyFilter === p.v ? 'active' : ''}`}
+              onClick={() => setPartyFilter(p.v)}
+              style={{
+                height: 32, padding: '0 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+                border: partyFilter === p.v ? '1px solid rgba(200,146,42,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                background: partyFilter === p.v ? 'rgba(200,146,42,0.12)' : 'transparent',
+                color: partyFilter === p.v ? '#C8922A' : '#52525B',
+                cursor: 'pointer',
+              }}>
+              {p.l}
+            </button>
+          ))}
+
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="mono" style={{ fontSize: 11, color: '#52525B' }}>{filtered.length} REPS</span>
+          </div>
+        </div>
+
+        {/* Cards list */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 32px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {loading ? (
+            <>
+              {[0,80,160,240,320].map(d => <SkeletonCard key={d} delay={d} />)}
+            </>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: '#52525B' }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#71717A', marginBottom: 6 }}>No representatives found</div>
+              <div style={{ fontSize: 13 }}>Adjust your filters or search term.</div>
+            </div>
+          ) : (
+            filtered.map((rep, i) => (
+              <RepCard key={rep.id} rep={rep} delay={i * 60} onSelect={onSelectRep} />
+            ))
+          )}
+
+          {/* Address finder */}
+          {!loading && (
+            <div style={{
+              marginTop: 20, background: '#111113',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderTop: '1px solid rgba(200,146,42,0.25)',
+              borderRadius: 6, padding: '20px 24px',
+              display: 'flex', gap: 20, alignItems: 'center',
+              opacity: 0, animation: 'fadeUp 0.4s ease 400ms forwards',
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B', marginBottom: 4 }}>EXPAND YOUR VIEW</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#F4F4F5', marginBottom: 3 }}>Find State Representatives</div>
+                <div style={{ fontSize: 13, color: '#71717A' }}>Enter your address to surface every state-level official who represents you.</div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input placeholder="Address or ZIP code…" style={{
+                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 6, height: 38, padding: '0 14px', fontSize: 13, color: '#F4F4F5',
+                  width: 220, fontFamily: 'Outfit, sans-serif',
+                }} />
+                <button className="cta-btn" style={{
+                  background: '#C8922A', color: '#0A0A0B', fontSize: 13, fontWeight: 700,
+                  height: 38, padding: '0 20px', borderRadius: 6, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}>Find Reps</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Profile panel */}
+      {selectedRep && <ProfilePanel rep={selectedRep} onClose={() => onSelectRep(null)} />}
+    </div>
+  );
+};
+
+// ── Sidebar ────────────────────────────────────────────────────────────────
+const Sidebar = ({ activeNav, setActiveNav }) => {
+  const NAV = [
+    { id: 'reps', label: 'My Reps', icon: <IconUsers /> },
+    { id: 'map', label: 'Map', icon: <IconMap /> },
+    { id: 'alerts', label: 'Alerts', icon: <IconBell dot={true} /> },
+    { id: 'constitution', label: 'Constitution', icon: <IconScroll /> },
+  ];
+
+  return (
+    <aside style={{
+      width: 220, background: '#0D0D0F', flexShrink: 0,
+      borderRight: '1px solid rgba(255,255,255,0.06)',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Logo */}
+      <div style={{ height: 58, display: 'flex', alignItems: 'center', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: '#F4F4F5' }}>CIVIC</span>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: '#C8922A' }}>WATCH</span>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ padding: '10px 10px', flex: 1 }}>
+        {NAV.map(item => {
+          const isActive = activeNav === item.id;
+          return (
+            <button key={item.id} onClick={() => setActiveNav(item.id)} className="nav-item" style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              width: '100%', height: 40, padding: '0 12px', borderRadius: 6,
+              background: isActive ? 'rgba(200,146,42,0.1)' : 'transparent',
+              border: isActive ? '1px solid rgba(200,146,42,0.2)' : '1px solid transparent',
+              borderLeft: isActive ? '2px solid #C8922A' : '2px solid transparent',
+              color: isActive ? '#C8922A' : '#52525B',
+              fontSize: 14, fontWeight: isActive ? 600 : 500,
+              cursor: 'pointer', textAlign: 'left',
+              marginBottom: 2,
+            }}>
+              {item.icon}
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* User + Pro */}
+      <div style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: '50%',
+            background: 'rgba(200,146,42,0.2)', border: '1px solid rgba(200,146,42,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 12, fontWeight: 700, color: '#C8922A',
+          }}>M</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#F4F4F5', lineHeight: 1 }}>Marc</div>
+            <div style={{ fontSize: 11, color: '#52525B', marginTop: 2 }}>Free plan</div>
+          </div>
+        </div>
+        <button className="ghost-btn" style={{
+          width: '100%', height: 34, borderRadius: 6,
+          border: '1px solid rgba(200,146,42,0.4)',
+          color: '#C8922A', fontSize: 12, fontWeight: 700,
+          background: 'transparent', cursor: 'pointer',
+          letterSpacing: '0.03em',
+        }}>
+          Upgrade to Pro
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+// ── App ────────────────────────────────────────────────────────────────────
+const PAGE_TITLES = { reps: 'My Representatives', map: 'Coverage Map', alerts: 'Alerts', constitution: 'U.S. Constitution' };
+
+const App = () => {
+  const [activeNav, setActiveNav] = useState('reps');
+  const [selectedRep, setSelectedRep] = useState(null);
+
+  const handleSelectRep = (rep) => {
+    setSelectedRep(rep === selectedRep ? null : rep);
+  };
+
+  return (
+    <div style={{ display: 'flex', height: '100dvh', background: '#0A0A0B', overflow: 'hidden' }}>
+      <Sidebar activeNav={activeNav} setActiveNav={(id) => { setActiveNav(id); setSelectedRep(null); }} />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top bar */}
+        <header style={{
+          height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 32px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0,
+        }}>
+          <div>
+            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B' }}>CIVICWATCH  /  </span>
+            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#71717A' }}>
+              {PAGE_TITLES[activeNav]?.toUpperCase()}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525B', display: 'flex' }}>
+              <IconSearch />
+            </button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525B', display: 'flex', position: 'relative' }}>
+              <IconBell dot={true} />
+            </button>
+            <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)' }} />
+            <div style={{
+              width: 30, height: 30, borderRadius: '50%',
+              background: 'rgba(200,146,42,0.2)', border: '1px solid rgba(200,146,42,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 12, fontWeight: 700, color: '#C8922A',
+            }}>M</div>
+          </div>
+        </header>
+
+        {/* Page header */}
+        <div style={{ padding: '24px 32px 0', flexShrink: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.07em', color: '#52525B', marginBottom: 4 }}>
+            ACCOUNTABILITY DASHBOARD
+          </div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F4F4F5', margin: 0 }}>
+            {PAGE_TITLES[activeNav]}
+          </h1>
+          {activeNav === 'reps' && (
+            <p style={{ fontSize: 14, color: '#71717A', marginTop: 6, marginBottom: 0, lineHeight: 1.5 }}>
+              Find, track, and contact your elected officials at every level of government.
+            </p>
+          )}
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', marginTop: 16 }}>
+          {activeNav === 'reps' && (
+            <DashboardView onSelectRep={handleSelectRep} selectedRep={selectedRep} />
+          )}
+          {activeNav === 'alerts' && <AlertsView />}
+          {(activeNav === 'map' || activeNav === 'constitution') && (
+            <div style={{ padding: '60px 32px', color: '#52525B', textAlign: 'center', width: '100%' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#71717A', marginBottom: 6 }}>{PAGE_TITLES[activeNav]}</div>
+              <div style={{ fontSize: 13 }}>This view is part of the full implementation.</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,740 @@
+{
+  "project": "civicwatch",
+  "standardVersion": "1.0.0",
+  "exportedAt": "2026-08-13T19:00:00.000000Z",
+  "today": "2026-08-13",
+  "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
+  "totals": {
+    "total": 35,
+    "done": 18,
+    "remaining": 17,
+    "pctDone": 51
+  },
+  "launch": {
+    "planned": "2026-08-20",
+    "projected": "2026-08-29",
+    "varianceDays": 9
+  },
+  "needsAttentionCount": 3,
+  "phases": [
+    "Phase 1 Hardening",
+    "P0 Launch Blockers",
+    "P0 Product Claim",
+    "Measurement",
+    "Brand & Content",
+    "Standard Adoption"
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Add VAPID env vars to Vercel",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-06-30",
+        "end": "2026-07-01"
+      },
+      "scheduled": {
+        "start": "2026-06-30",
+        "end": "2026-07-01"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-25",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 2,
+      "name": "Write push_subscriptions Supabase migration",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-01",
+        "end": "2026-07-02"
+      },
+      "scheduled": {
+        "start": "2026-07-01",
+        "end": "2026-07-02"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-02",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "supabase/migrations/20260615000002_create_push_subscriptions.sql"
+    },
+    {
+      "id": 3,
+      "name": "Wire service worker registration",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-02",
+        "end": "2026-07-03"
+      },
+      "scheduled": {
+        "start": "2026-07-02",
+        "end": "2026-07-03"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-03",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "public/sw.js"
+    },
+    {
+      "id": 4,
+      "name": "Implement /api/push/subscribe with Clerk auth",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-03",
+        "end": "2026-07-04"
+      },
+      "scheduled": {
+        "start": "2026-07-03",
+        "end": "2026-07-04"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-04",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Wire service worker registration"
+      ],
+      "note": "app/api/push/subscribe/"
+    },
+    {
+      "id": 5,
+      "name": "Implement /api/push/send via web-push",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-04",
+        "end": "2026-07-05"
+      },
+      "scheduled": {
+        "start": "2026-07-04",
+        "end": "2026-07-05"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-05",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Implement /api/push/subscribe with Clerk auth"
+      ],
+      "note": "app/api/push/send/; web-push in deps"
+    },
+    {
+      "id": 6,
+      "name": "Test push end-to-end on Chrome + Safari",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-05",
+        "end": "2026-07-06"
+      },
+      "scheduled": {
+        "start": "2026-07-05",
+        "end": "2026-07-06"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": true,
+      "attentionReason": "past scheduled end date, not marked done",
+      "dependsOn": [
+        "Implement /api/push/send via web-push"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Backfill bioguide_id on fd_net_worth (97 nulls)",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-06",
+        "end": "2026-07-07"
+      },
+      "scheduled": {
+        "start": "2026-07-06",
+        "end": "2026-07-07"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-07",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "supabase/migrations/20260630000003_backfill_bioguide_id.sql"
+    },
+    {
+      "id": 8,
+      "name": "Finish congress/route.js caching layer",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-07",
+        "end": "2026-07-08"
+      },
+      "scheduled": {
+        "start": "2026-07-07",
+        "end": "2026-07-08"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-08",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "supabase/migrations/20260630000000_create_congress_cache.sql"
+    },
+    {
+      "id": 9,
+      "name": "Add RLS policies for push_subscriptions",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-08",
+        "end": "2026-07-09"
+      },
+      "scheduled": {
+        "start": "2026-07-08",
+        "end": "2026-07-09"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-03",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "migrations/009 \u2014 written during the Aug 3 audit, NOT YET APPLIED"
+    },
+    {
+      "id": 10,
+      "name": "Audit all Supabase RLS policies",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-09",
+        "end": "2026-07-10"
+      },
+      "scheduled": {
+        "start": "2026-07-09",
+        "end": "2026-07-10"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-03",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "Aug 3 audit; found the public-role bypass on push_subscriptions"
+    },
+    {
+      "id": 11,
+      "name": "Run K6 load test at 50 VUs",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-10",
+        "end": "2026-07-11"
+      },
+      "scheduled": {
+        "start": "2026-07-10",
+        "end": "2026-07-11"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": true,
+      "attentionReason": "past scheduled end date, not marked done",
+      "dependsOn": []
+    },
+    {
+      "id": 12,
+      "name": "Add rate limiting to hot API routes",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-11",
+        "end": "2026-07-12"
+      },
+      "scheduled": {
+        "start": "2026-07-11",
+        "end": "2026-07-12"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-07-12",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "supabase/migrations/20260615000001 + create_rate_limits"
+    },
+    {
+      "id": 13,
+      "name": "Set up Better Stack uptime monitor",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-12",
+        "end": "2026-07-13"
+      },
+      "scheduled": {
+        "start": "2026-07-12",
+        "end": "2026-07-13"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-26",
+      "varianceDays": 44,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "Better Stack monitor confirmed live on civicwatch.app (up 3mo+); /api/health monitor added as a follow-on hardening step"
+    },
+    {
+      "id": 14,
+      "name": "Verify Clerk webhook secret, test user.created",
+      "phase": "Phase 1 Hardening",
+      "planned": {
+        "start": "2026-07-13",
+        "end": "2026-07-14"
+      },
+      "scheduled": {
+        "start": "2026-07-13",
+        "end": "2026-07-14"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": true,
+      "attentionReason": "past scheduled end date, not marked done",
+      "dependsOn": []
+    },
+    {
+      "id": 15,
+      "name": "Push fix/prelaunch-revenue-and-security to origin",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-11",
+        "end": "2026-08-11"
+      },
+      "scheduled": {
+        "start": "2026-08-11",
+        "end": "2026-08-13"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-13",
+      "varianceDays": 2,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 16,
+      "name": "Confirm Vercel preview build succeeds",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-11",
+        "end": "2026-08-12"
+      },
+      "scheduled": {
+        "start": "2026-08-11",
+        "end": "2026-08-13"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-13",
+      "varianceDays": 1,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Push fix/prelaunch-revenue-and-security to origin"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Apply migrations/009 RLS fix in Supabase",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-11",
+        "end": "2026-08-12"
+      },
+      "scheduled": {
+        "start": "2026-08-11",
+        "end": "2026-08-13"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-13",
+      "varianceDays": 1,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "live data exposure \u2014 table is empty today, close it before driving traffic"
+    },
+    {
+      "id": 18,
+      "name": "Merge to main",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-12",
+        "end": "2026-08-13"
+      },
+      "scheduled": {
+        "start": "2026-08-12",
+        "end": "2026-08-13"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-13",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Confirm Vercel preview build succeeds",
+        "Apply migrations/009 RLS fix in Supabase"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Verify /api/health returns status ok",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-13",
+        "end": "2026-08-13"
+      },
+      "scheduled": {
+        "start": "2026-08-13",
+        "end": "2026-08-13"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-26",
+      "varianceDays": 13,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Merge to main"
+      ],
+      "note": "https://www.civicwatch.app/api/health confirmed {status:'ok', db:'ok', billing fully configured}"
+    },
+    {
+      "id": 20,
+      "name": "Set STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID and redeploy",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-13",
+        "end": "2026-08-14"
+      },
+      "scheduled": {
+        "start": "2026-08-13",
+        "end": "2026-08-14"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Verify /api/health returns status ok"
+      ],
+      "note": "if unset, every Upgrade click 503s and revenue is $0"
+    },
+    {
+      "id": 21,
+      "name": "Run one real-card checkout end to end",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-08-14",
+        "end": "2026-08-15"
+      },
+      "scheduled": {
+        "start": "2026-08-14",
+        "end": "2026-08-15"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Set STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID and redeploy"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Source committee rosters from congress-legislators",
+      "phase": "P0 Product Claim",
+      "planned": {
+        "start": "2026-08-04",
+        "end": "2026-08-05"
+      },
+      "scheduled": {
+        "start": "2026-08-04",
+        "end": "2026-08-05"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-04",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "commit 2cc1f0e"
+    },
+    {
+      "id": 23,
+      "name": "Backfill bioguide_id on fd_trades (5,076 rows)",
+      "phase": "P0 Product Claim",
+      "planned": {
+        "start": "2026-08-16",
+        "end": "2026-08-19"
+      },
+      "scheduled": {
+        "start": "2026-08-16",
+        "end": "2026-08-19"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Run one real-card checkout end to end"
+      ],
+      "note": "unlocks Trade Conflict Analysis \u2014 the thing marketing sells"
+    },
+    {
+      "id": 24,
+      "name": "Purge/repair 27 future-dated trades",
+      "phase": "P0 Product Claim",
+      "planned": {
+        "start": "2026-08-19",
+        "end": "2026-08-20"
+      },
+      "scheduled": {
+        "start": "2026-08-19",
+        "end": "2026-08-20"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 25,
+      "name": "Fix the ingest date parser",
+      "phase": "P0 Product Claim",
+      "planned": {
+        "start": "2026-08-20",
+        "end": "2026-08-21"
+      },
+      "scheduled": {
+        "start": "2026-08-20",
+        "end": "2026-08-21"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Purge/repair 27 future-dated trades"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Automate ingest off local Mac",
+      "phase": "P0 Product Claim",
+      "planned": {
+        "start": "2026-08-22",
+        "end": "2026-08-25"
+      },
+      "scheduled": {
+        "start": "2026-08-22",
+        "end": "2026-08-25"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Fix the ingest date parser"
+      ],
+      "note": "Vercel cron on paid plan, or a GitHub Action"
+    },
+    {
+      "id": 27,
+      "name": "Senate ingest \u2014 senate_trades and senate_net_worth are empty",
+      "phase": "P0 Product Claim",
+      "planned": {
+        "start": "2026-08-25",
+        "end": "2026-08-29"
+      },
+      "scheduled": {
+        "start": "2026-08-25",
+        "end": "2026-08-29"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 28,
+      "name": "Set RESEND_API_KEY",
+      "phase": "Measurement",
+      "planned": {
+        "start": "2026-08-16",
+        "end": "2026-08-16"
+      },
+      "scheduled": {
+        "start": "2026-08-16",
+        "end": "2026-08-16"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "stops churning failed cards"
+    },
+    {
+      "id": 29,
+      "name": "Set NEXT_PUBLIC_GA_MEASUREMENT_ID",
+      "phase": "Measurement",
+      "planned": {
+        "start": "2026-08-16",
+        "end": "2026-08-16"
+      },
+      "scheduled": {
+        "start": "2026-08-16",
+        "end": "2026-08-16"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 30,
+      "name": "Fire Purchase events on both pixels",
+      "phase": "Measurement",
+      "planned": {
+        "start": "2026-08-17",
+        "end": "2026-08-18"
+      },
+      "scheduled": {
+        "start": "2026-08-17",
+        "end": "2026-08-18"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Set NEXT_PUBLIC_GA_MEASUREMENT_ID"
+      ],
+      "note": "conversion tracking must be verified BEFORE paid spend"
+    },
+    {
+      "id": 31,
+      "name": "Set OPENSTATES_API_KEY and ship State & Local Lookup",
+      "phase": "Measurement",
+      "planned": {
+        "start": "2026-08-18",
+        "end": "2026-08-20"
+      },
+      "scheduled": {
+        "start": "2026-08-18",
+        "end": "2026-08-20"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 32,
+      "name": "Rewrite /pro around what actually works",
+      "phase": "Brand & Content",
+      "planned": {
+        "start": "2026-08-26",
+        "end": "2026-08-29"
+      },
+      "scheduled": {
+        "start": "2026-08-26",
+        "end": "2026-08-29"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Backfill bioguide_id on fd_trades (5,076 rows)"
+      ],
+      "note": "currently undersells what works, oversells what doesn't"
+    },
+    {
+      "id": 33,
+      "name": "Generate .env.example",
+      "phase": "Standard Adoption",
+      "planned": {
+        "start": "2026-08-11",
+        "end": "2026-08-11"
+      },
+      "scheduled": {
+        "start": "2026-08-11",
+        "end": "2026-08-11"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-08-11",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 34,
+      "name": "Resolve D-001 \u2014 which migration directory is authoritative",
+      "phase": "Standard Adoption",
+      "planned": {
+        "start": "2026-08-11",
+        "end": "2026-08-13"
+      },
+      "scheduled": {
+        "start": "2026-08-11",
+        "end": "2026-08-13"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    },
+    {
+      "id": 35,
+      "name": "Resolve D-002 \u2014 move loose docs into the standard structure",
+      "phase": "Standard Adoption",
+      "planned": {
+        "start": "2026-08-11",
+        "end": "2026-08-18"
+      },
+      "scheduled": {
+        "start": "2026-08-11",
+        "end": "2026-08-18"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": []
+    }
+  ]
+}

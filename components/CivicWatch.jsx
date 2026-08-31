@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps'
 import Image from 'next/image'
 import SettingsPanel from './SettingsPanel'
+import { trackUpgradeClick } from '@/lib/funnel-track'
 
 
 // ─── PLACEHOLDER AVATAR (used when no photo is available) ────────────────────
@@ -890,7 +891,8 @@ useEffect(() => {
   }, [stats])
 
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (location = 'unknown') => {
+    trackUpgradeClick(location)
     if (!isSignedIn) { openSignIn(); return }
     setCheckoutLoading(true)
     setCheckoutError(null)
@@ -3383,7 +3385,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                               Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
                             </p>
                             <button
-                              onClick={handleSubscribe}
+                              onClick={() => handleSubscribe('networth_lock')}
                               style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
                               ★ Upgrade to Pro · $9.99/mo
                             </button>
@@ -3580,7 +3582,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             Unlock the full wealth timeline, entry vs. today comparison, and growth vs. salary analysis.
                           </p>
                           <button
-                            onClick={handleSubscribe}
+                            onClick={() => handleSubscribe('networth_chart_lock')}
                             style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
                             ★ Upgrade to Pro · $9.99/mo
                           </button>
@@ -3647,7 +3649,43 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           </div>
                         )}
 
-                        {/* ── Vote/Committee-Trade Conflict Score ── */}
+                        {/* ── Vote/Committee-Trade Conflict Score ──
+                            Three distinct states, shown honestly rather than
+                            collapsed into one another:
+                              1. No trade data on file — a coverage gap, not a
+                                 clean bill of health. Shown plainly, no lock —
+                                 there's no premium content being withheld,
+                                 just an admission the check couldn't run.
+                              2. None flagged — data exists, checked, nothing
+                                 found. Also shown plainly for the same reason.
+                              3. Flagged (Low/Medium/High) — the existing
+                                 locked-preview-for-free / full-for-Pro card. */}
+                        {conflictScore && conflictScore.tier === 'No trade data on file' && (
+                          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: `1px solid ${S.border}`, background: 'rgba(255,255,255,0.03)' }}>
+                            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <span style={{ fontSize: 18 }}>◌</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>Committee Conflict Score: No trade data on file</div>
+                                <div style={{ fontSize: 10.5, color: S.gray, marginTop: 1 }}>{conflictScore.methodology}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {conflictScore && conflictScore.hasAnyTradeData && conflictScore.score === 0 && (
+                          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: `1px solid ${S.border}`, background: 'rgba(255,255,255,0.03)' }}>
+                            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <span style={{ fontSize: 18 }}>✓</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>Committee Conflict Score: None flagged</div>
+                                <div style={{ fontSize: 10.5, color: S.gray, marginTop: 1 }}>
+                                  Checked {conflictScore.totalTradesReviewed} trade{conflictScore.totalTradesReviewed === 1 ? '' : 's'} on file against this member's committee assignments — no sector overlap found.
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {conflictScore && conflictScore.score > 0 && (
                           <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: `1px solid ${conflictScore.tier === 'High' ? 'rgba(248,113,113,0.4)' : 'rgba(212,175,55,0.3)'}` }}>
                             <div style={{
@@ -3676,7 +3714,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                 </div>
                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <button
-                                    onClick={handleSubscribe}
+                                    onClick={() => handleSubscribe('conflict_score_lock')}
                                     style={{ padding: '8px 18px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 8, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                                     🔒 Unlock flagged trades · Pro
                                   </button>
@@ -4584,7 +4622,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
                 style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
                 Preview Analysis →
               </button>
-              <a href="/pro"
+              <a href="/pro" onClick={() => trackUpgradeClick("ai_analysis_idle_signed_in")}
                 style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
                 Go Pro →
               </a>
@@ -4607,7 +4645,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
               style={{ padding: '13px 28px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5 }}>
               Sign in to preview →
             </button>
-            <a href="/pro"
+            <a href="/pro" onClick={() => trackUpgradeClick("ai_analysis_idle_signed_out")}
               style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
               Go Pro →
             </a>
@@ -4679,7 +4717,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
           <p style={{ color: S.gray, marginBottom: 24, lineHeight: 1.6 }}>
             Upgrade to CivicWatch Pro to unlock AI-powered analysis of your representative&apos;s voting patterns, trading behavior, and legislative priorities.
           </p>
-          <a href="/pro"
+          <a href="/pro" onClick={() => trackUpgradeClick("ai_analysis_error_unauthorized")}
             style={{ background: '#4f6ef7', color: '#fff', borderRadius: 8,
               padding: '12px 28px', fontSize: 16, fontWeight: 600, cursor: 'pointer',
               textDecoration: 'none', display: 'inline-block' }}>
@@ -4753,7 +4791,7 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
               </button>
             ) : (
               <button
-                onClick={handleSubscribe}
+                onClick={() => handleSubscribe('ai_analysis_lock')}
                 style={{ padding: '11px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 0.5 }}>
                 ★ Upgrade to Pro · $9.99/mo
               </button>

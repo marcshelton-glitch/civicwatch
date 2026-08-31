@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>CivicWatch — Story: Find Yours</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Grid */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.05) 1px, transparent 1px);
+    background-size: 72px 72px;
+    pointer-events: none;
+  }
+
+  /* Large glow — center */
+  .bg-glow-main {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1080px;
+    height: 1080px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.11) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Bottom glow */
+  .bg-glow-bottom {
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* 6px top bar */
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 50%, #22c55e 100%);
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+     TOP ZONE — ~560px
+  ============================================================ */
+  .top-zone {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    height: 560px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 90px 40px;
+    text-align: center;
+  }
+
+  /* Logo icon */
+  .logo-icon {
+    width: 80px;
+    height: 80px;
+    background: #22c55e;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    flex-shrink: 0;
+    box-shadow: 0 0 60px rgba(34,197,94,0.35);
+  }
+
+  .brand-name {
+    font-size: 48px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.025em;
+    margin-bottom: 10px;
+  }
+
+  .brand-url-small {
+    font-size: 20px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 400;
+    margin-bottom: 40px;
+  }
+
+  /* Decorative rule */
+  .deco-rule {
+    width: 280px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(34,197,94,0.5), transparent);
+  }
+
+  /* ============================================================
+     MIDDLE ZONE — ~860px
+  ============================================================ */
+  .middle-zone {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 52px 90px 40px;
+    text-align: center;
+  }
+
+  .find-line {
+    font-size: 60px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 0;
+  }
+
+  .trades-line {
+    font-size: 100px;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-shadow:
+      0 0 80px rgba(34,197,94,0.5),
+      0 0 160px rgba(34,197,94,0.25);
+    margin-bottom: 0;
+  }
+
+  .in-seconds-line {
+    font-size: 60px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 52px;
+  }
+
+  /* Map container */
+  .map-container {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .map-glow-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.15) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .map-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  /* ============================================================
+     BOTTOM ZONE — ~500px
+  ============================================================ */
+  .bottom-zone {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    padding: 44px 90px 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* Mock search bar */
+  .search-bar {
+    width: 900px;
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(34,197,94,0.4);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 8px rgba(34,197,94,0.05),
+      0 24px 60px rgba(0,0,0,0.4);
+    margin-bottom: 36px;
+  }
+
+  .search-icon-wrap {
+    padding: 0 22px;
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.28);
+    flex-shrink: 0;
+  }
+
+  .search-input-mock {
+    flex: 1;
+    padding: 28px 8px;
+    font-size: 22px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.01em;
+    line-height: 1;
+    font-family: inherit;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  .search-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 24px;
+    background: #22c55e;
+    margin-left: 3px;
+    border-radius: 1px;
+    position: relative;
+    top: 5px;
+  }
+
+  .search-btn {
+    background: #22c55e;
+    margin: 10px;
+    border-radius: 16px;
+    width: 80px;
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Trust items */
+  .trust-row {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    margin-bottom: 44px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.35);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .trust-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(34,197,94,0.14);
+    border: 1px solid rgba(34,197,94,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Main CTA */
+  .cta-url {
+    font-size: 32px;
+    font-weight: 800;
+    color: #22c55e;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+    text-shadow: 0 0 40px rgba(34,197,94,0.3);
+  }
+
+  .tagline-small {
+    font-size: 16px;
+    color: rgba(255,255,255,0.22);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .swipe-up {
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-main"></div>
+  <div class="bg-glow-bottom"></div>
+
+  <!-- 6px top bar -->
+  <div class="top-bar"></div>
+
+  <!-- ===== TOP ZONE ===== -->
+  <div class="top-zone">
+    <div class="logo-icon">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+        <circle cx="23" cy="16" r="8" stroke="#0d1117" stroke-width="3" fill="none"/>
+        <path d="M7 40c0-8.8 7.2-16 16-16s16 7.2 16 16" stroke="#0d1117" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- Eye overlay -->
+        <circle cx="36" cy="10" r="5" fill="#0d1117"/>
+        <circle cx="36" cy="10" r="2.5" fill="#22c55e"/>
+      </svg>
+    </div>
+    <div class="brand-name">CivicWatch</div>
+    <div class="brand-url-small">civicwatch.app</div>
+    <div class="deco-rule"></div>
+  </div>
+
+  <!-- ===== MIDDLE ZONE ===== -->
+  <div class="middle-zone">
+    <div class="find-line">Find your</div>
+    <div class="find-line">representative's</div>
+    <div class="trades-line">trades</div>
+    <div class="in-seconds-line">in 10 seconds.</div>
+
+    <!-- USA Map SVG -->
+    <div class="map-container">
+      <div class="map-glow-inner"></div>
+      <svg width="640" height="240" viewBox="0 0 640 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Simplified US continental outline -->
+        <path d="M 60,88 L 68,64 L 96,48 L 134,38 L 178,32 L 222,28 L 268,26 L 318,26
+                 L 358,30 L 388,38 L 414,34 L 440,24 L 464,28 L 490,36 L 504,50
+                 L 516,64 L 526,82 L 530,106 L 526,130 L 516,150
+                 L 498,164 L 476,172 L 454,176 L 430,174 L 404,166
+                 L 378,158 L 352,154 L 326,152 L 300,154 L 278,160
+                 L 258,166 L 238,170 L 218,168 L 198,162 L 178,154
+                 L 154,142 L 128,128 L 100,112 L 76,100 Z"
+              fill="rgba(34,197,94,0.06)"
+              stroke="rgba(34,197,94,0.22)"
+              stroke-width="1.5"
+              stroke-linejoin="round"/>
+
+        <!-- Alaska stub -->
+        <path d="M 64,182 L 52,166 L 38,160 L 26,164 L 20,180 L 32,194 L 50,196 Z"
+              fill="rgba(34,197,94,0.05)"
+              stroke="rgba(34,197,94,0.16)"
+              stroke-width="1.5"/>
+
+        <!-- Hawaii -->
+        <ellipse cx="118" cy="212" rx="14" ry="8" fill="rgba(34,197,94,0.05)" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+        <ellipse cx="142" cy="218" rx="9" ry="6" fill="rgba(34,197,94,0.05)" stroke="rgba(34,197,94,0.15)" stroke-width="1.5"/>
+
+        <!-- Representative dots — scattered across map -->
+        <!-- Northeast cluster -->
+        <circle cx="492" cy="72" r="3.5" fill="#22c55e" opacity="0.65"/>
+        <circle cx="508" cy="86" r="3" fill="#22c55e" opacity="0.5"/>
+        <circle cx="480" cy="90" r="2.5" fill="#22c55e" opacity="0.4"/>
+        <!-- Southeast cluster -->
+        <circle cx="440" cy="144" r="3.5" fill="#22c55e" opacity="0.55"/>
+        <circle cx="458" cy="158" r="3" fill="#22c55e" opacity="0.45"/>
+        <!-- Midwest -->
+        <circle cx="320" cy="90" r="4" fill="#22c55e" opacity="0.6"/>
+        <circle cx="348" cy="108" r="3" fill="#22c55e" opacity="0.5"/>
+        <circle cx="292" cy="108" r="2.5" fill="#22c55e" opacity="0.4"/>
+        <!-- South -->
+        <circle cx="364" cy="148" r="3.5" fill="#22c55e" opacity="0.55"/>
+        <circle cx="330" cy="158" r="3" fill="#22c55e" opacity="0.45"/>
+        <!-- West coast -->
+        <circle cx="152" cy="96" r="4" fill="#22c55e" opacity="0.6"/>
+        <circle cx="182" cy="116" r="3" fill="#22c55e" opacity="0.5"/>
+        <circle cx="128" cy="120" r="2.5" fill="#22c55e" opacity="0.4"/>
+        <!-- Mountain/plains -->
+        <circle cx="244" cy="100" r="3" fill="#22c55e" opacity="0.45"/>
+        <circle cx="270" cy="126" r="2.5" fill="#22c55e" opacity="0.4"/>
+
+        <!-- Highlighted center dot (YOU ARE HERE) -->
+        <circle cx="268" cy="120" r="7" fill="#22c55e" opacity="0.95"/>
+        <circle cx="268" cy="120" r="14" fill="rgba(34,197,94,0.14)" stroke="rgba(34,197,94,0.35)" stroke-width="1.5"/>
+        <!-- Map pin -->
+        <path d="M268 98 L268 110" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+        <polygon points="268,93 263,101 273,101" fill="#22c55e" opacity="0.85"/>
+
+        <!-- Network lines from center -->
+        <line x1="268" y1="120" x2="320" y2="90" stroke="rgba(34,197,94,0.18)" stroke-width="1" stroke-dasharray="4 4"/>
+        <line x1="268" y1="120" x2="440" y2="144" stroke="rgba(34,197,94,0.14)" stroke-width="1" stroke-dasharray="4 4"/>
+        <line x1="268" y1="120" x2="152" y2="96" stroke="rgba(34,197,94,0.14)" stroke-width="1" stroke-dasharray="4 4"/>
+        <line x1="268" y1="120" x2="492" y2="72" stroke="rgba(34,197,94,0.10)" stroke-width="1" stroke-dasharray="4 4"/>
+      </svg>
+      <div class="map-label">Search 535 members · Both chambers</div>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM ZONE ===== -->
+  <div class="bottom-zone">
+    <!-- Mock search bar -->
+    <div class="search-bar">
+      <div class="search-icon-wrap">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="rgba(255,255,255,0.28)" stroke-width="2.2"/>
+          <path d="M17 17L23 23" stroke="rgba(255,255,255,0.28)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="search-input-mock">
+        Enter your zip code...<span class="search-cursor"></span>
+      </div>
+      <div class="search-btn">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M5 14H23M16 7L23 14L16 21" stroke="#0d1117" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Trust row -->
+    <div class="trust-row">
+      <div class="trust-item">
+        <div class="trust-check">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6L5 9L10 3" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        Official filings
+      </div>
+      <div class="trust-item">
+        <div class="trust-check">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6L5 9L10 3" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        Updated daily
+      </div>
+      <div class="trust-item">
+        <div class="trust-check">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6L5 9L10 3" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        Always free
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-url">↑ Open civicwatch.app</div>
+    <div class="tagline-small">Your representatives work for you. Start holding them to it.</div>
+    <div class="swipe-up">↑ Swipe up to search now</div>
+  </div>
+</body>
+</html>

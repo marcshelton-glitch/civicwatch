@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>CivicWatch — Story: Trade Card</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Subtle grid texture */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.04) 1px, transparent 1px);
+    background-size: 72px 72px;
+    pointer-events: none;
+  }
+
+  /* Radial glow — top right */
+  .bg-glow-1 {
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(34,197,94,0.09) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Radial glow — center (middle zone) */
+  .bg-glow-2 {
+    position: absolute;
+    top: 700px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.13) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* Radial glow — bottom */
+  .bg-glow-3 {
+    position: absolute;
+    bottom: -200px;
+    left: -100px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* 6px top accent bar */
+  .top-bar {
+    position: relative;
+    z-index: 10;
+    height: 6px;
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 50%, #22c55e 100%);
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+     TOP ZONE — ~640px
+  ============================================================ */
+  .top-zone {
+    position: relative;
+    z-index: 5;
+    height: 640px;
+    flex-shrink: 0;
+    padding: 60px 90px 48px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #22c55e;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 52px;
+  }
+
+  .eyebrow-dot {
+    width: 9px;
+    height: 9px;
+    background: #22c55e;
+    border-radius: 50%;
+  }
+
+  /* Rep row */
+  .rep-row {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 0;
+    flex: 1;
+    align-self: flex-start;
+    width: 100%;
+  }
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a3a5c, #2563a8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.95);
+    border: 3px solid rgba(255,255,255,0.14);
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  .rep-meta { flex: 1; }
+
+  .rep-name {
+    font-size: 44px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .badges {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .badge-r {
+    background: #dc2626;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 7px 18px;
+    border-radius: 8px;
+  }
+
+  .badge-state {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.6);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 7px 18px;
+    border-radius: 8px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    margin: 0 90px;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* ============================================================
+     MIDDLE ZONE — ~760px
+  ============================================================ */
+  .middle-zone {
+    position: relative;
+    z-index: 5;
+    height: 760px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 90px;
+    text-align: center;
+  }
+
+  .trade-type-word {
+    font-size: 180px;
+    font-weight: 900;
+    color: #22c55e;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-shadow:
+      0 0 80px rgba(34,197,94,0.5),
+      0 0 160px rgba(34,197,94,0.25);
+    margin-bottom: 8px;
+  }
+
+  .ticker-big {
+    font-size: 100px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+
+  .company-name {
+    font-size: 26px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 400;
+    margin-bottom: 40px;
+  }
+
+  .amount-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.14);
+    border-radius: 100px;
+    padding: 20px 48px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+
+  .date-text {
+    font-size: 20px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+
+  /* ============================================================
+     BOTTOM ZONE — ~514px
+  ============================================================ */
+  .bottom-zone {
+    position: relative;
+    z-index: 5;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 90px 56px;
+  }
+
+  .bottom-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    margin-bottom: 44px;
+  }
+
+  .disclosure-text {
+    font-size: 18px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.02em;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .verified-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 48px;
+  }
+
+  .verified-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #4ade80;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+  }
+
+  .civicwatch-url-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .green-arrow {
+    width: 44px;
+    height: 44px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .civicwatch-url {
+    font-size: 30px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+  }
+
+  .tagline-small {
+    font-size: 16px;
+    color: rgba(255,255,255,0.25);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 0;
+    flex: 1;
+  }
+
+  .swipe-up {
+    margin-top: auto;
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+  <div class="bg-glow-3"></div>
+
+  <!-- 6px top bar -->
+  <div class="top-bar"></div>
+
+  <!-- ===== TOP ZONE ===== -->
+  <div class="top-zone">
+    <div class="eyebrow">
+      <div class="eyebrow-dot"></div>
+      Congressional Disclosure
+    </div>
+
+    <div class="rep-row">
+      <div class="avatar">JS</div>
+      <div class="rep-meta">
+        <div class="rep-name">Rep. John Smith</div>
+        <div class="badges">
+          <span class="badge-r">R</span>
+          <span class="badge-state">Texas · 23rd</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== MIDDLE ZONE ===== -->
+  <div class="middle-zone">
+    <div class="trade-type-word">BUY</div>
+    <div class="ticker-big">NVDA</div>
+    <div class="company-name">NVIDIA Corporation</div>
+    <div class="amount-pill">$50,001 – $100,000</div>
+    <div class="date-text">June 15, 2026</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== BOTTOM ZONE ===== -->
+  <div class="bottom-zone">
+    <div class="disclosure-text">Publicly disclosed via House Financial Disclosure Act</div>
+
+    <div class="verified-row">
+      <div class="verified-badge">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M2 7.5L5.5 11L13 4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Verified public record
+      </div>
+    </div>
+
+    <div class="civicwatch-url-row">
+      <div class="green-arrow">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4 10H16M10 4L16 10L10 16" stroke="#0d1117" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="civicwatch-url">civicwatch.app</div>
+    </div>
+
+    <div class="tagline-small">Your representatives work for you. Start holding them to it.</div>
+
+    <div class="swipe-up">↑ Search your representative</div>
+  </div>
+</body>
+</html>

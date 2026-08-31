@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isRateLimitedDurable } from '../../../lib/rateLimit'
 
 export const revalidate = 21600
 
@@ -131,6 +132,15 @@ export async function GET(request) {
     || request.headers.get('x-real-ip')
     || 'anonymous'
   if (isLbRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
+  // Durable, cross-instance backstop — the in-memory Map above only limits
+  // requests landing on ONE serverless instance. See lib/rateLimit.js. This
+  // route is the most important one to get right here: it's the most
+  // expensive per-call (3 parallel Supabase queries + paginated Congress.gov
+  // fetches) and has the tightest intended limit (10/min).
+  if (await isRateLimitedDurable(ip, 'leaderboard', LB_MAX_CALLS, LB_WINDOW_MS / 1000)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
