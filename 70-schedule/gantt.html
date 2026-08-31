@@ -53,6 +53,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .task-check.checked{background:var(--accent);border-color:var(--accent)}
 .task-check.checked::after{content:'✓';color:#fff;font-size:9px}
 .task-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.task-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:16px;text-align:right}
 .task-badge{font-size:9px;font-weight:700;flex-shrink:0}
 
 /* GANTT WRAP */
@@ -152,54 +153,31 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
 </div>
 
-<script id="embedded-gantt-state" type="application/json">
-{
-  "project": "CivicWatch",
-  "generatedAt": "2026-08-13T19:00:00.000000Z",
+<script id="embedded-gantt-state" type="application/json">{
+  "project": "civicwatch",
+  "standardVersion": "1.0.0",
+  "exportedAt": "2026-08-13T19:00:00.000000Z",
   "today": "2026-08-13",
+  "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 35,
-    "done": 16,
-    "remaining": 19,
-    "pctDone": 46
+    "done": 23,
+    "remaining": 12,
+    "pctDone": 66
   },
   "launch": {
     "planned": "2026-08-20",
     "projected": "2026-08-29",
     "varianceDays": 9
   },
-  "needsAttentionCount": 4,
+  "needsAttentionCount": 3,
   "phases": [
-    {
-      "name": "Phase 1 Hardening",
-      "emoji": "\ud83c\udfd7\ufe0f",
-      "color": "#0284c7"
-    },
-    {
-      "name": "P0 Launch Blockers",
-      "emoji": "\ud83d\udea8",
-      "color": "#dc2626"
-    },
-    {
-      "name": "P0 Product Claim",
-      "emoji": "\ud83c\udfaf",
-      "color": "#7c3aed"
-    },
-    {
-      "name": "Measurement",
-      "emoji": "\ud83d\udcca",
-      "color": "#16a34a"
-    },
-    {
-      "name": "Brand & Content",
-      "emoji": "\ud83c\udfa8",
-      "color": "#db2777"
-    },
-    {
-      "name": "Standard Adoption",
-      "emoji": "\ud83d\udccb",
-      "color": "#ea580c"
-    }
+    "Phase 1 Hardening",
+    "P0 Launch Blockers",
+    "P0 Product Claim",
+    "Measurement",
+    "Brand & Content",
+    "Standard Adoption"
   ],
   "tasks": [
     {
@@ -219,9 +197,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 2,
@@ -241,7 +217,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "supabase/migrations/20260615000002_create_push_subscriptions.sql"
     },
     {
@@ -262,9 +237,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [
-        "Implement /api/push/subscribe with Clerk auth"
-      ],
       "note": "public/sw.js"
     },
     {
@@ -286,9 +258,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "attentionReason": null,
       "dependsOn": [
         "Wire service worker registration"
-      ],
-      "blocks": [
-        "Implement /api/push/send via web-push"
       ],
       "note": "app/api/push/subscribe/"
     },
@@ -312,9 +281,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "dependsOn": [
         "Implement /api/push/subscribe with Clerk auth"
       ],
-      "blocks": [
-        "Test push end-to-end on Chrome + Safari"
-      ],
       "note": "app/api/push/send/; web-push in deps"
     },
     {
@@ -336,9 +302,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "attentionReason": "past scheduled end date, not marked done",
       "dependsOn": [
         "Implement /api/push/send via web-push"
-      ],
-      "blocks": [],
-      "note": null
+      ]
     },
     {
       "id": 7,
@@ -358,7 +322,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "supabase/migrations/20260630000003_backfill_bioguide_id.sql"
     },
     {
@@ -379,7 +342,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "supabase/migrations/20260630000000_create_congress_cache.sql"
     },
     {
@@ -400,7 +362,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "migrations/009 \u2014 written during the Aug 3 audit, NOT YET APPLIED"
     },
     {
@@ -421,7 +382,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "Aug 3 audit; found the public-role bypass on push_subscriptions"
     },
     {
@@ -441,9 +401,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": true,
       "attentionReason": "past scheduled end date, not marked done",
-      "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 12,
@@ -463,7 +421,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "supabase/migrations/20260615000001 + create_rate_limits"
     },
     {
@@ -478,14 +435,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-07-12",
         "end": "2026-07-13"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
-      "needsAttention": true,
-      "attentionReason": "past scheduled end date, not marked done",
+      "status": "done",
+      "actualCompletionDate": "2026-08-26",
+      "varianceDays": 44,
+      "needsAttention": false,
+      "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "note": "Better Stack monitor confirmed live on civicwatch.app (up 3mo+); /api/health monitor added as a follow-on hardening step"
     },
     {
       "id": 14,
@@ -504,9 +460,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": true,
       "attentionReason": "past scheduled end date, not marked done",
-      "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 15,
@@ -525,11 +479,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 2,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": [],
-      "blocks": [
-        "Confirm Vercel preview build succeeds"
-      ],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 16,
@@ -550,11 +500,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "attentionReason": null,
       "dependsOn": [
         "Push fix/prelaunch-revenue-and-security to origin"
-      ],
-      "blocks": [
-        "Merge to main"
-      ],
-      "note": null
+      ]
     },
     {
       "id": 17,
@@ -574,9 +520,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [
-        "Merge to main"
-      ],
       "note": "live data exposure \u2014 table is empty today, close it before driving traffic"
     },
     {
@@ -599,11 +542,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "dependsOn": [
         "Confirm Vercel preview build succeeds",
         "Apply migrations/009 RLS fix in Supabase"
-      ],
-      "blocks": [
-        "Verify /api/health returns status ok"
-      ],
-      "note": null
+      ]
     },
     {
       "id": 19,
@@ -617,18 +556,15 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-13",
         "end": "2026-08-13"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-26",
+      "varianceDays": 13,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Merge to main"
       ],
-      "blocks": [
-        "Set STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID and redeploy"
-      ],
-      "note": null
+      "note": "https://www.civicwatch.app/api/health confirmed {status:'ok', db:'ok', billing fully configured}"
     },
     {
       "id": 20,
@@ -649,9 +585,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "attentionReason": null,
       "dependsOn": [
         "Verify /api/health returns status ok"
-      ],
-      "blocks": [
-        "Run one real-card checkout end to end"
       ],
       "note": "if unset, every Upgrade click 503s and revenue is $0"
     },
@@ -674,11 +607,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "attentionReason": null,
       "dependsOn": [
         "Set STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID and redeploy"
-      ],
-      "blocks": [
-        "Backfill bioguide_id on fd_trades (5,076 rows)"
-      ],
-      "note": null
+      ]
     },
     {
       "id": 22,
@@ -698,7 +627,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "commit 2cc1f0e"
     },
     {
@@ -721,9 +649,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "dependsOn": [
         "Run one real-card checkout end to end"
       ],
-      "blocks": [
-        "Rewrite /pro around what actually works"
-      ],
       "note": "unlocks Trade Conflict Analysis \u2014 the thing marketing sells"
     },
     {
@@ -743,11 +668,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": [],
-      "blocks": [
-        "Fix the ingest date parser"
-      ],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 25,
@@ -768,11 +689,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "attentionReason": null,
       "dependsOn": [
         "Purge/repair 27 future-dated trades"
-      ],
-      "blocks": [
-        "Automate ingest off local Mac"
-      ],
-      "note": null
+      ]
     },
     {
       "id": 26,
@@ -786,16 +703,15 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-22",
         "end": "2026-08-25"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 5,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Fix the ingest date parser"
       ],
-      "blocks": [],
-      "note": "Vercel cron on paid plan, or a GitHub Action"
+      "note": "Shipped ahead of its listed dependency (task 25, still pending) — the scheduling work turned out to be independent of the date-parser bug. Two GitHub Actions workflows (.github/workflows/ingest-house.yml every 6h, ingest-senate.yml daily) replace ingest-loop.sh/ingest-senate-loop.sh; both call the existing scripts/ingest-*.mjs unchanged, writing to Supabase directly. Verified live, not just committed: House workflow has 20 recorded runs (scheduled runs completing in 15–22s, draining the unprocessed-rows backlog as designed), Senate has 9 (task 27's note has senate_trades=7,164 / senate_net_worth=83 rows from this same pipeline). See docs/automate-ingest-2026-08-26.md. Also closed a follow-up from that doc while verifying: package-lock.json now resolves playwright cleanly (npm ci --dry-run), so ingest-senate.yml's dependency-install step was switched back from npm install to npm ci; package.json's ingest:index/trades/networth scripts were pointed at the real scripts/ingest-disclosures.mjs filename (they'd been referencing a .js path that doesn't exist — unused by the workflows, which call the script directly, but broken for anyone running npm run ingest:* by hand). Not done: task 24 (future-dated trades) and task 25 (date parser) remain open, unrelated data-quality issues — automation moving the ingest off the Mac doesn't require fixing what the ingest parses."
     },
     {
       "id": 27,
@@ -809,14 +725,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-25",
         "end": "2026-08-29"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 1,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "note": "Root cause was two-layered: (1) raw fetch() was WAF-blocked by efdsearch.senate.gov almost 100% of the time \u2014 fixed with a real Playwright browser session (scripts/lib/senate-efd-browser.mjs); (2) the site had also been redesigned (5-column search rows, no more data.json API, PDFs replaced by HTML tables) \u2014 fixed with scrapeReportTables()/computeNetWorth(). Verified via direct Supabase query, not just a green Action run: senate_trades=7,164 rows, senate_net_worth=83 rows. See docs/senate-waf-2026-08-29.md. A full backlog catch-up run (limits raised to 2000) was in progress as of this checkmark."
     },
     {
       "id": 28,
@@ -830,13 +745,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-16",
         "end": "2026-08-16"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 14,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
       "note": "stops churning failed cards"
     },
     {
@@ -851,16 +765,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-16",
         "end": "2026-08-16"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 14,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [
-        "Fire Purchase events on both pixels"
-      ],
-      "note": null
+      "note": "G-4KLY81XR45 set in .env.local and Vercel (Production + Preview); redeploy triggered"
     },
     {
       "id": 30,
@@ -874,16 +785,15 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-17",
         "end": "2026-08-18"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 12,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Set NEXT_PUBLIC_GA_MEASUREMENT_ID"
       ],
-      "blocks": [],
-      "note": "conversion tracking must be verified BEFORE paid spend"
+      "note": "Verified live 2026-08-30 \u2014 see docs/conversion-tracking-audit-2026-08-29.md. Both pixels were CSP-blocked (fbevents.js/events.js never loaded), the Purchase/CompletePayment code was written but never deployed, and /api/funnel-event 401'd signed-out callers via a middleware gap. All three fixed and confirmed live: real network calls to facebook.com/tr (ev=Purchase) and analytics.tiktok.com/api/v2/pixel. NOTE: this task's own dependsOn (task 29, NEXT_PUBLIC_GA_MEASUREMENT_ID) is still pending \u2014 GA itself remains unset, unrelated to whether the pixels fire."
     },
     {
       "id": 31,
@@ -897,14 +807,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         "start": "2026-08-18",
         "end": "2026-08-20"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 10,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "note": "Marc registered a free key at open.pluralpolicy.com (marc61); key set in .env.local and in Vercel (Production). Vercel auto-redeployed (dpl_FAGZCJ7oNUHd2sJFujghqsiaQNUS, READY, aliased to civicwatch.app). Verified live by calling v3.openstates.org/people.geo directly with the key — returns real results (e.g. DC councilmembers for a DC address). /api/civic itself is Clerk-gated so it 401s for signed-out callers by design; that's confirmed working too (GET /api/civic 401 in runtime logs), not a bug. REMAINING: the Vercel env var is only scoped to Production right now — add the Preview checkbox too so PR/preview deploys get state legislator data as well."
     },
     {
       "id": 32,
@@ -926,7 +835,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "dependsOn": [
         "Backfill bioguide_id on fd_trades (5,076 rows)"
       ],
-      "blocks": [],
       "note": "currently undersells what works, oversells what doesn't"
     },
     {
@@ -946,9 +854,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 34,
@@ -967,9 +873,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "dependsOn": []
     },
     {
       "id": 35,
@@ -988,18 +892,23 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": [],
-      "blocks": [],
-      "note": null
+      "dependsOn": []
     }
   ]
-}
-</script>
+}</script>
 
 <script>
 'use strict';
 // ─── DATA ────────────────────────────────────────────────────────────────────
 const SNAPSHOT = JSON.parse(document.getElementById('embedded-gantt-state').textContent);
+// gantt-state.json's "phases" is a plain string[] (see adoptExternal below, which
+// already expects that shape from a freshly-fetched file). Normalize the embedded
+// copy the same way up front, so rendering doesn't depend on fetch() succeeding —
+// which it won't under file:// (Safari/Chrome block local-file fetch), leaving this
+// as the only code path that actually runs for anyone opening the file directly.
+if (Array.isArray(SNAPSHOT.phases) && typeof SNAPSHOT.phases[0] === 'string') {
+  SNAPSHOT.phases = SNAPSHOT.phases.map(name => ({ name, emoji: '\u{1F539}', color: '#64748b' }));
+}
 const PHASES = {};
 SNAPSHOT.phases.forEach(p => { PHASES[p.name] = p; });
 const TASKS = SNAPSHOT.tasks;
@@ -1322,12 +1231,14 @@ function buildRows(){
       lr.className = 'task-label' + (isDone?' done':'');
       lr.dataset.id = t.id;
       lr.onclick = ()=>openPanel(t.id);
+      const num = document.createElement('span');
+      num.className = 'task-num'; num.textContent = t.id + '.';
       const ck = document.createElement('div');
       ck.className = 'task-check'+(isDone?' checked':'');
       ck.onclick = e=>{ e.stopPropagation(); quickToggleDone(t.id); };
       const nm = document.createElement('span');
       nm.className = 'task-name'; nm.textContent = t.name;
-      lr.appendChild(ck); lr.appendChild(nm);
+      lr.appendChild(num); lr.appendChild(ck); lr.appendChild(nm);
       if(vd!==0){
         const badge = document.createElement('span');
         badge.className = 'task-badge'; badge.style.color = vd>0 ? '#ef4444' : '#22c55e';
