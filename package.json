@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "ingest:index": "node --env-file=.env.local scripts/ingest-disclosures.js --phase=index",
-    "ingest:trades": "node --env-file=.env.local scripts/ingest-disclosures.js --phase=trades",
-    "ingest:networth": "node --env-file=.env.local scripts/ingest-disclosures.js --phase=networth"
+    "ingest:index": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=index",
+    "ingest:trades": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=trades",
+    "ingest:networth": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=networth"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",

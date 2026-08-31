@@ -31,13 +31,9 @@
 # ingest-senate-networth.mjs also shells out to `pdftotext` (poppler-utils),
 # which isn't on the default ubuntu-latest image — installed below.
 #
-# Dependency install uses `npm install` here (not `npm ci`), scoped to just
-# this workflow: package.json now lists `playwright`, but the committed
-# package-lock.json couldn't be updated in the same change (it's a ~330KB
-# generated file that the tooling used to prepare this commit couldn't
-# transfer whole — see docs/senate-waf-2026-08-29.md). `npm ci` would fail
-# on that mismatch; `npm install` resolves and installs it directly. This
-# is a temporary gap — see the doc for the one-command follow-up.
+# 2026-08-30: package-lock.json now has `playwright` resolved (verified with
+# `npm ci --dry-run` locally) — the gap noted in docs/senate-waf-2026-08-29.md
+# is closed, so this step is back to `npm ci` for reproducible installs.
 #
 # SETUP (one-time): same two secrets as ingest-house.yml
 #    NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -88,7 +84,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install poppler-utils (pdftotext)
         run: sudo apt-get update && sudo apt-get install -y poppler-utils

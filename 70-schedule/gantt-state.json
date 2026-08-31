@@ -6,9 +6,9 @@
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 35,
-    "done": 18,
-    "remaining": 17,
-    "pctDone": 51
+    "done": 23,
+    "remaining": 12,
+    "pctDone": 66
   },
   "launch": {
     "planned": "2026-08-20",
@@ -548,15 +548,15 @@
         "start": "2026-08-22",
         "end": "2026-08-25"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 5,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Fix the ingest date parser"
       ],
-      "note": "Vercel cron on paid plan, or a GitHub Action"
+      "note": "Shipped ahead of its listed dependency (task 25, still pending) — the scheduling work turned out to be independent of the date-parser bug. Two GitHub Actions workflows (.github/workflows/ingest-house.yml every 6h, ingest-senate.yml daily) replace ingest-loop.sh/ingest-senate-loop.sh; both call the existing scripts/ingest-*.mjs unchanged, writing to Supabase directly. Verified live, not just committed: House workflow has 20 recorded runs (scheduled runs completing in 15–22s, draining the unprocessed-rows backlog as designed), Senate has 9 (task 27's note has senate_trades=7,164 / senate_net_worth=83 rows from this same pipeline). See docs/automate-ingest-2026-08-26.md. Also closed a follow-up from that doc while verifying: package-lock.json now resolves playwright cleanly (npm ci --dry-run), so ingest-senate.yml's dependency-install step was switched back from npm install to npm ci; package.json's ingest:index/trades/networth scripts were pointed at the real scripts/ingest-disclosures.mjs filename (they'd been referencing a .js path that doesn't exist — unused by the workflows, which call the script directly, but broken for anyone running npm run ingest:* by hand). Not done: task 24 (future-dated trades) and task 25 (date parser) remain open, unrelated data-quality issues — automation moving the ingest off the Mac doesn't require fixing what the ingest parses."
     },
     {
       "id": 27,
@@ -570,12 +570,13 @@
         "start": "2026-08-25",
         "end": "2026-08-29"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 1,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": []
+      "dependsOn": [],
+      "note": "Root cause was two-layered: (1) raw fetch() was WAF-blocked by efdsearch.senate.gov almost 100% of the time \u2014 fixed with a real Playwright browser session (scripts/lib/senate-efd-browser.mjs); (2) the site had also been redesigned (5-column search rows, no more data.json API, PDFs replaced by HTML tables) \u2014 fixed with scrapeReportTables()/computeNetWorth(). Verified via direct Supabase query, not just a green Action run: senate_trades=7,164 rows, senate_net_worth=83 rows. See docs/senate-waf-2026-08-29.md. A full backlog catch-up run (limits raised to 2000) was in progress as of this checkmark."
     },
     {
       "id": 28,
@@ -589,9 +590,9 @@
         "start": "2026-08-16",
         "end": "2026-08-16"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 14,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
@@ -609,12 +610,13 @@
         "start": "2026-08-16",
         "end": "2026-08-16"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 14,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": []
+      "dependsOn": [],
+      "note": "G-4KLY81XR45 set in .env.local and Vercel (Production + Preview); redeploy triggered"
     },
     {
       "id": 30,
@@ -628,15 +630,15 @@
         "start": "2026-08-17",
         "end": "2026-08-18"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 12,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Set NEXT_PUBLIC_GA_MEASUREMENT_ID"
       ],
-      "note": "conversion tracking must be verified BEFORE paid spend"
+      "note": "Verified live 2026-08-30 \u2014 see docs/conversion-tracking-audit-2026-08-29.md. Both pixels were CSP-blocked (fbevents.js/events.js never loaded), the Purchase/CompletePayment code was written but never deployed, and /api/funnel-event 401'd signed-out callers via a middleware gap. All three fixed and confirmed live: real network calls to facebook.com/tr (ev=Purchase) and analytics.tiktok.com/api/v2/pixel. NOTE: this task's own dependsOn (task 29, NEXT_PUBLIC_GA_MEASUREMENT_ID) is still pending \u2014 GA itself remains unset, unrelated to whether the pixels fire."
     },
     {
       "id": 31,
@@ -650,12 +652,13 @@
         "start": "2026-08-18",
         "end": "2026-08-20"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
+      "status": "done",
+      "actualCompletionDate": "2026-08-30",
+      "varianceDays": 10,
       "needsAttention": false,
       "attentionReason": null,
-      "dependsOn": []
+      "dependsOn": [],
+      "note": "Marc registered a free key at open.pluralpolicy.com (marc61); key set in .env.local and in Vercel (Production). Vercel auto-redeployed (dpl_FAGZCJ7oNUHd2sJFujghqsiaQNUS, READY, aliased to civicwatch.app). Verified live by calling v3.openstates.org/people.geo directly with the key — returns real results (e.g. DC councilmembers for a DC address). /api/civic itself is Clerk-gated so it 401s for signed-out callers by design; that's confirmed working too (GET /api/civic 401 in runtime logs), not a bug. REMAINING: the Vercel env var is only scoped to Production right now — add the Preview checkbox too so PR/preview deploys get state legislator data as well."
     },
     {
       "id": 32,
