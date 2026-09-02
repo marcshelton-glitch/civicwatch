@@ -1,18 +1,18 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-09-02T23:49:40.777401+00:00",
+  "exportedAt": "2026-09-02T23:55:26.044827+00:00",
   "today": "2026-09-02",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 36,
-    "done": 26,
-    "remaining": 10,
-    "pctDone": 72
+    "done": 27,
+    "remaining": 9,
+    "pctDone": 75
   },
   "launch": {
-    "planned": "2026-10-08",
-    "projected": "2026-10-08",
+    "planned": "2026-10-02",
+    "projected": "2026-10-02",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -442,22 +442,22 @@
       "name": "Backfill bioguide_id on fd_trades (5,076 rows)",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-08",
-        "end": "2026-09-11"
+        "start": "2026-09-01",
+        "end": "2026-09-01"
       },
       "scheduled": {
-        "start": "2026-09-08",
-        "end": "2026-09-11"
+        "start": "2026-09-01",
+        "end": "2026-09-01"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-01",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Run one real-card checkout end to end"
       ],
-      "note": "partially applied 2026-09-01 (31 vetted pairs / 145 trades landed, coverage 93.4%->96.3%); long tail + newly-ingested trades remain — see docs/bioguide-backfill-2026-08-26.md",
+      "note": "DONE 2026-09-01. Verified against the live database, not just the doc: fd_trades has 5,232 rows, 5,034 with bioguide_id (96.2%), up from 47.5% in August. docs/bioguide-backfill-2026-08-26.md records 'Status: APPLIED 2026-09-01' and the session log describes all 31/31 pairs landing, including 12 that needed re-running once it was found the live column stores state+district ('CA14') not a bare state code. The 198 rows still null are the long tail (1-2 trades each) that the task explicitly scoped OUT; they are a future run, not unfinished work here.",
       "durationWorkdays": 3
     },
     {
@@ -465,12 +465,12 @@
       "name": "Purge/repair 27 future-dated trades",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-14",
-        "end": "2026-09-15"
+        "start": "2026-09-08",
+        "end": "2026-09-09"
       },
       "scheduled": {
-        "start": "2026-09-14",
-        "end": "2026-09-15"
+        "start": "2026-09-08",
+        "end": "2026-09-09"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -485,12 +485,12 @@
       "name": "Fix the ingest date parser",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-16",
-        "end": "2026-09-17"
+        "start": "2026-09-10",
+        "end": "2026-09-11"
       },
       "scheduled": {
-        "start": "2026-09-16",
-        "end": "2026-09-17"
+        "start": "2026-09-10",
+        "end": "2026-09-11"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -549,12 +549,12 @@
       "name": "Fix sharp on Vercel — rep photos 500 on every request",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-18",
-        "end": "2026-09-21"
+        "start": "2026-09-14",
+        "end": "2026-09-15"
       },
       "scheduled": {
-        "start": "2026-09-18",
-        "end": "2026-09-21"
+        "start": "2026-09-14",
+        "end": "2026-09-15"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -694,12 +694,12 @@
       "name": "Test push end-to-end on Chrome + Safari",
       "phase": "Phase 1 Hardening",
       "planned": {
-        "start": "2026-09-22",
-        "end": "2026-09-23"
+        "start": "2026-09-16",
+        "end": "2026-09-17"
       },
       "scheduled": {
-        "start": "2026-09-22",
-        "end": "2026-09-23"
+        "start": "2026-09-16",
+        "end": "2026-09-17"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -716,12 +716,12 @@
       "name": "Run K6 load test at 50 VUs",
       "phase": "Phase 1 Hardening",
       "planned": {
-        "start": "2026-09-24",
-        "end": "2026-09-25"
+        "start": "2026-09-18",
+        "end": "2026-09-21"
       },
       "scheduled": {
-        "start": "2026-09-24",
-        "end": "2026-09-25"
+        "start": "2026-09-18",
+        "end": "2026-09-21"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -736,12 +736,12 @@
       "name": "Resolve D-001 — which migration directory is authoritative",
       "phase": "Standard Adoption",
       "planned": {
-        "start": "2026-09-28",
-        "end": "2026-09-30"
+        "start": "2026-09-22",
+        "end": "2026-09-24"
       },
       "scheduled": {
-        "start": "2026-09-28",
-        "end": "2026-09-30"
+        "start": "2026-09-22",
+        "end": "2026-09-24"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -756,12 +756,12 @@
       "name": "Resolve D-002 — move loose docs into the standard structure",
       "phase": "Standard Adoption",
       "planned": {
-        "start": "2026-10-01",
-        "end": "2026-10-08"
+        "start": "2026-09-25",
+        "end": "2026-10-02"
       },
       "scheduled": {
-        "start": "2026-10-01",
-        "end": "2026-10-08"
+        "start": "2026-09-25",
+        "end": "2026-10-02"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -885,6 +885,17 @@
         "varianceDays": 0
       },
       "tasksRebaselined": 10
+    },
+    {
+      "resetOn": "2026-09-02",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-08",
+        "projected": "2026-10-08",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 9
     }
   ]
 }
