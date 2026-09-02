@@ -1,7 +1,7 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-09-01T01:03:49.472244+00:00",
+  "exportedAt": "2026-09-01T03:07:22.800053+00:00",
   "today": "2026-08-31",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
@@ -563,7 +563,7 @@
       "attentionReason": null,
       "dependsOn": [],
       "durationWorkdays": 1,
-      "note": "EVIDENCE: /api/rep-photo/[bioguideId] throws on every request — ~1,858 errors across 22 groups in 4 days (Vercel runtime errors, 2026-08-27 to 08-31, lastDeployment dpl_ATAR7yyowjAd828XQXigWVhzXT6z). Every representative photo on the site is broken, including on /pro where Pro is sold.\n\nERROR: 'Failed to load external module sharp-...: Could not load the \"sharp\" module using the linux-x64 runtime / ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open shared object file'.\n\nNOT THE CAUSE: the platform binaries are already in package-lock.json (@img/sharp-linux-x64 and @img/sharp-libvips-linux-x64 both present, 26 sharp packages total). 'npm install --os=linux --cpu=x64 sharp' is a no-op here — checked 2026-08-31.\n\nLIKELY CAUSE: next.config.mjs sets `const nextConfig = {}` with no serverExternalPackages. The stack frame is the turbopack runtime and the message says 'external module', so Next 16.2.2 is externalising sharp without tracing the native .so into the function bundle. Route already correctly declares runtime = 'nodejs'.\n\nFIRST THING TO TRY (verify against Next 16 docs before committing): add serverExternalPackages: ['sharp'] to nextConfig in next.config.mjs, deploy to a preview, and hit /api/rep-photo/S000344. If that misses, try outputFileTracingIncludes for the route.\n\nALSO SPOTTED: next.config.js.disabled-duplicate is sitting next to next.config.mjs. Confirm which config Next actually loads before debugging."
+      "note": "EVIDENCE: /api/rep-photo/[bioguideId] throws on every request — ~1,858 errors across 22 groups in 4 days (Vercel runtime errors, 2026-08-27 to 08-31, lastDeployment dpl_ATAR7yyowjAd828XQXigWVhzXT6z). Every representative photo on the site is broken, including on /pro where Pro is sold.\n\nERROR: 'Failed to load external module sharp-...: Could not load the \"sharp\" module using the linux-x64 runtime / ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open shared object file'.\n\nNOT THE CAUSE: the platform binaries are already in package-lock.json (@img/sharp-linux-x64 and @img/sharp-libvips-linux-x64 both present, 26 sharp packages total). 'npm install --os=linux --cpu=x64 sharp' is a no-op here — checked 2026-08-31.\n\nLIKELY CAUSE: next.config.mjs sets `const nextConfig = {}` with no serverExternalPackages. The stack frame is the turbopack runtime and the message says 'external module', so Next 16.2.2 is externalising sharp without tracing the native .so into the function bundle. Route already correctly declares runtime = 'nodejs'.\n\nFIRST THING TO TRY (verify against Next 16 docs before committing): add serverExternalPackages: ['sharp'] to nextConfig in next.config.mjs, deploy to a preview, and hit /api/rep-photo/S000344. If that misses, try outputFileTracingIncludes for the route.\n\nALSO SPOTTED: next.config.js.disabled-duplicate is sitting next to next.config.mjs. Confirm which config Next actually loads before debugging.\n\nIMPORTANT: this repo's AGENTS.md says \"This is NOT the Next.js you know\" and requires reading node_modules/next/dist/docs/ before writing code, because the installed version differs from training data. The serverExternalPackages fix suggested here comes from general Next 15/16 knowledge -- CHECK THE LOCAL DOCS FIRST, the option may be named or scoped differently in this build."
     },
     {
       "id": 28,
@@ -816,6 +816,39 @@
       "priorLaunch": {
         "planned": "2026-10-14",
         "projected": "2026-10-14",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 11
+    },
+    {
+      "resetOn": "2026-08-31",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-12",
+        "projected": "2026-10-12",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 11
+    },
+    {
+      "resetOn": "2026-08-31",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-12",
+        "projected": "2026-10-12",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 11
+    },
+    {
+      "resetOn": "2026-08-31",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-12",
+        "projected": "2026-10-12",
         "varianceDays": 0
       },
       "tasksRebaselined": 11

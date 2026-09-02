@@ -1,0 +1,50 @@
+[
+  {
+    "id": "SAMPLE-001",
+    "member": "Rep. Jordan Ellery",
+    "party": "R",
+    "chamber": "House",
+    "state": "TX",
+    "ticker": "NVDA",
+    "company": "NVIDIA Corporation",
+    "action": "BUY",
+    "amountLow": 250000,
+    "amountHigh": 500000,
+    "tradeDate": "2026-06-14",
+    "disclosedDate": "2026-07-28",
+    "context": "12 days before the House vote on the semiconductor funding bill",
+    "committee": "House Science, Space, and Technology"
+  },
+  {
+    "id": "SAMPLE-002",
+    "member": "Sen. Marion Whitfield",
+    "party": "D",
+    "chamber": "Senate",
+    "state": "CA",
+    "ticker": "LMT",
+    "company": "Lockheed Martin",
+    "action": "BUY",
+    "amountLow": 100000,
+    "amountHigh": 250000,
+    "tradeDate": "2026-05-02",
+    "disclosedDate": "2026-06-30",
+    "context": "3 weeks before the defense appropriations markup",
+    "committee": "Senate Armed Services"
+  },
+  {
+    "id": "SAMPLE-003",
+    "member": "Rep. Casey Lindqvist",
+    "party": "I",
+    "chamber": "House",
+    "state": "VT",
+    "ticker": "UNH",
+    "company": "UnitedHealth Group",
+    "action": "SELL",
+    "amountLow": 500000,
+    "amountHigh": 1000000,
+    "tradeDate": "2026-04-18",
+    "disclosedDate": "2026-06-01",
+    "context": "9 days before the CMS reimbursement rule was announced",
+    "committee": "House Energy and Commerce"
+  }
+]
