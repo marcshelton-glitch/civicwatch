@@ -1,6 +1,11 @@
 # fd_trades.bioguide_id backfill — proposed resolutions (2026-08-26)
 
-**Status: PROPOSED ONLY. No writes were made to Supabase.** This was a report-only run per the scheduled task's permission constraints (unattended writes to production require a human in the loop — see `00-governance/session-log.md`, 2026-08-13 entry, and `docs/paywall-funnel-audit.md` Finding 5).
+**Status: APPLIED 2026-09-01.** Marc confirmed the write in the `/pro`
+rewrite session; all 31 pairs below landed (12 needed a district-corrected
+`state_dst` — see `00-governance/session-log.md`, 2026-09-01 entry). Live
+coverage is now 5,034/5,230 (96.3%) against today's larger row count (new
+trades keep landing unmatched until the next backfill pass). `/pro`'s
+"Coming Soon" badge on Trade Conflict Analysis has been lifted accordingly.
 
 ## Summary
 
@@ -56,12 +61,27 @@ Everything below `n >= 3` in the top-40 unresolved list was skipped per the task
 
 No ambiguous/unresolvable names came up in this batch — every `n >= 3` pair matched exactly one Congress.gov member for that surname + state.
 
-## Next step (requires a human)
+## Applied 2026-09-01
 
-This file has ready-to-paste values for an `UPDATE ... WHERE last_name = ? AND state_dst LIKE ?` per row, e.g.:
+All 31 pairs above were applied via `execute_sql` with Marc's confirmation.
+Two corrections were needed mid-run: 12 of the pairs listed above with just
+a two-letter state (Speier, Meijer, Smith, Sherman, Rose, Schrier, Fletcher,
+Himes, Murphy, Ross, Bice, Reschenthaler, Issa, Waltz, Pallone, Auchincloss,
+Fortenberry — the ones without a district cited inline) needed the actual
+`state_dst` (state+district, e.g. `'CA14'` not `'CA'`) pulled from a live
+`SELECT` before the `UPDATE` matched anything; a first pass using the bare
+state code as written above silently matched 0 rows for those. Two rows
+that share a surname with resolved members were correctly left alone
+(`Murphy` FL07 vs. the targeted NC03 Murphy; `Smith` WA09 vs. the targeted
+NE03 Smith) — not the same person, not part of this batch.
 
-```sql
-UPDATE fd_trades SET bioguide_id = 'B000589' WHERE last_name = 'Boehner' AND state_dst = 'OH08' AND bioguide_id IS NULL;
-```
+Result: 5,034/5,230 rows now have `bioguide_id` (96.3%). The total row count
+grew from 5,076 to 5,230 between Aug 26 and Sep 1 as new trades were
+ingested, most of them not yet matched — so 96.3% understates how complete
+the *original* 5,076-row backfill target actually is; all 31 targeted
+pairs are fully resolved. See `00-governance/session-log.md`, 2026-09-01
+entry, for the full account. `/pro`'s "Coming Soon" badge on Trade Conflict
+Analysis has been lifted.
 
-**Nothing has been written to Supabase.** Applying these requires either a follow-up session where a human explicitly confirms the write, or a change to this session's permission settings to allow unattended UPDATEs. Recommend applying in a single follow-up turn with `execute_sql`, one statement per row above, then re-running the coverage query to confirm the jump (96.2% → ~99.1% if all 31 land cleanly).
+Next month's run should still pick up the long tail flagged below and the
+newly-arrived unmatched trades from routine ingestion.

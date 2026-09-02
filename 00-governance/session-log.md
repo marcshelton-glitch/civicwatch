@@ -20,6 +20,54 @@ an agent ending one: add yours.
 
 ---
 
+## 2026-09-01 · applied bioguide_id backfill, rewrote /pro around verified reality
+- **Did:** completed gantt task 32 ("Rewrite /pro around what actually
+  works"). First applied the 31-pair backfill proposed in
+  `docs/bioguide-backfill-2026-08-26.md` (Marc confirmed the write) —
+  `fd_trades.bioguide_id` coverage is now 5,034/5,230 (96.3%); the two
+  remaining nulls in that name list (`Murphy FL07`, `Smith WA09`) are
+  different people from the ones the backfill targeted and were correctly
+  left alone. Two of the 31 `UPDATE`s needed a correction mid-run — several
+  proposed rows used a bare state code (e.g. `state_dst = 'CA'`) where the
+  live column actually stores state+district (`'CA14'`); those 12 pairs were
+  re-run with the correct district once found, landing all 31/31. Then
+  audited every feature `/pro` claims against the code, not just the copy:
+  found `/api/conflict-score` (Trade Conflict Analysis), `/api/track`
+  (watchlist), `/api/push/subscribe` + `/api/send-alerts` (Track My Rep™
+  Alerts), and `/api/civic` (state/local lookup) all have **no server-side
+  Pro check** — `/pro` was marketing three of those four as paid-exclusive
+  when any signed-in (or, for conflict-score, anonymous) user already gets
+  them free. Rewrote `app/pro/page.js`: moved tracking/alerts/state-local
+  lookup into the Free column (matches reality), promoted Trade Conflict
+  Analysis off "Coming Soon" (methodology is real, coverage is now high, and
+  the API already tells the caller "no data on file" instead of a false
+  clean bill of health), kept Peer Standing Breakdown as Coming Soon
+  (genuinely not built — the AI report's peer commentary is narrative only),
+  added an honest coverage-caveat FAQ entry, and trimmed the hero/section
+  copy to match. Filed `D-003` in `DECISIONS-PENDING.md` recommending Marc
+  gate `conflict-score` server-side, since it's the one still-paid feature
+  with a completely open API.
+- **Learned:** the backfill doc's proposed `WHERE state_dst = ?` values
+  weren't all copy-pasteable as written — several used the plain two-letter
+  state from the summary table instead of the full `state_dst` (state +
+  district) the column actually stores, so a naive bulk-apply would have
+  silently updated 0 rows for 12 of the 31 pairs while reporting success.
+  Always re-verify the exact `state_dst` value against a live `SELECT`
+  before trusting a proposed `WHERE` clause copied from a report, even a
+  well-vetted one. Also: client-side blur/lock overlays are not evidence a
+  feature is actually paywalled — `conflict-score`'s route had zero auth and
+  was served with a public cache header, which a marketing page can't tell
+  just by looking at the UI.
+- **Left undone:** did not add the server-side Pro gate to
+  `conflict-score`/`track`/`push`/`civic` — that's a product decision (D-003),
+  not a copy fix, and changes what free users can do today. Also didn't
+  touch `app/terms/page.js`, which separately claims Pro includes "all
+  government levels," "town hall notifications," and "data export" — none
+  of which exist yet as built features; worth a follow-up pass once D-003 is
+  resolved, since terms and `/pro` should agree with each other too.
+
+---
+
 ## 2026-08-26 · monthly bioguide_id backfill check (report-only, no writes)
 - **Did:** ran the scheduled `civicwatch-bioguide-backfill` maintenance check.
   `fd_trades` coverage is now 4,884/5,076 (96.2%) — up sharply from the 47.5%
