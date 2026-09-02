@@ -53,3 +53,4 @@ CivicWatch Downloaded Files/
 
 # Serena MCP project config/memories (local dev tool state)
 .serena/
+*.bak
