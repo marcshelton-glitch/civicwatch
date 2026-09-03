@@ -1,3 +1,42 @@
+## ⚡ Recent Work — 2026-09-02
+
+### Data & API Updates
+- **Bioguide backfill — 96.2% coverage achieved** — Monthly maintenance completed. Coverage is now 4,884/5,076 (96.2%), up from 47.5% on Aug 13. Identified and validated 31 high-confidence name/state pairs covering 145 of 192 remaining unresolved trades via Congress.gov roster matching. Two family/seat-succession edge cases (Linda T. Sánchez vs. Loretta Sanchez in CA; Robert C. "Bobby" Scott vs. William Lloyd Scott in VA) verified as non-conflicts. **Full proposed list documented in `docs/bioguide-backfill-2026-08-26.md`, ready to apply.** No Supabase writes executed (safety hold — awaiting approval).
+
+- **Senate ingest workflow fixed** — Updated `.github/workflows/ingest-senate.yml` to use Playwright headless browser for scraping `efdsearch.senate.gov`. Root cause: site's WAF was blocking raw fetch() 100% of the time, but real browser requests worked cleanly every test. Added `playwright install --with-deps chromium` and `poppler-utils` (for PDF parsing) to workflow dependencies. Added `--skip-existing` flag to net-worth script for resumable runs on interruption. Workflow is now ready to trigger manually via GitHub Actions. **Task 27 marked done** (2026-08-30). Progress: 21/35 (60%).
+
+### Monetization & Tracking
+- **Fire Purchase events pixels — DEPLOYED LIVE** — Fixed subscription completion tracking for Meta and TikTok. Root causes identified and resolved: (1) CSP headers blocked pixel scripts entirely, (2) Purchase/CompletePayment tracking code was uncommitted draft, (3) middleware was 401'ing anonymous funnel-event logging. Fixed with 3 commits deployed to production:
+  - CSP now allowlists `connect.facebook.net`, `analytics.tiktok.com` and their event endpoints
+  - Shipped `trackPurchase()` tracking helper firing `fbq('track', 'Purchase')` and `ttq.track('CompletePayment')`
+  - Fixed middleware to allow anonymous `/api/funnel-event` logging
+  - **Verified live:** real network calls to both platforms succeeded through app code path (captured `facebook.com/tr?...ev=Purchase&cd[value]=9.99` and TikTok's `analytics.tiktok.com/api/v2/pixel`)
+  - One test row cleaned from database
+  - **Task 30 marked done** (2026-08-30). Progress: 19/35 (54%)
+  - **Next:** Manual verification in Meta Events Manager → Test Events and TikTok Ads Manager to confirm server-side event matching
+
+- **Google Analytics setup — COMPLETE** — Set `NEXT_PUBLIC_GA_MEASUREMENT_ID=G-4KLY81XR45` in `.env.local` and Vercel (Production + Preview). GA measurement phase now fires automatically via existing `<GoogleAnalytics>` component in `layout.js`. **Task 29 marked done** (2026-08-30). Progress: 22/35 (63%).
+
+### Feature & Messaging Updates
+- **Rewrite /pro messaging to match reality** — Audited actual `/api/` endpoints and live deployment against `/pro` page copy. Found 3 categories of mismatch:
+  - **Trade Conflict Analysis:** Promoted off "Coming Soon" — it's a genuinely differentiated feature (committee-jurisdiction × trade-timing overlap analysis that no competitor does), coverage is now high, API already returns real data
+  - **Track My Rep™ Alerts, Track Any Representative, State/Local Rep Lookup:** Moved to Free tier — verified all 4 routes (`/api/track`, `/api/push/subscribe`, `/api/send-alerts`, `/api/civic`) have zero server-side Pro checks; all free for signed-in users (local lookup doesn't even require sign-in)
+  - **Peer Standing Breakdown:** Kept as Coming Soon — correctly, this feature isn't built yet
+  - Added FAQ entry on trade-data coverage accuracy; trimmed hero copy to match reality
+  - **Filed decision D-003:** `/api/conflict-score` has zero auth gating but is marketed as Pro-exclusive. Needs decision: gate it to match copy, or drop the copy claim and leave it open
+  - Committed locally (commit 37c2de1); awaiting push from Mac
+
+- **State & Local Lookup deployment verification** — Verified `/api/civic` endpoint live and returning real results. Tested with DC address; returned DC councilmembers correctly. Vercel logs show correct behavior (401 for signed-out, Clerk auth working as designed). **Caveat:** env var in Vercel is scoped to **Production** only; needs to be extended to **Preview** so PR/preview deploys get state legislator data. **Task 31 nearly closed** — awaiting Preview env var update.
+
+### Open Items & Blockers
+- **Senate workflow trigger** — Workflow is fixed and ready; needs manual trigger via GitHub Actions → "Ingest Senate Disclosures" → "Run workflow" to backfill `senate_trades` and `senate_net_worth` tables (currently 0 rows)
+- **Purchase pixel verification** — Need manual check in Meta Events Manager → Test Events and TikTok Ads Manager to confirm events reaching both platforms server-side before turning on spend
+- **Preview environment state/legislator data** — Extend OpenStates API key to Vercel Preview environment (currently Production-only)
+- **Conflict-score API auth decision (D-003)** — `/api/conflict-score` currently unauthed but marketed as Pro feature; decide whether to gate or drop claim
+- **/pro page copy change** — Changes committed locally (37c2de1); needs Mac push to GitHub
+
+---
+
 ## ⚡ Recent Work — 2026-08-30
 
 ### Data & API Updates

@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-09-02 17:19 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-09-02 22:04 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -145,6 +145,7 @@ recommend; Marc decides.
 ## Recent commits
 
 ```
+907e6f0 Add AGENT-BRIEF.md so the next agent knows what was already done
 d2bab27 Fix #36 properly: load sharp lazily so the route's fallback can run
 81abc80 Fix #24 future-dated trades and #36 sharp; mark #11 and #25 done
 75f9798 Mark #23 done — bioguide_id backfill verified against the live database
@@ -152,7 +153,6 @@ d2bab27 Fix #36 properly: load sharp lazily so the route's fallback can run
 37c2de1 content: rewrite /pro around verified feature reality; apply bioguide backfill
 f1fa321 Add the Remotion clip pipeline for social video
 c731ea3 Refresh schedule export timestamps
-0d8faa5 schedule: rebaseline to 2026-09-01, tick #20, add sharp fix as #36
 ```
 
 ---
