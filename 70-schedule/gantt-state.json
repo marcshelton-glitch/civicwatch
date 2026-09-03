@@ -60,15 +60,16 @@
         "start": "2026-09-02",
         "end": "2026-09-03"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-02",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Set STRIPE_CIVICWATCH_PRO_MONTHLY_PRICE_ID and redeploy"
       ],
-      "durationWorkdays": 1
+      "durationWorkdays": 1,
+      "note": "DONE 2026-09-02. Marc subscribed to Pro with his real business card and confirmed previously-paywalled sections unlocked. Verified independently, not just on his report: Vercel runtime logs for prj_T6SQqXCl3dlHsmHdfptW7fQJTl2t show `POST /api/webhooks/stripe 200` at 2026-09-03T05:27:40Z logging '✅ Pro activated for a new subscriber' — the checkout.session.completed handler in app/api/webhooks/stripe/route.js ran and set isPro/tier/stripeCustomerId/stripeSubscriptionId on the Clerk user. Found in passing, not yet fixed: the same log window also shows repeated `400 Webhook signature verification failed: No signatures found matching...` for the identical events. Root cause via Stripe API (GetWebhookEndpoints on acct_1TJO7aPe8la2Z0hh): TWO live, enabled webhook endpoints exist — we_1TNjdLPe8la2Z0hhfGoeZEqE at https://www.civicwatch.app/api/webhooks/stripe (current, correct) and a stale we_1TLcoxPe8la2Z0hhpLoWB1kp at https://civicwatch-six.vercel.app/api/webhooks/stripe (created earlier, still subscribed to the legacy invoice.payment_succeeded event name rather than invoice.paid). Both domains resolve to the same Vercel project/code, but each Stripe endpoint has its own signing secret and the app only reads one STRIPE_WEBHOOK_SECRET, so every event Stripe fires to the stale endpoint fails signature verification — harmless today (the correct endpoint still gets its copy and succeeds) but it is pure noise in error logs and a landmine if that URL is ever repointed. Recommend deleting we_1TLcoxPe8la2Z0hhpLoWB1kp; left undone pending Marc's go-ahead since removing a Stripe webhook endpoint is an account-settings change."
     },
     {
       "id": 1,

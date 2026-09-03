@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-09-02 22:04 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-09-02 22:35 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,10 +8,37 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 31/36 done · 5 open
+- **Progress:** 32/36 done · 4 open
 - **Projected launch:** 2026-09-22
 
 ## Already done — do not redo
+
+### #21 Run one real-card checkout end to end
+*Completed 2026-09-02.*
+
+DONE 2026-09-02. Marc subscribed to Pro with his real business card and
+confirmed previously-paywalled sections unlocked. Verified independently, not
+just on his report: Vercel runtime logs for prj_T6SQqXCl3dlHsmHdfptW7fQJTl2t
+show `POST /api/webhooks/stripe 200` at 2026-09-03T05:27:40Z logging '✅ Pro
+activated for a new subscriber' — the checkout.session.completed handler in
+app/api/webhooks/stripe/route.js ran and set
+isPro/tier/stripeCustomerId/stripeSubscriptionId on the Clerk user. Found in
+passing, not yet fixed: the same log window also shows repeated `400 Webhook
+signature verification failed: No signatures found matching...` for the
+identical events. Root cause via Stripe API (GetWebhookEndpoints on
+acct_1TJO7aPe8la2Z0hh): TWO live, enabled webhook endpoints exist —
+we_1TNjdLPe8la2Z0hhfGoeZEqE at https://www.civicwatch.app/api/webhooks/stripe
+(current, correct) and a stale we_1TLcoxPe8la2Z0hhpLoWB1kp at
+https://civicwatch-six.vercel.app/api/webhooks/stripe (created earlier, still
+subscribed to the legacy invoice.payment_succeeded event name rather than
+invoice.paid). Both domains resolve to the same Vercel project/code, but each
+Stripe endpoint has its own signing secret and the app only reads one
+STRIPE_WEBHOOK_SECRET, so every event Stripe fires to the stale endpoint fails
+signature verification — harmless today (the correct endpoint still gets its
+copy and succeeds) but it is pure noise in error logs and a landmine if that
+URL is ever repointed. Recommend deleting we_1TLcoxPe8la2Z0hhpLoWB1kp; left
+undone pending Marc's go-ahead since removing a Stripe webhook endpoint is an
+account-settings change.
 
 ### #24 Purge/repair 27 future-dated trades
 *Completed 2026-09-02.*
@@ -113,21 +140,8 @@ task 24 (future-dated trades) and task 25 (date parser) remain open, unrelated
 data-quality issues — automation moving the ingest off the Mac doesn't require
 fixing what the ingest parses.
 
-### #27 Senate ingest — senate_trades and senate_net_worth are empty
-*Completed 2026-08-30.*
-
-Root cause was two-layered: (1) raw fetch() was WAF-blocked by
-efdsearch.senate.gov almost 100% of the time — fixed with a real Playwright
-browser session (scripts/lib/senate-efd-browser.mjs); (2) the site had also
-been redesigned (5-column search rows, no more data.json API, PDFs replaced by
-HTML tables) — fixed with scrapeReportTables()/computeNetWorth(). Verified via
-direct Supabase query, not just a green Action run: senate_trades=7,164 rows,
-senate_net_worth=83 rows. See docs/senate-waf-2026-08-29.md. A full backlog
-catch-up run (limits raised to 2000) was in progress as of this checkmark.
-
 ## Next up
 
-- **#21 Run one real-card checkout end to end** — 2026-09-02 → 2026-09-03 · P0 Launch Blockers
 - **#14 Verify Clerk webhook secret, test user.created** — 2026-09-04 → 2026-09-07 · Phase 1 Hardening
 - **#6 Test push end-to-end on Chrome + Safari** — 2026-09-08 → 2026-09-09 · Phase 1 Hardening
 - **#34 Resolve D-001 — which migration directory is authoritative** — 2026-09-10 → 2026-09-14 · Standard Adoption
@@ -145,6 +159,7 @@ recommend; Marc decides.
 ## Recent commits
 
 ```
+95b2896 Refresh agent brief
 907e6f0 Add AGENT-BRIEF.md so the next agent knows what was already done
 d2bab27 Fix #36 properly: load sharp lazily so the route's fallback can run
 81abc80 Fix #24 future-dated trades and #36 sharp; mark #11 and #25 done
@@ -152,7 +167,6 @@ d2bab27 Fix #36 properly: load sharp lazily so the route's fallback can run
 0c8c7c5 Chart: deep links and a working task panel over file://
 37c2de1 content: rewrite /pro around verified feature reality; apply bioguide backfill
 f1fa321 Add the Remotion clip pipeline for social video
-c731ea3 Refresh schedule export timestamps
 ```
 
 ---
