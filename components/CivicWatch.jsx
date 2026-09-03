@@ -2524,7 +2524,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   const isLive = rep.isLive
 
   useEffect(() => {
-    if ((repTab === 'votes' || repTab === 'overview') && isLive && !liveVotes && !loadingVotes) {
+    if ((repTab === 'votes' || repTab === 'overview' || repTab === 'ai') && isLive && !liveVotes && !loadingVotes) {
       setLoadingVotes(true)
       fetch(`/api/congress?type=votes&bioguideId=${rep.id}`)
         .then(r => r.json())
@@ -2544,7 +2544,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if ((repTab === 'wealth' || repTab === 'overview' || compareMode) && isLive && !liveTrades && !loadingTrades) {
+    if ((repTab === 'wealth' || repTab === 'overview' || repTab === 'ai' || compareMode) && isLive && !liveTrades && !loadingTrades) {
       setLoadingTrades(true)
       fetch(`/api/congress?type=trades&bioguideId=${rep.id}`)
         .then(r => r.json())
@@ -4543,14 +4543,14 @@ Sincerely,
       )}
 
       {repTab === "ai" && (
-        <AIAnalysisTab rep={rep} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
+        <AIAnalysisTab rep={{ ...rep, votes, trades }} dataLoading={isLive && (loadingVotes || loadingTrades)} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
       )}
     </div>
   )
 }
 
 
-function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp }) {
+function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPortal, isProProp }) {
   const { user, isSignedIn } = useUser()
   const { openSignIn } = useClerk()
   const [status, setStatus] = useState('idle') // idle | loading | preview | full | error
@@ -4618,9 +4618,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
               <button
                 onClick={() => runAnalysis('preview')}
-                disabled={previewsLeft === 0}
-                style={{ padding: '13px 28px', background: previewsLeft > 0 ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 ? 'pointer' : 'default', letterSpacing: 0.5 }}>
-                Preview Analysis →
+                disabled={previewsLeft === 0 || dataLoading}
+                style={{ padding: '13px 28px', background: previewsLeft > 0 && !dataLoading ? 'linear-gradient(135deg, rgba(91,156,255,0.3), rgba(27,42,107,0.5))' : 'rgba(255,255,255,0.05)', border: `1px solid ${previewsLeft > 0 && !dataLoading ? 'rgba(91,156,255,0.5)' : S.border}`, borderRadius: 10, color: previewsLeft > 0 && !dataLoading ? '#5B9CFF' : S.gray, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: previewsLeft > 0 && !dataLoading ? 'pointer' : 'default', letterSpacing: 0.5 }}>
+                {dataLoading ? 'Loading voting & trade data…' : 'Preview Analysis →'}
               </button>
               <a href="/pro" onClick={() => trackUpgradeClick("ai_analysis_idle_signed_in")}
                 style={{ padding: '13px 28px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 10, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, textDecoration: 'none', boxShadow: `0 4px 20px rgba(212,175,55,0.3)` }}>
@@ -4681,8 +4681,9 @@ function AIAnalysisTab({ rep, S, handleSubscribe, handleBillingPortal, isProProp
         </div>
         <button
           onClick={() => runAnalysis('full')}
-          style={{ padding: '13px 32px', background: `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 0.5, boxShadow: `0 4px 20px rgba(178,34,52,0.35)` }}>
-          Generate Analysis →
+          disabled={dataLoading}
+          style={{ padding: '13px 32px', background: dataLoading ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: dataLoading ? S.gray : 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: dataLoading ? 'default' : 'pointer', letterSpacing: 0.5, boxShadow: dataLoading ? 'none' : `0 4px 20px rgba(178,34,52,0.35)` }}>
+          {dataLoading ? 'Loading voting & trade data…' : 'Generate Analysis →'}
         </button>
       </div>
     )
