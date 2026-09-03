@@ -1,18 +1,18 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-09-02T23:55:26.044827+00:00",
+  "exportedAt": "2026-09-03T00:16:40.286097+00:00",
   "today": "2026-09-02",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 36,
-    "done": 27,
-    "remaining": 9,
-    "pctDone": 75
+    "done": 31,
+    "remaining": 5,
+    "pctDone": 86
   },
   "launch": {
-    "planned": "2026-10-02",
-    "projected": "2026-10-02",
+    "planned": "2026-09-22",
+    "projected": "2026-09-22",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -465,12 +465,12 @@
       "name": "Purge/repair 27 future-dated trades",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-08",
-        "end": "2026-09-09"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "scheduled": {
-        "start": "2026-09-08",
-        "end": "2026-09-09"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "status": "done",
       "actualCompletionDate": "2026-09-02",
@@ -486,12 +486,12 @@
       "name": "Fix the ingest date parser",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-10",
-        "end": "2026-09-11"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "scheduled": {
-        "start": "2026-09-10",
-        "end": "2026-09-11"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "status": "done",
       "actualCompletionDate": "2026-09-02",
@@ -551,21 +551,21 @@
       "name": "Fix sharp on Vercel — rep photos 500 on every request",
       "phase": "P0 Product Claim",
       "planned": {
-        "start": "2026-09-14",
-        "end": "2026-09-15"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "scheduled": {
-        "start": "2026-09-14",
-        "end": "2026-09-15"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-02",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
       "durationWorkdays": 1,
-      "note": "EVIDENCE: /api/rep-photo/[bioguideId] throws on every request — ~1,858 errors across 22 groups in 4 days (Vercel runtime errors, 2026-08-27 to 08-31, lastDeployment dpl_ATAR7yyowjAd828XQXigWVhzXT6z). Every representative photo on the site is broken, including on /pro where Pro is sold.\n\nERROR: 'Failed to load external module sharp-...: Could not load the \"sharp\" module using the linux-x64 runtime / ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open shared object file'.\n\nNOT THE CAUSE: the platform binaries are already in package-lock.json (@img/sharp-linux-x64 and @img/sharp-libvips-linux-x64 both present, 26 sharp packages total). 'npm install --os=linux --cpu=x64 sharp' is a no-op here — checked 2026-08-31.\n\nLIKELY CAUSE: next.config.mjs sets `const nextConfig = {}` with no serverExternalPackages. The stack frame is the turbopack runtime and the message says 'external module', so Next 16.2.2 is externalising sharp without tracing the native .so into the function bundle. Route already correctly declares runtime = 'nodejs'.\n\nFIRST THING TO TRY (verify against Next 16 docs before committing): add serverExternalPackages: ['sharp'] to nextConfig in next.config.mjs, deploy to a preview, and hit /api/rep-photo/S000344. If that misses, try outputFileTracingIncludes for the route.\n\nALSO SPOTTED: next.config.js.disabled-duplicate is sitting next to next.config.mjs. Confirm which config Next actually loads before debugging.\n\nIMPORTANT: this repo's AGENTS.md says \"This is NOT the Next.js you know\" and requires reading node_modules/next/dist/docs/ before writing code, because the installed version differs from training data. The serverExternalPackages fix suggested here comes from general Next 15/16 knowledge -- CHECK THE LOCAL DOCS FIRST, the option may be named or scoped differently in this build."
+      "note": "DONE 2026-09-02. Verified in production: S000344, P000197, O000172 and M001165 all return HTTP 200 with real JPEG data (was HTTP 500 on every request, ~1,858 errors in 4 days).\n\nROOT CAUSE was not the bundler. The route already had a try/catch that falls back to the original image when sharp fails -- it never ran, because `import sharp from 'sharp'` at the TOP of the module fails at module-load time, killing the route before GET is entered. Fixed by importing sharp lazily inside the try.\n\nTWO WRONG DIAGNOSES, recorded so nobody repeats them: (1) `npm install --os=linux --cpu=x64 sharp` is a no-op -- the linux binaries are already in package-lock.json. (2) `serverExternalPackages: ['sharp']` is also a no-op -- sharp is already in Next's built-in server-external-packages.jsonc. outputFileTracingIncludes was deployed and did NOT fix it either; it was kept because it is still correct for a dlopen-loaded native lib, but it is not the fix.\n\nREMAINING (not a blocker): sharp still does not load on Vercel, so photos serve as original JPEG rather than resized webp -- larger payloads, no 200x200 resize. Photos work; this is a performance follow-up, not a bug."
     },
     {
       "id": 28,
@@ -696,12 +696,12 @@
       "name": "Test push end-to-end on Chrome + Safari",
       "phase": "Phase 1 Hardening",
       "planned": {
-        "start": "2026-09-16",
-        "end": "2026-09-17"
+        "start": "2026-09-08",
+        "end": "2026-09-09"
       },
       "scheduled": {
-        "start": "2026-09-16",
-        "end": "2026-09-17"
+        "start": "2026-09-08",
+        "end": "2026-09-09"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -718,12 +718,12 @@
       "name": "Run K6 load test at 50 VUs",
       "phase": "Phase 1 Hardening",
       "planned": {
-        "start": "2026-09-18",
-        "end": "2026-09-21"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "scheduled": {
-        "start": "2026-09-18",
-        "end": "2026-09-21"
+        "start": "2026-09-02",
+        "end": "2026-09-02"
       },
       "status": "done",
       "actualCompletionDate": "2026-09-02",
@@ -739,12 +739,12 @@
       "name": "Resolve D-001 — which migration directory is authoritative",
       "phase": "Standard Adoption",
       "planned": {
-        "start": "2026-09-22",
-        "end": "2026-09-24"
+        "start": "2026-09-10",
+        "end": "2026-09-14"
       },
       "scheduled": {
-        "start": "2026-09-22",
-        "end": "2026-09-24"
+        "start": "2026-09-10",
+        "end": "2026-09-14"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -759,12 +759,12 @@
       "name": "Resolve D-002 — move loose docs into the standard structure",
       "phase": "Standard Adoption",
       "planned": {
-        "start": "2026-09-25",
-        "end": "2026-10-02"
+        "start": "2026-09-15",
+        "end": "2026-09-22"
       },
       "scheduled": {
-        "start": "2026-09-25",
-        "end": "2026-10-02"
+        "start": "2026-09-15",
+        "end": "2026-09-22"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -899,6 +899,17 @@
         "varianceDays": 0
       },
       "tasksRebaselined": 9
+    },
+    {
+      "resetOn": "2026-09-02",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-02",
+        "projected": "2026-10-02",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
     }
   ]
 }

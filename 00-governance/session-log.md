@@ -139,3 +139,52 @@ an agent ending one: add yours.
   unblock. Gantt #23 (bioguide_id backfill) should be reframed as "fix the
   ingest name matcher for sitting members," not "run the backfill" — see the
   updated conflict-score memory for the Doggett/Chu/Lee specifics.
+
+## 2026-09-02 · verified seven "done" tasks, fixed #24 and #36
+
+- **Checked before ticking.** Marc believed #6, #11, #14, #23, #24, #25 and #36
+  were complete. Verified each against evidence rather than assumption; **only
+  #23 held up** on first pass. #24 had 29 future-dated rows still live in
+  `fd_trades` (not 27 — two more had been ingested), and #36 was returning HTTP
+  500 in production. Six of seven would have been wrong to mark done.
+
+- **#24 — repaired, not purged.** The 29 rows had `transaction_date` up to
+  2030-10-15, all from one 2026-08-27 batch. Comparing the authoritative `year`
+  column showed drifts of 0/+5/+6/+8/+10 years — no systematic offset, so no
+  correction could be derived. Set `transaction_date = NULL` rather than
+  deleting: the filings are real (they have `doc_id`s), only the date was
+  wrong, and NULL is exactly what the fixed parser now produces for these
+  inputs. After: 0 future-dated, max date 2026-08-21, row count unchanged at
+  5,232. Backup and full reasoning in
+  `docs/future-dated-trades-repair-2026-09-02.md`.
+
+- **#25 was already done** — `parseDate()` rejects any date later than today
+  (`d.getTime() > todayUTC`), committed in `8df8c89`. Marked on that evidence.
+
+- **#36 — two wrong diagnoses before the real one.** Recorded so they are not
+  repeated:
+  1. `npm install --os=linux --cpu=x64 sharp` — a **no-op**. The linux binaries
+     are already in `package-lock.json`.
+  2. `serverExternalPackages: ['sharp']` — also a **no-op**. sharp is already
+     in Next's built-in `server-external-packages.jsonc`. Caught only because
+     AGENTS.md requires reading `node_modules/next/dist/docs/` first.
+  3. `outputFileTracingIncludes` — deployed, error unchanged. Kept (it is still
+     correct for a dlopen-loaded native lib) but it is **not** the fix.
+
+  The real cause: the route already had a try/catch falling back to the
+  original image, but `import sharp from 'sharp'` at the **top of the module**
+  fails at load time, so the route 500s before `GET` runs and its own fallback
+  never fires. Made the import lazy. Verified in production — S000344, P000197,
+  O000172, M001165 all return HTTP 200 with real JPEG data.
+
+  **Still open (not a blocker):** sharp still does not load on Vercel, so
+  photos serve as the original JPEG rather than a resized webp. Photos work;
+  restoring webp is a performance follow-up.
+
+- **#11** marked done on Marc's word that he ran the 50-VU test a few days ago
+  and it passed. No artifact committed. Note `load-tests/README.md`'s own
+  caveat: edge caching means `load.js` largely measures the CDN, not Supabase.
+
+- **#6 and #14 left open** — manual verifications with no recorded artifact.
+
+- **Launch pulled in to 2026-09-22** (from 2026-10-12) as a result.
