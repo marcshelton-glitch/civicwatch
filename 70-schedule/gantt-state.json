@@ -472,13 +472,14 @@
         "start": "2026-09-08",
         "end": "2026-09-09"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-02",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "durationWorkdays": 1
+      "durationWorkdays": 1,
+      "note": "DONE 2026-09-02. 29 rows (not 27 — two more had been ingested) had a future transaction_date, latest 2030-10-15, all from one 2026-08-27 batch. Repaired by setting transaction_date = NULL, not by deleting the rows and not by guessing a correction: the trades are real filings with doc_ids, only the date was wrong, and NULL is exactly what the fixed parser (#25) now produces for these inputs. Verified after: 0 future-dated, max date 2026-08-21, row count unchanged at 5,232. Full pre-repair backup and reasoning in docs/future-dated-trades-repair-2026-09-02.md."
     },
     {
       "id": 25,
@@ -492,15 +493,16 @@
         "start": "2026-09-10",
         "end": "2026-09-11"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-02",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Purge/repair 27 future-dated trades"
       ],
-      "durationWorkdays": 1
+      "durationWorkdays": 1,
+      "note": "DONE — verified in HEAD (commit 8df8c89). parseDate() in scripts/ingest-disclosures.mjs now rejects any date later than today: `if (d.getTime() > todayUTC) return null`. The code's own comment names the bug: the old guard only rejected years past 2030, which itself became a future date once the calendar caught up. Also rejects UTC rollover dates (Feb 30) and pre-2000 bond maturity dates."
     },
     {
       "id": 26,
@@ -723,13 +725,14 @@
         "start": "2026-09-18",
         "end": "2026-09-21"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-02",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "durationWorkdays": 1
+      "durationWorkdays": 1,
+      "note": "DONE — Marc ran the 50-VU test a few days before 2026-09-02 and reports it passed. Recorded on his confirmation; no run artifact was committed. Note load-tests/README.md's own caveat: most routes sit behind Vercel edge caching, so load.js largely measures the CDN rather than Supabase. stress-networth.js is the test that actually reaches the database, and it needs a fresh Clerk Pro token or it measures nothing."
     },
     {
       "id": 34,

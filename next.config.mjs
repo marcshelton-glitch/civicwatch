@@ -2,6 +2,27 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // sharp's native binary never reached the deployed function, so
+  // /api/rep-photo/[bioguideId] threw ERR_DLOPEN_FAILED on every request
+  // (~1,858 errors in 4 days) — every representative photo on the site was
+  // broken, including on /pro.
+  //
+  // Two things that are NOT the cause, both checked against this repo rather
+  // than assumed:
+  //   - The linux platform binaries ARE already in package-lock.json, so
+  //     `npm install --os=linux --cpu=x64 sharp` changes nothing.
+  //   - `serverExternalPackages: ['sharp']` is a no-op: sharp is already listed
+  //     in next/dist/lib/server-external-packages.jsonc and auto-externalised.
+  //
+  // The problem is tracing. sharp loads libvips via dlopen at runtime rather
+  // than a static import, so the output file tracer never sees the .so and
+  // omits it from the serverless bundle. @img/sharp-libvips-linux-x64 does not
+  // even ship a package.json, so it is not resolvable as a module either.
+  // Force the binaries in.
+  outputFileTracingIncludes: {
+    '/api/rep-photo/[bioguideId]': ['./node_modules/@img/**'],
+  },
+
   async headers() {
     return [
       {
