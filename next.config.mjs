@@ -14,6 +14,12 @@ const nextConfig = {
   //   - `serverExternalPackages: ['sharp']` is a no-op: sharp is already listed
   //     in next/dist/lib/server-external-packages.jsonc and auto-externalised.
   //
+  // NOTE: this alone did NOT fix it — deployed 2026-09-02, error unchanged.
+  // The actual fix was making the sharp import lazy in the route (a top-level
+  // static import failed at module load, killing the route before its own
+  // try/catch fallback could run). This stays because it is still correct and
+  // may let sharp load properly, which yields webp instead of the fallback.
+  //
   // The problem is tracing. sharp loads libvips via dlopen at runtime rather
   // than a static import, so the output file tracer never sees the .so and
   // omits it from the serverless bundle. @img/sharp-libvips-linux-x64 does not

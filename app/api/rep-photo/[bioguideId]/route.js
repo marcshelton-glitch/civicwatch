@@ -1,7 +1,14 @@
 export const runtime = 'nodejs'
 
 import { NextResponse } from 'next/server'
-import sharp from 'sharp'
+// sharp is imported lazily inside the handler, NOT at the top of the module.
+// A static top-level import fails at MODULE LOAD time when the native binary
+// is missing, which killed the whole route with a 500 before GET ever ran --
+// so the try/catch below, which exists precisely to fall back to the original
+// image, never got a chance. ~1,858 errors in four days and every
+// representative photo on the site broken, including on /pro.
+// Loading it lazily lets the fallback do its job: webp when sharp works,
+// the untouched original when it does not.
 
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
 
@@ -63,6 +70,7 @@ export async function GET(request, { params }) {
   const buffer = await res.arrayBuffer()
 
   try {
+    const sharp = (await import('sharp')).default
     const webpBuffer = await sharp(Buffer.from(buffer))
       .resize(200, 200, { fit: 'cover' })
       .webp({ quality: 80 })
@@ -73,10 +81,13 @@ export async function GET(request, { params }) {
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
       },
     })
-  } catch {
+  } catch (err) {
+    // Degraded but working: serve the original image unresized. Logged so a
+    // silently-degraded route is visible rather than looking healthy.
+    console.warn('[rep-photo] sharp unavailable, serving original:', err?.message)
     return new Response(buffer, {
       headers: {
-        'Content-Type': 'image/jpeg',
+        'Content-Type': res.headers.get('content-type') || 'image/jpeg',
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
       },
     })
