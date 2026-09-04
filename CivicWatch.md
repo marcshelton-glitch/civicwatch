@@ -1,3 +1,26 @@
+## ⚡ 2026-09-03 — Conversion tracking, webhook routing, and data cleanup
+
+**Shipped this session:**
+- **Recent votes display** — Fixed AI Analysis tab reading stale votes/trades. Commit 094af52, Vercel deploy in progress.
+- **Pro page rewrite** — Repositioned 6 features (Trade Conflict Analysis promoted; Track My Rep, State/Local Lookup moved to Free; Peer Standing stays Coming Soon). Applied bioguide backfill raising fd_trades coverage from 93.4% → 96.3% (5,034/5,230). Filed decision D-003 on /api/conflict-score auth gate. Commit 37c2de1 (local, ready to push).
+- **Clerk webhook routing** — Root cause identified: domain 307-redirect blocking Svix delivery. Endpoint URL in Clerk dashboard registered as `civicwatch.app` but domain redirects to `www.civicwatch.app` (where Vercel serves). Svix doesn't follow POST redirects. Fix: Update endpoint URL to www version in Clerk → Configure → Webhooks, then verify CLERK_WEBHOOK_SECRET is actually set in Vercel (it's missing from both .env.local and the .env.vercel snapshot).
+- **Ingest date parser** — Fixed UTC timezone bug in `parseDate()` that was shifting dates back a day on servers west of UTC. Added round-trip validation rejecting auto-corrected invalid dates (e.g. 2/30/2024).
+- **Senate ingest workflow** — Updated `.github/workflows/ingest-senate.yml` to use Playwright headless browser (efdsearch.senate.gov blocks raw fetch via WAF). Workflow file requires GitHub web edit + manual trigger (GitHub App lacks Workflows permission). Timeout bumped 60 → 120 min for ~1,500 live pages.
+- **Conversion pixels (Meta + TikTok)** — Both Purchase/CompletePayment events firing end-to-end in production. Fixed 3 blocking issues: (1) CSP header didn't allowlist `connect.facebook.net` / `analytics.tiktok.com`, (2) Purchase tracking code was uncommitted, (3) `/api/funnel-event` middleware was 401'ing signed-out users. Deployed & verified live (3 commits). Meta/TikTok server-side event matching needs manual verification in their Events Manager dashboards.
+- **Lazy-init (Stripe)** — PR #1 already resolved on main via commit 7d1c8b9. Vercel deploy failure was from unrelated cron job (now removed from vercel.json). Closed PR #1 with explanatory note.
+- **Future-dated trades purge** — Removed 27 garbage rows from `fd_trades`. Root cause: parser was grabbing bond maturity dates instead of transaction dates. 25 rows had no recoverable date (reset source filings to unprocessed for re-parse with fixed logic), 2 rows (Keating, DelBene) had dates embedded in garbled text (repaired in place: 2024-09-11, 2022-01-03). fd_trades now 0 future-dated.
+- **Gantt chart housekeeping** — Updated task numbering display, checked off completed work. Progress 22/35 (63%).
+
+**Open/blockers:**
+- Push notifications testing (Chrome + Safari) — still pending, task #6.
+- Clerk webhook still needs endpoint URL update + CLERK_WEBHOOK_SECRET verification in Vercel.
+- Senate ingest workflow needs GitHub web file edit + workflow dispatch to run.
+- Meta/TikTok pixel server-side event matching needs Events Manager verification.
+
+**Next priority:** Push the /pro rewrite (commit 37c2de1), fix Clerk endpoint URL, deploy and test Senate ingest, verify conversion pixel events in Meta/TikTok dashboards.
+
+---
+
 ## ⚡ Recent Work — 2026-09-02
 
 ### Data & API Updates
