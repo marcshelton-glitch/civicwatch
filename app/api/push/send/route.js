@@ -23,7 +23,7 @@ const getSupabase = () => createClient(
 function checkAuth(request) {
   const auth = request.headers.get('authorization')
   const secret = process.env.INTERNAL_API_SECRET
-  return secret && auth === `Bearer ${secret}`
+  return !!secret && auth === `Bearer ${secret}`
 }
 
 // POST /api/push/send — send a push notification to one or all users

@@ -67,6 +67,19 @@ const isPublicRoute = createRouteMatcher([
   // blocked robots.txt/sitemap.xml above.
   '/api/alerts/x-bot(.*)',
   '/api/send-alerts(.*)',
+  // Same bug, same fix, third time in this file (task #6, 2026-09-04):
+  // app/api/push/send/route.js authenticates via `Authorization: Bearer
+  // INTERNAL_API_SECRET` inside the handler, exactly like the two cron
+  // routes just above — but was never added here, so every call was
+  // rejected by Clerk (curl has no session cookie) before the route's own
+  // checkAuth() ever ran. Confirmed live: the response carried
+  // x-clerk-auth-reason: token-invalid and x-clerk-auth-status: signed-out,
+  // and a temporary diagnostic added directly to the route's JSON response
+  // never appeared in any response — proof the handler was never reached.
+  // Hours were spent suspecting INTERNAL_API_SECRET itself (rotating it,
+  // re-saving it three different ways) before checking here; it was never
+  // the problem.
+  '/api/push/send(.*)',
 ])
 
 // Only Stripe checkout and billing portal require authentication at middleware level
