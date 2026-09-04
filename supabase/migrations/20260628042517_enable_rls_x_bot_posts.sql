@@ -1,0 +1,1 @@
+ALTER TABLE public.x_bot_posts ENABLE ROW LEVEL SECURITY;
