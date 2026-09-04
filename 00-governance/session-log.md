@@ -20,6 +20,74 @@ an agent ending one: add yours.
 
 ---
 
+## 2026-09-03 · replaced the empty locked-preview box with a shimmer skeleton
+- **Did:** follow-up to ADR-004's "left undone" item. The non-Pro branch of the
+  flagged-trades card in `CivicWatch.jsx` (wealth tab) was blurring an empty
+  array after the redaction fix, so free users saw a blank blurred rectangle
+  under the lock button instead of the old (leaky) blurred ticker text.
+  Replaced it with `.ai-shimmer` skeleton bars — the same shimmer class
+  already used for the AI-report loading state (line ~4710) — sized in pairs
+  to suggest "ticker · committee name" without rendering any real string.
+  Row count comes from `conflictScore.score`, which is intentionally sent
+  free (capped at 2, matching the old `.slice(0, 2)`). No API change; this is
+  UI-only, reusing an existing class rather than adding a new animation.
+- **Learned:** nothing new — this was cosmetic polish Marc asked for right
+  after seeing the redaction fix, not a bug.
+- **Left undone:** nothing outstanding on D-003 now.
+
+## 2026-09-03 · resolved D-003 (option B) — conflict-score now soft-gated
+- **Did:** Marc chose option B for D-003. Gated `app/api/conflict-score/route.js`
+  with `getProStatus()` (the soft check in `lib/requirePro.js`) rather than the
+  hard `requirePro()` block the option's own writeup assumed: the wealth-tab UI
+  in `CivicWatch.jsx` was already built to show the score/tier summary and the
+  "no data"/"none flagged" states free to everyone, blurring only the
+  flagged-trade list for non-Pro. A hard block would have taken that free
+  summary away — bigger than what D-003 asked for. Instead, `flaggedTrades` is
+  now redacted to `[]` server-side for non-Pro callers while `score`/`tier`
+  compute unchanged, and the route's `Cache-Control` moved from a shared
+  `public, s-maxage=3600` to `private, no-store` since the body now varies by
+  caller. `track`, the push/alerts trio, and `civic` untouched, per B. Recorded
+  as ADR-004 in `00-governance/decision-log.md`; D-003 removed from
+  `DECISIONS-PENDING.md` (now empty).
+- **Learned:** a resolved decision's own options list can undersell the right
+  implementation. D-003's option B said "gate conflict-score" as if it were a
+  binary like the other three routes, but this route already had a
+  free/paid split baked into the frontend that the write-up didn't account
+  for — worth rereading the actual render code, not just the API route, before
+  implementing a gate.
+- **Left undone:** no UI change. The free-tier blur preview now blurs an empty
+  array instead of real (if CSS-obscured) tickers — same lock/CTA, slightly
+  emptier-looking box. Cosmetic; flagged in ADR-004 as a possible follow-up,
+  not done here. Did not touch `track`/push/`civic` — B leaves those free by
+  design, not an oversight.
+
+## 2026-09-03 · marked #6 done on Marc's word; flagged gantt/brief drift
+- **Did:** Marc reported (in a separate chat) that he'd finished #6 ("Test push
+  end-to-end on Chrome + Safari") and that Claude there had agreed to tick it
+  off. This session has no record of that conversation, but accepted the
+  current, direct confirmation as sufficient — same basis already used for
+  #11 (K6 load test): Marc's word, no artifact. Set `70-schedule/gantt-state.json`
+  task 6 to done, `actualCompletionDate: 2026-09-03`, noted the lack of an
+  artifact in-line. Did not touch `totals`, `launch`, or `AGENT-BRIEF.md`.
+- **Learned:** `70-schedule/gantt-state.json` and `AGENT-BRIEF.md` are already
+  behind `00-governance/decision-log.md` — ADR-002 (resolves D-002/#35) and
+  ADR-003 (resolves D-001/#34) are both dated 2026-09-03 and accepted, but the
+  gantt file still lists #34/#35 pending and the brief still says 32/36 done.
+  AGENTS.md's own pointer block (top of that file) has already been hand-updated
+  to say "33/36 done" with #35 listed complete — so the pointer, the decision
+  log, the gantt JSON, and the brief are now four sources in four different
+  states. None of them should be hand-corrected further; this needs the actual
+  Project Schedule shortcut run once, end to end.
+- **Left undone:** did not recompute `totals`/`launch` in gantt-state.json or
+  regenerate `AGENT-BRIEF.md` — AGENTS.md is explicit that both are shortcut
+  output, not something to hand-edit, and guessing at the recomputation risks
+  adding a fifth inconsistent state rather than fixing the four that exist.
+  Also did not verify #14 (Clerk webhook) — reviewed
+  `app/api/webhooks/clerk/route.js` and confirmed `/api/health` does not check
+  `CLERK_WEBHOOK_SECRET` at all (only Stripe's), so #14 has no automated
+  signal and is genuinely a manual-test task, same shape as #6 and #11 before
+  it.
+
 ## 2026-09-01 · applied bioguide_id backfill, rewrote /pro around verified reality
 - **Did:** completed gantt task 32 ("Rewrite /pro around what actually
   works"). First applied the 31-pair backfill proposed in

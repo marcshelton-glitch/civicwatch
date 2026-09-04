@@ -369,6 +369,7 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
   const [selectedRep, setSelectedRep] = useState(null)
   const [repTab, setRepTab] = useState("overview")
   const [tracked, setTracked] = useState([])
+  const [trackedLoaded, setTrackedLoaded] = useState(false)
   const [alerts, setAlerts] = useState(ALERT_LOG)
   const [liveAlerts, setLiveAlerts] = useState([])
   const [loadingAlerts, setLoadingAlerts] = useState(false)
@@ -536,14 +537,19 @@ export default function CivicWatch({ defaultBioguideId = null, defaultState = 'C
     })))
   }, [districtGeoJson])
 
-  // Load persisted tracked reps from Supabase when user signs in
+  // Load persisted tracked reps from Supabase when user signs in.
+  // trackedLoaded gates the default-rep auto-select effect below so it never
+  // falls back to the hardcoded preview rep before we actually know whether
+  // this signed-in user has a tracked rep of their own.
   useEffect(() => {
-    if (!isSignedIn || !user) return
+    if (!isLoaded) return
+    if (!isSignedIn || !user) { setTrackedLoaded(true); return }
     fetch('/api/track')
       .then(r => r.json())
       .then(data => { if (Array.isArray(data.tracked)) setTracked(data.tracked) })
       .catch(() => {})
-  }, [isSignedIn, user?.id])
+      .finally(() => setTrackedLoaded(true))
+  }, [isLoaded, isSignedIn, user?.id])
 
   // Load notification preferences from Supabase when user signs in
   useEffect(() => {
@@ -755,14 +761,19 @@ const markAllRead = () => {
       .catch(() => {})
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-select the default rep once members load (public preview mode)
+  // Auto-select a default rep once members load. Prefers the signed-in user's
+  // own first tracked rep over the hardcoded public-preview default (K000401/
+  // Kevin Kiley) — previously this always showed the preview rep even for
+  // users who had tracked someone else, since `tracked` was never consulted.
   // Suppressed when a ?rep= URL param is present — the URL param handler takes priority.
   useEffect(() => {
-    if (!defaultBioguideId || selectedRep || liveReps.length === 0) return
+    if (selectedRep || liveReps.length === 0 || !trackedLoaded) return
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('rep')) return
-    const def = liveReps.find(r => r.id === defaultBioguideId)
+    const preferredId = tracked[0] || defaultBioguideId
+    if (!preferredId) return
+    const def = liveReps.find(r => r.id === preferredId)
     if (def) selectRep(def)
-  }, [liveReps, defaultBioguideId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [liveReps, defaultBioguideId, tracked, trackedLoaded]) // eslint-disable-line react-hooks/exhaustive-deps
 
 useEffect(() => {
   setLiveReps([])
@@ -3707,9 +3718,17 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
                             {!isProProp ? (
                               <div style={{ position: 'relative', padding: '14px 16px', background: 'rgba(10,14,30,0.5)' }}>
-                                <div style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', fontSize: 12, color: S.gray }}>
-                                  {conflictScore.flaggedTrades.slice(0, 2).map((f, i) => (
-                                    <div key={i}>{f.ticker} · {f.committeeName}</div>
+                                {/* The API redacts flaggedTrades to [] for non-Pro callers (D-003/ADR-004) —
+                                    there's no real ticker/committee data left to blur here. `score` is still
+                                    sent (it's intentionally free), so it sizes a shimmer skeleton instead of
+                                    faking or blurring content that no longer exists client-side. */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 9, pointerEvents: 'none' }}>
+                                  {Array.from({ length: Math.min(conflictScore.score, 2) }).map((_, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                      <div className="ai-shimmer" style={{ width: 44, height: 11, borderRadius: 4 }} />
+                                      <span style={{ color: S.gray, fontSize: 12 }}>·</span>
+                                      <div className="ai-shimmer" style={{ width: i === 0 ? 118 : 92, height: 11, borderRadius: 4 }} />
+                                    </div>
                                   ))}
                                 </div>
                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

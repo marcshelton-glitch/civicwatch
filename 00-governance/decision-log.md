@@ -136,3 +136,51 @@ Read it before proposing architecture, naming, pricing, or vendor changes.
     `alerts` (bare), `poll_votes`, `legiscan_cache`, and `users` exist live
     with no creation SQL anywhere in the repo. Origin unknown — needs Marc
     or deploy-history knowledge, not guessing.
+
+---
+
+## ADR-004 · Enforce server-side Pro gating on conflict-score only, leave tracking/alerts/civic free (resolves D-003)
+- **Date:** 2026-09-03
+- **Status:** accepted
+- **Context:** raised as D-003 on 2026-09-01 while rewriting `/pro` — four
+  routes advertised or implied Pro-exclusive behavior with no server-side
+  check: `track`, the push/alerts trio, `civic`, and `conflict-score` (the
+  last fully public, cached, and returning the complete flagged-trades
+  payload to any caller). Three options on file in `DECISIONS-PENDING.md`.
+- **Options considered:**
+  - A — gate all four routes
+  - B — leave tracking/alerts/address-lookup free permanently, gate only `conflict-score`
+  - C — leave enforcement as-is; `/pro` copy is already honest about it
+- **Decision:** **B**, as recommended.
+- **Rationale:** tracking, alerts, and the address lookup being free is a
+  reasonable product choice that drives sign-ups and repeat visits, and
+  `/pro`'s copy already matches that reality since the Sep 1 rewrite.
+  `conflict-score` is the one feature still sold as Pro-exclusive, so it's
+  the one that needed enforcement to match the price.
+- **Consequences:**
+  - `app/api/conflict-score/route.js` now calls `getProStatus()` (the *soft*
+    check from `lib/requirePro.js`, not `requirePro()`) and redacts
+    `flaggedTrades` to `[]` for non-Pro callers, rather than blocking the
+    route outright.
+  - This was a deliberate departure from a blanket `requirePro()` block: the
+    UI (`CivicWatch.jsx`, wealth tab) was already designed to show the
+    score/tier summary and the "no data" / "none flagged" states to everyone
+    for free, blurring only the flagged-trade list for non-Pro — see the
+    inline comment above that render block. A hard block would have taken
+    away that intentionally-free summary, which is a bigger product change
+    than D-003 asked for. The soft check preserves that free tier exactly and
+    closes only the actual leak: the full ticker/committee list was sitting
+    in the JSON response even though the UI only *blurred* it with CSS, so
+    anyone opening dev tools got the paid content anyway.
+  - `Cache-Control` on that route changed from a shared `public,
+    s-maxage=3600` to `private, no-store`, since the body now depends on the
+    caller's Pro status — the old header would have let one user's cached
+    response leak to (or wrongly withhold from) the next.
+  - `track`, the push/alerts trio, and `civic` were left exactly as they are
+    — free, matching `/pro`'s current copy. No code change there.
+  - Not done: no UI change. The free-tier blur preview
+    (`conflictScore.flaggedTrades.slice(0, 2)`) now blurs an empty array
+    instead of real (if visually obscured) tickers — cosmetically a slightly
+    emptier-looking locked box, functionally identical (still blurred, still
+    shows the unlock CTA). Worth a follow-up if Marc wants a richer
+    placeholder there, but out of scope for closing D-003.

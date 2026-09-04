@@ -712,7 +712,8 @@
       "dependsOn": [
         "Implement /api/push/send via web-push"
       ],
-      "durationWorkdays": 1
+      "durationWorkdays": 1,
+      "note": "Reverted from a prior 'done' mark (which was based on Marc's word alone, no artifact) after this session's own live test contradicted it: Chrome subscription confirmed working end-to-end, but /api/push/send returned 401 Unauthorized — INTERNAL_API_SECRET on Vercel Production doesn't match .env.local, under active debugging. Safari not yet attempted (no Safari automation tool available; requires Marc at the keyboard)."
     },
     {
       "id": 11,

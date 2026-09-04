@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sectorsForCommittee, tickerMatchesCommittee } from '../../../lib/committeeSectors'
 import { currentCongress, congressToStartYear } from '../../../lib/congressSession'
+import { getProStatus } from '../../../lib/requirePro'
 
 // GET /api/conflict-score?bioguideId=P000197
 //
@@ -15,6 +16,17 @@ import { currentCongress, congressToStartYear } from '../../../lib/congressSessi
 //
 // See lib/committeeSectors.js for the full methodology disclosure — this is
 // a jurisdiction/timing overlap heuristic, not proof of misconduct.
+//
+// Pro gate (D-003, option B, 2026-09-03): the score/tier summary and the
+// "no data" / "none flagged" states are intentionally free — see the
+// component comment in CivicWatch.jsx above this section's render. The
+// paid content is the flagged-trade detail (which ticker, which committee).
+// That detail used to be blurred client-side only via CSS, while the full
+// list was still sitting in the JSON response — readable by anyone who
+// opened dev tools, not just a UI bypass. This uses the soft check
+// (getProStatus, not requirePro) so free/anonymous callers keep getting the
+// score and tier exactly as before; only `flaggedTrades` is redacted
+// server-side for non-Pro callers.
 
 const BIOGUIDE_RE = /^[A-Z]\d{6}$/
 
@@ -109,6 +121,8 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Valid bioguideId required' }, { status: 400 })
   }
 
+  const { isPro } = await getProStatus()
+
   try {
     const supabase = getSupabase()
     const congress = currentCongress()
@@ -167,7 +181,10 @@ export async function GET(request) {
       committees: relevantCommittees.map(({ name, committeeName, subcommitteeName, chamber, title, tenureStartYear, tenureEndYear, sectors }) => ({
         name, committeeName, subcommitteeName, chamber, title, tenureStartYear, tenureEndYear, sectors,
       })),
-      flaggedTrades: flagged,
+      // Redacted, not omitted: the key stays present with an empty array so
+      // the client doesn't need to special-case a missing field, it just
+      // has nothing to render in the unlocked branch.
+      flaggedTrades: isPro ? flagged : [],
       totalTradesReviewed: eligibleTrades.length,
       totalTradesOnFile: trades.length,
       methodology: !hasAnyTradeData
@@ -183,7 +200,11 @@ export async function GET(request) {
         `This is a jurisdiction/timing overlap, not proof of misconduct or nonpublic information — treat it ` +
         `as a starting point for further reading, not a verdict.`,
     }, {
-      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=300' },
+      // Was a shared public cache — fine when every caller got the same
+      // body. Now the body depends on Pro status, so a cached Pro response
+      // could leak flagged-trade detail to the next free caller (or a
+      // cached free response could wrongly withhold it from a Pro one).
+      headers: { 'Cache-Control': 'private, no-store' },
     })
   } catch (err) {
     console.error('conflict-score error:', err.message)
