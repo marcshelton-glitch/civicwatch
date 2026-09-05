@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-09-02 22:35 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-09-04 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -144,29 +144,56 @@ fixing what the ingest parses.
 
 - **#14 Verify Clerk webhook secret, test user.created** — 2026-09-04 → 2026-09-07 · Phase 1 Hardening
 - **#6 Test push end-to-end on Chrome + Safari** — 2026-09-08 → 2026-09-09 · Phase 1 Hardening
+
+  Reverted from a prior 'done' mark (which was based on Marc's word alone, no
+  artifact) after this session's own live test contradicted it: Chrome
+  subscription confirmed working end-to-end, but /api/push/send returned 401
+  Unauthorized. INITIAL SUSPICION WAS WRONG: hours were spent on
+  INTERNAL_API_SECRET mismatch theory (rotating it, re-saving via Vercel
+  dashboard and CLI three different ways) before finding the real cause via
+  curl -si response headers (x-clerk-auth-reason: token-invalid, x-clerk-auth-
+  status: signed-out) — /api/push/send was simply missing from proxy.ts's
+  isPublicRoute matcher, so Clerk middleware rejected every call before the
+  route's own checkAuth() ever ran, same bug class already fixed twice
+  elsewhere in that file. Fixed in commit a65c2a9 (2026-09-03), deployed, and
+  verified live: POST /api/push/send returned {"sent":1,"stale_pruned":0}.
+
+  CHROME HALF NOW FULLY VERIFIED (2026-09-03): no OS banner appeared, which
+  looked like a fresh bug, but Marc found the notification sitting correctly
+  in macOS Notification Center ('CivicWatch test — Push pipeline check —
+  Chrome (task #6)'). Confirmed via live browser inspection during this
+  session that this is not a delivery problem: Notification.permission is
+  'granted', the active service worker is the correct sw.js, and its
+  pushManager subscription endpoint matches byte-for-byte the
+  push_subscriptions row the server just sent to. The full chain (subscribe ->
+  Supabase -> /api/push/send -> FCM -> service worker -> OS notification)
+  works end-to-end on Chrome. The missing banner is a macOS/Chrome
+  notification *display-style* setting (System Settings -> Notifications ->
+  Google Chrome, or Focus/DND), not a code or pipeline defect — worth Marc
+  fixing for UX but not a blocker for this task.
+
+  STILL OPEN: Safari has not been attempted at all — no Safari automation tool
+  available, requires Marc at the keyboard (visit the site in Safari, sign in,
+  enable alerts, trigger/receive a test push).
+
 - **#34 Resolve D-001 — which migration directory is authoritative** — 2026-09-10 → 2026-09-14 · Standard Adoption
 - **#35 Resolve D-002 — move loose docs into the standard structure** — 2026-09-15 → 2026-09-22 · Standard Adoption
 
 ## Open decisions (blocked on Marc)
 
-- D-003 · Four Pro-tier features have no server-side Pro gate — enforce it, or keep them free?
-- D-002 · Move the loose business documents into the standard structure?
-- D-001 · Which migration directory is authoritative — `migrations/` or `supabase/migrations/`?
-
-**Agents may never fill in a `Decision:` field.** Research and
-recommend; Marc decides.
+None open.
 
 ## Recent commits
 
 ```
-95b2896 Refresh agent brief
-907e6f0 Add AGENT-BRIEF.md so the next agent knows what was already done
-d2bab27 Fix #36 properly: load sharp lazily so the route's fallback can run
-81abc80 Fix #24 future-dated trades and #36 sharp; mark #11 and #25 done
-75f9798 Mark #23 done — bioguide_id backfill verified against the live database
-0c8c7c5 Chart: deep links and a working task panel over file://
-37c2de1 content: rewrite /pro around verified feature reality; apply bioguide backfill
-f1fa321 Add the Remotion clip pipeline for social video
+36ce3a0 docs(gantt): correct task #6 note now that push pipeline is fixed
+a65c2a9 fix(push): add /api/push/send to Clerk isPublicRoute matcher
+6fc999c Resolve D-003 (conflict-score Pro gate), fix dashboard default-rep bug, revert premature #6 done-mark
+98bbd85 docs: daily CivicWatch.md update — 2026-09-03 sessions
+308a590 Move fd_net_worth bioguide_id backfill to db/backfills/; restore #35 note in AGENTS.md
+43797ee Rename to real applied timestamp 20260820234518 (D-001 reconciliation)
+b67a8f5 Rename to real applied timestamp 20260709042408 (D-001 reconciliation)
+e7e0ab1 Rename to real applied timestamp 20260630230502, content corrected to match ground truth (D-001 reconciliation)
 ```
 
 ---

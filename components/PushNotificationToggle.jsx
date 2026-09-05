@@ -12,6 +12,19 @@ export default function PushNotificationToggle({ style }) {
   const [supported, setSupported] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
+  // Pre-warm the service worker registration on mount rather than awaiting
+  // navigator.serviceWorker.ready inside the click handler. Safari/WebKit's
+  // pushManager.subscribe() requires "user activation" (transient gesture
+  // from the click) to still be live when it's called — every `await` in
+  // between the click and the subscribe() call spends down that window.
+  // Chrome is lenient about this and never showed the problem; on macOS
+  // Safari, awaiting serviceWorker.ready *inside* enable() was enough to
+  // burn the gesture, so subscribe() just hung forever with no error and
+  // no rejection (task #6 Safari testing, 2026-09-04). Resolving the
+  // registration ahead of time means enable() only has ONE await
+  // (requestPermission) before calling subscribe(), keeping it inside the
+  // gesture window on Safari while changing nothing for Chrome.
+  const [registration, setRegistration] = useState(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -22,7 +35,10 @@ export default function PushNotificationToggle({ style }) {
     // cleared, different device) would otherwise show "Alerts on" when there
     // is no live subscription underneath it.
     navigator.serviceWorker.ready
-      .then(reg => reg.pushManager.getSubscription())
+      .then(reg => {
+        setRegistration(reg)
+        return reg.pushManager.getSubscription()
+      })
       .then(sub => setEnabled(!!sub))
       .catch(() => {})
   }, [])
@@ -33,11 +49,14 @@ export default function PushNotificationToggle({ style }) {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') return
 
-      const registration = await navigator.serviceWorker.ready
+      // Fall back to awaiting it live only if the pre-warm somehow hasn't
+      // resolved yet (e.g. clicked immediately on page load) — the common
+      // case uses the already-resolved registration from mount instead.
+      const reg = registration || (await navigator.serviceWorker.ready)
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
       if (!vapidKey) throw new Error('VAPID key not configured')
 
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
       })
