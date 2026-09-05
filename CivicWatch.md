@@ -1,3 +1,39 @@
+## ⚡ Recent Work — September 4, 2026
+
+**Shipped this session:**
+- **Rewrite /pro messaging** (committed 37c2de1): 
+  - Applied bioguide backfill (all 31 rows, coverage 93.4%→96.3% on `fd_trades.bioguide_id`)
+  - Remapped pricing: Trade Conflict Analysis promoted to "Real" (no longer Coming Soon), Track My Rep™ Alerts/Track Any Representative/State/Local Lookup moved to Free tier (they lack server-side Pro checks)
+  - Peer Standing Breakdown stays Coming Soon (not built)
+  - Updated FAQ on trade-data coverage; trimmed hero copy
+  - **Decision D-003 filed**: `/api/conflict-score` has zero server-side auth but is marketed as Pro — needs gating decision (option B chosen in next session)
+
+- **Launch task checklist** (continuity for next D-003 resolution):
+  - Resolved decision D-003: implemented soft Pro check via `getProStatus()` in `app/api/conflict-score/route.js`
+  - Redacts `flaggedTrades` to empty array for non-Pro callers; preserves free-tier summary view
+  - Updated cache header to `private, no-store` (response now varies by caller)
+  - Replaced empty blurred box with shimmer skeleton for more elegant loading state
+  - Logged as ADR-004 in governance/decision-log.md
+
+- **Clerk webhook secret verification** (completed end-to-end):
+  - Verified Clerk webhook re-enabled at `https://www.civicwatch.app/api/webhooks/clerk`
+  - Test event `user.created` confirmed delivered successfully
+  - Confirmed CLERK_WEBHOOK_SECRET correctly set in Vercel
+
+- **Push notifications end-to-end testing**:
+  - Deployed production build to Vercel (status Ready)
+  - Gesture-timing fix shipped: pre-warmed `navigator.serviceWorker.ready` on mount instead of inside click handler
+  - Chrome verified working end-to-end for push registration and subscription
+  - Safari push hang identified as macOS Tahoe 26 Developer Beta webpushd/WebKit bug (not app code; Apple Feedback report drafted)
+
+- **Recent votes display issue** (fix committed 094af52):
+  - Fixed AI Analysis tab reading stale/empty votes and trades
+  - Now merges live-fetched data from `/api/congress?type=votes` instead of static rep object
+  - Added `dataLoading` guard to disable "Generate Analysis" until fetch completes
+  - Deploy 094af52 queued on Vercel
+
+---
+
 ## ⚡ 2026-09-03 — Conversion tracking, webhook routing, and data cleanup
 
 **Shipped this session:**
