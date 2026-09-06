@@ -1,3 +1,25 @@
+## ⚡ Recent Work — 2026-09-05
+
+**Tasks shipped today:**
+- ✅ **Push end-to-end testing (#6)** — Isolated Safari push hang to macOS Tahoe 26 Developer Beta webpushd/WebKit bug (not app code). Fixed gesture timing in PushNotificationToggle.jsx: pre-warm service worker registration on mount instead of inside click handler, tightening the user-activation window. Chrome verified end-to-end. Drafted Apple Feedback Assistant report for the Safari hang; pending filing or retest on non-beta Mac.
+- ✅ **Clerk webhook secret verification** — Verified `user.created` webhook delivery to `/api/webhooks/clerk` succeeds (test fired 09/3 10:07 PM, marked Succeeded in Clerk dashboard). CLERK_WEBHOOK_SECRET correctly set in Vercel, signature verification round-tripped cleanly.
+- ✅ **AI Analysis tab votes display** (commit 094af52) — Fixed CivicWatch.jsx reading stale/empty votes and trades. Deployed to Vercel; live on civicwatch.app as of today's deploy queue.
+
+**Content & feature work:**
+- ✅ **Bioguide backfill** — Applied 31 vetted UPDATE queries to `fd_trades.bioguide_id`. Coverage improved 93.4% → 96.3% (5,034 of 5,230 trades now have bioguide_id). One hiccup mid-run: 12 rows needed district-specific `state_dst` (e.g., `'CA14'` not `'CA'`) not spelled out in the summary table — caught, fixed, all 31 landed.
+- ✅ **Rewrite /pro messaging & feature grid** (commit 37c2de1, local) — Audited feature claims against live code and database:
+  - **Promoted Trade Conflict Analysis** off Coming Soon — it's genuinely differentiated (committee-jurisdiction × trade-timing overlap, unmatched by competitors), coverage is now high (96.3%), API already supports it. Moved to Pro column with confidence.
+  - **Moved to Free**: Track My Rep™ Alerts, Track Any Representative, State/Local Rep Lookup — audited the routes (`/api/track`, `/api/push/subscribe`, `/api/send-alerts`, `/api/civic`) and confirmed zero server-side Pro gating. Any signed-in user can use these today (local lookup doesn't require sign-in).
+  - **Peer Standing Breakdown** correctly stays Coming Soon (not built).
+  - Added FAQ entry on trade-data coverage (realistically framed). Trimmed hero copy to match what's real.
+  - Filed decision **D-003 in DECISIONS-PENDING.md**: `/api/conflict-score` (currently listed as Pro feature) has zero server-side auth and a public cache header — anyone can hit it directly. Decide: gate it to match the copy, or drop the Pro claim and move it to Free.
+
+**GTM prep (drafted, not applied):**
+- ✅ **Launch post** — Drafted 6-post X thread (`40-gtm/launch-post-x.md`), founder voice, leading with accountability angle (not investment), spotlighting Trade Conflict Analysis as the real differentiator, CTA pointing to `/pro`. Waiting on task #38 (social profile claiming). Ready to post as-is once account is claimed.
+- ✅ **Product Hunt & Hacker News submissions** — Drafted in `40-gtm/launch-submissions-draft.md`: PH (tagline, description, maker comment), Show HN (technical post on ingestion/matching pipeline), niche directories (Civic Tech Field Guide, awesome-civic-tech, Indie Hackers — skipped generic SaaS directories). Waiting on task #38 and #40. Ready to fire Sep 9–10 once prior tasks clear.
+
+---
+
 ## ⚡ Recent Work — September 4, 2026
 
 **Shipped this session:**
