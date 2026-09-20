@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CookieChoicesLink from '@/components/CookieChoicesLink'
 
 export const metadata = {
   title: 'Refund Policy | CivicWatch',
@@ -96,8 +97,10 @@ export default function RefundPolicyPage() {
       <footer style={{ borderTop: `1px solid ${S.border}`, padding: '20px 24px', textAlign: 'center' }}>
         <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap', fontSize: 12 }}>
           <a href="/privacy" style={{ color: S.gray, textDecoration: 'none' }}>Privacy Policy</a>
+          <CookieChoicesLink style={{ color: S.gray, textDecoration: 'none' }} />
           <a href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms of Service</a>
           <a href="/refund-policy" style={{ color: S.gold, textDecoration: 'none' }}>Refund Policy</a>
+          <a href="/support" style={{ color: S.gray, textDecoration: 'none' }}>Support</a>
           <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: S.gray, textDecoration: 'none' }}>Contact</a>
         </div>
       </footer>

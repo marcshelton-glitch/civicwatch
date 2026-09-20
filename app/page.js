@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
+import CookieChoicesLink from '@/components/CookieChoicesLink'
 
 
 const FEATURES = [
@@ -695,12 +696,14 @@ export default function LandingPage() {
           flex-wrap: wrap; margin-bottom: 20px;
         }
 
-        .footer-links a {
+        .footer-links a,
+        .footer-links button {
           font-size: 12px; color: var(--gray);
           text-decoration: none; letter-spacing: 0.5px;
           transition: color 0.2s;
         }
-        .footer-links a:hover { color: var(--gold); }
+        .footer-links a:hover,
+        .footer-links button:hover { color: var(--gold); }
 
         .footer-copy {
           font-size: 11px; color: #7A8499;
@@ -1077,9 +1080,12 @@ and got <span className="red">rich.</span>
           <Link href="/sign-in" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Sign In</Link>
           <Link href="/about" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>About</Link>
           <Link href="/privacy" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Privacy Policy</Link>
+          <CookieChoicesLink />
           <Link href="/terms" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Terms of Service</Link>
           <Link href="/refund-policy" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Refund Policy</Link>
+          <Link href="/support" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Support</Link>
           <Link href="/data-deletion" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Data Deletion</Link>
+          <Link href="/data-export" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Download Your Data</Link>
           <Link href="/privacy#do-not-sell" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Do Not Sell My Personal Information</Link>
           <a href="mailto:support@civicwatch.app" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Contact</a>
           <a href="https://congress.gov" target="_blank" rel="noreferrer noopener" style={{ fontSize: 12, color: 'var(--gray)', textDecoration: 'none' }}>Congress.gov</a>

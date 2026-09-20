@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CookieChoicesLink from '@/components/CookieChoicesLink'
 
 export const metadata = {
   title: "Privacy Policy | CivicWatch",
@@ -92,7 +93,9 @@ export default function PrivacyPolicyPage() {
             <h2 style={H2}>3. How We Share Your Information</h2>
             <p style={P}>We do not sell your personal information. We share information only with:</p>
             <ul style={{ paddingLeft: 22, margin: 0 }}>
-              <li style={LI}><strong style={{ color: S.white }}>Service providers</strong> who help us operate CivicWatch, including Clerk (authentication), Supabase (database hosting), Stripe (payments), Vercel (web hosting), and Google (AI features via Gemini). These providers are bound by contracts that restrict how they can use your data.</li>
+              <li style={LI}><strong style={{ color: S.white }}>Service providers</strong> who help us operate CivicWatch, including Clerk (authentication), Supabase (database hosting), Stripe (payments), Vercel (web hosting), Google (AI features via Gemini), and Sentry (error and performance monitoring). These providers are bound by contracts that restrict how they can use your data.</li>
+              <li style={LI}><strong style={{ color: S.white }}>Analytics providers</strong>, only if you accept analytics cookies: Vercel Analytics and Vercel Speed Insights (aggregate traffic and page performance) and Google Analytics (usage measurement). Sentry Session Replay, which records a sample of on-page activity to help us reproduce errors, is also enabled only with your analytics consent.</li>
+              <li style={LI}><strong style={{ color: S.white }}>Advertising providers</strong>, only if you accept advertising cookies: Meta (Facebook) Pixel and TikTok Pixel. These let us measure whether our ads bring people to CivicWatch, and allow those platforms to show our ads to similar audiences.</li>
               <li style={LI}><strong style={{ color: S.white }}>Legal authorities</strong> when required by valid legal process, or to protect the rights, property, or safety of CivicWatch, our users, or the public.</li>
               <li style={LI}><strong style={{ color: S.white }}>Successors</strong> in connection with a merger, acquisition, or sale of assets, with notice to you when required by law.</li>
             </ul>
@@ -112,9 +115,21 @@ export default function PrivacyPolicyPage() {
           <div>
             <h2 style={H2}>5. Cookies and Similar Technologies</h2>
             <p style={P}>
-              CivicWatch uses cookies and similar technologies to keep you signed in, remember preferences, and measure how
-              the service is used. You can control cookies through your browser settings, but disabling them may affect
-              functionality such as staying signed in.
+              CivicWatch groups cookies and similar technologies into three categories. Only the first runs automatically.
+            </p>
+            <ul style={{ paddingLeft: 22, margin: 0 }}>
+              <li style={LI}><strong style={{ color: S.white }}>Necessary</strong> — keeping you signed in (Clerk), taking payment
+                (Stripe), and basic error reporting so we can tell when the site is broken (Sentry). These are required for the
+                service to work and run without consent.</li>
+              <li style={LI}><strong style={{ color: S.white }}>Analytics</strong> — Vercel Analytics, Vercel Speed Insights,
+                Google Analytics, and Sentry Session Replay. These tell us which pages are used and help us reproduce faults.</li>
+              <li style={LI}><strong style={{ color: S.white }}>Advertising</strong> — Meta (Facebook) Pixel and TikTok Pixel,
+                used to measure our advertising.</li>
+            </ul>
+            <p style={P}>
+              Analytics and advertising cookies do not run until you accept them. You are asked when you first visit, and you can
+              change or withdraw your choice at any time — rejecting is always as easy as accepting. You can also control cookies
+              through your browser settings, though disabling necessary cookies may break functionality such as staying signed in.
             </p>
           </div>
 
@@ -133,14 +148,14 @@ export default function PrivacyPolicyPage() {
             <h2 style={H2}>7. Your Rights</h2>
             <p style={P}>Depending on where you live, you may have the right to:</p>
             <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
-              <li style={LI}>Access the personal information we hold about you.</li>
+              <li style={LI}>Access the personal information we hold about you — <Link href="/data-export" className="priv-link">download it yourself</Link>, no request needed.</li>
               <li style={LI}>Correct inaccurate information.</li>
-              <li style={LI}>Delete your account and associated data.</li>
-              <li style={LI}>Export your data in a portable format.</li>
+              <li style={LI}>Delete your account and associated data — see <Link href="/data-deletion" className="priv-link">Data Deletion Instructions</Link>.</li>
+              <li style={LI}>Export your data in a structured, machine-readable format — <Link href="/data-export" className="priv-link">download your data as JSON</Link>.</li>
               <li style={LI}>Opt out of marketing communications at any time by clicking the unsubscribe link in any email we send.</li>
             </ul>
             <p style={P}>
-              To exercise any of these rights, email us at{' '}
+              Access and export are self-serve and take effect immediately. For anything else, email us at{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="priv-link">{CONTACT_EMAIL}</a>.
             </p>
           </div>
@@ -241,6 +256,12 @@ export default function PrivacyPolicyPage() {
           <Link href="/terms" className="priv-footer-link">Terms of Service</Link>
           {' · '}
           <Link href="/data-deletion" className="priv-footer-link">Data Deletion</Link>
+          {' · '}
+          <Link href="/data-export" className="priv-footer-link">Download Your Data</Link>
+          {' · '}
+          <CookieChoicesLink className="priv-footer-link" />
+          {' · '}
+          <Link href="/support" className="priv-footer-link">Support</Link>
         </footer>
       </main>
     </div>
