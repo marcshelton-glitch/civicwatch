@@ -13,8 +13,10 @@ gantt_tasks: []
 Paid and earned media. Organic social lives in `social-media-plan.md`.
 
 ## Objective
-<Awareness, lead gen, or launch spike. One primary objective — plans with three
-objectives measure none of them.>
+**First paying Pro subscribers.** Decided 2026-09-04 (gantt #37, Marc's call —
+not lead gen, not awareness for its own sake). Every GTM task should be judged
+against whether it points a stranger at `/pro` and gets them to convert, not
+whether it grows follower count or free signups.
 
 ## Paid channels
 

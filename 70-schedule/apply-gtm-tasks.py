@@ -21,41 +21,48 @@ def task(tid, name, start, end, days, depends, note):
     }
 
 NEW = [
-    task(37, "Decide the GTM basics — objective, ICP, two platforms",
-         "2026-09-01", "2026-09-01", 1, [],
-         "Decision task, Marc only. Three answers, written into 40-gtm/: (1) one "
-         "primary objective for media-plan.md; (2) the ICP in one sentence for "
-         "social-media-plan.md; (3) which two of the five platforms to use. "
-         "Blocks #38-#41 — if this stalls, the whole GTM phase stalls."),
-    task(38, "Claim and brand the two social profiles chosen in #37",
-         "2026-09-07", "2026-09-07", 1,
-         ["Decide the GTM basics — objective, ICP, two platforms"],
+    task(37, "Decide the GTM basics — objective, ICP, three platforms",
+         "2026-09-04", "2026-09-04", 1, [],
+         "Decision task, Marc only. Decided 2026-09-04 (asked directly, not "
+         "assumed): (1) objective — first paying Pro subscribers; (2) ICP — "
+         "civic watchdog / accountability voter (tracks a specific rep's "
+         "trades for accountability, not personal investing — conflict-score "
+         "is the paid proof point, not 'invest like Congress'); (3) platforms — "
+         "X, YouTube, and Reddit, three rather than the doc's own 'pick two' "
+         "advice, by explicit choice. Written into 40-gtm/media-plan.md and "
+         "40-gtm/social-media-plan.md. Unblocked #38-#41 same day."),
+    task(38, "Claim and brand the three social profiles chosen in #37",
+         "2026-09-05", "2026-09-05", 1,
+         ["Decide the GTM basics — objective, ICP, three platforms"],
          "Launch-checklist gate: 'Social profiles claimed and branded "
-         "consistently'. Handles per 30-brand/brand.md. Free."),
+         "consistently'. X, YouTube, Reddit. Handles per 30-brand/brand.md. "
+         "Free."),
     task(39, "Support channel live with a stated SLA, FAQ for the top 10 questions",
-         "2026-09-08", "2026-09-09", 2,
-         ["Decide the GTM basics — objective, ICP, two platforms"],
+         "2026-09-06", "2026-09-07", 2,
+         ["Decide the GTM basics — objective, ICP, three platforms"],
          "Launch-checklist gate: 'Support channel live with a stated response "
          "SLA' + 'FAQ / docs cover the top 10 expected questions'. You cannot "
          "take money without somewhere for a customer to complain. Free — a "
          "monitored address and a published SLA is enough at this stage."),
     task(40, "Write and publish the launch post — founder-led, primary platform",
-         "2026-09-10", "2026-09-10", 1,
-         ["Decide the GTM basics — objective, ICP, two platforms",
+         "2026-09-08", "2026-09-08", 1,
+         ["Decide the GTM basics — objective, ICP, three platforms",
           "Rewrite /pro around what actually works"],
          "social-media-plan.md: 'Founder-led, human-first content beats polished "
-         "corporate output.' One post, one platform, pointing at /pro. This is "
-         "the first task in the whole schedule that asks a stranger to look."),
+         "corporate output.' One post, primary platform (X — real-time reach for "
+         "the accountability angle), pointing at /pro. This is the first task in "
+         "the whole schedule that asks a stranger to look."),
     task(41, "Submit to Product Hunt, Hacker News, niche directories",
-         "2026-09-11", "2026-09-14", 2,
+         "2026-09-09", "2026-09-10", 2,
          ["Rewrite /pro around what actually works",
           "Write and publish the launch post — founder-led, primary platform"],
          "media-plan.md already names these three rows. Free, and the backlinks "
          "outlast the launch spike."),
 ]
 
-# #32 gates every acquisition task above — pull it forward from Sep 21-23.
-RESCHEDULE = {32: ("2026-09-02", "2026-09-04")}
+# #32 already shipped 2026-09-01 — ahead of the schedule this script would
+# otherwise impose. Nothing to reschedule.
+RESCHEDULE = {}
 
 
 def main():

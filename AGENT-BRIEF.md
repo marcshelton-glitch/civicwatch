@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-09-04 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-09-18 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,142 +8,136 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 32/36 done · 4 open
-- **Projected launch:** 2026-09-22
+- **Progress:** 40/47 done · 7 open
+- **Projected launch:** 2026-10-08
 
 ## Already done — do not redo
 
-### #21 Run one real-card checkout end to end
-*Completed 2026-09-02.*
+### #42 Stand up the CivicWatch ad account under the Meta business portfolio
+*Completed 2026-09-17.*
 
-DONE 2026-09-02. Marc subscribed to Pro with his real business card and
-confirmed previously-paywalled sections unlocked. Verified independently, not
-just on his report: Vercel runtime logs for prj_T6SQqXCl3dlHsmHdfptW7fQJTl2t
-show `POST /api/webhooks/stripe 200` at 2026-09-03T05:27:40Z logging '✅ Pro
-activated for a new subscriber' — the checkout.session.completed handler in
-app/api/webhooks/stripe/route.js ran and set
-isPro/tier/stripeCustomerId/stripeSubscriptionId on the Clerk user. Found in
-passing, not yet fixed: the same log window also shows repeated `400 Webhook
-signature verification failed: No signatures found matching...` for the
-identical events. Root cause via Stripe API (GetWebhookEndpoints on
-acct_1TJO7aPe8la2Z0hh): TWO live, enabled webhook endpoints exist —
-we_1TNjdLPe8la2Z0hhfGoeZEqE at https://www.civicwatch.app/api/webhooks/stripe
-(current, correct) and a stale we_1TLcoxPe8la2Z0hhpLoWB1kp at
-https://civicwatch-six.vercel.app/api/webhooks/stripe (created earlier, still
-subscribed to the legacy invoice.payment_succeeded event name rather than
-invoice.paid). Both domains resolve to the same Vercel project/code, but each
-Stripe endpoint has its own signing secret and the app only reads one
-STRIPE_WEBHOOK_SECRET, so every event Stripe fires to the stale endpoint fails
-signature verification — harmless today (the correct endpoint still gets its
-copy and succeeds) but it is pure noise in error logs and a landmine if that
-URL is ever repointed. Recommend deleting we_1TLcoxPe8la2Z0hhpLoWB1kp; left
-undone pending Marc's go-ahead since removing a Stripe webhook endpoint is an
-account-settings change.
+Ad account 'CivicWatch' (1652236096483801) created inside the CivicWatch.app
+business portfolio (995485309758258) and linked to the existing CivicWatch.app
+Page — not a new Page, and deliberately not Marc's unrelated personal ad
+account (440418995978843). Meta commercial terms + non-discrimination policy
+accepted. Free.
 
-### #24 Purge/repair 27 future-dated trades
-*Completed 2026-09-02.*
+### #43 Check Meta's political-ad rules against real precedent in the Ad Library
+*Completed 2026-09-17.*
 
-DONE 2026-09-02. 29 rows (not 27 — two more had been ingested) had a future
-transaction_date, latest 2030-10-15, all from one 2026-08-27 batch. Repaired
-by setting transaction_date = NULL, not by deleting the rows and not by
-guessing a correction: the trades are real filings with doc_ids, only the date
-was wrong, and NULL is exactly what the fixed parser (#25) now produces for
-these inputs. Verified after: 0 future-dated, max date 2026-08-21, row count
-unchanged at 5,232. Full pre-repair backup and reasoning in docs/future-dated-
-trades-repair-2026-09-02.md.
+Answered the 'will Meta call this a political ad' question for $0 using the
+public Ad Library instead of waiting on ad spend. Finding: 'Autopilot — copy
+politicians' trades' ran at $6K–$7K / 700K–800K impressions with copy
+explicitly pushing 'a ban on congressional stock trading' and carried NO
+elections/social-issue disclaimer, while real candidate ads in the same
+results were removed specifically for a bad social-issue disclaimer. A
+directly comparable product cleared as an ordinary commercial ad. Caveat: one
+advertiser is precedent, not proof. Full write-up in ~/tools/ad-
+pipeline/campaigns/civicwatch-meta-pilot.json.
 
-### #25 Fix the ingest date parser
-*Completed 2026-09-02.*
+### #44 Draft the Meta pilot campaign — Traffic, US, $5/day
+*Completed 2026-09-17.*
 
-DONE — verified in HEAD (commit 8df8c89). parseDate() in scripts/ingest-
-disclosures.mjs now rejects any date later than today: `if (d.getTime() >
-todayUTC) return null`. The code's own comment names the bug: the old guard
-only rejected years past 2030, which itself became a future date once the
-calendar caught up. Also rejects UTC rollover dates (Feb 30) and pre-2000 bond
-maturity dates.
+Campaign 'CivicWatch – Political Ad Policy Test' (120254890948070063) drafted:
+Auction, Traffic objective, manual setup. Ad set (120254890948060063) targets
+United States, 18+, website conversions, highest-volume bid, $5.00/day. Meta
+bills only on delivery, so nothing is charged until it actually runs.
 
-### #36 Fix sharp on Vercel — rep photos 500 on every request
-*Completed 2026-09-02.*
+### #45 Write the pilot ad copy and pick the creative
+*Completed 2026-09-17.*
 
-DONE 2026-09-02. Verified in production: S000344, P000197, O000172 and M001165
-all return HTTP 200 with real JPEG data (was HTTP 500 on every request, ~1,858
-errors in 4 days).
+Three ad-copy variants written and stored in ~/tools/ad-
+pipeline/campaigns/civicwatch-meta-pilot.json (A recommended). Every claim
+checked against app/pro/page.js: free tier really is $0 with no card and
+really does include STOCK Act disclosures, voting records and tracking alerts
+— conflict scoring is Pro at $9.99/mo, so no variant implies it is free. Copy
+stays factual and names no individual member, keeping clear of Meta's
+'Political values and governance' social-issue category. Creative reuses the
+2026-09-13 Capitol/flagged-trade image — no new kie.ai spend. The 2026-09-18
+image was rejected: it depicts an invented 'Alex Carter, Founder & CEO' with a
+fabricated testimonial.
 
-ROOT CAUSE was not the bundler. The route already had a try/catch that falls
-back to the original image when sharp fails -- it never ran, because `import
-sharp from 'sharp'` at the TOP of the module fails at module-load time,
-killing the route before GET is entered. Fixed by importing sharp lazily
-inside the try.
+### #37 Decide the GTM basics — objective, ICP, four platforms
+*Completed 2026-09-04.*
 
-TWO WRONG DIAGNOSES, recorded so nobody repeats them: (1) `npm install
---os=linux --cpu=x64 sharp` is a no-op -- the linux binaries are already in
-package-lock.json. (2) `serverExternalPackages: ['sharp']` is also a no-op --
-sharp is already in Next's built-in server-external-packages.jsonc.
-outputFileTracingIncludes was deployed and did NOT fix it either; it was kept
-because it is still correct for a dlopen-loaded native lib, but it is not the
-fix.
+Decision task, Marc only. Decided 2026-09-04 (asked directly, not assumed):
+(1) objective — first paying Pro subscribers; (2) ICP — civic watchdog /
+accountability voter (tracks a specific rep's trades for accountability, not
+personal investing — conflict-score is the paid proof point, not 'invest like
+Congress'); (3) platforms — X, YouTube, Reddit, and Instagram (added
+2026-09-04, same day), four rather than the doc's own 'pick two' advice, by
+explicit choice. Written into 40-gtm/media-plan.md and 40-gtm/social-media-
+plan.md. Unblocked #38-#41 same day.
 
-REMAINING (not a blocker): sharp still does not load on Vercel, so photos
-serve as original JPEG rather than resized webp -- larger payloads, no 200x200
-resize. Photos work; this is a performance follow-up, not a bug.
+### #14 Verify Clerk webhook secret, test user.created
+*Completed 2026-09-03.*
 
-### #11 Run K6 load test at 50 VUs
-*Completed 2026-09-02.*
+DONE — verified via Clerk Dashboard > Webhooks > Delivery Stats (last 24h):
+SUCCESS-1. Attempt row for 'user.created' dated 2026-09-03 10:07 PM shows
+Succeeded against https://www.civicwatch.app/api/webhooks/clerk. Root cause of
+prior silent failures was a www-redirect eating deliveries before they reached
+the route; fixed, and this delivery is the proof. Signature verification
+(CLERK_WEBHOOK_SECRET vs. Clerk's signing secret) happens before the route can
+return anything but a signature error, so 'Succeeded' round-trips both halves
+of this task at once — no separate secret check needed. Verified by Marc
+directly in the Clerk dashboard, reported 2026-09-04.
 
-DONE — Marc ran the 50-VU test a few days before 2026-09-02 and reports it
-passed. Recorded on his confirmation; no run artifact was committed. Note
-load-tests/README.md's own caveat: most routes sit behind Vercel edge caching,
-so load.js largely measures the CDN rather than Supabase. stress-networth.js
-is the test that actually reaches the database, and it needs a fresh Clerk Pro
-token or it measures nothing.
+### #34 Resolve D-001 — which migration directory is authoritative
+*Completed 2026-09-03.*
 
-### #23 Backfill bioguide_id on fd_trades (5,076 rows)
-*Completed 2026-09-01.*
+RECONCILED 2026-09-04: gantt had drifted behind 00-governance/decision-log.md.
+ADR-003 (dated 2026-09-03, status accepted) resolved D-001 —
+supabase/migrations/ made canonical, rebuilt file-by-file from the live
+schema_migrations ledger, 25 files 1:1 with the 25-entry live ledger. This
+gantt entry was never updated to match; a 2026-09-03 session (see session-
+log.md) found the same drift and deliberately left it unfixed pending the real
+Project Schedule shortcut. Marked done now on the strength of the accepted
+ADR, which is a stronger signal than a stale JSON field.
 
-DONE 2026-09-01. Verified against the live database, not just the doc:
-fd_trades has 5,232 rows, 5,034 with bioguide_id (96.2%), up from 47.5% in
-August. docs/bioguide-backfill-2026-08-26.md records 'Status: APPLIED
-2026-09-01' and the session log describes all 31/31 pairs landing, including
-12 that needed re-running once it was found the live column stores
-state+district ('CA14') not a bare state code. The 198 rows still null are the
-long tail (1-2 trades each) that the task explicitly scoped OUT; they are a
-future run, not unfinished work here.
+### #35 Resolve D-002 — move loose docs into the standard structure
+*Completed 2026-09-03.*
 
-### #32 Rewrite /pro around what actually works
-*Completed 2026-09-01.*
-
-Promoted Trade Conflict Analysis off Coming Soon (backfill applied same
-session, coverage 93.4%->96.3%); moved Track/Alerts and state-local lookup to
-Free copy since neither is actually Pro-gated server-side (see DECISIONS-
-PENDING.md D-003). See 00-governance/session-log.md, 2026-09-01 entry.
-
-### #26 Automate ingest off local Mac
-*Completed 2026-08-30.*
-
-Shipped ahead of its listed dependency (task 25, still pending) — the
-scheduling work turned out to be independent of the date-parser bug. Two
-GitHub Actions workflows (.github/workflows/ingest-house.yml every 6h, ingest-
-senate.yml daily) replace ingest-loop.sh/ingest-senate-loop.sh; both call the
-existing scripts/ingest-*.mjs unchanged, writing to Supabase directly.
-Verified live, not just committed: House workflow has 20 recorded runs
-(scheduled runs completing in 15–22s, draining the unprocessed-rows backlog as
-designed), Senate has 9 (task 27's note has senate_trades=7,164 /
-senate_net_worth=83 rows from this same pipeline). See docs/automate-
-ingest-2026-08-26.md. Also closed a follow-up from that doc while verifying:
-package-lock.json now resolves playwright cleanly (npm ci --dry-run), so
-ingest-senate.yml's dependency-install step was switched back from npm install
-to npm ci; package.json's ingest:index/trades/networth scripts were pointed at
-the real scripts/ingest-disclosures.mjs filename (they'd been referencing a
-.js path that doesn't exist — unused by the workflows, which call the script
-directly, but broken for anyone running npm run ingest:* by hand). Not done:
-task 24 (future-dated trades) and task 25 (date parser) remain open, unrelated
-data-quality issues — automation moving the ingest off the Mac doesn't require
-fixing what the ingest parses.
+RECONCILED 2026-09-04: gantt had drifted behind 00-governance/decision-log.md.
+ADR-002 (dated 2026-09-03, status accepted) resolved D-002 — loose business
+documents moved into the 00- through 70- standard structure in a single
+reviewable commit (f28c5d9). This gantt entry was never updated to match.
+Marked done now on the strength of the accepted ADR.
 
 ## Next up
 
-- **#14 Verify Clerk webhook secret, test user.created** — 2026-09-04 → 2026-09-07 · Phase 1 Hardening
-- **#6 Test push end-to-end on Chrome + Safari** — 2026-09-08 → 2026-09-09 · Phase 1 Hardening
+- **#38 Claim and brand the four social profiles chosen in #37** — 2026-09-17 → 2026-09-18 · GTM — First Customers
+
+  Launch-checklist gate: 'Social profiles claimed and branded consistently'.
+  X, YouTube, Reddit, Instagram. Handles per 30-brand/brand.md. Free. STATUS
+  2026-09-17: three of four live and connected to the self-hosted Postiz
+  instance — Facebook + Instagram (CivicWatch.app), X (@CivicWatchAlert), and
+  YouTube (@civicwatchapp, a dedicated Brand Account so CivicWatch never posts
+  from Marc's personal channel). Integration ids are in ~/tools/ad-
+  pipeline/briefs/civicwatch.json. Still open ONLY because Reddit app creation
+  fails on Reddit's side — a documented, months-long platform bug reproduced
+  in Safari, automated Chrome and old.reddit.com alike. Not fixable from here;
+  reopen if Reddit ships a fix or switch to Devvit.
+
+- **#39 Support channel live with a stated SLA, FAQ for the top 10 questions** — 2026-09-21 → 2026-09-23 · GTM — First Customers
+
+  Launch-checklist gate: 'Support channel live with a stated response SLA' +
+  'FAQ / docs cover the top 10 expected questions'. You cannot take money
+  without somewhere for a customer to complain. Free — a monitored address and
+  a published SLA is enough at this stage.
+
+- **#40 Write and publish the launch post — founder-led, primary platform** — 2026-09-24 → 2026-09-25 · GTM — First Customers
+
+  social-media-plan.md: 'Founder-led, human-first content beats polished
+  corporate output.' One post, primary platform (X — real-time reach for the
+  accountability angle), pointing at /pro. This is the first task in the whole
+  schedule that asks a stranger to look.
+
+- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-09-28 → 2026-09-30 · GTM — First Customers
+
+  media-plan.md already names these three rows. Free, and the backlinks
+  outlast the launch spike.
+
+- **#6 Test push end-to-end on Chrome + Safari** — 2026-10-01 → 2026-10-02 · Phase 1 Hardening
 
   Reverted from a prior 'done' mark (which was based on Marc's word alone, no
   artifact) after this session's own live test contradicted it: Chrome
@@ -172,29 +166,46 @@ fixing what the ingest parses.
   Google Chrome, or Focus/DND), not a code or pipeline defect — worth Marc
   fixing for UX but not a blocker for this task.
 
-  STILL OPEN: Safari has not been attempted at all — no Safari automation tool
-  available, requires Marc at the keyboard (visit the site in Safari, sign in,
-  enable alerts, trigger/receive a test push).
+  SAFARI ATTEMPTED 2026-09-04, BLOCKED — NOT a CivicWatch bug:
+  PushNotificationToggle.jsx's enable() calls Notification.requestPermission()
+  (resolves 'granted', confirmed) -> navigator.serviceWorker.ready (resolves
+  with the correct active sw.js registration, confirmed) ->
+  registration.pushManager.subscribe(...). subscribe() never resolves or
+  rejects on this Mac's Safari; the button hangs in its loading state forever
+  with zero error, on a completely clean repro (permission reset via Safari >
+  Settings > Websites > Notifications, OS notification settings for Safari all
+  correctly enabled, iCloud/Apple ID signed in, macOS fully updated, machine
+  rebooted). Console.app shows nothing at all for 'webpushd' or broader 'push'
+  filters during a live repro, and Spin Reports / Crash Reports show nothing
+  for Safari/WebKit at the time of the hang (only unrelated historical
+  Parallels Desktop entries, and Parallels was confirmed not running during
+  testing). Applied a legitimate code improvement regardless (commit pending):
+  PushNotificationToggle.jsx now pre-resolves navigator.serviceWorker.ready on
+  mount instead of inside the click handler, so enable() only has one await
+  (requestPermission) before calling subscribe(), tightening the user-
+  activation window Safari/WebKit cares about — did not change the outcome,
+  ruling out a gesture-timing cause. The exact same subscribe flow (same VAPID
+  key, same sw.js, same manifest) works correctly in Chrome on this same
+  machine. Root cause is almost certainly a bug in macOS Tahoe 26 Developer
+  Beta's webpushd/WebKit push implementation, not application code. Wrote up a
+  full repro report for Apple Feedback Assistant (apple-feedback-webpush-
+  hang.md) for Marc to file. Chrome is fully done; Safari stays blocked
+  pending an Apple fix (or a retest on a non-beta Mac) — do not mark task #6
+  done until Safari is independently verified working.
 
-- **#34 Resolve D-001 — which migration directory is authoritative** — 2026-09-10 → 2026-09-14 · Standard Adoption
-- **#35 Resolve D-002 — move loose docs into the standard structure** — 2026-09-15 → 2026-09-22 · Standard Adoption
+- **#46 Add a payment method and verify the phone on the ad account** — 2026-10-05 → 2026-10-06 · Paid Acquisition — Meta Pilot
+
+  MARC ONLY. Two separate gates: (1) a payment method — Meta reviews and
+  delivers nothing without a card on file, there is no free tier of paid ads
+  and no workaround, though Meta only charges on delivery so the card can sit
+  unused; (2) phone verification, which needs a code sent to his phone and is
+  free and doable any time. Deferred in waves.json because (1) waits on money,
+  so it must not sit at the front of the daily list looking overdue.
+
 
 ## Open decisions (blocked on Marc)
 
 None open.
-
-## Recent commits
-
-```
-36ce3a0 docs(gantt): correct task #6 note now that push pipeline is fixed
-a65c2a9 fix(push): add /api/push/send to Clerk isPublicRoute matcher
-6fc999c Resolve D-003 (conflict-score Pro gate), fix dashboard default-rep bug, revert premature #6 done-mark
-98bbd85 docs: daily CivicWatch.md update — 2026-09-03 sessions
-308a590 Move fd_net_worth bioguide_id backfill to db/backfills/; restore #35 note in AGENTS.md
-43797ee Rename to real applied timestamp 20260820234518 (D-001 reconciliation)
-b67a8f5 Rename to real applied timestamp 20260709042408 (D-001 reconciliation)
-e7e0ab1 Rename to real applied timestamp 20260630230502, content corrected to match ground truth (D-001 reconciliation)
-```
 
 ---
 
@@ -203,3 +214,18 @@ tasks and their notes; this brief is a view of it. Mark work done in the Gantt
 chart, not here. Governance decisions belong in `00-governance/decision-log.md`,
 open questions in `DECISIONS-PENDING.md`, and narrative in
 `00-governance/session-log.md`.
+
+## Dev server hangs? Clear `.next` first
+
+2026-09-20: `next dev` served every request in 1-7 **minutes** (one homepage
+request logged `application-code: 6.9min`) while `next build` compiled the
+whole app in 8 seconds. Cause was a corrupt 1.0 GB `.next` cache, not the
+code. `rm -rf .next` fixed it — homepage went 7.1min to 1.06s and reclaimed
+1 GB.
+
+Tell-tale sign: a boot error naming a hashed module that no longer resolves,
+e.g. `Cannot find module 'require-in-the-middle-<hash>'` from a cached chunk.
+
+Ruled out along the way, so don't re-investigate: the nested Remotion project
+at `40-gtm/video/` (676 MB of its own `node_modules` inside the app root) is
+**not** the problem — dev is fast with it in place.

@@ -4,6 +4,7 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { useState } from 'react'
 import ProCountBanner from '@/components/ProCountBanner'
 import { trackUpgradeClick } from '@/lib/funnel-track'
+import CookieChoicesLink from '@/components/CookieChoicesLink'
 
 const S = {
   navy:      '#0A0E1E',
@@ -384,7 +385,9 @@ export default function ProPage() {
         <div style={{ marginBottom: 12 }}>
           <Link href="/dashboard" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Dashboard</Link>
           <Link href="/privacy" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Privacy</Link>
-          <Link href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms</Link>
+          <CookieChoicesLink style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }} />
+          <Link href="/terms" style={{ color: S.gray, textDecoration: 'none', marginRight: 20 }}>Terms</Link>
+          <Link href="/support" style={{ color: S.gray, textDecoration: 'none' }}>Support</Link>
         </div>
         <div>© {new Date().getFullYear()} CivicWatch · For informational purposes only · Not legal or financial advice</div>
       </footer>

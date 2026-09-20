@@ -20,6 +20,129 @@ an agent ending one: add yours.
 
 ---
 
+## 2026-09-04 · added Instagram as a fourth GTM platform (same-day amendment)
+
+- Marc asked to add Instagram after the initial #37 decision (X, YouTube,
+  Reddit) was already applied to the gantt. Updated in place rather than
+  logging as a new decision: #37 and #38 (still `pending` at the time) had
+  their names/notes changed from "three platforms" to "four", and
+  `40-gtm/social-media-plan.md` now lists Instagram as **High** priority
+  alongside the other three. TikTok was in the same combined row
+  originally — split the row and left TikTok at "Not now"; Instagram was
+  what was asked for, not the pair.
+- No date/schedule change: #38 ("claim and brand the profiles") still covers
+  all of them in one task, still Sep 5.
+- **Self-caught, same session:** renaming #37 left `dependsOn` on #38/#39/#40
+  pointing at the old string "...three platforms" — `dependsOn` is
+  name-matched, not id-matched, so those three edges would have silently
+  stopped resolving (no arrow, no error). Fixed before it shipped anywhere;
+  re-embedded the corrected `gantt-state.json` into `gantt.html`.
+
+- **Marked #34 and #35 done — Marc was right, the gantt was wrong.** He
+  pushed back hard when the chart showed 8 pending, insisting the work was
+  finished. Two of those eight actually were: the 2026-09-03 session (see its
+  entry below) had already found and documented that `gantt-state.json` was
+  behind `decision-log.md` — ADR-003 (D-001, migrations directory) and ADR-002
+  (D-002, document restructure) were both accepted 2026-09-03, but the gantt
+  JSON still listed #34/#35 pending, and that session deliberately left it
+  unfixed, waiting for the real Project Schedule shortcut rather than
+  hand-editing a fifth inconsistent state into an already-4-way-inconsistent
+  picture (gantt JSON, AGENT-BRIEF.md, AGENTS.md's pointer block, and the
+  decision log all disagreed with each other at the time). I inherited that
+  same stale "pending" and initially defended the 8-pending count instead of
+  re-checking it against the decision log myself — that was the actual
+  mistake, not a data-loss bug. Fixed now: #34 and #35 both marked `done`,
+  `actualCompletionDate: 2026-09-03` (the ADR date, not today), with notes
+  citing the specific ADRs. Totals: 41 tasks, 35 done, 6 pending.
+- **#6 and #14 were NOT touched — they're genuinely still open, not the same
+  situation as #34/#35.** #6's own note documents Chrome fully verified but
+  Safari hanging on `pushManager.subscribe()` with a full repro write-up
+  (likely a macOS Tahoe beta WebKit bug), and explicitly says not to mark it
+  done until Safari is independently verified. #14 has no verification
+  recorded anywhere in this log or `docs/`; the 2026-09-03 session checked
+  `app/api/webhooks/clerk/route.js` directly and confirmed `/api/health`
+  doesn't even check `CLERK_WEBHOOK_SECRET`, so there's no automated signal
+  either — it needs an actual manual test, same as #6. If Marc has since run
+  that test, this is the place to record it.
+- **#14 done, same session, minutes later.** Marc ran the actual test in the
+  Clerk dashboard while this was being written and reported it back:
+  Delivery Stats (last 24h) SUCCESS-1, `user.created` attempt dated
+  2026-09-03 10:07 PM showing Succeeded against
+  `https://www.civicwatch.app/api/webhooks/clerk`. Root cause of prior
+  failures was a `www` redirect silently eating deliveries; fixed, and this
+  is the confirming delivery. Marked done with that evidence in the note.
+  Totals now 41 tasks, 36 done, 5 pending (#6, #38, #39, #40, #41).
+
+- **Found and fixed the actual "can't click any task" bug — my error, real
+  this time, not a preview quirk.** `gantt-state.json` on disk has never
+  carried a `blocks` field (it's computed) — but the *original* embedded
+  copy inside `gantt.html`, built by the real sync tooling, apparently did
+  carry a precomputed one. Every one of my re-embeds this session dumped
+  `gantt-state.json` straight into the HTML as-is, which silently stripped
+  `blocks` from all 41 tasks in the embedded fallback. `openPanel()` reads
+  `t.blocks.length` with no guard — so opening *any* task's detail panel
+  threw, but only on the code path where `fetch('gantt-state.json')` fails
+  and the page falls back to the embedded snapshot (exactly what happens
+  under `file://`, which is how this file gets opened outside a real
+  server). Fixed two ways: (1) computed and wrote a real `blocks` array onto
+  every task in `gantt-state.json` itself (same logic `adoptExternal()`
+  already used for the live-fetch path), so the embedded copy is complete
+  again; (2) guarded both `t.dependsOn.length` and `t.blocks.length` in
+  `openPanel()` with `||[]` so a missing array degrades to "no dependencies
+  shown" instead of a thrown exception, regardless of what future edits do.
+  Re-embedded and re-verified: 41/41 tasks now carry `blocks` in the HTML
+  copy.
+
+---
+
+## 2026-09-04 · decided #37 (GTM basics), applied the GTM — First Customers phase
+
+- **Asked "what's next to make CivicWatch earn money" — answer wasn't a code
+  task.** Checkout has worked end-to-end since #21 (2026-09-02); `/pro`
+  already matches reality since #32 (2026-09-01). The actual gap: `70-schedule/
+  PROPOSED-gtm-tasks.md` (drafted 2026-08-31) had already diagnosed this —
+  "checkout works; nobody knows the product exists" — but was never applied.
+  `20-business/monetization.md`, `business-plan.md`, and `metrics.md` are
+  still blank templates; not touched this session, out of scope for "apply
+  the plan that already exists."
+
+- **#37 decided (asked Marc directly, not assumed):** objective = first paying
+  Pro subscribers; ICP = civic watchdog / accountability voter (tracks a
+  rep's trades for accountability, not personal investing — reframes Pro's
+  conflict-score as "prove it," not "invest like Congress"); platforms = X,
+  YouTube, Reddit — three, explicitly overriding the doc's own "pick two"
+  advice. Written into `40-gtm/media-plan.md` and `social-media-plan.md`.
+
+- **Applied `apply-gtm-tasks.py` after correcting it** — its dates were from
+  the 2026-08-31 draft and already in the past (#37 dated 2026-09-01, etc.).
+  Rescheduled #38-41 to 2026-09-05 through 2026-09-10 and dropped its `#32`
+  reschedule entry (already shipped 2026-09-01, earlier than the script would
+  have moved it to — running it unmodified would have moved a correct
+  completed-task date backward). Gantt now 41 tasks, 33 done. #37 marked done
+  same day (decision, not a build task).
+
+- **Found but not fixed, flagging for next session:** `gantt-state.json`'s
+  `today` field still reads 2026-09-02 and the file's own `totals` were stale
+  before this session touched them — cosmetic, but the dashboard should be
+  regenerated. Separately, #34 ("Resolve D-001") and #35 ("Resolve D-002")
+  are still `pending` in the gantt even though ADR-003 and ADR-002 both
+  closed those exact decisions on 2026-09-03 — the gantt and the decision log
+  disagree about whether that work is done. Did not mark them done myself;
+  that's a bookkeeping call for whoever owns `build-briefs.sh`, not something
+  to silently change while in here for GTM.
+
+- **Not run:** `projects-dashboard/sync-charts.sh` and `build-today.sh` —
+  they live outside `/Users/marcshelton/Projects/civicwatch`, not reachable
+  from this session. Marc needs to run both to refresh the dashboard/brief
+  off the new `gantt-state.json`.
+
+- **Next session should:** once #38-41 execute, come back and mark them done
+  with real evidence (profile URLs, published FAQ link, live post URL,
+  submission confirmations) — same standard as everything else in this repo,
+  don't take Marc's word alone.
+
+---
+
 ## 2026-09-03 · replaced the empty locked-preview box with a shimmer skeleton
 - **Did:** follow-up to ADR-004's "left undone" item. The non-Pro branch of the
   flagged-trades card in `CivicWatch.jsx` (wealth tab) was blurring an empty

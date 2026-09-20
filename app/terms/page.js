@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import CookieChoicesLink from '@/components/CookieChoicesLink'
 
 export const metadata = {
   title: 'Terms of Service — CivicWatch',
@@ -66,7 +67,7 @@ BILLING: Pro subscriptions are billed monthly to the payment method on file. Bil
 
 CANCELLATION: You may cancel your Pro subscription at any time through your account settings. Cancellation takes effect at the end of the current billing period. You will retain Pro access until the end of the paid period.
 
-REFUNDS: Subscriptions may be cancelled at any time. For monthly subscriptions, we offer a 7-day refund window for new subscribers — contact us at billing@civicwatch.com within 7 days of your initial charge to request a refund. After the 7-day window, monthly subscription fees are non-refundable, but you will retain access to Pro features until the end of the current billing period. If you believe you were charged in error, contact us at billing@civicwatch.com within 30 days of the charge.
+REFUNDS: Subscriptions may be cancelled at any time. For monthly subscriptions, we offer a 7-day refund window for new subscribers — contact us at support@civicwatch.app within 7 days of your initial charge to request a refund. After the 7-day window, monthly subscription fees are non-refundable, but you will retain access to Pro features until the end of the current billing period. If you believe you were charged in error, contact us at support@civicwatch.app within 30 days of the charge.
 
 PRICE CHANGES: CivicWatch reserves the right to change subscription prices with 30 days written notice to your registered email address. Continued use of the Service after the price change constitutes acceptance of the new price.`,
   },
@@ -86,7 +87,7 @@ CivicWatch reserves the right to modify or discontinue the free trial offer at a
 • Maintain and promptly update your account information
 • Keep your password secure and confidential
 • Accept responsibility for all activities that occur under your account
-• Notify us immediately at security@civicwatch.com of any unauthorized use of your account
+• Notify us immediately at support@civicwatch.app of any unauthorized use of your account
 
 You may not share your account credentials with others or allow others to access the Service through your account. CivicWatch reserves the right to suspend or terminate accounts that violate these Terms.`,
   },
@@ -175,7 +176,7 @@ Notwithstanding the above, CivicWatch may seek injunctive or other equitable rel
   {
     num: '14',
     title: 'Privacy',
-    content: `Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy at civicwatch.com/privacy to understand our practices regarding the collection and use of your personal information.`,
+    content: `Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference. Please review our Privacy Policy at civicwatch.app/privacy to understand our practices regarding the collection and use of your personal information.`,
   },
   {
     num: '15',
@@ -195,7 +196,7 @@ Your continued use of the Service after changes become effective constitutes you
 
 Upon termination, your right to use the Service will immediately cease. All provisions of these Terms that by their nature should survive termination shall survive, including ownership provisions, warranty disclaimers, indemnity, and limitations of liability.
 
-You may terminate your account at any time by contacting us at support@civicwatch.com.`,
+You may terminate your account at any time by contacting us at support@civicwatch.app.`,
   },
   {
     num: '17',
@@ -203,11 +204,11 @@ You may terminate your account at any time by contacting us at support@civicwatc
     content: `For questions about these Terms of Service, please contact us:
 
 CivicWatch LLC
-Email: legal@civicwatch.com
-Support: support@civicwatch.com
-Billing: billing@civicwatch.com
+Email: support@civicwatch.app
+Support: support@civicwatch.app
+Billing: support@civicwatch.app
 
-For security issues: security@civicwatch.com`,
+For security issues: support@civicwatch.app`,
   },
 ]
 
@@ -262,7 +263,7 @@ export default function TermsPage() {
             {SECTIONS.map(s => (
               <a key={s.num} href={`#section-${s.num}`}
                 style={{ fontSize: 12, color: S.gray, textDecoration: 'none', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <span style={{ color: S.red, minWidth: 20, fontWeight: 700 }}>{s.num}.</span>
+                <span style={{ color: '#E2707E', minWidth: 20, fontWeight: 700 }}>{s.num}.</span>
                 <span style={{ lineHeight: 1.5 }}>{s.title}</span>
               </a>
             ))}
@@ -299,9 +300,9 @@ export default function TermsPage() {
           <p style={{ fontSize: 13, color: S.gray, marginBottom: 16 }}>
             If you have any questions about these Terms of Service, please contact our legal team.
           </p>
-          <a href="mailto:legal@civicwatch.com"
+          <a href="mailto:support@civicwatch.app"
             style={{ display: 'inline-block', padding: '10px 24px', background: `linear-gradient(135deg, ${S.red}, ${S.navyMid})`, borderRadius: 8, color: 'white', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
-            Contact Legal Team →
+            Contact Us →
           </a>
         </div>
 
@@ -320,8 +321,10 @@ export default function TermsPage() {
           <a href="/privacy" style={{ color: S.gray, textDecoration: 'none' }}>Privacy Policy</a>
           <a href="/terms" style={{ color: S.gray, textDecoration: 'none' }}>Terms of Service</a>
           <a href="/refund-policy" style={{ color: S.gray, textDecoration: 'none' }}>Refund Policy</a>
+          <CookieChoicesLink style={{ color: S.gray, textDecoration: 'none' }} />
+          <a href="/support" style={{ color: S.gray, textDecoration: 'none' }}>Support</a>
           <a href="/privacy#ccpa" style={{ color: S.gray, textDecoration: 'none' }}>Do Not Sell My Personal Information</a>
-          <a href="mailto:legal@civicwatch.com" style={{ color: S.gray, textDecoration: 'none' }}>Contact</a>
+          <a href="mailto:support@civicwatch.app" style={{ color: S.gray, textDecoration: 'none' }}>Contact</a>
         </div>
       </footer>
     </div>

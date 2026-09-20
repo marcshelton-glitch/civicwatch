@@ -58,9 +58,9 @@ in `00-governance/decision-log.md` with who accepted the risk.
 - [ ] Support email monitored
 
 ## Support
-- [ ] Support channel live with a stated response SLA
-- [ ] FAQ / docs cover the top 10 expected questions
-- [ ] Escalation path for outages
+- [x] Support channel live with a stated response SLA — `/support` page live: support@civicwatch.app, 1-business-day response commitment stated (2026-09-04)
+- [x] FAQ / docs cover the top 10 expected questions — `/support` page, 10 Q&As (2026-09-04)
+- [ ] Escalation path for outages — customer-facing path exists (`/support` "Outage" instructions), but `60-ops/runbook.md` incident-response/escalation section is still an unfilled template
 
 ## Post-launch, first 48h
 - [ ] Someone is watching errors
