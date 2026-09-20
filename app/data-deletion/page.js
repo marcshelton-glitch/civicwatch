@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import CookieChoicesLink from '@/components/CookieChoicesLink'
 
 export const metadata = {
   title: "Data Deletion Instructions | CivicWatch",
@@ -60,6 +61,11 @@ export default function DataDeletionPage() {
           <p style={P}>
             You have the right to delete your CivicWatch account and the personal information associated with it at any time.
             This page explains the two ways to do that and what happens to your data afterward.
+          </p>
+
+          <p style={{ ...P, color: S.white }}>
+            Deletion is permanent. If you want to keep a copy,{' '}
+            <Link href="/data-export" className="del-link">download your data</Link> first.
           </p>
 
           <div>
@@ -159,7 +165,13 @@ export default function DataDeletionPage() {
           {' · '}
           <Link href="/privacy" className="del-footer-link">Privacy Policy</Link>
           {' · '}
+          <Link href="/data-export" className="del-footer-link">Download Your Data</Link>
+          {' · '}
+          <CookieChoicesLink className="del-footer-link" />
+          {' · '}
           <Link href="/terms" className="del-footer-link">Terms of Service</Link>
+          {' · '}
+          <Link href="/support" className="del-footer-link">Support</Link>
           {' · '}
           <Link href="/privacy#ccpa" className="del-footer-link">Do Not Sell My Personal Information</Link>
         </footer>

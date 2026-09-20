@@ -13,6 +13,14 @@ const isPublicRoute = createRouteMatcher([
   '/privacy(.*)',
   '/terms(.*)',
   '/data-deletion(.*)',
+  // Fourth instance of the bug class documented below: the page at
+  // /data-export must be readable by signed-out visitors — it explains what
+  // the export contains and links to sign-in. Without this entry Clerk
+  // middleware 401s the page itself, so nobody who is not already signed in
+  // can even read it. The API route (/api/data-export) is deliberately NOT
+  // public: it stays behind the middleware auth check, and DataExportButton
+  // handles the 401 by telling the user to sign in.
+  '/data-export(.*)',
   '/manifest.json',
   '/api/webhooks/(.*)',
   '/api/public-feed(.*)',

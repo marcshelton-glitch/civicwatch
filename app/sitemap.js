@@ -11,6 +11,8 @@ export default function sitemap() {
     { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/data-deletion`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${BASE_URL}/data-export`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/refund-policy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${BASE_URL}/support`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
   ]
 }
