@@ -28,7 +28,11 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #1e3a5f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#e8e8e8', fontWeight: 600, fontSize: 16 }}>Account Settings</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 20, cursor: 'pointer' }}>✕</button>
+        <button
+          onClick={onClose}
+          aria-label="Close account settings"
+          style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 20, cursor: 'pointer', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: -10 }}
+        >✕</button>
       </div>
 
       <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px' }}>

@@ -114,3 +114,53 @@ a {
     letter-spacing: 0;
   }
 }
+
+/* ── Accessibility baseline ───────────────────────────────────────────────
+   Added 2026-09-20 during the pre-launch accessibility pass. */
+
+/* Visible keyboard focus.
+
+   Several components set `outline: none` as an inline style, which beats any
+   normal stylesheet rule and leaves keyboard users with no visible focus at
+   all. `!important` is deliberate: it guarantees an indicator across the whole
+   app, including the parts of the 4,900-line main component that were not
+   audited element by element. `:focus-visible` means pointer users never see
+   it, so nothing changes for mouse and touch. */
+:focus-visible {
+  outline: 3px solid #D4AF37 !important;
+  outline-offset: 2px !important;
+}
+
+/* Skip link — keyboard users can jump past the nav instead of tabbing
+   through it on every page. Off-screen until focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  padding: 12px 20px;
+  background: #D4AF37;
+  color: #0A1628;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* Respect the OS "reduce motion" setting. Vestibular disorders make large or
+   repeated motion genuinely unpleasant, and this app animates a fair amount.
+   Motion is cut to near-zero rather than removed outright, so transition-end
+   handlers still fire and nothing hangs waiting for them. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

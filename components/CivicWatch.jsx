@@ -1109,10 +1109,11 @@ useEffect(() => {
               📊 Accountability
             </button>
             {unreadCount > 0 && (
-              <div className="pulse" onClick={() => setActiveTab("alerts")}
-                style={{ background: S.red, borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+              <button className="pulse" onClick={() => setActiveTab("alerts")}
+                aria-label={`${unreadCount} unread alert${unreadCount === 1 ? '' : 's'} — go to alerts`}
+                style={{ background: S.red, border: "none", color: "white", fontFamily: "inherit", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, cursor: "pointer", padding: 0 }}>
                 {unreadCount}
-              </div>
+              </button>
             )}
             {!isSignedIn ? (
               <button onClick={() => openSignIn()}
@@ -1183,7 +1184,7 @@ useEffect(() => {
           <div className="slide-in">
             <SectionHeader title="My Representatives" subtitle="Find, track, and contact your elected officials at every level of government." />
             <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-              <input placeholder="🔍 Search by name or district…" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+              <input placeholder="🔍 Search by name or district…" aria-label="Search representatives by name or district" type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                 style={{ flex: "1 1 220px", padding: "10px 14px", background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13, outline: "none" }} />
               <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)}
                 style={{ padding: "10px 14px", background: S.navyMid, border: `1px solid ${S.border}`, borderRadius: 8, color: S.white, fontFamily: "inherit", fontSize: 13 }}>
@@ -1536,8 +1537,8 @@ useEffect(() => {
                     { label: '−', title: 'Zoom out', fn: () => { setMapScale(s => { const ns = Math.max(1,  s / 1.4); setMapTx(tx => 300 - (300 - tx) * (ns / s)); setMapTy(ty => 200 - (200 - ty) * (ns / s)); return ns }) } },
                     { label: '⊙', title: 'Reset zoom', fn: () => { setMapScale(1); setMapTx(0); setMapTy(0) } },
                   ].map(({ label, title, fn }) => (
-                    <button key={label} title={title} onClick={fn} style={{
-                      width: 28, height: 28, borderRadius: 6, border: `1px solid ${S.border}`,
+                    <button key={label} title={title} aria-label={title} onClick={fn} style={{
+                      width: 44, height: 44, borderRadius: 6, border: `1px solid ${S.border}`,
                       background: 'rgba(10,22,40,0.85)', color: S.white,
                       fontSize: label === '⊙' ? 14 : 18, lineHeight: 1,
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1871,12 +1872,14 @@ useEffect(() => {
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {displayReps.map(r => (
-                  <div key={r.id} onClick={() => toggleTrack(r.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", background: tracked.includes(r.id) ? `rgba(212,175,55,0.12)` : S.cardBg, border: `1px solid ${tracked.includes(r.id) ? S.gold : S.border}`, borderRadius: 30, cursor: "pointer" }}>
+                  <button key={r.id} onClick={() => toggleTrack(r.id)}
+                    aria-pressed={tracked.includes(r.id)}
+                    aria-label={`${tracked.includes(r.id) ? 'Stop tracking' : 'Track'} ${r.name}`}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 14px", background: tracked.includes(r.id) ? `rgba(212,175,55,0.12)` : S.cardBg, border: `1px solid ${tracked.includes(r.id) ? S.gold : S.border}`, borderRadius: 30, cursor: "pointer", fontFamily: "inherit" }}>
                     <Image unoptimized src={r.photo} alt={r.name} width={26} height={26} style={{ borderRadius: "50%", objectFit: "cover" }} onError={e => { e.currentTarget.style.display = 'none' }} />
                     <span style={{ fontSize: 12, color: tracked.includes(r.id) ? S.gold : S.gray }}>{r.name.split(" ").slice(-1)[0]}</span>
                     {tracked.includes(r.id) && <span style={{ color: S.gold, fontSize: 11 }}>✓</span>}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -1885,7 +1888,7 @@ useEffect(() => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Notification Settings</div>
                 {prefsSaved && (
-                  <span style={{ fontSize: 11, color: S.green, fontWeight: 600, letterSpacing: 0.5 }}>Saved ✓</span>
+                  <span style={{ fontSize: 11, color: '#4FC08A', fontWeight: 600, letterSpacing: 0.5 }}>Saved ✓</span>
                 )}
               </div>
 
@@ -1932,6 +1935,19 @@ useEffect(() => {
                     return (
                       <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: comingSoon ? 'not-allowed' : 'pointer', opacity: comingSoon ? 0.55 : 1 }}>
                         <div onClick={() => !comingSoon && updatePref(key, !checked)}
+                          role="checkbox"
+                          aria-checked={checked}
+                          aria-label={label}
+                          aria-disabled={comingSoon || undefined}
+                          tabIndex={comingSoon ? -1 : 0}
+                          onKeyDown={e => {
+                            if (comingSoon) return
+                            // Space and Enter must both work on a checkbox role.
+                            if (e.key === ' ' || e.key === 'Enter') {
+                              e.preventDefault()
+                              updatePref(key, !checked)
+                            }
+                          }}
                           style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${checked ? S.gold : S.border}`, background: checked ? 'rgba(212,175,55,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: comingSoon ? 'not-allowed' : 'pointer' }}>
                           {checked && <span style={{ color: S.gold, fontSize: 12, lineHeight: 1, fontWeight: 700 }}>✓</span>}
                         </div>
@@ -2323,10 +2339,20 @@ useEffect(() => {
               )}
 
               {/* Progress dots */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 22 }}>
-                {[1, 2, 3].map(s => (
-                  <div key={s} style={{ width: 8, height: 8, borderRadius: '50%', background: s === onboardingStep ? S.gold : 'rgba(212,175,55,0.25)', transition: 'background 0.25s', cursor: s < onboardingStep ? 'pointer' : 'default' }} onClick={() => { if (s < onboardingStep) setOnboardingStep(s) }} />
-                ))}
+              <div role="group" aria-label="Onboarding progress" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 22 }}>
+                {[1, 2, 3].map(s => {
+                  const dot = <span style={{ display: 'block', width: 8, height: 8, borderRadius: '50%', background: s === onboardingStep ? S.gold : 'rgba(212,175,55,0.25)', transition: 'background 0.25s' }} />
+                  // Only completed steps are navigable; the rest are status only.
+                  return s < onboardingStep ? (
+                    <button key={s} type="button" onClick={() => setOnboardingStep(s)}
+                      aria-label={`Back to step ${s}`}
+                      style={{ background: 'none', border: 'none', padding: 8, margin: -8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {dot}
+                    </button>
+                  ) : (
+                    <span key={s} aria-current={s === onboardingStep ? 'step' : undefined}>{dot}</span>
+                  )
+                })}
               </div>
             </div>
           </div>
