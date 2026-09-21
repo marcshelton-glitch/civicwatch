@@ -1,3 +1,73 @@
+# ⚡ 2026-09-21 — Privacy compliance locked in (consent gating + data export), accessibility pass complete, launch prep underway
+
+## ⚡ Recent Work — 2026-09-16 to 2026-09-21
+
+**Privacy & Consent Compliance (Commits: f055096, 6c88061)**
+
+*Self-serve data export (GDPR Art. 20 portability):*
+- New `/api/export/route.js` exports all nine user-keyed tables as JSON download (no request form)
+- Covers: user_preferences, user_tracked_reps, push_subscriptions, sent_alerts, email_sequences, ai_usage, refund_requests, funnel_events, rate_limits + Clerk record
+- Every column verified against migrations; cross-checked all migrations for user_id columns to avoid silent gaps
+- Status: Complete ✓
+
+*Tracker gating & consent enforcement:*
+- Fixed critical pre-consent firing: Sentry, Google Analytics, Meta Pixel, TikTok Pixel, Vercel Analytics/Speed Insights were all mounted on first paint before banner rendered
+- New `lib/consent.js` single source of truth: Necessary trackers (Clerk, Stripe, Sentry error capture) always run; analytics & advertising gated behind user opt-in
+- Rebuilt `CookieBanner`: Reject/Accept equal weight, Escape = reject, visible focus, 44px targets
+- New `CookieChoicesLink` in footer (re-consent easy as first-consent per compliance principle)
+- Updated privacy policy §3/§5 to name every processor; split necessary/analytics/advertising sections
+- Commit: `6c88061`
+- Status: Complete ✓
+
+**Accessibility Pass (Commit: 643f903)**
+- Fixed missing `:focus-visible` globally in `globals.css` (inline `outline: none` was blocking all focus indicators)
+- Converted 3 unreachable `div onClick` handlers to real buttons (unread badge, rep chips, onboarding dots)
+- Preference toggle: now `role="checkbox"` with Space/Enter support
+- Map zoom controls: added accessible names, resized 28px → 44px (44px baseline met)
+- Settings close button: accessible name, 44px hit area
+- Rep search box: fixed placeholder-only UX; now properly labeled
+- Contrast improvements: "Saved ✓" badge 3.39:1 → 7.98:1 (better at 11px)
+- Skip link verified: first tab stop, focus ring renders on-screen
+- Note: Static pass only (no screen-reader testing, no formal certification claim; genuine AA requires VoiceOver walkthrough)
+- Status: Ready for pre-launch; full audit needed post-launch
+
+**Legal Compliance Audit (Commit: 2dee477)**
+- Reconciled GDPR/Privacy/Accessibility checklist against shipped code
+- Marked N/A: DPA/subprocessor list (no B2B controllers), app-store section (web-only)
+- Identified open applicability rows (state-registration nexus, COPPA 13+ gate, a11y audit scope)
+- Duty logged: when adding/dropping providers, update privacy §3 and gate in `lib/consent.js` if non-essential
+- Status: All required artifacts shipped ✓
+
+**Launch Prep & GTM Setup (Commit: 3a33c59)**
+- New `/support` page with consolidated support@ email (migrated from @civicwatch.com)
+- Contact emails migrated: legal@, security@, billing@ → support@civicwatch.app across all footers
+- GTM launch docs staged: launch-post-x.md, launch-submissions-draft.md, social-launch-kit/
+- Schedule tools updated: apply-gtm-tasks.py, gantt-state.json, gantt.html
+- Status: Ready for social account claim and launch submission workflow
+
+### 📋 Open Items
+- [ ] Claim four social profiles (X, YouTube, Reddit, Instagram) using `civicwatchhq` handle (task #38)
+- [ ] Verify Reddit handle availability manually (`civicwatchapp` / `civicwatchhq`)
+- [ ] Check Instagram for existing `@civicwatchapp` account (0 followers/posts) — verify ownership
+- [ ] Mark task #38 done in gantt once profiles are claimed + branded
+- [ ] Publish launch post to X once account exists (task #40)
+- [ ] Monitor first 2 hours on X for warm audience (prerequisite for #41 PH submission)
+- [ ] Set up support channel with SLA before PH/HN submissions (task #39 prerequisite)
+- [ ] Refresh match-rate + trade-count figures in #41 drafts before going live
+- [ ] Prepare 5–8 product screenshots (1270×760) for PH gallery
+- [ ] Create PH "Upcoming" page (if maker account exists) to collect notify-on-launch subscribers
+- [ ] Line up genuine early commenter for PH launch day (one real user in first hour)
+- [ ] Full accessibility audit post-launch (VoiceOver pass, tab-order walkthrough, map SVG testing)
+- [ ] Monitor `cookie_consent` and tracker firing in EU regions post-deploy
+- [ ] File Apple Feedback report for Safari push notification WebKit hang (from task #6, Sept 12)
+
+### 🚀 Feature Status
+- **Privacy/Consent:** data export ✓ | tracker gating ✓ | privacy policy updated ✓
+- **Accessibility:** focus indicators ✓ | keyboard nav ✓ | contrast pass ✓ | static audit complete (full audit pending)
+- **Legal compliance:** checklist reconciled ✓ | required artifacts shipped ✓
+- **Launch prep:** support channel ✓ | email migration ✓ | GTM docs staged ✓
+
+---
 # ⚡ 2026-09-15 — AI Analysis tab fix deployed, Pro page rewrite pushed, ingest date parser UTC bug fixed, future-dated trades purge complete
 
 ## ⚡ Recent Work — 2026-09-15
