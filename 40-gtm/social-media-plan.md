@@ -32,7 +32,7 @@ Messaging should lead with accountability, not returns.
 |---|---|---|---|---|
 | LinkedIn | B2B lead gen — the dominant social source for SaaS | | | Not now |
 | YouTube | Evergreen educational search asset | | | **High** |
-| Reddit | Peer-to-peer trust; ranks in search | | | **High** |
+| Reddit | Peer-to-peer trust; ranks in search | | | ~~High~~ **Dropped 2026-09-21** |
 | X | Real-time reach for accountability-angle news | | | **High** |
 | Instagram | Short-form reach, retargeting pool | | | **High** |
 | TikTok | Short-form reach, retargeting pool | | | Not now |
@@ -45,6 +45,21 @@ across all four, cut back rather than doing four badly. Instagram was added
 same-day (2026-09-04), after the initial three; TikTok was considered and
 left out — Instagram covers the short-form/retargeting role this doc assigns
 to the pair, TikTok specifically wasn't asked for.
+
+**Reversed 2026-09-21: Reddit dropped, three platforms not four.** This doc asked
+that the four-platform choice not be quietly "fixed" back, so here is the reason it
+was. Reddit's app-creation flow fails silently on Reddit's side — a documented,
+months-long platform bug, reproduced in Safari, automated Chrome and old.reddit.com
+alike. There is no fix from our end and no ETA, and gantt #38 sat permanently
+overdue at the top of `TODAY.md` waiting on it, which is the exact failure mode
+`waves.json` warns about. X, YouTube and Instagram remain live and connected.
+
+**What this does not change:** only the *owned, branded, API-integrated* Reddit
+channel is gone. Posting into existing subreddits at launch — r/SideProject,
+r/OpenGovernment and the rest in `launch-submissions-draft.md` — needs no app and
+no integration, and is still planned under task #41. The 90/10 rule still applies
+there: participate, don't broadcast. Reopen the owned channel only if Reddit ships
+a fix, or if we move to Devvit.
 
 ## Content pillars
 

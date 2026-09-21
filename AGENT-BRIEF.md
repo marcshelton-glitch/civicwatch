@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-09-18 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-09-21 16:24 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,10 +8,33 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 40/47 done · 7 open
+- **Progress:** 41/48 done · 7 open
 - **Projected launch:** 2026-10-08
 
 ## Already done — do not redo
+
+### #38 Claim and brand the four social profiles chosen in #37
+*Completed 2026-09-21.*
+
+DONE 2026-09-21 — closed at three of four platforms; Reddit dropped as an
+owned channel by Marc's decision 2026-09-21. Live and connected to the self-
+hosted Postiz instance since 2026-09-13/14: Facebook + Instagram
+(CivicWatch.app), X (@CivicWatchAlert), and YouTube (@civicwatchapp, a
+dedicated Brand Account so CivicWatch never posts from Marc's personal
+channel). Integration ids are in ~/tools/ad-pipeline/briefs/civicwatch.json.
+WHY REDDIT WAS DROPPED: Reddit's own app-creation flow silently fails — a
+documented, months-long platform bug reproduced in Safari, automated Chrome
+and old.reddit.com alike. Not fixable from our side, no ETA, and leaving the
+task open parked a permanently-overdue item at the top of TODAY.md, which
+waves.json explicitly warns against. This reverses the four-platform choice
+made in #37 on 2026-09-04; the reversal is recorded in 40-gtm/social-media-
+plan.md so a future pass doesn't quietly restore it. SCOPE OF THE DROP — READ
+THIS BEFORE 'FIXING' IT: only the OWNED, branded, API-integrated Reddit
+channel is dropped. Manual participation in subreddits at launch
+(r/SideProject, r/OpenGovernment et al., per 40-gtm/launch-submissions-
+draft.md and task #41) is unaffected — that needs no app, no API and no
+integration, and the 90/10 participate-don't-broadcast rule still applies.
+Reopen the owned channel only if Reddit ships a fix or we switch to Devvit.
 
 ### #42 Stand up the CivicWatch ad account under the Meta business portfolio
 *Completed 2026-09-17.*
@@ -94,29 +117,7 @@ log.md) found the same drift and deliberately left it unfixed pending the real
 Project Schedule shortcut. Marked done now on the strength of the accepted
 ADR, which is a stronger signal than a stale JSON field.
 
-### #35 Resolve D-002 — move loose docs into the standard structure
-*Completed 2026-09-03.*
-
-RECONCILED 2026-09-04: gantt had drifted behind 00-governance/decision-log.md.
-ADR-002 (dated 2026-09-03, status accepted) resolved D-002 — loose business
-documents moved into the 00- through 70- standard structure in a single
-reviewable commit (f28c5d9). This gantt entry was never updated to match.
-Marked done now on the strength of the accepted ADR.
-
 ## Next up
-
-- **#38 Claim and brand the four social profiles chosen in #37** — 2026-09-17 → 2026-09-18 · GTM — First Customers
-
-  Launch-checklist gate: 'Social profiles claimed and branded consistently'.
-  X, YouTube, Reddit, Instagram. Handles per 30-brand/brand.md. Free. STATUS
-  2026-09-17: three of four live and connected to the self-hosted Postiz
-  instance — Facebook + Instagram (CivicWatch.app), X (@CivicWatchAlert), and
-  YouTube (@civicwatchapp, a dedicated Brand Account so CivicWatch never posts
-  from Marc's personal channel). Integration ids are in ~/tools/ad-
-  pipeline/briefs/civicwatch.json. Still open ONLY because Reddit app creation
-  fails on Reddit's side — a documented, months-long platform bug reproduced
-  in Safari, automated Chrome and old.reddit.com alike. Not fixable from here;
-  reopen if Reddit ships a fix or switch to Devvit.
 
 - **#39 Support channel live with a stated SLA, FAQ for the top 10 questions** — 2026-09-21 → 2026-09-23 · GTM — First Customers
 
@@ -137,61 +138,32 @@ Marked done now on the strength of the accepted ADR.
   media-plan.md already names these three rows. Free, and the backlinks
   outlast the launch spike.
 
-- **#6 Test push end-to-end on Chrome + Safari** — 2026-10-01 → 2026-10-02 · Phase 1 Hardening
+- **#48 Lock the CivicWatch AI presenter reference image** — 2026-10-01 → 2026-10-01 · Brand & Content
 
-  Reverted from a prior 'done' mark (which was based on Marc's word alone, no
-  artifact) after this session's own live test contradicted it: Chrome
-  subscription confirmed working end-to-end, but /api/push/send returned 401
-  Unauthorized. INITIAL SUSPICION WAS WRONG: hours were spent on
-  INTERNAL_API_SECRET mismatch theory (rotating it, re-saving via Vercel
-  dashboard and CLI three different ways) before finding the real cause via
-  curl -si response headers (x-clerk-auth-reason: token-invalid, x-clerk-auth-
-  status: signed-out) — /api/push/send was simply missing from proxy.ts's
-  isPublicRoute matcher, so Clerk middleware rejected every call before the
-  route's own checkAuth() ever ran, same bug class already fixed twice
-  elsewhere in that file. Fixed in commit a65c2a9 (2026-09-03), deployed, and
-  verified live: POST /api/push/send returned {"sent":1,"stale_pruned":0}.
-
-  CHROME HALF NOW FULLY VERIFIED (2026-09-03): no OS banner appeared, which
-  looked like a fresh bug, but Marc found the notification sitting correctly
-  in macOS Notification Center ('CivicWatch test — Push pipeline check —
-  Chrome (task #6)'). Confirmed via live browser inspection during this
-  session that this is not a delivery problem: Notification.permission is
-  'granted', the active service worker is the correct sw.js, and its
-  pushManager subscription endpoint matches byte-for-byte the
-  push_subscriptions row the server just sent to. The full chain (subscribe ->
-  Supabase -> /api/push/send -> FCM -> service worker -> OS notification)
-  works end-to-end on Chrome. The missing banner is a macOS/Chrome
-  notification *display-style* setting (System Settings -> Notifications ->
-  Google Chrome, or Focus/DND), not a code or pipeline defect — worth Marc
-  fixing for UX but not a blocker for this task.
-
-  SAFARI ATTEMPTED 2026-09-04, BLOCKED — NOT a CivicWatch bug:
-  PushNotificationToggle.jsx's enable() calls Notification.requestPermission()
-  (resolves 'granted', confirmed) -> navigator.serviceWorker.ready (resolves
-  with the correct active sw.js registration, confirmed) ->
-  registration.pushManager.subscribe(...). subscribe() never resolves or
-  rejects on this Mac's Safari; the button hangs in its loading state forever
-  with zero error, on a completely clean repro (permission reset via Safari >
-  Settings > Websites > Notifications, OS notification settings for Safari all
-  correctly enabled, iCloud/Apple ID signed in, macOS fully updated, machine
-  rebooted). Console.app shows nothing at all for 'webpushd' or broader 'push'
-  filters during a live repro, and Spin Reports / Crash Reports show nothing
-  for Safari/WebKit at the time of the hang (only unrelated historical
-  Parallels Desktop entries, and Parallels was confirmed not running during
-  testing). Applied a legitimate code improvement regardless (commit pending):
-  PushNotificationToggle.jsx now pre-resolves navigator.serviceWorker.ready on
-  mount instead of inside the click handler, so enable() only has one await
-  (requestPermission) before calling subscribe(), tightening the user-
-  activation window Safari/WebKit cares about — did not change the outcome,
-  ruling out a gesture-timing cause. The exact same subscribe flow (same VAPID
-  key, same sw.js, same manifest) works correctly in Chrome on this same
-  machine. Root cause is almost certainly a bug in macOS Tahoe 26 Developer
-  Beta's webpushd/WebKit push implementation, not application code. Wrote up a
-  full repro report for Apple Feedback Assistant (apple-feedback-webpush-
-  hang.md) for Marc to file. Chrome is fully done; Safari stays blocked
-  pending an Apple fix (or a retest on a non-beta Mac) — do not mark task #6
-  done until Safari is independently verified working.
+  Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built
+  2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch
+  --sheet`, generate four variants, pick the least synthetic-looking one, save
+  it as civicwatch/reference.jpg, then set reference_image and flip status to
+  reference-locked. The JSON alone will NOT hold the face steady across
+  sessions — the saved image is the actual consistency mechanism, and every
+  later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this
+  feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-
+  pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot
+  creative, and #47 is a political-classification experiment — swapping in a
+  synthetic presenter would change the variable being tested. Moved 2026-09-21
+  from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists
+  as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means
+  presenter-led organic can run during launch week instead of starting after
+  it. It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH:
+  persistent 'AI presenter - data from public STOCK Act filings' lower-third
+  for the full duration, platform AI-content flag set on upload, and the
+  claims block in presenter.json respected — narrator only, never a user or
+  testimonial. For this audience an unlabelled synthetic presenter would
+  discredit the product's whole premise. Collapsed 2026-09-21: build-prompt.py
+  now reads ~/tools/ad-pipeline/briefs/civicwatch.json for ICP, angle and
+  brand voice, so presenter.json holds appearance and claim limits only. Chain
+  is brief + presenter + scene -> build-prompt.py -> generate.mjs ->
+  publish.mjs.
 
 - **#46 Add a payment method and verify the phone on the ad account** — 2026-10-05 → 2026-10-06 · Paid Acquisition — Meta Pilot
 
@@ -202,10 +174,38 @@ Marked done now on the strength of the accepted ADR.
   free and doable any time. Deferred in waves.json because (1) waits on money,
   so it must not sit at the front of the daily list looking overdue.
 
+- **#47 Publish the pilot ad and record whether Meta flags it as political** — 2026-10-07 → 2026-10-08 · Paid Acquisition — Meta Pilot
+
+  The actual experiment. Draft is already built in Ads Manager: ad account,
+  campaign, ad set (US / 18+ / $5 a day), destination URL and a placeholder
+  Capitol image from the Page library are all saved. Two things still to do by
+  hand, because Meta's creative wizard hung on its Next button: paste copy
+  variant A (primary text / headline / description, CTA 'Learn more') from
+  ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json, and optionally
+  swap the placeholder for the better 2026-09-13 Capitol/flagged-trade
+  creative — Meta's upload button opens a native file picker that can't be
+  automated. Then publish and watch the review status: a political/issue
+  classification shows up as a rejection demanding authorization and a 'Paid
+  for by' disclaimer. Either outcome is the answer worth having; record it in
+  policyPrecedent.actualResult.
+
 
 ## Open decisions (blocked on Marc)
 
 None open.
+
+## Recent commits
+
+```
+cee845e docs: daily CivicWatch.md update — Sept 21, 2026 (privacy, accessibility, launch prep)
+3a33c59 feat(gtm): support channel, contact-email migration and launch prep
+2dee477 docs(legal): reconcile the compliance checklist against shipped code
+643f903 fix(a11y): pre-launch accessibility pass
+f055096 feat(privacy): self-serve data export
+6c88061 fix(privacy): gate all trackers behind consent and disclose them
+682f866 docs: daily CivicWatch.md update — push fix, bioguide backfill, /pro messaging rewrite, GTM prep
+766cc68 docs: daily CivicWatch.md update (September 4, 2026)
+```
 
 ---
 
@@ -214,18 +214,3 @@ tasks and their notes; this brief is a view of it. Mark work done in the Gantt
 chart, not here. Governance decisions belong in `00-governance/decision-log.md`,
 open questions in `DECISIONS-PENDING.md`, and narrative in
 `00-governance/session-log.md`.
-
-## Dev server hangs? Clear `.next` first
-
-2026-09-20: `next dev` served every request in 1-7 **minutes** (one homepage
-request logged `application-code: 6.9min`) while `next build` compiled the
-whole app in 8 seconds. Cause was a corrupt 1.0 GB `.next` cache, not the
-code. `rm -rf .next` fixed it — homepage went 7.1min to 1.06s and reclaimed
-1 GB.
-
-Tell-tale sign: a boot error naming a hashed module that no longer resolves,
-e.g. `Cannot find module 'require-in-the-middle-<hash>'` from a cached chunk.
-
-Ruled out along the way, so don't re-investigate: the nested Remotion project
-at `40-gtm/video/` (676 MB of its own `node_modules` inside the app root) is
-**not** the problem — dev is fast with it in place.
