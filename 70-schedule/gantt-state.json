@@ -6,9 +6,9 @@
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 48,
-    "done": 43,
-    "remaining": 5,
-    "pctDone": 90
+    "done": 44,
+    "remaining": 4,
+    "pctDone": 92
   },
   "launch": {
     "planned": "2026-10-08",
@@ -990,19 +990,19 @@
         "end": "2026-10-02"
       },
       "scheduled": {
-        "start": "2026-10-09",
-        "end": "2026-10-12"
+        "start": "2026-09-22",
+        "end": "2026-09-22"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 10,
+      "status": "done",
+      "actualCompletionDate": "2026-09-22",
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Implement /api/push/send via web-push"
       ],
       "durationWorkdays": 1,
-      "note": "Reverted from a prior 'done' mark (which was based on Marc's word alone, no artifact) after this session's own live test contradicted it: Chrome subscription confirmed working end-to-end, but /api/push/send returned 401 Unauthorized. INITIAL SUSPICION WAS WRONG: hours were spent on INTERNAL_API_SECRET mismatch theory (rotating it, re-saving via Vercel dashboard and CLI three different ways) before finding the real cause via curl -si response headers (x-clerk-auth-reason: token-invalid, x-clerk-auth-status: signed-out) — /api/push/send was simply missing from proxy.ts's isPublicRoute matcher, so Clerk middleware rejected every call before the route's own checkAuth() ever ran, same bug class already fixed twice elsewhere in that file. Fixed in commit a65c2a9 (2026-09-03), deployed, and verified live: POST /api/push/send returned {\"sent\":1,\"stale_pruned\":0}.\n\nCHROME HALF NOW FULLY VERIFIED (2026-09-03): no OS banner appeared, which looked like a fresh bug, but Marc found the notification sitting correctly in macOS Notification Center ('CivicWatch test — Push pipeline check — Chrome (task #6)'). Confirmed via live browser inspection during this session that this is not a delivery problem: Notification.permission is 'granted', the active service worker is the correct sw.js, and its pushManager subscription endpoint matches byte-for-byte the push_subscriptions row the server just sent to. The full chain (subscribe -> Supabase -> /api/push/send -> FCM -> service worker -> OS notification) works end-to-end on Chrome. The missing banner is a macOS/Chrome notification *display-style* setting (System Settings -> Notifications -> Google Chrome, or Focus/DND), not a code or pipeline defect — worth Marc fixing for UX but not a blocker for this task.\n\nSAFARI ATTEMPTED 2026-09-04, BLOCKED — NOT a CivicWatch bug: PushNotificationToggle.jsx's enable() calls Notification.requestPermission() (resolves 'granted', confirmed) -> navigator.serviceWorker.ready (resolves with the correct active sw.js registration, confirmed) -> registration.pushManager.subscribe(...). subscribe() never resolves or rejects on this Mac's Safari; the button hangs in its loading state forever with zero error, on a completely clean repro (permission reset via Safari > Settings > Websites > Notifications, OS notification settings for Safari all correctly enabled, iCloud/Apple ID signed in, macOS fully updated, machine rebooted). Console.app shows nothing at all for 'webpushd' or broader 'push' filters during a live repro, and Spin Reports / Crash Reports show nothing for Safari/WebKit at the time of the hang (only unrelated historical Parallels Desktop entries, and Parallels was confirmed not running during testing). Applied a legitimate code improvement regardless (commit pending): PushNotificationToggle.jsx now pre-resolves navigator.serviceWorker.ready on mount instead of inside the click handler, so enable() only has one await (requestPermission) before calling subscribe(), tightening the user-activation window Safari/WebKit cares about — did not change the outcome, ruling out a gesture-timing cause. The exact same subscribe flow (same VAPID key, same sw.js, same manifest) works correctly in Chrome on this same machine. Root cause is almost certainly a bug in macOS Tahoe 26 Developer Beta's webpushd/WebKit push implementation, not application code. Wrote up a full repro report for Apple Feedback Assistant (apple-feedback-webpush-hang.md) for Marc to file. Chrome is fully done; Safari stays blocked pending an Apple fix (or a retest on a non-beta Mac) — do not mark task #6 done until Safari is independently verified working. DEFERRED 2026-09-21: gave up its 10-01/10-02 slot to #48 (lock the AI presenter reference). waves.json already defers #6 — there are no customers to test push delivery for yet — so this was the cheapest slot in the run-up to launch. Revert by swapping the two date ranges back.",
+      "note": "DONE 2026-09-22 — both browsers verified end-to-end. SAFARI (2026-09-22): after Marc updated macOS to Tahoe 26.7.1, the 2026-09-04 hang (pushManager.subscribe() never resolving on the 26 Developer Beta) is gone — 'Enable alerts' flipped to 'Alerts on' immediately, a new web.push.apple.com row for user_3CYyW20bfR44ZBoNUj3KG1v5kZB landed in push_subscriptions at 23:13 UTC, POST /api/push/send returned {\"sent\":2,\"stale_pruned\":0} (Safari + Chrome subs), and Marc confirmed 'CivicWatch test — Safari' from www.civicwatch.app in macOS Notification Center. Confirms the Safari block was the OS beta, not app code; apple-feedback-webpush-hang.md no longer needs filing. As with Chrome, it arrived without a banner — a macOS notification display-style setting, not a pipeline defect. CHROME (2026-09-03): verified after commit a65c2a9 added /api/push/send to proxy.ts's isPublicRoute matcher (the earlier 401 was Clerk middleware, not INTERNAL_API_SECRET). Full chain subscribe -> Supabase -> /api/push/send -> FCM/APNs -> service worker -> OS notification works on both. Marked done by hand-edit under the ADR-005 exception, at Marc's request.",
       "blocks": []
     },
     {
