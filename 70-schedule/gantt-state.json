@@ -6,9 +6,9 @@
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 48,
-    "done": 41,
-    "remaining": 7,
-    "pctDone": 85
+    "done": 43,
+    "remaining": 5,
+    "pctDone": 90
   },
   "launch": {
     "planned": "2026-10-08",
@@ -685,15 +685,15 @@
         "start": "2026-09-21",
         "end": "2026-09-23"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-04",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
         "Decide the GTM basics — objective, ICP, four platforms"
       ],
-      "note": "Launch-checklist gate: 'Support channel live with a stated response SLA' + 'FAQ / docs cover the top 10 expected questions'. You cannot take money without somewhere for a customer to complain. Free — a monitored address and a published SLA is enough at this stage.",
+      "note": "DONE 2026-09-04, marked complete 2026-09-22 per ADR-005 (accepted exception, decision-log.md) rather than through the normal shortcut flow. `/support` page live: support@civicwatch.app, 1-business-day SLA stated, 10-question FAQ, FAQPage JSON-LD, cross-linked from every page footer/nav and sitemap.js. Verified via a real Vercel preview deploy (dpl_6vYCBWbQgvD1PvBXzmPHzmkM2maj, READY) after the local sandbox's next build was unusable. Launch-checklist.md's two gate boxes were checked the same day (2026-09-04) but this gantt entry drifted for over two weeks because the dashboard/shortcut completion-tracking pipeline does not actually persist checkbox state (see ADR-005) — repeatedly confirmed unchanged across three separate manual attempts (dashboard checkbox, civicwatch gantt.html checkbox, shortcut reruns on 2026-09-05, 2026-09-18, 2026-09-22) before this hand-edit. Original planned window was 2026-09-09→2026-09-11; the 2026-09-21→2026-09-23 dates on this entry are an artifact of the broken tracker repeatedly sliding an undone-looking task forward, not real scheduling. Escalation-path sub-item (60-ops/runbook.md incident-response section) remains a separate open item, not covered by this completion.",
       "durationWorkdays": 2,
       "blocks": []
     },
@@ -709,8 +709,8 @@
         "start": "2026-09-24",
         "end": "2026-09-25"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-09-22",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
@@ -718,7 +718,7 @@
         "Decide the GTM basics — objective, ICP, four platforms",
         "Rewrite /pro around what actually works"
       ],
-      "note": "social-media-plan.md: 'Founder-led, human-first content beats polished corporate output.' One post, primary platform (X — real-time reach for the accountability angle), pointing at /pro. This is the first task in the whole schedule that asks a stranger to look.",
+      "note": "DONE 2026-09-22 (two days early). Posted from @CivicWatchAlert: https://x.com/CivicWatchAlert/status/2102517338298007802 — one founder-voice post pointing at civicwatch.app/pro, link card renders. Text and revision notes in 40-gtm/launch-post-x.md (the Sep 4 6-post thread was cut to one post, 'and votes' and 'no other tracker does this' removed as unverified). Prerequisite fix shipped first: app/pro/layout.js meta/OG/Twitter descriptions still sold alerts and local lookup as Pro, contradicting ADR-004; corrected in commit 86a342c, Vercel READY, live tags verified before posting. Marked done by hand-edit under the ADR-005 exception (shortcut completion pipeline still does not persist), at Marc's request.",
       "durationWorkdays": 1,
       "blocks": [
         "Submit to Product Hunt, Hacker News, niche directories"
