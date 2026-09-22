@@ -8,7 +8,7 @@ export const metadata = {
       'CivicWatch makes congressional financial data accessible to the public. Press kit, key facts, and media contact information.',
     url: 'https://civicwatch.app/press',
     siteName: 'CivicWatch',
-    images: [{ url: '/api/og-image?type=home', width: 1200, height: 630 }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
 }
 
