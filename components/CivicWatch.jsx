@@ -2075,7 +2075,9 @@ useEffect(() => {
                     netWorthBefore: null, netWorthCurrent: null, yearsInOffice: null,
                     trades: [], votes: [], docket: [], townHall: [],
                     communityPoll: { healthcare: 0, climate: 0, housing: 0, education: 0 },
-                    isLive: false,
+                    // Federal members from search have a real bioguide id, so the profile
+                    // must fetch live votes/trades/bio like map- and URL-opened profiles do.
+                    isLive: true,
                   }
                   return (
                     <div key={member.bioguideId}
