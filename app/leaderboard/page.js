@@ -116,7 +116,7 @@ export default function LeaderboardPage() {
           <button
             onClick={() => router.push('/')}
             style={{ display: 'flex', alignItems: 'center', padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
+            <Image src="/brand/civicwatch-lockup-dark.svg" alt="CivicWatch" width={193} height={40} priority unoptimized style={{display:'block'}} />
           </button>
           <button
             onClick={() => router.push('/')}

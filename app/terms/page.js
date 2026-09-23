@@ -219,7 +219,7 @@ export default function TermsPage() {
       {/* HEADER */}
       <header style={{ borderBottom: `1px solid ${S.border}`, padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
         <a href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
+          <Image src="/brand/civicwatch-lockup-dark.svg" alt="CivicWatch" width={193} height={40} priority unoptimized style={{display:'block'}} />
         </a>
         <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
           <a href="/privacy" style={{ color: S.gray, textDecoration: 'none' }}>Privacy Policy</a>

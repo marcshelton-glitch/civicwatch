@@ -2254,7 +2254,7 @@ useEffect(() => {
               {onboardingStep === 1 && (
                 <div className="slide-in">
                   <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                    <div style={{ fontSize: 60, marginBottom: 14, lineHeight: 1 }}>🏛️</div>
+                    <img src="/brand/civicwatch-shield-dark.svg" alt="" width={72} height={72} style={{ display: 'block', margin: '0 auto 14px' }} />
                     <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 24, marginBottom: 10 }}>
                       Welcome to CIVIC<span style={{ color: S.gold }}>WATCH</span>
                     </div>
