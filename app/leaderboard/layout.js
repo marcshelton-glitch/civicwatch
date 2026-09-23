@@ -6,13 +6,13 @@ export const metadata = {
     description: 'Which members of Congress trade stocks most aggressively? Rankings by trade volume, frequency, and portfolio size.',
     url: 'https://civicwatch.app/leaderboard',
     siteName: 'CivicWatch',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: '/og-capitol.jpg', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Congressional Trading Leaderboard — CivicWatch',
     description: 'Which members of Congress trade stocks most aggressively? STOCK Act rankings.',
-    images: ['/og-image.png'],
+    images: ['/og-capitol.jpg'],
   },
 }
 

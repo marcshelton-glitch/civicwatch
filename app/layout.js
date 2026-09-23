@@ -43,7 +43,7 @@ export const metadata = {
     siteName: 'CivicWatch',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-capitol.jpg',
         width: 1200,
         height: 630,
         alt: 'CivicWatch — See What Congress Is Buying',
@@ -55,7 +55,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'CivicWatch — See What Congress Is Buying',
     description: 'Your representatives are trading stocks with information you don\'t have. Track every trade, every vote, every dollar. Real-time congressional accountability — free.',
-    images: ['/og-image.png'],
+    images: ['/og-capitol.jpg'],
   },
   verification: {
     google: 'dYkgYgk80Pl5OyCxB9q6Co6daeeKR2vJ4I06N8Sd5Js',

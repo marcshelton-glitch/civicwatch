@@ -6,13 +6,13 @@ export const metadata = {
     description: 'Every disclosed congressional stock trade, checked against the committees the member sat on. Full AI accountability reports and wealth trajectories.',
     url: 'https://civicwatch.app/pro',
     siteName: 'CivicWatch',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: '/og-capitol.jpg', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Go Pro — CivicWatch',
     description: 'Every disclosed congressional stock trade, checked against the committees the member sat on. Full AI accountability reports and wealth trajectories.',
-    images: ['/og-image.png'],
+    images: ['/og-capitol.jpg'],
   },
 }
 

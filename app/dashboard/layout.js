@@ -6,7 +6,7 @@ export const metadata = {
     description: 'Track congressional stock trades, voting records, and net worth for all 535 members of Congress.',
     url: 'https://civicwatch.app/dashboard',
     siteName: 'CivicWatch',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: '/og-capitol.jpg', width: 1200, height: 630 }],
   },
 }
 
