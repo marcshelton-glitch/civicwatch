@@ -463,30 +463,39 @@ export async function GET(request) {
         const memberData = await cFetch(`/member/${bioguideId}`)
         const m = memberData.member
         fullName = m?.directOrderName || m?.invertedOrderName || ''
-        const nameParts = fullName.split(',')
-        lastName = nameParts[0]?.trim().toLowerCase().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || ''
-        firstName = nameParts[1]?.trim().split(/\s+/)[0]?.toLowerCase() || ''
+        // directOrderName is "First Last" (no comma), so splitting it on ',' used to
+        // yield the whole name as lastName and every DB lookup matched nothing.
+        // Prefer the structured fields; invertedOrderName ("Last, First") as fallback.
+        const inverted = (m?.invertedOrderName || '').split(',')
+        lastName = (m?.lastName || inverted[0] || '').trim().toLowerCase().replace(/,?\s+(jr|sr|ii|iii|iv)\.?$/i, '')
+        firstName = (m?.firstName || inverted[1]?.trim().split(/\s+/)[0] || '').toLowerCase()
         const latestTerm = (m?.terms || []).slice(-1)[0]
         isSenator = latestTerm?.chamber?.toLowerCase().includes('senate') || false
       } catch { /* skip */ }
+
+      // fd_filings / fd_net_worth are only partly bioguide-matched, so also accept
+      // not-yet-matched rows with the same surname (the old behaviour for those).
+      const houseMatch = lastName
+        ? `bioguide_id.eq.${bioguideId},and(bioguide_id.is.null,last_name.ilike."${lastName.replace(/"/g, '')}")`
+        : `bioguide_id.eq.${bioguideId}`
 
       const disclosureUrl = isSenator
         ? `https://efdsearch.senate.gov/search/?submitted=1&report_types=ptr&first_name=&last_name=${encodeURIComponent(lastName)}`
         : `https://disclosures-clerk.house.gov/FinancialDisclosure#Search`
 
       // ── Senators: query senate_trades from Supabase ───────────────────────
-      if (isSenator && lastName) {
+      if (isSenator) {
         const [{ data: senTrades }, { data: dbNetWorth }] = await Promise.all([
           supabase
             .from('senate_trades')
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, filing_id, year, ptr_url')
-            .ilike('last_name', lastName)
+            .eq('bioguide_id', bioguideId)
             .order('transaction_date', { ascending: false })
             .limit(50),
           supabase
-            .from('fd_net_worth')
-            .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
-            .ilike('last_name', lastName)
+            .from('senate_net_worth')
+            .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, pdf_url')
+            .eq('bioguide_id', bioguideId)
             .order('report_year', { ascending: false })
             .limit(20),
         ])
@@ -499,7 +508,7 @@ export async function GET(request) {
           liabilitiesMax: n.liabilities_max,
           netWorthMin: n.net_worth_min,
           netWorthMax: n.net_worth_max,
-          pdfUrl: `https://disclosures-clerk.house.gov/public_disc/financial-pdfs/${n.report_year}/${n.doc_id}.pdf`,
+          pdfUrl: n.pdf_url || null,
         }))
 
         const allSenTrades = (senTrades || []).map(t => ({
@@ -539,24 +548,24 @@ export async function GET(request) {
       // without a duplicate query.
       let dbNetWorthHistory = []
       let dbFilingsCount = 0
-      if (!isSenator && lastName) {
+      if (!isSenator) {
         const [{ data: dbTrades }, { data: dbNetWorth }, { count: filingsCount }] = await Promise.all([
           supabase
             .from('fd_trades')
             .select('transaction_date, asset_name, ticker, transaction_type, amount_str, amount_min, amount_max, doc_id, year')
-            .ilike('last_name', lastName)
+            .eq('bioguide_id', bioguideId)
             .order('transaction_date', { ascending: false })
             .limit(50),
           supabase
             .from('fd_net_worth')
             .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
-            .ilike('last_name', lastName)
+            .or(houseMatch)
             .order('report_year', { ascending: false })
             .limit(20),
           supabase
             .from('fd_filings')
             .select('*', { count: 'exact', head: true })
-            .ilike('last_name', lastName),
+            .or(houseMatch),
         ])
         dbFilingsCount = filingsCount || 0
 
@@ -572,14 +581,6 @@ export async function GET(request) {
         }))
 
         if (dbTrades && dbTrades.length > 0) {
-          // Backfill bioguide_id in fd_filings for faster future lookups
-          supabase
-            .from('fd_filings')
-            .update({ bioguide_id: bioguideId })
-            .ilike('last_name', lastName)
-            .is('bioguide_id', null)
-            .then(() => {})
-
           const allTrades = dbTrades.map(t => ({
             date: t.transaction_date || '',
             asset: t.asset_name || 'Unknown Asset',
@@ -660,11 +661,11 @@ export async function GET(request) {
       // Reuse dbNetWorthHistory if it was already fetched above; only query for
       // Senators (isSenator=true) or when lastName wasn't resolved (edge case).
       let liveNetWorthHistory = dbNetWorthHistory
-      if (!liveNetWorthHistory.length && lastName) {
+      if (!liveNetWorthHistory.length && !isSenator) {
         const { data: nwData } = await supabase
           .from('fd_net_worth')
           .select('report_year, assets_min, assets_max, liabilities_min, liabilities_max, net_worth_min, net_worth_max, doc_id')
-          .ilike('last_name', lastName)
+          .or(houseMatch)
           .order('report_year', { ascending: false })
           .limit(20)
         liveNetWorthHistory = (nwData || []).map(n => ({
