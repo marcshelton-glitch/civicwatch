@@ -28,7 +28,9 @@ const CONGRESS_BASE = 'https://api.congress.gov/v3'
 const CONGRESS_KEY = process.env.CONGRESS_API_KEY
 const TOTAL_MEMBERS = 535
 
-async function fetchCurrentPartyByName() {
+// bioguideId -> party for every current member. Keyed by bioguide id, not
+// surname, so two members named Smith no longer collapse into one.
+async function fetchCurrentPartyByBioguide() {
   if (!CONGRESS_KEY) return {}
   try {
     const pages = await Promise.all([0, 250, 500].map((offset) =>
@@ -36,18 +38,14 @@ async function fetchCurrentPartyByName() {
         next: { revalidate: 21600 },
       }).then((r) => (r.ok ? r.json() : { members: [] })).catch(() => ({ members: [] }))
     ))
-    const byName = {}
+    const byId = {}
     for (const page of pages) {
       for (const m of page.members || []) {
-        const party = m.partyName === 'Democratic' ? 'Democrat' : m.partyName
-        if (!m.name || !party) continue
-        const comma = m.name.indexOf(',')
-        if (comma <= 0) continue
-        const last = m.name.slice(0, comma).trim().toLowerCase()
-        byName[last] = party
+        if (!m.bioguideId) continue
+        byId[m.bioguideId] = m.partyName === 'Democratic' ? 'Democrat' : (m.partyName || 'Other')
       }
     }
-    return byName
+    return byId
   } catch {
     return {}
   }
@@ -57,71 +55,29 @@ export async function GET() {
   try {
     const supabase = getSupabase()
 
-    const [
-      { data: houseTraders },
-      { data: senTraders },
-      { data: allHouseTrades },
-      { data: allSenTrades },
-      partyByLastName,
-    ] = await Promise.all([
-      supabase.from('fd_filings').select('last_name').eq('filing_type', 'P'),
-      supabase.from('senate_trades').select('last_name'),
-      supabase.from('fd_trades').select('ticker, transaction_date, amount_min, amount_max'),
-      supabase.from('senate_trades').select('ticker, transaction_date, amount_min, amount_max'),
-      fetchCurrentPartyByName(),
+    // Aggregation runs in Postgres (see migration 20260922000002). Pulling the
+    // tables through PostgREST capped each select at 1,000 rows, which is how
+    // "Trades on file" read 2,000 and every other figure here was truncated.
+    const [{ data: stats, error }, partyById] = await Promise.all([
+      supabase.rpc('accountability_stats'),
+      fetchCurrentPartyByBioguide(),
     ])
+    if (error) throw error
 
-    // ── Distinct traders + party split ──────────────────────────────────────
-    const distinctLastNames = new Set([
-      ...(houseTraders || []).map((r) => (r.last_name || '').toLowerCase()),
-      ...(senTraders || []).map((r) => (r.last_name || '').toLowerCase()),
-    ])
-    distinctLastNames.delete('')
-
+    // Traders = current members with at least one disclosed PTR on file.
+    const currentIds = Object.keys(partyById)
+    const traderIds = new Set(stats.trader_ids || [])
     const partyCounts = { Democrat: 0, Republican: 0, Other: 0 }
-    for (const last of distinctLastNames) {
-      const party = partyByLastName[last]
+    let tradersCount = 0
+    for (const id of currentIds) {
+      if (!traderIds.has(id)) continue
+      tradersCount++
+      const party = partyById[id]
       if (party === 'Democrat') partyCounts.Democrat++
       else if (party === 'Republican') partyCounts.Republican++
       else partyCounts.Other++
     }
-
-    const tradersCount = distinctLastNames.size
     const tradersPct = Math.round((tradersCount / TOTAL_MEMBERS) * 100)
-
-    // ── Trade volume by month (last 12 months) + top tickers ───────────────
-    const allTrades = [...(allHouseTrades || []), ...(allSenTrades || [])]
-    const now = new Date()
-    const monthBuckets = []
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))
-      monthBuckets.push({ key: `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`, volume: 0, count: 0 })
-    }
-    const bucketByKey = Object.fromEntries(monthBuckets.map((b) => [b.key, b]))
-
-    const tickerCounts = new Map()
-    let totalVolumeYtd = 0
-    const yearNow = now.getUTCFullYear()
-
-    for (const t of allTrades) {
-      if (!t.transaction_date) continue
-      const key = t.transaction_date.slice(0, 7)
-      const midpoint = t.amount_min != null ? (t.amount_min + (t.amount_max ?? t.amount_min)) / 2 : 0
-      if (bucketByKey[key]) {
-        bucketByKey[key].volume += midpoint
-        bucketByKey[key].count++
-      }
-      if (t.transaction_date.startsWith(String(yearNow))) {
-        totalVolumeYtd += midpoint
-      }
-      const tk = (t.ticker || '').toUpperCase().trim()
-      if (tk) tickerCounts.set(tk, (tickerCounts.get(tk) || 0) + 1)
-    }
-
-    const topTickers = [...tickerCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([ticker, count]) => ({ ticker, count }))
 
     return NextResponse.json({
       totalMembers: TOTAL_MEMBERS,
@@ -129,10 +85,10 @@ export async function GET() {
       tradersPct,
       nonTradersCount: TOTAL_MEMBERS - tradersCount,
       partyCounts,
-      totalVolumeYtd: Math.round(totalVolumeYtd),
-      totalTradesAllTime: allTrades.length,
-      monthlyVolume: monthBuckets.map((b) => ({ ...b, volume: Math.round(b.volume) })),
-      topTickers,
+      totalVolumeYtd: Number(stats.volume_ytd) || 0,
+      totalTradesAllTime: Number(stats.total_trades) || 0,
+      monthlyVolume: (stats.monthly || []).map((b) => ({ key: b.key, volume: Number(b.volume) || 0, count: Number(b.count) || 0 })),
+      topTickers: (stats.top_tickers || []).map((t) => ({ ticker: t.ticker, count: Number(t.count) })),
       updated: new Date().toISOString(),
       methodology: '"Traders" = members of the current Congress with at least one disclosed STOCK Act periodic transaction report on file with CivicWatch — not the broader "owns any stock or fund" figure used in some annual-disclosure studies, which also counts buy-and-hold positions that were never actively traded.',
     }, {

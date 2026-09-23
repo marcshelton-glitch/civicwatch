@@ -45,7 +45,8 @@ async function fetchTrendingTickers(supabase) {
   const counts = new Map()
   for (const row of [...(houseRows || []), ...(senRows || [])]) {
     const tk = (row.ticker || '').toUpperCase().trim()
-    if (!tk) continue
+    // Skip eFD placeholders ('--') and paired/foreign symbols ('-- DWDP', 'T WBD').
+    if (!tk || !/^[A-Z][A-Z.\-]{0,6}$/.test(tk)) continue
     counts.set(tk, (counts.get(tk) || 0) + 1)
   }
 
