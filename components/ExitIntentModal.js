@@ -187,7 +187,7 @@ export default function ExitIntentModal() {
           color: '#D4AF37', letterSpacing: 1, textTransform: 'uppercase',
           marginBottom: 20,
         }}>
-          🏛️ CivicWatch
+          <img src="/brand/civicwatch-shield-dark.svg" alt="" width={14} height={14} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, marginTop: -2 }} />CivicWatch
         </div>
 
         {/* Headline */}

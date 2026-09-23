@@ -42,7 +42,7 @@ export default function DataExportPage() {
       {/* ── NAV ── */}
       <nav style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
         <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          <Image src="/brand/logo_civicwatch_horizontal.png" alt="CivicWatch" width={160} height={43} priority style={{display:'block'}} />
+          <Image src="/brand/civicwatch-lockup-dark.svg" alt="CivicWatch" width={193} height={40} priority unoptimized style={{display:'block'}} />
         </Link>
         <Link href="/" style={{ fontSize: 13, color: S.gray, textDecoration: 'none' }}>← Back</Link>
       </nav>

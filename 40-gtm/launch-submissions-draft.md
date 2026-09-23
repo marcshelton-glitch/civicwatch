@@ -75,8 +75,8 @@ feedback):
 > CivicWatch does that automatically — it pulls STOCK Act filings from the
 > House Clerk and Senate's disclosure systems going back to 2012, matches
 > trades to the committees a member actually sat on at the time, and flags
-> the ones worth a second look. [X] disclosed trades indexed so far, all 535
-> members tracked.
+> the ones worth a second look. 13,100+ disclosed trades indexed so far, all
+> 535 members tracked.
 >
 > It's free to browse. Pro ($9.99/mo) adds full AI-written accountability
 > reports and wealth-trajectory context.
@@ -116,16 +116,17 @@ anything that reads as a generic "we launched a SaaS" post.
 > of the trade*, not who sits there now.
 >
 > Where matching is incomplete, it says so rather than showing a false "no
-> conflicts flagged" — [current match rate]% of disclosed trades are matched
+> conflicts flagged" — 98% of disclosed trades are matched
 > to a scored member today.
 >
 > Site's at civicwatch.app, free to browse. Curious what HN makes of the
 > conflict-matching approach, and if anyone's dealt with the Senate eFD WAF
 > before, I'd like to compare notes.
 
-Fill in `[current match rate]` from the real figure before posting (it was
-~96% as of the last backfill per `AGENT-BRIEF.md` #23 — re-check it's still
-current, don't reuse a stale number).
+Figures refreshed 2026-09-22: 12,884 of 13,104 trades matched (98.3%). House
+5,034/5,254; Senate 7,850/7,850 after `docs/senate-bioguide-backfill-2026-09-22.md`.
+Before that fix, the Senate was 0% matched and the real combined rate was 38%.
+Re-run the counts on launch day.
 
 ## Niche directories
 
@@ -164,8 +165,8 @@ this.
 
 - [ ] #38, #39, #40 done (with real evidence, per this repo's own standard —
       not just "seems done")
-- [ ] Match-rate and trade-count figures in both drafts above refreshed to
-      current numbers, not the ones in this draft
+- [x] Match-rate and trade-count figures refreshed (2026-09-22; re-check on
+      launch day)
 - [ ] Screenshots + square logo ready for the PH gallery
 - [ ] A maker account exists (or gets created during #38) and, ideally, an
       "Upcoming" page has been live for at least a few days

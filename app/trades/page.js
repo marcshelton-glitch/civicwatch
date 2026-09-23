@@ -103,7 +103,7 @@ function TradesContent() {
           <button
             onClick={() => router.push('/')}
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <span style={{ fontSize: 22 }}>🏛️</span>
+            <img src="/brand/civicwatch-shield-dark.svg" alt="" width={26} height={26} style={{ display: 'block' }} />
             <div>
               <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 16, letterSpacing: 2, color: S.white }}>
                 CIVIC<span style={{ color: S.gold }}>WATCH</span>

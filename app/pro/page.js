@@ -170,7 +170,7 @@ export default function ProPage() {
       {/* ── NAV ── */}
       <header style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: `rgba(10,14,30,0.95)`, backdropFilter: 'blur(12px)', zIndex: 100 }}>
         <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, color: S.white, textDecoration: 'none', letterSpacing: 0.5 }}>
-          🏛️ CivicWatch
+          <img src="/brand/civicwatch-shield-dark.svg" alt="" width={22} height={22} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 8, marginTop: -3 }} />CivicWatch
         </Link>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <Link href="/dashboard" style={{ fontSize: 13, color: S.gray, textDecoration: 'none' }}>← Back to Dashboard</Link>

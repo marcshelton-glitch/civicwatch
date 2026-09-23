@@ -35,7 +35,7 @@ export default function RefundPolicyPage() {
 
       <nav style={{ borderBottom: `1px solid ${S.border}`, padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(10,22,40,0.97)', position: 'sticky', top: 0, zIndex: 100 }}>
         <Link href="/" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 900, fontSize: 18, color: S.white, textDecoration: 'none', letterSpacing: 0.5 }}>
-          🏛️ Civic<span style={{ color: S.gold }}>Watch</span>
+          <img src="/brand/civicwatch-shield-dark.svg" alt="" width={22} height={22} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 8, marginTop: -3 }} />Civic<span style={{ color: S.gold }}>Watch</span>
         </Link>
         <Link href="/" style={{ fontSize: 13, color: S.gray, textDecoration: 'none' }}>← Back</Link>
       </nav>

@@ -775,7 +775,7 @@ export default function LandingPage() {
 
       {/* NAV */}
       <nav className="nav">
-        <Link href="/" className="nav-logo">CIVIC<span>WATCH</span></Link>
+        <Link href="/" className="nav-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}><img src="/brand/civicwatch-shield-dark.svg" alt="" width={28} height={28} style={{ display: 'block' }} />CIVIC<span>WATCH</span></Link>
         <div className="nav-actions">
           {isSignedIn ? (
             <Link href="/dashboard" className="btn-primary">Go to Dashboard →</Link>

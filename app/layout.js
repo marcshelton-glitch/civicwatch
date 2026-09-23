@@ -34,7 +34,7 @@ export const metadata = {
       { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
       { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
     ],
-    apple: { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
   },
   openGraph: {
     title: 'CivicWatch — See What Congress Is Buying',

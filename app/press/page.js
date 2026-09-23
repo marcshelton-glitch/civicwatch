@@ -69,11 +69,12 @@ export default function PressPage() {
       >
         <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
           <Image
-            src="/brand/logo_civicwatch_horizontal.png"
+            src="/brand/civicwatch-lockup-dark.svg"
             alt="CivicWatch"
-            width={150}
+            width={198}
             height={41}
             priority
+            unoptimized
             style={{ objectFit: 'contain' }}
           />
         </Link>
@@ -380,11 +381,11 @@ export default function PressPage() {
               }}
             >
               {[
-                { file: 'logo_civicwatch_horizontal.png', label: 'Logo — Horizontal' },
-                { file: 'logo_civicwatch_stacked.png', label: 'Logo — Stacked' },
-                { file: 'civicwatch_logo_gold.png', label: 'Logo — Gold' },
-                { file: 'logo_icon_transparent.png', label: 'Icon — Transparent' },
-                { file: 'logo_icon_on_white.png', label: 'Icon — On White' },
+                { file: 'civicwatch-lockup-dark.svg', label: 'Logo — For Dark Backgrounds (SVG)' },
+                { file: 'civicwatch-lockup-light.svg', label: 'Logo — For Light Backgrounds (SVG)' },
+                { file: 'civicwatch-lockup-on-navy.png', label: 'Logo — On Navy (PNG)' },
+                { file: 'civicwatch-shield-dark.svg', label: 'Shield — For Dark Backgrounds (SVG)' },
+                { file: 'civicwatch-icon-1024.png', label: 'App Icon — 1024px (PNG)' },
               ].map(({ file, label }) => (
                 <a
                   key={file}

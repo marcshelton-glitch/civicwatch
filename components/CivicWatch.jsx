@@ -1061,11 +1061,12 @@ useEffect(() => {
             onClick={() => { setActiveTab("reps"); clearRep() }}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
             <Image
-              src="/brand/logo_civicwatch_horizontal.png"
+              src="/brand/civicwatch-lockup-dark.svg"
               alt="CivicWatch — Your Representatives. Accountable."
-              width={180}
-              height={49}
+              width={212}
+              height={44}
               priority
+              unoptimized
               style={{ objectFit: "contain" }}
             />
           </button>

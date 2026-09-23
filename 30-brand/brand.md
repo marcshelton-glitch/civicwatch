@@ -35,9 +35,9 @@ users — and it must be true, or it backfires louder than saying nothing.>
 
 | Element | Spec |
 |---|---|
-| Logo | `assets/logos/` — primary, mark-only, monochrome |
-| Wordmark | |
-| Primary colors | <hex + WCAG AA contrast verified> |
+| Logo | **Guardian Shield** (adopted 2026-09-22; replaces the CW monogram). The Capitol dome in gold inside a shield outline. `assets/logos/shield/`: `mark-dark.svg` (white shield, for dark backgrounds), `mark-light.svg` (navy shield, for light backgrounds), `icon-square.svg` (app icon), `favicon.svg`, PNG/ICO exports |
+| Wordmark | CIVICWATCH, all caps, Source Serif 4 Display Semibold, tracked +14, outlined in `lockup-horizontal-*.svg` |
+| Primary colors | Navy `#0C1D3F`, Gold `#C9A227`, White `#FFFFFF` |
 | Secondary colors | |
 | Typography | heading / body / mono |
 | Iconography | |
