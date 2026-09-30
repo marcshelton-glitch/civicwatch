@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { guardRequest } from './lib/security/guard.js'
 
 // Page routes and API routes that are open to unauthenticated users
 const isPublicRoute = createRouteMatcher([
@@ -97,7 +98,7 @@ const isProtectedApiRoute = createRouteMatcher([
   '/api/push-subscribe(.*)',
 ])
 
-export default clerkMiddleware(async (auth, request) => {
+const clerk = clerkMiddleware(async (auth, request) => {
   if (isProtectedApiRoute(request)) {
     const { userId } = await auth()
     if (!userId) {
@@ -111,6 +112,15 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 })
+
+// Security layers run BEFORE Clerk so an attacker never costs us a session
+// lookup or a handshake redirect: WAF rules -> banned-IP check -> alerting.
+// See lib/security/guard.js for the WAF_MODE / SECURITY_IP_ALLOWLIST switches.
+export default async function proxy(request: Parameters<typeof clerk>[0], event: Parameters<typeof clerk>[1]) {
+  const blocked = await guardRequest(request)
+  if (blocked) return blocked
+  return clerk(request, event)
+}
 
 export const config = {
   matcher: [
