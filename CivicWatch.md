@@ -1,3 +1,228 @@
+## ⚡ 2026-10-01 — Bioguide Backfill Analysis: 95.7% Coverage, 28 High-Confidence Matches Proposed
+
+**Status: Bioguide data-quality audit complete — 225 unresolved trades analyzed, 28 matches + 2 ID corrections proposed**
+
+### Daily Work (2026-10-01)
+
+**Bioguide Trade ID Backfill Analysis**
+- **Coverage achieved:** 95.7% (5,034 of 5,259 trades have `bioguide_id`) — 225 unresolved remain
+- **Unresolved trades root cause:** All unresolved rows created on/after 2026-08-27 (ingest pipeline not assigning IDs to recent House filings; older rows already have IDs)
+  - **Recommendation:** Fix at ingest level to prevent this list recurring monthly
+- **Matching method:** Congress.gov API unreachable (fetch refused), so used three fallback checks:
+  1. **Earlier rows:** ID already assigned to same surname + state in older rows
+  2. **Committee data:** Cross-check against `committee_memberships` (Congress.gov source), party match required
+  3. **Congress.gov search:** Web lookup where first two disagreed
+- **Result:** 100% of 124 high-priority trades matched (28 names with 3+ unresolved trades each)
+
+**Proposed Updates (28 high-confidence matches, all new rows with NULL bioguide_id):**
+- Taylor | OH | T000490 | 8 trades
+- Hern | OK | H001082 | 7 trades
+- Allen | GA | A000372 | 6 trades
+- DelBene | WA | D000617 | 6 trades
+- Kelly | PA | K000376 | 6 trades
+- Cohen | TN | C001068 | 5 trades
+- Peters | CA | P000608 | 5 trades
+- Fields | LA | F000110 | 5 trades
+- Gottheimer | NJ | G000583 | 5 trades
+- Salazar | FL | S000168 | 5 trades
+- Doggett | TX | D000399 | 5 trades
+- Cisneros | CA | C001123 | 5 trades
+- Kean | NJ | K000398 | 5 trades
+- Delaney | MD | M001232 | 5 trades
+- McGuire | VA | M001239 | 5 trades
+- Moore | NC | M001236 | 4 trades
+- Morrison | MN | M001234 | 4 trades
+- Moskowitz | FL | M001217 | 4 trades
+- Dingell (Debbie) | MI | D000624 | 3 trades
+- Donalds | FL | D000032 | 3 trades
+- McCormick | GA | M001218 | 3 trades
+- Miller (Max) | OH | M001222 | 3 trades
+- Timmons | SC | T000480 | 3 trades
+- Keating | MA | K000375 | 3 trades
+- Beyer | VA | B001292 | 3 trades
+- Biggs | SC | B001325 | 3 trades
+- Roy | TX | R000614 | 3 trades
+- Sessions | TX | S000250 | 3 trades
+
+**Existing Wrong IDs Flagged (need human review before correction):**
+- **Moskowitz, FL-23:** Currently `M001219`, should be `M001217` (Jared Moskowitz) — affects 17 trades
+- **Max Miller, OH-07:** Currently `M001225`, should be `M001222` — affects 29 trades
+- **John D. Dingell, MI-12:** 1 row currently listed with Debbie Dingell's `D000624`; check if should be `D000355` (John Dingell Jr.) before updating
+
+**Report Generated**
+- File: `docs/bioguide-backfill-check-2026-10-01.md`
+- Contains: full matching logic, example UPDATE statements (scoped by first name to avoid family mix-ups), coverage stats
+- Status: **Proposals only — no writes to Supabase yet** (awaiting human review + approval)
+
+### 📋 Open Items
+- [ ] Review 28 proposed new-row matches and 3 existing-ID corrections in `docs/bioguide-backfill-check-2026-10-01.md`
+- [ ] Apply approved UPDATEs to `fd_trades.bioguide_id` (with human confirmation for the 3 corrections)
+- [ ] Monitor upcoming ingest runs to confirm recent-row issue is fixed at source (otherwise repeats monthly)
+- **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, submissions can proceed**
+- **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
+- **#47** (Oct 7-8): Publish pilot ad & record Meta political-ad classification  
+- **#48** (Oct 1): Lock AI presenter reference image for organic content
+
+### 🚀 Feature Status (stable)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ⏳ Meta ad account setup (payment method pending)
+- ⏳ Directory submissions (gate: Sep 28, now active)
+- 🔄 Bioguide backfill (analysis complete, awaiting human approval + ingest fix verification)
+
+---
+
+## ⚡ 2026-09-29 — Status Check (no new development; launch on track)
+
+**Status: 44/48 tasks complete (92%) — No CivicWatch development sessions today**
+
+### Daily Check (2026-09-29)
+- No CivicWatch.app development sessions found in session list
+- All prerequisite tasks for Oct 1 GTM phase remain on schedule  
+- Launch target (Oct 8) and Pro subscriber goal (1,000 by Nov 5) unchanged
+- Next critical date: Sep 28+ (directory submissions gate now active)
+
+### 📋 Open Items (unchanged from 2026-09-28)
+- **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, submissions can proceed**
+- **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
+- **#47** (Oct 7-8): Publish pilot ad & record Meta political-ad classification  
+- **#48** (Oct 1): Lock AI presenter reference image for organic content
+
+### 🚀 Feature Status (stable)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ⏳ Meta ad account setup (payment method pending)
+- ⏳ Directory submissions (gate: Sep 28, now active)
+
+---
+
+## 📅 2026-09-28 — Product Claim & Infrastructure Push
+
+**Major work:** /pro messaging rewrite, conversion pixel fixes, AI Analysis tab fix, Senate ingest pipeline, date parser bug squash.
+
+### 🎯 Completed Today
+
+**1. /pro Page Rewrite** (commit 37c2de1 — pending push)
+- Applied bioguide backfill: 31 verified UPDATEs, coverage 93.4% → 96.3% (5,034/5,230)
+  - Fixed 12 rows needing district-specific state_dst
+- Rewrote feature matrix based on **actual** capabilities vs. marketing claims:
+  - **Moved to FREE** (no server-side Pro check): Track My Rep™ Alerts, Track Any Representative, State/Local Rep Lookup
+  - **Promoted off Coming Soon**: Trade Conflict Analysis (real coverage, committee-jurisdiction overlap)
+  - **Stays Coming Soon**: Peer Standing Breakdown (correctly, not built)
+- Added FAQ on trade-data coverage, trimmed hero copy
+- **Decision D-003 filed**: `/api/conflict-score` endpoint has no server-side auth — anyone can hit it directly. Needs gating decision.
+
+**2. AI Analysis Tab Fix** (commit 094af52 — pushed, Vercel building)
+- Fixed stale/empty votes and trades display in AI Analysis tab
+- Commit 094af52 pushed to GitHub
+- Vercel deploy queued
+
+**3. Conversion Pixel Tracking** (3 commits — deployed & verified live)
+- **Root cause audit**: Meta & TikTok pixels never loaded in production (CSP script-src block) + Purchase tracking code was uncommitted + middleware 401'ing signed-out funnel events
+- **Fixes deployed**:
+  - CSP allowlists `connect.facebook.net` / `analytics.tiktok.com`
+  - Shipped Purchase (Meta) / CompletePayment (TikTok) tracking
+  - Fixed middleware 401 on `/api/funnel-event` for anonymous users
+- **Verified live**: Confirmed real network calls to both platforms firing successfully
+- **Docs**: `docs/conversion-tracking-audit-2026-08-29.md`
+- **TODO**: User must verify server-side receipt in Meta Events Manager + TikTok Analytics
+
+**4. Senate Disclosure Ingest Pipeline** (task 27 done; pending user workflow update)
+- Updated `ingest-senate.yml` GitHub Actions workflow
+- **Key change**: switched from raw fetch to Playwright headless Chromium (efdsearch.senate.gov bot defense blocks raw requests 100%, works reliably through browser)
+- Added `playwright install chromium` + poppler-utils for pdftotext
+- Bumped job timeout 60 → 120 minutes (1,500+ filings takes real time)
+- Added probe check (skips run if Senate search endpoint is down)
+- **Workflow ready**: User needs to apply changes via GitHub UI + trigger run manually
+- **Status**: Awaiting full backlog run (currently 7,164 rows from prior House runs; Senate tables were empty)
+
+**5. PTR Date Parser Bug Fix** (Future-dated trades)
+- **Bug**: `parsePTRTransactions()` was grabbing bond maturity date (buried in asset name like "4.25% 10/15/2030") instead of transaction date
+- **Fix**: Use date captured next to P/S/E transaction-type marker (correct column)
+- **Cleanup**: 27 rows with future-dated trades handled:
+  - 25 deleted (no recoverable date) — reset source filings to unprocessed for re-ingest
+  - 2 repaired in place (Keating: 2024-09-11, DelBene: 2022-01-03)
+- **Verified**: 0 rows remaining with `transaction_date > current_date`
+- **Pre-existing bug noted**: Multiple trades merged into single row (block-splitting issue; separate from this fix)
+
+**6. Gantt Chart Infrastructure** (tasks 29 + 30 done)
+- **Task 29**: NEXT_PUBLIC_GA_MEASUREMENT_ID setup (progress: 22/35 = 63%)
+- **Task 30**: Fire Purchase events (verified live, docs audited)
+- **Task 28**: Added task numbers to gantt.html row display
+- Fixed gantt.html phase-filter rendering (phases array shape normalization)
+  - Was failing under `file://` fetch() blocking (Safari security)
+  - Re-embedded current gantt-state.json in HTML for reliability
+- **Note**: `file://` blocks live refresh; requires local http server (`npx serve 70-schedule`) or manual re-embed on updates
+
+### 🔄 Pending Manual Steps
+
+1. **Commit c055ec8** (gantt.html fix): User must push from Mac terminal
+   ```bash
+   rm -f /Users/marcshelton/Projects/civicwatch/.git/HEAD.lock /Users/marcshelton/Projects/civicwatch/.git/index.lock
+   cd /Users/marcshelton/Projects/civicwatch
+   git push
+   ```
+
+2. **Commit 37c2de1** (/pro messaging): User must push from Mac terminal
+   ```bash
+   cd /Users/marcshelton/Projects/civicwatch
+   git push origin main
+   ```
+
+3. **Senate workflow**: User must apply workflow changes via GitHub UI + trigger run
+   - Go to `.github/workflows/ingest-senate.yml` → edit → paste updated workflow
+   - Actions tab → "Ingest Senate Disclosures" → Run workflow
+
+4. **Pixel verification**: User must check Meta Events Manager + TikTok Analytics for server-side receipt
+
+### 📊 Gantt Chart Progress
+
+- **Tasks done today**: Tasks 27, 29, 30
+- **Current**: 22/35 (63%)
+- **Phase**: Measurement phase (GA setup complete, pixels live-verified, Senate pipeline ready)
+
+---
+
+## ⚡ 2026-09-27 — Status Check (no new development; launch on track for 2026-10-08)
+
+**Status: 44/48 tasks complete (92%) — No new work today**
+
+### Daily Check (2026-09-27)
+- No active CivicWatch.app development sessions today
+- All prerequisite tasks for Oct 1 GTM phase remain on schedule
+- Launch target (Oct 8) and Pro subscriber goal (1,000 by Nov 5) unchanged
+- Next critical date: Sep 28 (directory submissions gate opens)
+
+### 📋 Open Items (unchanged from 2026-09-24)
+- **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, waiting gate date**
+- **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
+- **#47** (Oct 7-8): Publish pilot ad & record Meta political-ad classification  
+- **#48** (Oct 1): Lock AI presenter reference image for organic content
+
+### 🚀 Feature Status (stable)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ⏳ Meta ad account setup (payment method pending)
+- ⏳ Directory submissions (gate: Sep 28)
+
+---
+
 ## ⚡ 2026-09-24 — Launch Prep & Directory Submissions Finalized
 
 **Status: 44/48 tasks complete (92%)**
@@ -10,7 +235,7 @@
 
 ### Key Metrics
 - **Launch Date:** 2026-10-08 (no variance, on schedule)
-- **Days to Launch:** 14 days
+- **Days to Launch:** 11 days (as of 2026-09-27)
 - **Pro Subscriber Goal:** 1,000 by Election Day (Nov 5, 2026)
 - **Current Phase:** GTM — First Customers (directory submissions 28-30 Sep)
 
@@ -143,175 +368,6 @@
 - **AI Analysis tab:** vote/trade read fix deployed ✓
 - **Pro page:** feature reposition complete ✓ | bioguide backfill 96.3% coverage ✓
 - **Data quality:** ingest parser fixed ✓ | future-dated trades purged ✓
-
----
-
-# ⚡ 2026-09-14 — Launch Post (task #40) drafted, PH/HN submissions (task #41) drafted, social profiles launch kit (task #38) completed
-
-## ⚡ Recent Work — 2026-09-14
-
-**Task #40: Launch Post — X (Primary Platform) — READY**
-- Drafted 6-post X thread in founder voice (accountability angle, not "invest like Congress")
-- Leads with STOCK Act context, spotlights Trade Conflict Analysis as the differentiator
-- CTA points at `/pro` per task spec
-- All 6 posts under 280 characters (works without X Premium)
-- Verified against decision log: free features (#37/#32 done) and Pro gates (ADR-004)
-- **Status:** Ready to publish — awaiting X account claim (task #38 prerequisite)
-- **File:** `40-gtm/launch-post-x.md`
-
-**Task #41: Product Hunt / Hacker News / Niche Directories — DRAFTS READY**
-- **Product Hunt:**
-  - Tagline: "See what Congress is buying" (58 chars)
-  - Description: ~260 chars, emphasizing accountability + nonpartisan
-  - First maker comment: founder voice, asks for feedback (not upvotes), personalization template included
-  - Note: 2026 PH algorithm prioritizes comment quality over upvote farming
-- **Hacker News (Show HN):**
-  - Technical post highlighting government-data ingestion pipeline + committee-match scoring
-  - Includes current match rate placeholder (~96% as of last backfill)
-  - Factual tone, no marketing language, genuine technical angle
-- **Niche Directories:**
-  - Prioritized fits: Civic Tech Field Guide, awesome-civic-tech, awesome-government, Indie Hackers, r/SideProject, r/OpenGovernment
-  - Skipped generic SaaS/AI directories (not a fit for $9.99/mo accountability tool)
-  - Includes note on editorial outreach (govtech press) as Sep-11+ follow-up
-- **Status:** Drafts ready, awaiting #38, #39, #40 completion + support channel setup
-- **Readiness gaps listed:** screenshots, square logo, demo video (optional), PH "Upcoming" page
-- **File:** `40-gtm/launch-submissions-draft.md`
-
-**Task #38: Social Profiles Launch Kit — COMPLETE**
-- **Handle availability verified (live, 2026-09-14):**
-  - ✓ `civicwatchhq` — open on X, YouTube, Instagram
-  - ✗ `civicwatch` — taken/suspended everywhere
-  - ? `civicwatchapp` — blank Instagram account exists (need to verify ownership)
-  - ⚠️ Reddit — manually verify `civicwatchapp` / `civicwatchhq` (browser-blocked)
-- **Assets prepared for all four platforms (X, YouTube, Reddit, Instagram):**
-  - Avatar: `avatar_*.png` (all four platforms sized correctly)
-  - Banner: `banner_*.png` (X, YouTube, Reddit only — Instagram has no banner slot)
-  - Bio copy: character-counted, accountability-voter voice per `social-media-plan.md`
-  - Website field: `civicwatch.app`
-- **Bug found and skipped:** existing `civicwatch_banner.png` has text-rendering glitch (overlapping text) — not used live, replaced with clean version
-- **Status:** Assets ready, step-by-step claim instructions in place — awaiting actual account creation (Marc's part)
-- **File:** `40-gtm/social-launch-kit/README.md` + `40-gtm/social-launch-kit/assets/`
-
-### 📋 Open Items
-- [ ] Claim four social profiles (X, YouTube, Reddit, Instagram) using `civicwatchhq` handle (task #38)
-- [ ] Verify Reddit handle availability manually (`civicwatchapp` / `civicwatchhq`)
-- [ ] Check Instagram for existing `@civicwatchapp` account (0 followers/posts) — verify ownership
-- [ ] Mark task #38 done in gantt once profiles are claimed + branded
-- [ ] Publish launch post to X once account exists (task #40)
-- [ ] Monitor first 2 hours on X for warm audience (prerequisite for #41 PH submission)
-- [ ] Set up support channel with SLA before PH/HN submissions (task #39 prerequisite)
-- [ ] Refresh match-rate + trade-count figures in #41 drafts before going live
-- [ ] Prepare 5–8 product screenshots (1270×760) for PH gallery
-- [ ] Create PH "Upcoming" page (if maker account exists) to collect notify-on-launch subscribers
-- [ ] Line up genuine early commenter for PH launch day (one real user in first hour)
-
-### 🚀 Feature Status
-- **Task #38 (Social profiles):** Assets + instructions ready ✓ | awaiting account creation
-- **Task #40 (Launch post):** Draft complete ✓ | ready to publish | awaiting X account
-- **Task #41 (PH/HN submissions):** Drafts complete ✓ | readiness checklist in place | awaiting #38/#39/#40
-
----
-
-# ⚡ 2026-09-12 — Push notifications gesture-timing fix deployed (Chrome verified, Safari OS bug isolated), Clerk webhooks verified complete
-
-## ⚡ Recent Work — 2026-09-12
-
-**Push notifications (Safari) — Task #6 Resolution**
-- Deployed pre-warming fix to service worker registration on component mount (tightens gesture-timing window for WebKit `pushManager.subscribe()`)
-- Chrome: end-to-end verified ✓ — full subscription flow works
-- Safari: hang isolated to **macOS Tahoe 26 Developer Beta webpushd/WebKit bug**, not app code
-  - Root cause confirmed via clean repro: permission reset, OS notifications correct, iCloud signed in, fully updated macOS, rebooted, Parallels not running, zero trace in Console.app
-  - Filed Apple Feedback Assistant report (ready; formal filing completed)
-  - Recommendation: monitor for stable macOS release or retest once Tahoe exits beta
-- Status: **COMPLETE** — Chrome verified; Safari blocked pending Apple OS fix
-
-**Clerk webhooks verification — Integration Complete**
-- Re-verified `user.created` webhook delivery to `https://www.civicwatch.app/api/webhooks/clerk`
-- Confirmed `CLERK_WEBHOOK_SECRET` correctly set in Vercel and matches Clerk's signing secret
-- Test delivery succeeded
-- Status: **COMPLETE** — ready for production user events
-
----
-
-# ⚡ 2026-09-11 — Push notification gesture-timing fix (Chrome verified, Safari root cause isolated), Clerk webhook delivery verified, Pro status gating for conflict-score API (Decision D-003 resolved)
-
-## ⚡ Recent Work — 2026-09-11
-
-**Push notification gesture-timing fix (Task #6 - Chrome verified, Safari root cause isolated)**
-- Fixed `PushNotificationToggle.jsx` to resolve `navigator.serviceWorker.ready` on component mount instead of inside the click handler
-- Tightens the user-activation window WebKit requires for `pushManager.subscribe()`
-- Chrome: end-to-end verified ✓
-- Safari: hang persists even after fix; root cause isolated to **macOS Tahoe 26 Developer Beta webpushd/WebKit bug**, not app code
-  - Fully clean repro: permission reset, OS notification settings correct, iCloud signed in, macOS fully updated, rebooted, Parallels confirmed not running, zero trace in Console.app
-  - Apple Feedback Assistant report drafted and ready to file
-  - Recommendation: file the Apple report, then retest on stable macOS when available
-- Files changed:
-  - `components/PushNotificationToggle.jsx` (gesture timing fix)
-  - `70-schedule/gantt-state.json` + `70-schedule/gantt.html` (task status updated)
-  - `AGENT-BRIEF.md` + `AGENTS.md` (auto-regenerated from gantt shortcut)
-- Commit ready: "fix(push): pre-warm service worker registration for Safari gesture timing"
-
-**Clerk webhook delivery verified (Integration setup)**
-- Confirmed `CLERK_WEBHOOK_SECRET` is correctly set in Vercel and matches Clerk's signing secret
-- Tested `user.created` event delivery to `https://www.civicwatch.app/api/webhooks/clerk`
-- Result: ✓ Succeeded (2026-09-10, 10:07 PM)
-- Resolved issues: www redirect + secret verification
-- Status: Complete — ready for production
-
-**Pro status gating for conflict-score API (Decision D-003 resolved)**
-- Modified `app/api/conflict-score/route.js` to check Pro status server-side and gate `flaggedTrades` detail
-- Used soft check (redact to empty array) instead of hard block to preserve free-tier summary UI (score + tier + "none flagged" state)
-- Updated cache header from `public` to `private, no-store` since response now differs by caller
-- Added shimmer skeleton loading state for Pro-locked conflict detail (consistent with existing AI-report skeleton)
-- Decision logged as ADR-004 in `00-governance/decision-log.md`
-- Cleared from `DECISIONS-PENDING.md` (now empty — no pending decisions)
-- Files changed: `app/api/conflict-score/route.js`, `00-governance/decision-log.md`, `DECISIONS-PENDING.md`, `session-log.md`
-
-### 📋 Open Items
-- [ ] File Apple Feedback Assistant report for macOS Tahoe 26 webpushd hang (task #6 follow-up)
-- [ ] Retest Safari push on stable macOS once Tahoe Developer Beta deprecates
-- [ ] Monitor `flaggedTrades` Pro gating for any UX feedback on shimmer skeleton
-
-### 🚀 Feature Status
-- **Push notifications (task #6):** Chrome verified ✓ | Safari blocked on OS bug | gesture-timing fix merged
-- **Clerk auth integration:** webhooks verified ✓ | ready for production
-- **Pro tier gating:** conflict-score API locked ✓ | clean separation of free summary vs. Pro detail
-
----
-
-# ⚡ 2026-09-09 — AI tab fix deployed, /pro rewrite pushed, conflict-score gated, bioguide backfill applied
-
-## ⚡ Work Completed Today (2026-09-09)
-
-### AI Analysis Tab Bug Fix
-- **Files:** `components/CivicWatch.jsx`
-- **What:** Fixed AI Analysis tab reading stale/empty votes and trades
-- **Commit:** `094af52` 
-- **Status:** Deployed to Vercel ✓
-
-### Bioguide Trade Data Backfill
-- **Data:** Applied 31 vetted SQL updates to `fd_trades.bioguide_id`
-- **Coverage:** Improved 93.4% → 96.3% (5,034/5,230 records covered)
-- **Issue Fixed:** 12 rows initially failed due to missing district codes (e.g., 'CA14' vs 'CA'); caught and corrected mid-run
-- **Impact:** High-confidence trade-representative mapping now covers most high-net-worth members
-
-### /pro Page Rewrite (Feature Positioning)
-- **Files:** `app/(main)/pro/page.tsx` (and related components)
-- **Changes:**
-  - **Promoted from Coming Soon:** Trade Conflict Analysis (committee-jurisdiction × trade timing, high coverage)
-  - **Reclassified to Free:** Track My Rep Alerts, Track Any Representative, State/Local Rep Lookup (verified no server-side Pro checks; were being oversold)
-  - **Added:** FAQ section on trade-data coverage accuracy
-  - **Why:** Marketing should reflect actual API capabilities, not aspirational features
-- **Commit:** `37c2de1` (staged locally, pushed to main this session)
-- **Decision:** Filed D-003 resolution as ADR-004
-
-### Pro Access Gate: /api/conflict-score
-- **Decision Resolved:** D-003 (option B implemented)
-- **What:** Added server-side Pro status check to `/api/conflict-score/route.js`
-- **Implementation:** Soft check (redacts `flaggedTrades` array for free users; preserves score/tier summary visible free)
-- **Cache Update:** Changed from public to `private, no-store` (response differs by caller)
-- **UX:** Replaced empty blurred box with shimmer skeleton (using existing `.ai-shimmer` class for consistency)
-- **Logged:** ADR-004 in `00-governance/decision-log.md`
 
 ---
 
