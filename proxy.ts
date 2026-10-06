@@ -66,6 +66,14 @@ const isPublicRoute = createRouteMatcher([
   // first-party Supabase click/purchase log was blocked.
   '/api/funnel-event(.*)',
   '/refund-policy(.*)',
+  // Fifth instance of the bug class above (found 2026-10-05, before the #41
+  // launch submissions): app/support/page.js is the public support page and FAQ
+  // that task #39 and the launch checklist gate on, and it is linked from every
+  // footer. It was never listed here, so Clerk middleware answered signed-out
+  // visitors with a JSON 401 (x-clerk-auth-status: signed-out) instead of the
+  // page. It was verified live on a Vercel preview on 2026-09-04, which is why
+  // the gap went unnoticed; the production route returns 401.
+  '/support(.*)',
   '/robots.txt',
   '/sitemap.xml',
   // Cron-only endpoints: authenticate themselves via `Authorization: Bearer
