@@ -1,7 +1,7 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-10-04T20:44:33.722Z",
+  "exportedAt": "2026-10-06T00:38:34.882463+00:00",
   "today": "2026-10-04",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {

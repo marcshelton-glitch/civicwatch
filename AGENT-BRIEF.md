@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-10-05 17:30 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-10-05 17:38 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,10 +8,48 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 44/48 done · 4 open
+- **Progress:** 45/48 done · 3 open
 - **Projected launch:** 2026-10-08
 
 ## Already done — do not redo
+
+### #48 Lock the CivicWatch AI presenter reference image
+*Completed 2026-10-05.*
+
+DONE 2026-10-05 — reference locked. Spokesman is the 'A3' candidate (FLUX.1
+Krea via Hugging Face Spaces, seed 244279322, even-key variant), chosen by
+Marc for its light-out-of-darkness look. Lapel pin is the real CivicWatch
+shield mark composited on (gold rim, navy enamel, silver Capitol) rather than
+model-drawn. Saved to ~/Projects/ad-creative/civicwatch/reference.jpg;
+presenter.json set to reference_image=reference.jpg, status=reference-locked
+(confirmed from Marc's terminal output). Copies of the spokesman and five
+additional presenters (distinct looks, all wearing the pin) are in
+assets/presenters/. Still open, not part of this task: presenter.json
+casting/lighting text still describes the pre-lock spec (late 30s-mid 40s,
+plain brass pin). Marked done by hand-edit under the ADR-005 exception, at
+Marc's request. Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json
+(built 2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py
+civicwatch --sheet`, generate four variants, pick the least synthetic-looking
+one, save it as civicwatch/reference.jpg, then set reference_image and flip
+status to reference-locked. The JSON alone will NOT hold the face steady
+across sessions — the saved image is the actual consistency mechanism, and
+every later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this
+feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-
+pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot
+creative, and #47 is a political-classification experiment — swapping in a
+synthetic presenter would change the variable being tested. Moved 2026-09-21
+from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists
+as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means
+presenter-led organic can run during launch week instead of starting after it.
+It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH: persistent
+'AI presenter - data from public STOCK Act filings' lower-third for the full
+duration, platform AI-content flag set on upload, and the claims block in
+presenter.json respected — narrator only, never a user or testimonial. For
+this audience an unlabelled synthetic presenter would discredit the product's
+whole premise. Collapsed 2026-09-21: build-prompt.py now reads ~/tools/ad-
+pipeline/briefs/civicwatch.json for ICP, angle and brand voice, so
+presenter.json holds appearance and claim limits only. Chain is brief +
+presenter + scene -> build-prompt.py -> generate.mjs -> publish.mjs.
 
 ### #40 Write and publish the launch post — founder-led, primary platform
 *Completed 2026-09-22.*
@@ -114,18 +152,6 @@ stays factual and names no individual member, keeping clear of Meta's
 image was rejected: it depicts an invented 'Alex Carter, Founder & CEO' with a
 fabricated testimonial.
 
-### #37 Decide the GTM basics — objective, ICP, four platforms
-*Completed 2026-09-04.*
-
-Decision task, Marc only. Decided 2026-09-04 (asked directly, not assumed):
-(1) objective — first paying Pro subscribers; (2) ICP — civic watchdog /
-accountability voter (tracks a specific rep's trades for accountability, not
-personal investing — conflict-score is the paid proof point, not 'invest like
-Congress'); (3) platforms — X, YouTube, Reddit, and Instagram (added
-2026-09-04, same day), four rather than the doc's own 'pick two' advice, by
-explicit choice. Written into 40-gtm/media-plan.md and 40-gtm/social-media-
-plan.md. Unblocked #38-#41 same day.
-
 ## Next up
 
 - **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-10-05 → 2026-10-07 · GTM — First Customers
@@ -141,33 +167,6 @@ plan.md. Unblocked #38-#41 same day.
   unused; (2) phone verification, which needs a code sent to his phone and is
   free and doable any time. Deferred in waves.json because (1) waits on money,
   so it must not sit at the front of the daily list looking overdue.
-
-- **#48 Lock the CivicWatch AI presenter reference image** — 2026-10-05 → 2026-10-05 · Brand & Content
-
-  Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built
-  2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch
-  --sheet`, generate four variants, pick the least synthetic-looking one, save
-  it as civicwatch/reference.jpg, then set reference_image and flip status to
-  reference-locked. The JSON alone will NOT hold the face steady across
-  sessions — the saved image is the actual consistency mechanism, and every
-  later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this
-  feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-
-  pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot
-  creative, and #47 is a political-classification experiment — swapping in a
-  synthetic presenter would change the variable being tested. Moved 2026-09-21
-  from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists
-  as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means
-  presenter-led organic can run during launch week instead of starting after
-  it. It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH:
-  persistent 'AI presenter - data from public STOCK Act filings' lower-third
-  for the full duration, platform AI-content flag set on upload, and the
-  claims block in presenter.json respected — narrator only, never a user or
-  testimonial. For this audience an unlabelled synthetic presenter would
-  discredit the product's whole premise. Collapsed 2026-09-21: build-prompt.py
-  now reads ~/tools/ad-pipeline/briefs/civicwatch.json for ICP, angle and
-  brand voice, so presenter.json holds appearance and claim limits only. Chain
-  is brief + presenter + scene -> build-prompt.py -> generate.mjs ->
-  publish.mjs.
 
 - **#47 Publish the pilot ad and record whether Meta flags it as political** — 2026-10-07 → 2026-10-08 · Paid Acquisition — Meta Pilot
 
@@ -192,6 +191,7 @@ None open.
 ## Recent commits
 
 ```
+0a131c2 chore: gold-shield/silver-Capitol logo refresh, AI presenter cast, schedule update
 59d0d2b docs: daily CivicWatch.md update — bioguide backfill analysis (95.7% coverage, 28 matches proposed)
 0b2b37b fix(security): group WAF ban alerts into one Sentry issue
 7d21779 chore: redeploy to apply SECURITY_IP_ALLOWLIST env var
@@ -199,7 +199,6 @@ None open.
 9d82c55 feat(security): app-layer WAF, escalating IP bans, and Sentry alerts
 f9fc897 docs: daily CivicWatch.md update
 8511b64 fix(og): link previews showed only the app icon
-a5b226e fix: launch-blocking stats and copy issues
 ```
 
 ---
