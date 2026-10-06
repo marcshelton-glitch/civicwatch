@@ -3,7 +3,7 @@ doc: launch-submissions-draft
 project: civicwatch
 status: draft
 owner: Marc Shelton
-last_reviewed: 2026-09-04
+last_reviewed: 2026-09-22
 review_cadence: n/a
 gantt_tasks: [41]
 ---
@@ -38,53 +38,60 @@ ends at having the copy and target list ready.
 
 ## Readiness gaps (per the directory-submissions playbook + PH norms)
 
-- [ ] 5–8 real product screenshots (PH gallery wants 1270×760; none currently
-      in `assets/` or `public/` earmarked for this)
-- [ ] Square logo (1024×1024) + favicon — check `civicwatch_logos/` for one
-      that's already square
+- [x] 7 product screenshots, 2540×1520 (2× of PH's 1270×760), live site
+      2026-09-22: `40-gtm/producthunt/gallery/`
+- [x] Square logo: `40-gtm/producthunt/producthunt-logo-1024.png` (Guardian
+      Shield, adopted 2026-09-22; the CW monogram is retired)
 - [ ] Optional but doubles upvotes on average: 60–90s demo video
 - [ ] PH "Upcoming" page live before launch day, to collect notify-on-launch
       subscribers (needs a maker account — do you have one, or should this be
       created during #38?)
-- [ ] Support inbox monitored (#39) — PH/HN comments need same-day replies
-- [ ] Launch-day post live (#40) before #41 opens
+- [x] Support channel live (#39, done 2026-09-04) — still needs same-day replies to PH/HN comments on launch day
+- [x] Launch-day post live (#40, posted 2026-09-22 from @CivicWatchAlert)
 
 ## Product Hunt
 
 **Tagline** (≤60 chars): `See what Congress is buying`
 
-**Description** (~260 chars, PH's limit):
-> CivicWatch tracks stock trades and financial disclosures for all 535
-> members of Congress, cross-referenced against their committee assignments
-> to flag potential conflicts of interest. Free to browse — Pro unlocks full
-> AI accountability reports. Nonpartisan, sourced from official filings.
+**Description** (≤260 chars, PH's limit — this one is 255):
+> CivicWatch collects the stock trades Congress members disclose under the STOCK Act and shows them next to their votes and wealth filings. Free to browse. Pro ($9.99/mo) shows which trades overlap a member's committees, plus full AI accountability reports.
+
+*Rewritten 2026-09-22: the earlier version read as if conflict flagging were
+free. Per ADR-004 the list of flagged trades is Pro; free users see the
+score and tier only.*
 
 **Suggested topics/categories** (confirm against PH's live taxonomy at
 submission time): Government, Politics, Open Data, Transparency.
 
 **First maker comment** (post this yourself at launch, not boilerplate —
-personalize the bracketed parts, and don't ask for upvotes; ask for
-feedback):
+personalize it, and don't ask for upvotes; ask for feedback):
 
 > Hey PH 👋 — I built CivicWatch because congressional stock-trade
-> disclosures are technically public but practically buried: you'd need to
-> know which government site to check, for which member, and cross-reference
-> it against their committee seat yourself to know if a trade even looks
-> like a conflict.
+> disclosures are public but buried. The House and Senate publish them to
+> separate systems, and to tell whether a trade even looks like a conflict
+> you'd have to cross-reference it against the member's committee seats
+> yourself.
 >
-> CivicWatch does that automatically — it pulls STOCK Act filings from the
-> House Clerk and Senate's disclosure systems going back to 2012, matches
-> trades to the committees a member actually sat on at the time, and flags
-> the ones worth a second look. 13,100+ disclosed trades indexed so far, all
-> 535 members tracked.
+> CivicWatch pulls those STOCK Act filings into one place — 13,100+
+> disclosed trades so far — next to each member's voting record and wealth
+> disclosures. All of that is free to browse, and every member's profile
+> shows a committee conflict score for free.
 >
-> It's free to browse. Pro ($9.99/mo) adds full AI-written accountability
-> reports and wealth-trajectory context.
+> Pro ($9.99/mo) shows *which* trades were flagged and why, plus full
+> AI-written accountability reports and wealth-trajectory context.
 >
-> Genuinely want the harsh feedback here — especially on whether the
-> conflict-flagging reads as fair to both parties, since that's the part I
-> care most about getting right. What would make this actually useful to
-> you?
+> One limit I want to be upfront about: the conflict score only covers the
+> current Congress (2025–26), because the committee data I use only has
+> current assignments. Older trades are listed, but I don't score them
+> against a seat the member may not have held at the time.
+>
+> I'd really like the harsh feedback — especially on whether the flagging
+> reads as fair to both parties, since that's the part I care most about
+> getting right. What would make this useful to you?
+
+*Rewritten 2026-09-22: dropped "going back to 2012" (only confirmed for the
+Senate) and "committees they sat on at the time" (scoring uses current
+assignments only — see the methodology text in app/api/conflict-score).*
 
 **Customer/second comment:** PH ranks comment *quality* over upvote count in
 2026 — a genuine comment from an early user in the first hour helps more than
@@ -102,26 +109,39 @@ anything that reads as a generic "we launched a SaaS" post.
 > Show HN: CivicWatch – Tracking congressional stock trades against committee assignments
 
 **Text** (factual, first person, no marketing language):
-> I built a pipeline that ingests congressional financial disclosures — House
-> Clerk Periodic Transaction Reports and the Senate's eFD system — and
-> matches each disclosed trade to the committees the filing member sat on at
-> the time, to surface ones in a sector that committee actually oversees.
+> I built a pipeline that ingests congressional stock-trade disclosures —
+> House Clerk Periodic Transaction Reports and the Senate's eFD system — and
+> checks each trade's ticker against the sectors overseen by the committees
+> the filing member sits on.
 >
-> The data's public but genuinely hard to use: the House and Senate publish
-> to separate systems, formats aren't consistent, and Senate filings in
-> particular are scraped behind a WAF that blocks plain fetches (ended up
-> needing headless-browser ingestion there). Matching trades to the right
-> member is its own problem — committee membership changes with each new
-> Congress, so a trade has to be checked against who sat where *at the time
-> of the trade*, not who sits there now.
+> The data is public but hard to use. The two chambers publish to separate
+> systems with different formats, and the Senate's eFD sits behind a WAF
+> that blocks plain fetches, so that side runs through a headless browser
+> (Playwright). Then there's matching filings to members: Senate filings
+> carry names, not IDs, so I had to map ~100 name spellings ("Rounds, M.
+> Michael", "Ladda Tammy") to bioguide IDs. 98% of the 13,100+ trades are
+> now matched to a member.
 >
-> Where matching is incomplete, it says so rather than showing a false "no
-> conflicts flagged" — 98% of disclosed trades are matched
-> to a scored member today.
+> The main limitation: committee rosters come from the
+> unitedstates/congress-legislators dataset, which only has current
+> assignments. So I only score trades from the current Congress (2025–26).
+> Older trades are listed but not scored, rather than matched against a seat
+> the member may not have held then. If anyone knows a clean source for
+> historical committee rosters, I'd like to hear about it.
 >
-> Site's at civicwatch.app, free to browse. Curious what HN makes of the
-> conflict-matching approach, and if anyone's dealt with the Senate eFD WAF
-> before, I'd like to compare notes.
+> It's at civicwatch.app. Browsing trades, votes and wealth filings is free,
+> and every member's profile shows their conflict score and tier for free.
+> The breakdown of which specific trades were flagged is part of a $9.99/mo
+> paid tier — mentioning that up front so nobody clicks through expecting
+> otherwise.
+>
+> Curious what HN makes of the sector-matching approach, and whether anyone
+> else has fought the eFD WAF.
+
+*Rewritten 2026-09-22: the earlier text invited readers to check the
+matching without saying the flagged-trade list is paid, and claimed trades
+are checked against committees held "at the time of the trade", which the
+scoring doesn't do.*
 
 Figures refreshed 2026-09-22: 12,884 of 13,104 trades matched (98.3%). House
 5,034/5,254; Senate 7,850/7,850 after `docs/senate-bioguide-backfill-2026-09-22.md`.
@@ -163,11 +183,10 @@ this.
 
 ## Before this goes live — checklist
 
-- [ ] #38, #39, #40 done (with real evidence, per this repo's own standard —
-      not just "seems done")
+- [x] #38, #39, #40 done (2026-09-21 / 09-04 / 09-22 — evidence in gantt notes)
 - [x] Match-rate and trade-count figures refreshed (2026-09-22; re-check on
       launch day)
-- [ ] Screenshots + square logo ready for the PH gallery
+- [x] Screenshots + square logo ready for the PH gallery
 - [ ] A maker account exists (or gets created during #38) and, ideally, an
       "Upcoming" page has been live for at least a few days
 - [ ] Someone lined up to leave a genuine early comment on PH

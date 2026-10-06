@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import CookieChoicesLink from '@/components/CookieChoicesLink'
+import JsonLd from '@/components/JsonLd'
+import { ORGANIZATION_JSONLD, WEBSITE_JSONLD, SOFTWARE_APPLICATION_JSONLD } from '@/lib/jsonld'
 
 
 const FEATURES = [
@@ -143,6 +145,7 @@ export default function LandingPage() {
       overflowX: 'hidden',
       minHeight: '100vh',
     }}>
+      <JsonLd data={[ORGANIZATION_JSONLD, WEBSITE_JSONLD, SOFTWARE_APPLICATION_JSONLD]} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap');
 

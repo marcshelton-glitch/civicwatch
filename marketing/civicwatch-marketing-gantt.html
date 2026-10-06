@@ -704,8 +704,7 @@ function buildSnapshot(){
     const varDays = isDone
       ? Math.round((parseDate(actualEnd[t.id]) - parseDate(ORIG_END[t.id]))/864e5)
       : Math.round((parseDate(s.start) - parseDate(t.date))/864e5);
-    const overdue = !isDone && parseDate(s.end) < TODAY;
-    const behindSchedule = varDays > 3;
+    // No overdue/behind flags: unfinished tasks are re-estimated forward from today.
     return {
       id: t.id,
       name: t.name,
@@ -715,9 +714,8 @@ function buildSnapshot(){
       status: isDone ? 'done' : 'pending',
       actualCompletionDate: isDone ? actualEnd[t.id] : null,
       varianceDays: varDays,
-      needsAttention: overdue || behindSchedule,
-      attentionReason: overdue ? 'past scheduled end date, not marked done'
-        : behindSchedule ? `slipped ${varDays}d due to an upstream delay` : null,
+      needsAttention: false,
+      attentionReason: null,
       dependsOn: (t.deps||[]).map(id=>TASKS.find(x=>x.id===id).name)
     };
   });
@@ -858,8 +856,7 @@ function openPanel(id){
     ? Math.round((parseDate(actualEnd[id]) - parseDate(ORIG_END[id]))/864e5)
     : Math.round((parseDate(s.start) - parseDate(t.date))/864e5);
   const varColor = varDays>0 ? 'var(--launch)' : (varDays<0 ? 'var(--early)' : 'var(--muted)');
-  const varLabel = varDays===0 ? '' :
-    ` <span style="color:${varColor};font-weight:700">(${varDays>0?'+':''}${varDays}d ${varDays>0?'late':'early'})</span>`;
+  const varLabel = '';
 
   let linksHtml = '';
   if(t.links){
@@ -960,12 +957,7 @@ function updateStats(sched){
 
   const launchVar = Math.round((parseDate(launchStart) - LAUNCH)/864e5);
   const launchEl = document.getElementById('s-launch');
-  if(launchVar===0){
-    launchEl.textContent = fmtDate(LAUNCH_S);
-  } else {
-    const color = launchVar>0 ? 'var(--launch)' : 'var(--early)';
-    launchEl.innerHTML = `${fmtDate(launchStart)} <span style="color:${color}">(${launchVar>0?'+':''}${launchVar}d vs plan)</span>`;
-  }
+  launchEl.textContent = fmtDate(launchStart);
 }
 
 // ─── DYNAMIC RENDER WINDOW (chart widens if a slip pushes past the plan) ──────
@@ -1097,16 +1089,6 @@ function buildRows(sched){
       nm.textContent = t.name;
       lr.appendChild(ck);
       lr.appendChild(nm);
-      if(varDays!==0){
-        const badge = document.createElement('span');
-        badge.className = 'task-badge';
-        badge.style.color = varDays>0 ? '#ef4444' : '#22c55e';
-        badge.title = isDone
-          ? `Finished ${Math.abs(varDays)}d ${varDays>0?'late':'early'}`
-          : `Rescheduled ${varDays>0?'+':''}${varDays}d by an upstream task`;
-        badge.textContent = (varDays>0?'+':'')+varDays+'d';
-        lr.appendChild(badge);
-      }
       if(attachmentCounts[t.id]){
         const att = document.createElement('span');
         att.className = 'task-badge att-count';
@@ -1124,13 +1106,13 @@ function buildRows(sched){
 
       const spanDays = Math.round((parseDate(s.end)-parseDate(s.start))/864e5)+1;
       const bar = document.createElement('div');
-      bar.className = 'task-bar'+(isDone?' done':'')+(varDays!==0?' shifted':'');
+      bar.className = 'task-bar'+(isDone?' done':'');
       bar.dataset.id = t.id;
       const barW = Math.max(spanDays*DAY_W - 2, 4);
       bar.style.cssText = `left:${dateToX(s.start)+1}px;width:${barW}px;background:${ph.color}cc;border:1px solid ${ph.color}`;
       if(barW > 80) bar.textContent = t.name;
       else if(barW > 30) bar.textContent = t.name.slice(0,8)+'…';
-      bar.title = t.name + (varDays!==0 ? ` (${varDays>0?'+':''}${varDays}d vs plan)` : '');
+      bar.title = t.name + (doneSet.has(t.id) ? '' : ` — est. ${fmtDate(s.start)} to ${fmtDate(s.end)}`);
       bar.onclick = e=>{ e.stopPropagation(); openPanel(t.id); };
 
       gr.appendChild(bar);
@@ -1160,9 +1142,8 @@ function buildRows(sched){
 
   const launchSched = sched[36];
   if(launchSched.start !== LAUNCH_S){
-    const late = parseDate(launchSched.start) > LAUNCH;
-    const c = late ? '#f97316' : '#22c55e';
-    addVLine(launchSched.start, 'vline-projected', `🗳️ Projected: ${fmtDate(launchSched.start)}`, c, c);
+    const c = '#3b82f6';
+    addVLine(launchSched.start, 'vline-projected', `🏁 Est. completion: ${fmtDate(launchSched.start)}`, c, c);
   }
 }
 

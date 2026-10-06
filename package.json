@@ -9,7 +9,8 @@
     "lint": "eslint",
     "ingest:index": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=index",
     "ingest:trades": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=trades",
-    "ingest:networth": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=networth"
+    "ingest:networth": "node --env-file=.env.local scripts/ingest-disclosures.mjs --phase=networth",
+    "uw:trial": "node --env-file=.env.local scripts/uw-trial-eval.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",

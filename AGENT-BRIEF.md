@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-09-21 16:24 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-10-05 17:30 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,10 +8,44 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 41/48 done · 7 open
+- **Progress:** 44/48 done · 4 open
 - **Projected launch:** 2026-10-08
 
 ## Already done — do not redo
+
+### #40 Write and publish the launch post — founder-led, primary platform
+*Completed 2026-09-22.*
+
+DONE 2026-09-22 (two days early). Posted from @CivicWatchAlert:
+https://x.com/CivicWatchAlert/status/2102517338298007802 — one founder-voice
+post pointing at civicwatch.app/pro, link card renders. Text and revision
+notes in 40-gtm/launch-post-x.md (the Sep 4 6-post thread was cut to one post,
+'and votes' and 'no other tracker does this' removed as unverified).
+Prerequisite fix shipped first: app/pro/layout.js meta/OG/Twitter descriptions
+still sold alerts and local lookup as Pro, contradicting ADR-004; corrected in
+commit 86a342c, Vercel READY, live tags verified before posting. Marked done
+by hand-edit under the ADR-005 exception (shortcut completion pipeline still
+does not persist), at Marc's request.
+
+### #6 Test push end-to-end on Chrome + Safari
+*Completed 2026-09-22.*
+
+DONE 2026-09-22 — both browsers verified end-to-end. SAFARI (2026-09-22):
+after Marc updated macOS to Tahoe 26.7.1, the 2026-09-04 hang
+(pushManager.subscribe() never resolving on the 26 Developer Beta) is gone —
+'Enable alerts' flipped to 'Alerts on' immediately, a new web.push.apple.com
+row for user_3CYyW20bfR44ZBoNUj3KG1v5kZB landed in push_subscriptions at 23:13
+UTC, POST /api/push/send returned {"sent":2,"stale_pruned":0} (Safari + Chrome
+subs), and Marc confirmed 'CivicWatch test — Safari' from www.civicwatch.app
+in macOS Notification Center. Confirms the Safari block was the OS beta, not
+app code; apple-feedback-webpush-hang.md no longer needs filing. As with
+Chrome, it arrived without a banner — a macOS notification display-style
+setting, not a pipeline defect. CHROME (2026-09-03): verified after commit
+a65c2a9 added /api/push/send to proxy.ts's isPublicRoute matcher (the earlier
+401 was Clerk middleware, not INTERNAL_API_SECRET). Full chain subscribe ->
+Supabase -> /api/push/send -> FCM/APNs -> service worker -> OS notification
+works on both. Marked done by hand-edit under the ADR-005 exception, at Marc's
+request.
 
 ### #38 Claim and brand the four social profiles chosen in #37
 *Completed 2026-09-21.*
@@ -92,53 +126,23 @@ Congress'); (3) platforms — X, YouTube, Reddit, and Instagram (added
 explicit choice. Written into 40-gtm/media-plan.md and 40-gtm/social-media-
 plan.md. Unblocked #38-#41 same day.
 
-### #14 Verify Clerk webhook secret, test user.created
-*Completed 2026-09-03.*
-
-DONE — verified via Clerk Dashboard > Webhooks > Delivery Stats (last 24h):
-SUCCESS-1. Attempt row for 'user.created' dated 2026-09-03 10:07 PM shows
-Succeeded against https://www.civicwatch.app/api/webhooks/clerk. Root cause of
-prior silent failures was a www-redirect eating deliveries before they reached
-the route; fixed, and this delivery is the proof. Signature verification
-(CLERK_WEBHOOK_SECRET vs. Clerk's signing secret) happens before the route can
-return anything but a signature error, so 'Succeeded' round-trips both halves
-of this task at once — no separate secret check needed. Verified by Marc
-directly in the Clerk dashboard, reported 2026-09-04.
-
-### #34 Resolve D-001 — which migration directory is authoritative
-*Completed 2026-09-03.*
-
-RECONCILED 2026-09-04: gantt had drifted behind 00-governance/decision-log.md.
-ADR-003 (dated 2026-09-03, status accepted) resolved D-001 —
-supabase/migrations/ made canonical, rebuilt file-by-file from the live
-schema_migrations ledger, 25 files 1:1 with the 25-entry live ledger. This
-gantt entry was never updated to match; a 2026-09-03 session (see session-
-log.md) found the same drift and deliberately left it unfixed pending the real
-Project Schedule shortcut. Marked done now on the strength of the accepted
-ADR, which is a stronger signal than a stale JSON field.
-
 ## Next up
 
-- **#39 Support channel live with a stated SLA, FAQ for the top 10 questions** — 2026-09-21 → 2026-09-23 · GTM — First Customers
-
-  Launch-checklist gate: 'Support channel live with a stated response SLA' +
-  'FAQ / docs cover the top 10 expected questions'. You cannot take money
-  without somewhere for a customer to complain. Free — a monitored address and
-  a published SLA is enough at this stage.
-
-- **#40 Write and publish the launch post — founder-led, primary platform** — 2026-09-24 → 2026-09-25 · GTM — First Customers
-
-  social-media-plan.md: 'Founder-led, human-first content beats polished
-  corporate output.' One post, primary platform (X — real-time reach for the
-  accountability angle), pointing at /pro. This is the first task in the whole
-  schedule that asks a stranger to look.
-
-- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-09-28 → 2026-09-30 · GTM — First Customers
+- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-10-05 → 2026-10-07 · GTM — First Customers
 
   media-plan.md already names these three rows. Free, and the backlinks
   outlast the launch spike.
 
-- **#48 Lock the CivicWatch AI presenter reference image** — 2026-10-01 → 2026-10-01 · Brand & Content
+- **#46 Add a payment method and verify the phone on the ad account** — 2026-10-05 → 2026-10-06 · Paid Acquisition — Meta Pilot
+
+  MARC ONLY. Two separate gates: (1) a payment method — Meta reviews and
+  delivers nothing without a card on file, there is no free tier of paid ads
+  and no workaround, though Meta only charges on delivery so the card can sit
+  unused; (2) phone verification, which needs a code sent to his phone and is
+  free and doable any time. Deferred in waves.json because (1) waits on money,
+  so it must not sit at the front of the daily list looking overdue.
+
+- **#48 Lock the CivicWatch AI presenter reference image** — 2026-10-05 → 2026-10-05 · Brand & Content
 
   Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built
   2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch
@@ -165,15 +169,6 @@ ADR, which is a stronger signal than a stale JSON field.
   is brief + presenter + scene -> build-prompt.py -> generate.mjs ->
   publish.mjs.
 
-- **#46 Add a payment method and verify the phone on the ad account** — 2026-10-05 → 2026-10-06 · Paid Acquisition — Meta Pilot
-
-  MARC ONLY. Two separate gates: (1) a payment method — Meta reviews and
-  delivers nothing without a card on file, there is no free tier of paid ads
-  and no workaround, though Meta only charges on delivery so the card can sit
-  unused; (2) phone verification, which needs a code sent to his phone and is
-  free and doable any time. Deferred in waves.json because (1) waits on money,
-  so it must not sit at the front of the daily list looking overdue.
-
 - **#47 Publish the pilot ad and record whether Meta flags it as political** — 2026-10-07 → 2026-10-08 · Paid Acquisition — Meta Pilot
 
   The actual experiment. Draft is already built in Ads Manager: ad account,
@@ -197,14 +192,14 @@ None open.
 ## Recent commits
 
 ```
-cee845e docs: daily CivicWatch.md update — Sept 21, 2026 (privacy, accessibility, launch prep)
-3a33c59 feat(gtm): support channel, contact-email migration and launch prep
-2dee477 docs(legal): reconcile the compliance checklist against shipped code
-643f903 fix(a11y): pre-launch accessibility pass
-f055096 feat(privacy): self-serve data export
-6c88061 fix(privacy): gate all trackers behind consent and disclose them
-682f866 docs: daily CivicWatch.md update — push fix, bioguide backfill, /pro messaging rewrite, GTM prep
-766cc68 docs: daily CivicWatch.md update (September 4, 2026)
+59d0d2b docs: daily CivicWatch.md update — bioguide backfill analysis (95.7% coverage, 28 matches proposed)
+0b2b37b fix(security): group WAF ban alerts into one Sentry issue
+7d21779 chore: redeploy to apply SECURITY_IP_ALLOWLIST env var
+2656518 fix(security): log ban-store failures instead of failing silently
+9d82c55 feat(security): app-layer WAF, escalating IP bans, and Sentry alerts
+f9fc897 docs: daily CivicWatch.md update
+8511b64 fix(og): link previews showed only the app icon
+a5b226e fix: launch-blocking stats and copy issues
 ```
 
 ---

@@ -55,3 +55,9 @@ CivicWatch Downloaded Files/
 .serena/
 *.bak
 *.bak.*
+
+# graphify knowledge graph (generated; rebuild with `graphify update .`)
+graphify-out/
+
+# Unusual Whales trial output — individual-use license, never commit
+/.local/uw-trial/

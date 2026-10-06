@@ -1,14 +1,14 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-09-18T04:59:41.617162+00:00",
-  "today": "2026-09-17",
+  "exportedAt": "2026-10-04T20:44:33.722Z",
+  "today": "2026-10-04",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 48,
-    "done": 44,
-    "remaining": 4,
-    "pctDone": 92
+    "done": 45,
+    "remaining": 3,
+    "pctDone": 94
   },
   "launch": {
     "planned": "2026-10-08",
@@ -312,7 +312,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-26",
-      "varianceDays": 44,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
@@ -449,7 +449,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-26",
-      "varianceDays": 13,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -571,7 +571,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-30",
-      "varianceDays": 5,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -594,7 +594,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-30",
-      "varianceDays": 1,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
@@ -663,7 +663,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-09-21",
-      "varianceDays": 3,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -687,7 +687,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-09-04",
-      "varianceDays": 0,
+      "varianceDays": -19,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -711,7 +711,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-09-22",
-      "varianceDays": 0,
+      "varianceDays": -3,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -733,8 +733,8 @@
         "end": "2026-09-30"
       },
       "scheduled": {
-        "start": "2026-09-28",
-        "end": "2026-09-30"
+        "start": "2026-10-05",
+        "end": "2026-10-07"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -763,7 +763,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-30",
-      "varianceDays": 14,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
@@ -784,7 +784,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-30",
-      "varianceDays": 14,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
@@ -807,7 +807,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-30",
-      "varianceDays": 12,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -830,7 +830,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-08-30",
-      "varianceDays": 10,
+      "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
@@ -995,7 +995,7 @@
       },
       "status": "done",
       "actualCompletionDate": "2026-09-22",
-      "varianceDays": 0,
+      "varianceDays": -10,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [
@@ -1132,16 +1132,16 @@
         "end": "2026-10-01"
       },
       "scheduled": {
-        "start": "2026-10-01",
-        "end": "2026-10-01"
+        "start": "2026-10-05",
+        "end": "2026-10-05"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-10-05",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
       "dependsOn": [],
-      "note": "Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built 2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch --sheet`, generate four variants, pick the least synthetic-looking one, save it as civicwatch/reference.jpg, then set reference_image and flip status to reference-locked. The JSON alone will NOT hold the face steady across sessions — the saved image is the actual consistency mechanism, and every later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot creative, and #47 is a political-classification experiment — swapping in a synthetic presenter would change the variable being tested. Moved 2026-09-21 from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means presenter-led organic can run during launch week instead of starting after it. It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH: persistent 'AI presenter - data from public STOCK Act filings' lower-third for the full duration, platform AI-content flag set on upload, and the claims block in presenter.json respected — narrator only, never a user or testimonial. For this audience an unlabelled synthetic presenter would discredit the product's whole premise. Collapsed 2026-09-21: build-prompt.py now reads ~/tools/ad-pipeline/briefs/civicwatch.json for ICP, angle and brand voice, so presenter.json holds appearance and claim limits only. Chain is brief + presenter + scene -> build-prompt.py -> generate.mjs -> publish.mjs.",
+      "note": "DONE 2026-10-05 — reference locked. Spokesman is the 'A3' candidate (FLUX.1 Krea via Hugging Face Spaces, seed 244279322, even-key variant), chosen by Marc for its light-out-of-darkness look. Lapel pin is the real CivicWatch shield mark composited on (gold rim, navy enamel, silver Capitol) rather than model-drawn. Saved to ~/Projects/ad-creative/civicwatch/reference.jpg; presenter.json set to reference_image=reference.jpg, status=reference-locked (confirmed from Marc's terminal output). Copies of the spokesman and five additional presenters (distinct looks, all wearing the pin) are in assets/presenters/. Still open, not part of this task: presenter.json casting/lighting text still describes the pre-lock spec (late 30s-mid 40s, plain brass pin). Marked done by hand-edit under the ADR-005 exception, at Marc's request. Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built 2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch --sheet`, generate four variants, pick the least synthetic-looking one, save it as civicwatch/reference.jpg, then set reference_image and flip status to reference-locked. The JSON alone will NOT hold the face steady across sessions — the saved image is the actual consistency mechanism, and every later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot creative, and #47 is a political-classification experiment — swapping in a synthetic presenter would change the variable being tested. Moved 2026-09-21 from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means presenter-led organic can run during launch week instead of starting after it. It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH: persistent 'AI presenter - data from public STOCK Act filings' lower-third for the full duration, platform AI-content flag set on upload, and the claims block in presenter.json respected — narrator only, never a user or testimonial. For this audience an unlabelled synthetic presenter would discredit the product's whole premise. Collapsed 2026-09-21: build-prompt.py now reads ~/tools/ad-pipeline/briefs/civicwatch.json for ICP, angle and brand voice, so presenter.json holds appearance and claim limits only. Chain is brief + presenter + scene -> build-prompt.py -> generate.mjs -> publish.mjs.",
       "durationWorkdays": 1,
       "blocks": []
     }

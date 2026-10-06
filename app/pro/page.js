@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useState } from 'react'
 import ProCountBanner from '@/components/ProCountBanner'
+import JsonLd from '@/components/JsonLd'
+import { faqJsonLd } from '@/lib/jsonld'
 import { trackUpgradeClick } from '@/lib/funnel-track'
 import CookieChoicesLink from '@/components/CookieChoicesLink'
 
@@ -27,6 +29,7 @@ const FREE_FEATURES = [
   { icon: '📋', label: "Today's congressional docket" },
   { icon: '📍', label: 'Town halls & scheduled events' },
   { icon: '💼', label: 'Wealth & financial disclosures' },
+  { icon: '🎯', label: 'Committee conflict score & tier on every member profile' },
   { icon: '🏦', label: 'Nonprofit affiliations (ProPublica)' },
   { icon: '🤖', label: 'AI Analysis — free preview paragraph' },
   { icon: '🗺️', label: 'Interactive congressional district map' },
@@ -44,7 +47,7 @@ const PRO_FEATURES = [
   {
     icon: '🔍',
     title: 'Trade Conflict Analysis',
-    desc: 'Every disclosed stock trade cross-referenced against the committees a member actually sat on at the time, flagging trades in sectors that committee oversees. Matched to a specific member for the large majority of disclosed trades — where we haven\'t matched a trade yet, we say so instead of showing a false "all clear."',
+    desc: 'Every disclosed stock trade cross-referenced against the committees a member currently sits on (current Congress, 2025–26), flagging trades in sectors that committee oversees. Older trades are listed but not scored. Matched to a specific member for the large majority of disclosed trades — where we haven\'t matched a trade yet, we say so instead of showing a false "all clear."',
   },
   {
     icon: '📈',
@@ -86,7 +89,7 @@ const FAQS = [
   },
   {
     q: 'How complete is the Trade Conflict Analysis?',
-    a: 'We match the large majority of disclosed trades to the member who filed them and score those against the committees they sat on at the time. A small long tail — mostly a handful of trades from former members — isn\'t matched yet. Rather than show those as a false "no conflicts flagged," the report tells you plainly when we don\'t have enough data on a member to score them.',
+    a: 'We match the large majority of disclosed trades to the member who filed them and score those against the committees they currently sit on. Scoring covers the current Congress (2025–26); older trades are listed but not scored, because we only have current committee assignments. A small long tail — mostly a handful of trades from former members — isn\'t matched yet. Rather than show those as a false "no conflicts flagged," the report tells you plainly when we don\'t have enough data on a member to score them.',
   },
   {
     q: 'Do you store my home address?',
@@ -142,6 +145,7 @@ export default function ProPage() {
 
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: S.navy, minHeight: '100vh', color: S.white, overflowX: 'hidden' }}>
+      <JsonLd data={faqJsonLd(FAQS)} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:wght@300;400;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
