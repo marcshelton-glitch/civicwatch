@@ -274,7 +274,15 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
 
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}))
-      console.error('AI API HTTP error:', res.status)
+      console.error('AI API HTTP error:', res.status, errData?.error?.status)
+      // Google's project-wide quota is exhausted (free tier, or a traffic spike).
+      // Not the user's fault and not their per-user cap, so say so plainly.
+      if (res.status === 429) {
+        return Response.json(
+          { error: 'AI analysis is busy right now. Please try again in a few minutes.' },
+          { status: 503, headers: { 'Retry-After': '300' } }
+        )
+      }
       return Response.json({ error: 'AI analysis failed. Please try again.' }, { status: 500 })
     }
 
