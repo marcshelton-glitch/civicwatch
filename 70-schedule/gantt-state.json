@@ -1,18 +1,18 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-10-06T00:38:34.882463+00:00",
-  "today": "2026-10-04",
+  "exportedAt": "2026-10-09T21:53:07.935414+00:00",
+  "today": "2026-10-09",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
-    "total": 48,
-    "done": 45,
-    "remaining": 3,
-    "pctDone": 94
+    "total": 53,
+    "done": 47,
+    "remaining": 6,
+    "pctDone": 89
   },
   "launch": {
-    "planned": "2026-10-08",
-    "projected": "2026-10-08",
+    "planned": "2026-10-27",
+    "projected": "2026-10-27",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -78,6 +78,27 @@
       "blocks": [
         "Backfill bioguide_id on fd_trades (5,076 rows)"
       ]
+    },
+    {
+      "id": 53,
+      "name": "Confirm the Gemini API key is on a billed Google AI Studio project, before Show HN and Product Hunt traffic",
+      "phase": "P0 Launch Blockers",
+      "planned": {
+        "start": "2026-10-09",
+        "end": "2026-10-12"
+      },
+      "scheduled": {
+        "start": "2026-10-09",
+        "end": "2026-10-12"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "Added 2026-10-09 from DECISIONS-PENDING D-005 (step 0). About five minutes. In Google AI Studio, open the project behind GOOGLE_AI_API_KEY and check it has billing enabled. A free-tier key shares one ~1,500 requests/day pool across the whole app, so an HN or Product Hunt spike would make paying Pro users see 'AI analysis failed'. Paid-tier cost is pennies: a full report is about $0.003 and the per-user 50k tokens/day cap bounds a maxed-out Pro user at about $2/mo. Does NOT include the per-rep cache (D-005 option A), which is post-launch. Marc adds the card himself; Claude does not handle payment details. Ordered first in waves.json so it lands before #49 (Show HN, 10-13); once ticked done, rebaseline gives the two workdays back.",
+      "durationWorkdays": 1
     },
     {
       "id": 1,
@@ -729,12 +750,12 @@
       "name": "Submit to Product Hunt, Hacker News, niche directories",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-09-28",
-        "end": "2026-09-30"
+        "start": "2026-10-13",
+        "end": "2026-10-14"
       },
       "scheduled": {
-        "start": "2026-10-05",
-        "end": "2026-10-07"
+        "start": "2026-10-13",
+        "end": "2026-10-14"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -743,11 +764,105 @@
       "attentionReason": null,
       "dependsOn": [
         "Rewrite /pro around what actually works",
-        "Write and publish the launch post — founder-led, primary platform"
+        "Submit the Show HN post",
+        "Launch on Product Hunt"
       ],
-      "note": "media-plan.md already names these three rows. Free, and the backlinks outlast the launch spike.",
-      "durationWorkdays": 2,
+      "note": "Close-out: done when Show HN and Product Hunt are live and the Civic Tech Field Guide listing is confirmed, with links recorded. Civic Tech Field Guide submitted 2026-10-05 (in review); awesome lists skipped; Indie Hackers split to its own task. Tick media-plan.md Directories rows at close. Rescheduled 2026-10-07: end moved to Oct 14 because it closes only when Show HN (Oct 13) and Product Hunt (Oct 14) are live. Progress 2026-10-09: Civic Tech Field Guide listing confirmed LIVE (Active, links to civicwatch.app; found via https://app.civictech.guide/?search=civicwatch). media-plan.md row ticked. Remaining: Show HN live (#49, Oct 13) and Product Hunt live (#50, Oct 15), then record links and close.",
+      "durationWorkdays": 1,
       "blocks": []
+    },
+    {
+      "id": 49,
+      "name": "Submit the Show HN post",
+      "phase": "GTM — First Customers",
+      "planned": {
+        "start": "2026-10-15",
+        "end": "2026-10-16"
+      },
+      "scheduled": {
+        "start": "2026-10-15",
+        "end": "2026-10-16"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Rewrite /pro around what actually works"
+      ],
+      "note": "Scheduled prep task opens the prefilled HN submit page Oct 13 8:00 AM PT; Marc presses Submit and posts the first comment. Done = live HN link recorded. Packet: 40-gtm/show-hn-packet.md. Rescheduled 2026-10-07: window was Oct 9-12, but the submit-prep scheduled task fires Oct 13 8:00 AM PT, so Oct 13 is the real date.",
+      "durationWorkdays": 1,
+      "blocks": []
+    },
+    {
+      "id": 50,
+      "name": "Launch on Product Hunt",
+      "phase": "GTM — First Customers",
+      "planned": {
+        "start": "2026-10-19",
+        "end": "2026-10-20"
+      },
+      "scheduled": {
+        "start": "2026-10-19",
+        "end": "2026-10-20"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Submit the Show HN post"
+      ],
+      "note": "Day after Show HN. Needs maker account, Upcoming page, early commenter, gallery in 40-gtm/producthunt/. Marc present for the first hours. Done = live PH link recorded. Rescheduled 2026-10-07: moved to Oct 14 (day after Show HN on Oct 13). Progress 2026-10-07: Marc created his Product Hunt maker account (signed in, shield avatar showing). Still to do: confirm username/headline saved, start the launch draft, line up one early commenter. Open question: Oct 14 may be crowded (Google Cloud Run hackathon launches that day); Oct 15 is the fallback if Marc wants it. Date left at Oct 14 until Marc decides. Decision 2026-10-08: Marc chose Oct 15 (avoids Oct 14 Google Cloud Run hackathon crowd). Launch draft complete through Launch checklist (required 100%); not yet scheduled.",
+      "durationWorkdays": 1,
+      "blocks": []
+    },
+    {
+      "id": 51,
+      "name": "Publish the Indie Hackers launch post once posting unlocks",
+      "phase": "GTM — First Customers",
+      "planned": {
+        "start": "2026-10-21",
+        "end": "2026-10-22"
+      },
+      "scheduled": {
+        "start": "2026-10-21",
+        "end": "2026-10-22"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "Blocked by Indie Hackers new-account posting limit; the daily comment-prompts task works toward unlocking it. Draft: 40-gtm/indiehackers-post.md. Does not gate #41. No hard date.",
+      "durationWorkdays": 1,
+      "blocks": []
+    },
+    {
+      "id": 52,
+      "name": "Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)",
+      "phase": "GTM — First Customers",
+      "planned": {
+        "start": "2026-10-23",
+        "end": "2026-10-27"
+      },
+      "scheduled": {
+        "start": "2026-10-23",
+        "end": "2026-10-27"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Lock the CivicWatch AI presenter reference image"
+      ],
+      "note": "Added 2026-10-08. See '## Video ad concepts' in 40-gtm/media-plan.md. $0, organic channels only; anything paid needs the exact cost told to Marc first. Build Concept 2 (Capitol motion graphics, Remotion, real screenshots) first for the Product Hunt gallery, Show HN and press kit. Then Concept 1 (presenter A3) for launch week Oct 13-16. NON-NEGOTIABLE on publish: persistent 'AI presenter - data from public STOCK Act filings' lower-third, platform AI-content flag, narrator only, real screenshots only, conflict score described as an indicator not proof, verify the 13,100+ figure on the live site. Does not touch the Meta pilot. Dates are a proposal; move them if the Show HN / Product Hunt prep needs the days. PROGRESS 2026-10-09: five cuts rendered in 40-gtm/video/concept2/ (Concept 1 presenter 9:16, Concept 2 Capitol 16:9, Concept 3 cast 9:16, Concept 4 spotlight 9:16 and 16:9), silent, $0. Not yet posted. Remaining: review each cut against the labeling rules in media-plan.md, set the platform AI-content flag on upload, re-check the 13,100+ figure the day of posting.",
+      "durationWorkdays": 2
     },
     {
       "id": 28,
@@ -861,8 +976,31 @@
       "durationWorkdays": 2,
       "blocks": [
         "Write and publish the launch post — founder-led, primary platform",
-        "Submit to Product Hunt, Hacker News, niche directories"
+        "Submit to Product Hunt, Hacker News, niche directories",
+        "Submit the Show HN post"
       ]
+    },
+    {
+      "id": 48,
+      "name": "Lock the CivicWatch AI presenter reference image",
+      "phase": "Brand & Content",
+      "planned": {
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "scheduled": {
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "status": "done",
+      "actualCompletionDate": "2026-10-05",
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [],
+      "note": "DONE 2026-10-05 — reference locked. Spokesman is the 'A3' candidate (FLUX.1 Krea via Hugging Face Spaces, seed 244279322, even-key variant), chosen by Marc for its light-out-of-darkness look. Lapel pin is the real CivicWatch shield mark composited on (gold rim, navy enamel, silver Capitol) rather than model-drawn. Saved to ~/Projects/ad-creative/civicwatch/reference.jpg; presenter.json set to reference_image=reference.jpg, status=reference-locked (confirmed from Marc's terminal output). Copies of the spokesman and five additional presenters (distinct looks, all wearing the pin) are in assets/presenters/. Still open, not part of this task: presenter.json casting/lighting text still describes the pre-lock spec (late 30s-mid 40s, plain brass pin). Marked done by hand-edit under the ADR-005 exception, at Marc's request. Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built 2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch --sheet`, generate four variants, pick the least synthetic-looking one, save it as civicwatch/reference.jpg, then set reference_image and flip status to reference-locked. The JSON alone will NOT hold the face steady across sessions — the saved image is the actual consistency mechanism, and every later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot creative, and #47 is a political-classification experiment — swapping in a synthetic presenter would change the variable being tested. Moved 2026-09-21 from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means presenter-led organic can run during launch week instead of starting after it. It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH: persistent 'AI presenter - data from public STOCK Act filings' lower-third for the full duration, platform AI-content flag set on upload, and the claims block in presenter.json respected — narrator only, never a user or testimonial. For this audience an unlabelled synthetic presenter would discredit the product's whole premise. Collapsed 2026-09-21: build-prompt.py now reads ~/tools/ad-pipeline/briefs/civicwatch.json for ICP, angle and brand voice, so presenter.json holds appearance and claim limits only. Chain is brief + presenter + scene -> build-prompt.py -> generate.mjs -> publish.mjs.",
+      "durationWorkdays": 1,
+      "blocks": []
     },
     {
       "id": 33,
@@ -1083,8 +1221,8 @@
         "start": "2026-10-05",
         "end": "2026-10-06"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-10-05",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
@@ -1102,15 +1240,15 @@
       "name": "Publish the pilot ad and record whether Meta flags it as political",
       "phase": "Paid Acquisition — Meta Pilot",
       "planned": {
-        "start": "2026-10-07",
-        "end": "2026-10-08"
+        "start": "2026-10-06",
+        "end": "2026-10-06"
       },
       "scheduled": {
-        "start": "2026-10-07",
-        "end": "2026-10-08"
+        "start": "2026-10-06",
+        "end": "2026-10-06"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-10-06",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
@@ -1119,29 +1257,7 @@
         "Write the pilot ad copy and pick the creative",
         "Draft the Meta pilot campaign — Traffic, US, $5/day"
       ],
-      "note": "The actual experiment. Draft is already built in Ads Manager: ad account, campaign, ad set (US / 18+ / $5 a day), destination URL and a placeholder Capitol image from the Page library are all saved. Two things still to do by hand, because Meta's creative wizard hung on its Next button: paste copy variant A (primary text / headline / description, CTA 'Learn more') from ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json, and optionally swap the placeholder for the better 2026-09-13 Capitol/flagged-trade creative — Meta's upload button opens a native file picker that can't be automated. Then publish and watch the review status: a political/issue classification shows up as a rejection demanding authorization and a 'Paid for by' disclaimer. Either outcome is the answer worth having; record it in policyPrecedent.actualResult.",
-      "durationWorkdays": 1,
-      "blocks": []
-    },
-    {
-      "id": 48,
-      "name": "Lock the CivicWatch AI presenter reference image",
-      "phase": "Brand & Content",
-      "planned": {
-        "start": "2026-10-01",
-        "end": "2026-10-01"
-      },
-      "scheduled": {
-        "start": "2026-10-05",
-        "end": "2026-10-05"
-      },
-      "status": "done",
-      "actualCompletionDate": "2026-10-05",
-      "varianceDays": 0,
-      "needsAttention": false,
-      "attentionReason": null,
-      "dependsOn": [],
-      "note": "DONE 2026-10-05 — reference locked. Spokesman is the 'A3' candidate (FLUX.1 Krea via Hugging Face Spaces, seed 244279322, even-key variant), chosen by Marc for its light-out-of-darkness look. Lapel pin is the real CivicWatch shield mark composited on (gold rim, navy enamel, silver Capitol) rather than model-drawn. Saved to ~/Projects/ad-creative/civicwatch/reference.jpg; presenter.json set to reference_image=reference.jpg, status=reference-locked (confirmed from Marc's terminal output). Copies of the spokesman and five additional presenters (distinct looks, all wearing the pin) are in assets/presenters/. Still open, not part of this task: presenter.json casting/lighting text still describes the pre-lock spec (late 30s-mid 40s, plain brass pin). Marked done by hand-edit under the ADR-005 exception, at Marc's request. Spec lives at ~/Projects/ad-creative/civicwatch/presenter.json (built 2026-09-20 from the reel Marc sent). Run `./lib/build-prompt.py civicwatch --sheet`, generate four variants, pick the least synthetic-looking one, save it as civicwatch/reference.jpg, then set reference_image and flip status to reference-locked. The JSON alone will NOT hold the face steady across sessions — the saved image is the actual consistency mechanism, and every later generation attaches it as image 1. DELIBERATELY POST-LAUNCH: this feeds ORGANIC short-form (X / Instagram / YouTube via ~/tools/ad-pipeline/publish.mjs), not the Meta pilot. #45 already chose the pilot creative, and #47 is a political-classification experiment — swapping in a synthetic presenter would change the variable being tested. Moved 2026-09-21 from 10-09 to 10-01, taking the slot from #6 (which waves.json already lists as deferred). Rationale: landing the presenter BEFORE launch on 10-08 means presenter-led organic can run during launch week instead of starting after it. It still does not touch the Meta pilot. NON-NEGOTIABLE ON PUBLISH: persistent 'AI presenter - data from public STOCK Act filings' lower-third for the full duration, platform AI-content flag set on upload, and the claims block in presenter.json respected — narrator only, never a user or testimonial. For this audience an unlabelled synthetic presenter would discredit the product's whole premise. Collapsed 2026-09-21: build-prompt.py now reads ~/tools/ad-pipeline/briefs/civicwatch.json for ICP, angle and brand voice, so presenter.json holds appearance and claim limits only. Chain is brief + presenter + scene -> build-prompt.py -> generate.mjs -> publish.mjs.",
+      "note": "DONE 2026-10-06 - RESULT: Meta did NOT flag the ad as political. Published 2026-10-06 ~00:33 local as 'New Traffic Ad - Copy' (copy variant A, Learn more, all Advantage+ enhancements off); status went In review -> Active by 2026-10-06 18:09 with no rejection and no authorization / 'Paid for by' demand. Recorded in policyPrecedent.actualResult in ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json. Caveat: one ad is one data point. The old errored draft 'New Traffic Ad' was deleted by Marc 2026-10-06; only the Active copy remains. Marked done by hand-edit under the ADR-005 exception, at Marc's request. Original note: The actual experiment. Draft is already built in Ads Manager: ad account, campaign, ad set (US / 18+ / $5 a day), destination URL and a placeholder Capitol image from the Page library are all saved. Two things still to do by hand, because Meta's creative wizard hung on its Next button: paste copy variant A (primary text / headline / description, CTA 'Learn more') from ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json, and optionally swap the placeholder for the better 2026-09-13 Capitol/flagged-trade creative — Meta's upload button opens a native file picker that can't be automated. Then publish and watch the review status: a political/issue classification shows up as a rejection demanding authorization and a 'Paid for by' disclaimer. Either outcome is the answer worth having; record it in policyPrecedent.actualResult.",
       "durationWorkdays": 1,
       "blocks": []
     }
@@ -1303,6 +1419,116 @@
         "varianceDays": 0
       },
       "tasksRebaselined": 7
+    },
+    {
+      "resetOn": "2026-10-07",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-08",
+        "projected": "2026-10-08",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-07",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-16",
+        "projected": "2026-10-16",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-07",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-16",
+        "projected": "2026-10-16",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-07",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-16",
+        "projected": "2026-10-16",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-07",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-16",
+        "projected": "2026-10-16",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-08",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-16",
+        "projected": "2026-10-16",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-08",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-19",
+        "projected": "2026-10-19",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-08",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-19",
+        "projected": "2026-10-19",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-09",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-22",
+        "projected": "2026-10-22",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-09",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-23",
+        "projected": "2026-10-23",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 6
     }
   ]
 }

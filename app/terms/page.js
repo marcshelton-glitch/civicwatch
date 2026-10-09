@@ -200,6 +200,16 @@ You may terminate your account at any time by contacting us at support@civicwatc
   },
   {
     num: '17',
+    title: 'California Residents',
+    content: `Under California Civil Code section 1789.3, California users are entitled to this notice: the provider of the Service is identified in Section 19 (Contact Information) below. To file a complaint or get more information about the Service, email support@civicwatch.app. You may also contact the Complaint Assistance Unit of the Division of Consumer Services of the California Department of Consumer Affairs in writing at 1625 N. Market Blvd., Suite N 112, Sacramento, CA 95834, or by telephone at (800) 952-5210.`,
+  },
+  {
+    num: '18',
+    title: 'Accessibility',
+    content: `We want CivicWatch to work with assistive technology such as screen readers and keyboard navigation. If you run into a barrier, email support@civicwatch.app with the page and what happened, and we will work with you to fix it or provide the information another way.`,
+  },
+  {
+    num: '19',
     title: 'Contact Information',
     content: `For questions about these Terms of Service, please contact us:
 
@@ -240,10 +250,10 @@ export default function TermsPage() {
             Terms of <span style={{ color: S.gold }}>Service</span>
           </h1>
           <p style={{ fontSize: 13, color: S.gray, marginBottom: 8 }}>
-            Last Updated: April 24, 2026
+            Last Updated: October 9, 2026
           </p>
           <p style={{ fontSize: 13, color: S.gray }}>
-            Effective Date: April 24, 2026
+            Effective Date: October 9, 2026
           </p>
           <div style={{ marginTop: 20, height: 2, background: `linear-gradient(90deg, transparent, ${S.red}, transparent)`, borderRadius: 2 }} />
         </div>

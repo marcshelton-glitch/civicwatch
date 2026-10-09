@@ -1,3 +1,40 @@
+## ⚡ 2026-10-08 — Bioguide Coverage Confirmed (Automated Daily Check)
+
+**Status: Launch on track — bioguide backfill audit confirmed 95.7% coverage, no degradation**
+
+### Daily Work (2026-10-08)
+- **Bioguide backfill maintenance check (automated):** Reconfirmed 95.7% coverage (5,034 of 5,259 trades resolved)
+  - Coverage stable since Oct 1 analysis
+  - 28 high-confidence match proposals remain valid (see Oct 1 entry)
+  - 2 existing-ID corrections still flagged: Moskowitz (M001219→M001217), Max Miller (M001225→M001222)
+  - Root cause confirmed: ingest pipeline not assigning IDs to recent House filings (rows created after 2026-08-27)
+  - **Status:** Awaiting human approval to apply fixes; no database writes executed
+
+### 📋 Open Items
+- [ ] Apply 28 proposed bioguide UPDATEs to `fd_trades` (new rows with NULL IDs) — see Oct 1 for full list
+- [ ] Apply 2 existing-ID corrections: Moskowitz (affects 17 trades), Max Miller (affects 29 trades)
+- [ ] Fix ingest pipeline to assign bioguide_id to recent House trade rows (prevents monthly recurrence)
+- [ ] Monitor next ingest run to confirm ingest fix is deployed
+- [ ] Complete #47: Publish Meta ad pilot & record political-ad classification (scheduled Oct 7-8)
+- **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, submissions can proceed**
+- **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
+- **#48** (Oct 1): Lock AI presenter reference image for organic content
+
+### 🚀 Feature Status (stable)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ⏳ Meta ad account setup (payment method pending)
+- ⏳ Directory submissions (gate: Sep 28, now active)
+- 🔄 Bioguide backfill (28 matches + 2 corrections proposed, awaiting human approval; ingest-level fix pending)
+
+---
+
 ## ⚡ 2026-10-07 — Meta Ad Pilot (scheduled)
 
 **Status: Launch on track — Meta ad pilot #47 scheduled for today**

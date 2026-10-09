@@ -4624,7 +4624,7 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
       const data = await res.json()
 
       if (!res.ok) {
-        setErrorMsg(res.status === 429
+        setErrorMsg(res.status === 429 && mode === 'preview'
           ? 'Preview limit reached — upgrade to Pro for unlimited access.'
           : (data.error || 'Analysis failed.'))
         setStatus('error')
