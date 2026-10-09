@@ -7,7 +7,7 @@ export const metadata = {
     "How CivicWatch collects, uses, and protects your personal information.",
 };
 
-const LAST_UPDATED = "April 24, 2026";
+const LAST_UPDATED = "October 9, 2026";
 const CONTACT_EMAIL = "support@civicwatch.app";
 
 const S = {
@@ -73,6 +73,7 @@ export default function PrivacyPolicyPage() {
               <li style={LI}><strong style={{ color: S.white }}>Usage data.</strong> We collect information about how you interact with CivicWatch, including representatives you track, polls you participate in, pages you view, and features you use.</li>
               <li style={LI}><strong style={{ color: S.white }}>Billing information.</strong> If you subscribe to a paid plan, payment is processed by Stripe. We do not store full payment card numbers on our servers; Stripe stores them securely and provides us with a customer reference, plan status, and the last four digits of your card.</li>
               <li style={LI}><strong style={{ color: S.white }}>Device and log data.</strong> We automatically collect information your browser or device sends when you use CivicWatch, including IP address, browser type, operating system, referring pages, and timestamps.</li>
+                <li style={LI}><strong style={{ color: S.white }}>Push notification data.</strong> If you turn on push notifications, we store the subscription details your browser gives us (a push endpoint and encryption keys) so we can send you the alerts you asked for.</li>
             </ul>
           </div>
 
@@ -93,7 +94,7 @@ export default function PrivacyPolicyPage() {
             <h2 style={H2}>3. How We Share Your Information</h2>
             <p style={P}>We do not sell your personal information. We share information only with:</p>
             <ul style={{ paddingLeft: 22, margin: 0 }}>
-              <li style={LI}><strong style={{ color: S.white }}>Service providers</strong> who help us operate CivicWatch, including Clerk (authentication), Supabase (database hosting), Stripe (payments), Vercel (web hosting), Google (AI features via Gemini), and Sentry (error and performance monitoring). These providers are bound by contracts that restrict how they can use your data.</li>
+              <li style={LI}><strong style={{ color: S.white }}>Service providers</strong> who help us operate CivicWatch, including Clerk (authentication), Supabase (database hosting), Stripe (payments), Vercel (web hosting), Google (AI features via Gemini), and Sentry (error and performance monitoring), Resend (email delivery), and, if you turn on push notifications, the push service run by your browser's vendor (such as Google, Apple, or Mozilla). These providers are bound by contracts that restrict how they can use your data.</li>
               <li style={LI}><strong style={{ color: S.white }}>Analytics providers</strong>, only if you accept analytics cookies: Vercel Analytics and Vercel Speed Insights (aggregate traffic and page performance) and Google Analytics (usage measurement). Sentry Session Replay, which records a sample of on-page activity to help us reproduce errors, is also enabled only with your analytics consent.</li>
               <li style={LI}><strong style={{ color: S.white }}>Advertising providers</strong>, only if you accept advertising cookies: Meta (Facebook) Pixel and TikTok Pixel. These let us measure whether our ads bring people to CivicWatch, and allow those platforms to show our ads to similar audiences.</li>
               <li style={LI}><strong style={{ color: S.white }}>Legal authorities</strong> when required by valid legal process, or to protect the rights, property, or safety of CivicWatch, our users, or the public.</li>
@@ -128,7 +129,7 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p style={P}>
               Analytics and advertising cookies do not run until you accept them. You are asked when you first visit, and you can
-              change or withdraw your choice at any time — rejecting is always as easy as accepting. You can also control cookies
+              change or withdraw your choice at any time — rejecting is always as easy as accepting. If your browser sends a Global Privacy Control signal, we treat it as a rejection of advertising cookies. You can also control cookies
               through your browser settings, though disabling necessary cookies may break functionality such as staying signed in.
             </p>
           </div>
@@ -160,13 +161,14 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
 
-          <div>
+          <div id="ccpa">
   <h2 style={H2}>8. California Privacy Rights (CCPA)</h2>
   <p style={P}>
     If you are a California resident, the California Consumer Privacy Act (CCPA) grants you
     additional rights regarding your personal information.
   </p>
   <p style={P}><strong style={{ color: S.white }}>We do not sell your personal information.</strong> We do not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration.</p>
+  <p style={P}><strong style={{ color: S.white }}>Advertising cookies and &quot;sharing.&quot;</strong> If you accept advertising cookies, Meta and TikTok receive information about your visit. California law may call this &quot;sharing&quot; for cross-context behavioral advertising. It is off until you accept, you can turn it off at any time from Cookie choices in the footer, and we treat a Global Privacy Control signal as a rejection.</p>
   <p style={P}>As a California resident, you have the right to:</p>
   <ul style={{ paddingLeft: 22, margin: '0 0 10px' }}>
     <li style={LI}><strong style={{ color: S.white }}>Know</strong> what personal information we collect, use, disclose, and sell about you.</li>
