@@ -11,7 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 been done and why -- including approaches that were tried and failed. Acting
 without it means redoing finished work or undoing a fix.
 
-Recently completed (47/52 done) -- **do not redo**:
+Recently completed (47/53 done) -- **do not redo**:
 
 - **#47** Publish the pilot ad and record whether Meta flags it as political (2026-10-06)
 - **#48** Lock the CivicWatch AI presenter reference image (2026-10-05)
