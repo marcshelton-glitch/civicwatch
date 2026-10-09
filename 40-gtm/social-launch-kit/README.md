@@ -129,3 +129,12 @@ should follow the actual claiming, not this prep work.
   Reddit is blocked to my browsing tools).
 - Decide whether `civicwatch_banner.svg`/`.png` is worth fixing/regenerating
   now or later — it's unused in production today, so it's not urgent.
+
+---
+
+## Update 2026-10-09: assets re-exported with the Guardian Shield
+
+The seven images in `assets/` were rebuilt from `assets/logos/shield/` after the
+CW monogram was retired (2026-09-22). The previous versions are in git history.
+HTML sources are in `source/`; render with headless Chrome at the file's size.
+Live profiles still need the new files uploaded by hand.
