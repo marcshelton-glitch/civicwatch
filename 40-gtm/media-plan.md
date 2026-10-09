@@ -74,24 +74,27 @@ Tracking status (from `docs/conversion-tracking-audit-2026-08-29.md`):
 ## Video ad concepts
 Two 10-second concepts from the ChatGPT outline (storyboards and cast images in `civicwatch_ads/`), adapted to this plan on 2026-10-08. Gantt #52. **Organic channels only (X, Instagram, YouTube Shorts). $0.** Any paid placement needs the exact cost told to Marc first and a yes. The Meta pilot creative is not changed.
 
-| Piece | Where it runs | Cost |
-|---|---|---|
-| Concept 2: Capitol motion graphics, built in the Remotion pipeline from real screenshots | Product Hunt gallery, Show HN, press kit; build first | $0 per render |
-| Concept 1: AI presenter A3, 10-second cut | Organic social, launch week Oct 13–16, pointing to `/pro` | $0 |
-| Cast variants (other four presenters, all in the shield pin) | Later organic posts, one message per audience | $0 |
-| Storyboard frames as still cards | Press kit (`assets/press/`, not yet created) | $0 |
+| Cut | Format | Where it runs | Cost |
+|---|---|---|---|
+| Concept 2: Capitol motion graphics, real screenshots, no presenter | 16:9, 10s | Product Hunt gallery, Show HN, press kit | $0 per render |
+| Concept 1: AI presenter A3 | 9:16, 10s | Organic social, launch week Oct 13–16, pointing to `/pro` | $0 |
+| Concept 3: cast slideshow, three AI presenters | 9:16, 10s | Organic social, pointing to civicwatch.app | $0 |
+| Concept 4: spotlight room, three AI presenters | 9:16 and 16:9, 18s | Organic social (9:16); press kit, Product Hunt gallery, YouTube (16:9) | $0 |
+
+All cuts are silent, with on-screen captions only. Rendered 2026-10-09 with Remotion in `40-gtm/video/concept2/` (see its README for re-rendering). Rendered, not yet posted.
 
 **Labeling rules (non-negotiable on publish)**
 - Persistent lower-third for the full duration: "AI presenter – data from public STOCK Act filings".
 - Platform AI-content flag set on upload.
 - The presenter narrates only. He is never shown as a user, never gives a testimonial, and respects the claims block in `presenter.json`.
 - Lapel pin is the real CivicWatch shield mark, composited on, not model-drawn.
-- Use the locked A3 reference image (#48) for every generation, not the older storyboard portrait.
+- Concepts 1, 3 and 4 carry the lower-third for the full length. Concept 3 and 4 read "AI presenters" (plural) because three faces appear. Concept 2 has no presenter, so no lower-third is needed.
+- Concept 1 uses the locked A3 reference image (#48). Concepts 3 and 4 use the cast portraits, each wearing the shield pin and not given a name.
 
 **Content rules**
 - Real product screenshots and real member profiles only. No invented people, headshots or sample scores.
 - Describe the committee conflict score as an analytical indicator, not proof of wrongdoing. Read the `40-gtm/video` README warning before showing a score next to a named real member.
-- Verify the "13,100+ disclosed trades" figure against the live site before it appears in any caption.
+- The "13,100+ disclosed trades" figure was checked on 2026-10-08 against the live `/api/stats` (13,117 trades, 535 members). Re-check it the day a cut is posted. The "5,000+" on the home page is a placeholder, not the real figure.
 - Use the real logo files from `30-brand`. Gold `#C9A227` on dark only; `#A8851A` on light backgrounds.
 
 ## Budget

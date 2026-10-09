@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-10-05 17:38 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-10-08 20:53 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,10 +8,34 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 45/48 done · 3 open
-- **Projected launch:** 2026-10-08
+- **Progress:** 47/52 done · 5 open
+- **Projected launch:** 2026-10-22
 
 ## Already done — do not redo
+
+### #47 Publish the pilot ad and record whether Meta flags it as political
+*Completed 2026-10-06.*
+
+DONE 2026-10-06 - RESULT: Meta did NOT flag the ad as political. Published
+2026-10-06 ~00:33 local as 'New Traffic Ad - Copy' (copy variant A, Learn
+more, all Advantage+ enhancements off); status went In review -> Active by
+2026-10-06 18:09 with no rejection and no authorization / 'Paid for by'
+demand. Recorded in policyPrecedent.actualResult in ~/tools/ad-
+pipeline/campaigns/civicwatch-meta-pilot.json. Caveat: one ad is one data
+point. The old errored draft 'New Traffic Ad' was deleted by Marc 2026-10-06;
+only the Active copy remains. Marked done by hand-edit under the ADR-005
+exception, at Marc's request. Original note: The actual experiment. Draft is
+already built in Ads Manager: ad account, campaign, ad set (US / 18+ / $5 a
+day), destination URL and a placeholder Capitol image from the Page library
+are all saved. Two things still to do by hand, because Meta's creative wizard
+hung on its Next button: paste copy variant A (primary text / headline /
+description, CTA 'Learn more') from ~/tools/ad-pipeline/campaigns/civicwatch-
+meta-pilot.json, and optionally swap the placeholder for the better 2026-09-13
+Capitol/flagged-trade creative — Meta's upload button opens a native file
+picker that can't be automated. Then publish and watch the review status: a
+political/issue classification shows up as a rejection demanding authorization
+and a 'Paid for by' disclaimer. Either outcome is the answer worth having;
+record it in policyPrecedent.actualResult.
 
 ### #48 Lock the CivicWatch AI presenter reference image
 *Completed 2026-10-05.*
@@ -50,6 +74,16 @@ whole premise. Collapsed 2026-09-21: build-prompt.py now reads ~/tools/ad-
 pipeline/briefs/civicwatch.json for ICP, angle and brand voice, so
 presenter.json holds appearance and claim limits only. Chain is brief +
 presenter + scene -> build-prompt.py -> generate.mjs -> publish.mjs.
+
+### #46 Add a payment method and verify the phone on the ad account
+*Completed 2026-10-05.*
+
+MARC ONLY. Two separate gates: (1) a payment method — Meta reviews and
+delivers nothing without a card on file, there is no free tier of paid ads and
+no workaround, though Meta only charges on delivery so the card can sit
+unused; (2) phone verification, which needs a code sent to his phone and is
+free and doable any time. Deferred in waves.json because (1) waits on money,
+so it must not sit at the front of the daily list looking overdue.
 
 ### #40 Write and publish the launch post — founder-led, primary platform
 *Completed 2026-09-22.*
@@ -130,58 +164,62 @@ directly comparable product cleared as an ordinary commercial ad. Caveat: one
 advertiser is precedent, not proof. Full write-up in ~/tools/ad-
 pipeline/campaigns/civicwatch-meta-pilot.json.
 
-### #44 Draft the Meta pilot campaign — Traffic, US, $5/day
-*Completed 2026-09-17.*
-
-Campaign 'CivicWatch – Political Ad Policy Test' (120254890948070063) drafted:
-Auction, Traffic objective, manual setup. Ad set (120254890948060063) targets
-United States, 18+, website conversions, highest-volume bid, $5.00/day. Meta
-bills only on delivery, so nothing is charged until it actually runs.
-
-### #45 Write the pilot ad copy and pick the creative
-*Completed 2026-09-17.*
-
-Three ad-copy variants written and stored in ~/tools/ad-
-pipeline/campaigns/civicwatch-meta-pilot.json (A recommended). Every claim
-checked against app/pro/page.js: free tier really is $0 with no card and
-really does include STOCK Act disclosures, voting records and tracking alerts
-— conflict scoring is Pro at $9.99/mo, so no variant implies it is free. Copy
-stays factual and names no individual member, keeping clear of Meta's
-'Political values and governance' social-issue category. Creative reuses the
-2026-09-13 Capitol/flagged-trade image — no new kie.ai spend. The 2026-09-18
-image was rejected: it depicts an invented 'Alex Carter, Founder & CEO' with a
-fabricated testimonial.
-
 ## Next up
 
-- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-10-05 → 2026-10-07 · GTM — First Customers
+- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-10-08 → 2026-10-09 · GTM — First Customers
 
-  media-plan.md already names these three rows. Free, and the backlinks
-  outlast the launch spike.
+  Close-out: done when Show HN and Product Hunt are live and the Civic Tech
+  Field Guide listing is confirmed, with links recorded. Civic Tech Field
+  Guide submitted 2026-10-05 (in review); awesome lists skipped; Indie Hackers
+  split to its own task. Tick media-plan.md Directories rows at close.
+  Rescheduled 2026-10-07: end moved to Oct 14 because it closes only when Show
+  HN (Oct 13) and Product Hunt (Oct 14) are live.
 
-- **#46 Add a payment method and verify the phone on the ad account** — 2026-10-05 → 2026-10-06 · Paid Acquisition — Meta Pilot
+- **#49 Submit the Show HN post** — 2026-10-12 → 2026-10-13 · GTM — First Customers
 
-  MARC ONLY. Two separate gates: (1) a payment method — Meta reviews and
-  delivers nothing without a card on file, there is no free tier of paid ads
-  and no workaround, though Meta only charges on delivery so the card can sit
-  unused; (2) phone verification, which needs a code sent to his phone and is
-  free and doable any time. Deferred in waves.json because (1) waits on money,
-  so it must not sit at the front of the daily list looking overdue.
+  Scheduled prep task opens the prefilled HN submit page Oct 13 8:00 AM PT;
+  Marc presses Submit and posts the first comment. Done = live HN link
+  recorded. Packet: 40-gtm/show-hn-packet.md. Rescheduled 2026-10-07: window
+  was Oct 9-12, but the submit-prep scheduled task fires Oct 13 8:00 AM PT, so
+  Oct 13 is the real date.
 
-- **#47 Publish the pilot ad and record whether Meta flags it as political** — 2026-10-07 → 2026-10-08 · Paid Acquisition — Meta Pilot
+- **#50 Launch on Product Hunt** — 2026-10-14 → 2026-10-15 · GTM — First Customers
 
-  The actual experiment. Draft is already built in Ads Manager: ad account,
-  campaign, ad set (US / 18+ / $5 a day), destination URL and a placeholder
-  Capitol image from the Page library are all saved. Two things still to do by
-  hand, because Meta's creative wizard hung on its Next button: paste copy
-  variant A (primary text / headline / description, CTA 'Learn more') from
-  ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json, and optionally
-  swap the placeholder for the better 2026-09-13 Capitol/flagged-trade
-  creative — Meta's upload button opens a native file picker that can't be
-  automated. Then publish and watch the review status: a political/issue
-  classification shows up as a rejection demanding authorization and a 'Paid
-  for by' disclaimer. Either outcome is the answer worth having; record it in
-  policyPrecedent.actualResult.
+  Day after Show HN. Needs maker account, Upcoming page, early commenter,
+  gallery in 40-gtm/producthunt/. Marc present for the first hours. Done =
+  live PH link recorded. Rescheduled 2026-10-07: moved to Oct 14 (day after
+  Show HN on Oct 13). Progress 2026-10-07: Marc created his Product Hunt maker
+  account (signed in, shield avatar showing). Still to do: confirm
+  username/headline saved, start the launch draft, line up one early
+  commenter. Open question: Oct 14 may be crowded (Google Cloud Run hackathon
+  launches that day); Oct 15 is the fallback if Marc wants it. Date left at
+  Oct 14 until Marc decides. Decision 2026-10-08: Marc chose Oct 15 (avoids
+  Oct 14 Google Cloud Run hackathon crowd). Launch draft complete through
+  Launch checklist (required 100%); not yet scheduled.
+
+- **#51 Publish the Indie Hackers launch post once posting unlocks** — 2026-10-16 → 2026-10-19 · GTM — First Customers
+
+  Blocked by Indie Hackers new-account posting limit; the daily comment-
+  prompts task works toward unlocking it. Draft: 40-gtm/indiehackers-post.md.
+  Does not gate #41. No hard date.
+
+- **#52 Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)** — 2026-10-20 → 2026-10-22 · GTM — First Customers
+
+  Added 2026-10-08. See '## Video ad concepts' in 40-gtm/media-plan.md. $0,
+  organic channels only; anything paid needs the exact cost told to Marc
+  first. Build Concept 2 (Capitol motion graphics, Remotion, real screenshots)
+  first for the Product Hunt gallery, Show HN and press kit. Then Concept 1
+  (presenter A3) for launch week Oct 13-16. NON-NEGOTIABLE on publish:
+  persistent 'AI presenter - data from public STOCK Act filings' lower-third,
+  platform AI-content flag, narrator only, real screenshots only, conflict
+  score described as an indicator not proof, verify the 13,100+ figure on the
+  live site. Does not touch the Meta pilot. Dates are a proposal; move them if
+  the Show HN / Product Hunt prep needs the days. PROGRESS 2026-10-09: five
+  cuts rendered in 40-gtm/video/concept2/ (Concept 1 presenter 9:16, Concept 2
+  Capitol 16:9, Concept 3 cast 9:16, Concept 4 spotlight 9:16 and 16:9),
+  silent, $0. Not yet posted. Remaining: review each cut against the labeling
+  rules in media-plan.md, set the platform AI-content flag on upload, re-check
+  the 13,100+ figure the day of posting.
 
 
 ## Open decisions (blocked on Marc)
@@ -191,14 +229,14 @@ None open.
 ## Recent commits
 
 ```
+a801235 feat(gtm): add video ad concepts to media plan; add Gantt #52
+250e1b1 fix(auth): make /support public so signed-out visitors can reach it
+e30f636 chore(schedule): regenerate brief and gantt after #48 completion (45/48)
 0a131c2 chore: gold-shield/silver-Capitol logo refresh, AI presenter cast, schedule update
 59d0d2b docs: daily CivicWatch.md update — bioguide backfill analysis (95.7% coverage, 28 matches proposed)
 0b2b37b fix(security): group WAF ban alerts into one Sentry issue
 7d21779 chore: redeploy to apply SECURITY_IP_ALLOWLIST env var
 2656518 fix(security): log ban-store failures instead of failing silently
-9d82c55 feat(security): app-layer WAF, escalating IP bans, and Sentry alerts
-f9fc897 docs: daily CivicWatch.md update
-8511b64 fix(og): link previews showed only the app icon
 ```
 
 ---

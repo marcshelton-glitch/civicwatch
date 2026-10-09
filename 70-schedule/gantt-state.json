@@ -1,7 +1,7 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-10-08T22:44:22.252441+00:00",
+  "exportedAt": "2026-10-09T03:53:21.154545+00:00",
   "today": "2026-10-08",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
@@ -11,8 +11,8 @@
     "pctDone": 90
   },
   "launch": {
-    "planned": "2026-10-19",
-    "projected": "2026-10-19",
+    "planned": "2026-10-22",
+    "projected": "2026-10-22",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -821,6 +821,29 @@
       "blocks": []
     },
     {
+      "id": 52,
+      "name": "Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)",
+      "phase": "GTM — First Customers",
+      "planned": {
+        "start": "2026-10-20",
+        "end": "2026-10-22"
+      },
+      "scheduled": {
+        "start": "2026-10-20",
+        "end": "2026-10-22"
+      },
+      "status": "pending",
+      "actualCompletionDate": null,
+      "varianceDays": 0,
+      "needsAttention": false,
+      "attentionReason": null,
+      "dependsOn": [
+        "Lock the CivicWatch AI presenter reference image"
+      ],
+      "note": "Added 2026-10-08. See '## Video ad concepts' in 40-gtm/media-plan.md. $0, organic channels only; anything paid needs the exact cost told to Marc first. Build Concept 2 (Capitol motion graphics, Remotion, real screenshots) first for the Product Hunt gallery, Show HN and press kit. Then Concept 1 (presenter A3) for launch week Oct 13-16. NON-NEGOTIABLE on publish: persistent 'AI presenter - data from public STOCK Act filings' lower-third, platform AI-content flag, narrator only, real screenshots only, conflict score described as an indicator not proof, verify the 13,100+ figure on the live site. Does not touch the Meta pilot. Dates are a proposal; move them if the Show HN / Product Hunt prep needs the days. PROGRESS 2026-10-09: five cuts rendered in 40-gtm/video/concept2/ (Concept 1 presenter 9:16, Concept 2 Capitol 16:9, Concept 3 cast 9:16, Concept 4 spotlight 9:16 and 16:9), silent, $0. Not yet posted. Remaining: review each cut against the labeling rules in media-plan.md, set the platform AI-content flag on upload, re-check the 13,100+ figure the day of posting.",
+      "durationWorkdays": 2
+    },
+    {
       "id": 28,
       "name": "Set RESEND_API_KEY",
       "phase": "Measurement",
@@ -1216,29 +1239,6 @@
       "note": "DONE 2026-10-06 - RESULT: Meta did NOT flag the ad as political. Published 2026-10-06 ~00:33 local as 'New Traffic Ad - Copy' (copy variant A, Learn more, all Advantage+ enhancements off); status went In review -> Active by 2026-10-06 18:09 with no rejection and no authorization / 'Paid for by' demand. Recorded in policyPrecedent.actualResult in ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json. Caveat: one ad is one data point. The old errored draft 'New Traffic Ad' was deleted by Marc 2026-10-06; only the Active copy remains. Marked done by hand-edit under the ADR-005 exception, at Marc's request. Original note: The actual experiment. Draft is already built in Ads Manager: ad account, campaign, ad set (US / 18+ / $5 a day), destination URL and a placeholder Capitol image from the Page library are all saved. Two things still to do by hand, because Meta's creative wizard hung on its Next button: paste copy variant A (primary text / headline / description, CTA 'Learn more') from ~/tools/ad-pipeline/campaigns/civicwatch-meta-pilot.json, and optionally swap the placeholder for the better 2026-09-13 Capitol/flagged-trade creative — Meta's upload button opens a native file picker that can't be automated. Then publish and watch the review status: a political/issue classification shows up as a rejection demanding authorization and a 'Paid for by' disclaimer. Either outcome is the answer worth having; record it in policyPrecedent.actualResult.",
       "durationWorkdays": 1,
       "blocks": []
-    },
-    {
-      "id": 52,
-      "name": "Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)",
-      "phase": "GTM — First Customers",
-      "planned": {
-        "start": "2026-10-09",
-        "end": "2026-10-12"
-      },
-      "scheduled": {
-        "start": "2026-10-09",
-        "end": "2026-10-12"
-      },
-      "status": "pending",
-      "actualCompletionDate": null,
-      "varianceDays": 0,
-      "needsAttention": false,
-      "attentionReason": null,
-      "dependsOn": [
-        "Lock the CivicWatch AI presenter reference image"
-      ],
-      "note": "Added 2026-10-08. See '## Video ad concepts' in 40-gtm/media-plan.md. $0, organic channels only; anything paid needs the exact cost told to Marc first. Build Concept 2 (Capitol motion graphics, Remotion, real screenshots) first for the Product Hunt gallery, Show HN and press kit. Then Concept 1 (presenter A3) for launch week Oct 13-16. NON-NEGOTIABLE on publish: persistent 'AI presenter - data from public STOCK Act filings' lower-third, platform AI-content flag, narrator only, real screenshots only, conflict score described as an indicator not proof, verify the 13,100+ figure on the live site. Does not touch the Meta pilot. Dates are a proposal; move them if the Show HN / Product Hunt prep needs the days.",
-      "durationWorkdays": 2
     }
   ],
   "wave": 1,
@@ -1475,6 +1475,17 @@
         "varianceDays": 0
       },
       "tasksRebaselined": 4
+    },
+    {
+      "resetOn": "2026-10-08",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-19",
+        "projected": "2026-10-19",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
     }
   ]
 }
