@@ -2,7 +2,9 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { validateAIRequest, checkSpendCap, logTokenUsage } from '@/lib/ai-gateway'
 import { getUserTier } from '@/lib/tier-utils'
-import { readGeminiResponse, trimToLastSentence } from '@/lib/gemini-response'
+import {
+  readGeminiResponse, trimToLastSentence, isTransientStatus, RETRY_DELAYS_MS,
+} from '@/lib/gemini-response'
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -257,7 +259,7 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
   // ── Call AI API ───────────────────────────────────────────────────────────
   try {
     // The key goes in a header, not the URL, so it never lands in a logged URL.
-    const res = await fetch(
+    const callGemini = () => fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
       {
         method: 'POST',
@@ -284,9 +286,28 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
       }
     )
 
+    // Google answers 503 "model overloaded" in short bursts and 429 when the
+    // shared quota is spent. A brief retry clears the first; neither is the
+    // user's fault, so the final message says so instead of "failed".
+    let res = await callGemini()
+    for (
+      let attempt = 0;
+      !res.ok && isTransientStatus(res.status) && attempt < RETRY_DELAYS_MS.length;
+      attempt++
+    ) {
+      console.error('AI API transient error, retrying:', res.status, { attempt: attempt + 1 })
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS_MS[attempt]))
+      res = await callGemini()
+    }
+
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({}))
       console.error('AI API HTTP error:', res.status)
+      if (isTransientStatus(res.status) || res.status === 429) {
+        return Response.json(
+          { error: 'AI analysis is busy right now. Please try again in a minute.' },
+          { status: 503, headers: { 'Retry-After': '60' } }
+        )
+      }
       return Response.json({ error: 'AI analysis failed. Please try again.' }, { status: 500 })
     }
 
