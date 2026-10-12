@@ -2,6 +2,9 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { validateAIRequest, checkSpendCap, logTokenUsage } from '@/lib/ai-gateway'
 import { getUserTier } from '@/lib/tier-utils'
+import {
+  readGeminiResponse, trimToLastSentence, isTransientStatus, RETRY_DELAYS_MS,
+} from '@/lib/gemini-response'
 
 const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -232,6 +235,8 @@ Recent trades: ${tradeList}
 Recent votes: ${voteList}`
     : `You are a nonpartisan civic accountability analyst. Write a thorough, factual accountability report for a civic watchdog platform. Use plain prose only — no markdown headers, no bullet points, no asterisks. Write in flowing paragraphs. Be specific, factual, and objective.
 
+Write exactly five paragraphs separated by one blank line: the four areas below in order, then the single rating sentence as the fifth. Finish every sentence; never stop mid-thought.
+
 Cover these four areas in order, each as its own paragraph:
 
 1. VOTING RECORD: Analyze their votes and what they reveal about priorities.
@@ -253,16 +258,25 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
 
   // ── Call AI API ───────────────────────────────────────────────────────────
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`,
+    // The key goes in a header, not the URL, so it never lands in a logged URL.
+    const callGemini = () => fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': process.env.GOOGLE_AI_API_KEY ?? '',
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            maxOutputTokens: mode === 'preview' ? 300 : 1000,
-            temperature: 0.6,
+            // gemini-2.5-flash spends thinking tokens out of this same cap, so
+            // the old 1000 left room for about one sentence. Thinking is off
+            // (the report is summarising supplied data, not solving a puzzle)
+            // and the cap sits well above a full five-paragraph report.
+            maxOutputTokens: mode === 'preview' ? 400 : 2500,
+            temperature: 0.4,
+            thinkingConfig: { thinkingBudget: 0 },
           },
           safetySettings: [
             { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_LOW_AND_ABOVE' },
@@ -272,26 +286,62 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
       }
     )
 
+    // Google answers 503 "model overloaded" in short bursts and 429 when the
+    // shared quota is spent. A brief retry clears the first; neither is the
+    // user's fault, so the final message says so instead of "failed".
+    let res = await callGemini()
+    for (
+      let attempt = 0;
+      !res.ok && isTransientStatus(res.status) && attempt < RETRY_DELAYS_MS.length;
+      attempt++
+    ) {
+      console.error('AI API transient error, retrying:', res.status, { attempt: attempt + 1 })
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS_MS[attempt]))
+      res = await callGemini()
+    }
+
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({}))
       console.error('AI API HTTP error:', res.status)
+      if (isTransientStatus(res.status) || res.status === 429) {
+        return Response.json(
+          { error: 'AI analysis is busy right now. Please try again in a minute.' },
+          { status: 503, headers: { 'Retry-After': '60' } }
+        )
+      }
       return Response.json({ error: 'AI analysis failed. Please try again.' }, { status: 500 })
     }
 
     const data = await res.json()
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    const reply = readGeminiResponse(data)
 
-    if (!text) {
-      console.error('AI empty response received')
+    if (!reply.text) {
+      console.error('AI empty response received', { finishReason: reply.finishReason })
       return Response.json({ error: 'AI analysis returned no content. Please try again.' }, { status: 500 })
     }
 
-    // ── Log token usage ───────────────────────────────────────────────────
-    const inputTokens = data.usageMetadata?.promptTokenCount ?? 0
-    const outputTokens = data.usageMetadata?.candidatesTokenCount ?? 0
-    await logTokenUsage(userId, 'analyze-rep', 'gemini-2.5-flash', inputTokens, outputTokens)
+    // A cut-off reply still comes back as HTTP 200. Log it so a regression is
+    // visible, and never hand the user a sentence that stops mid-word.
+    let text = reply.text
+    if (reply.truncated) {
+      console.error('AI reply hit the token cap', {
+        mode,
+        finishReason: reply.finishReason,
+        outputTokens: reply.outputTokens,
+        thoughtTokens: reply.thoughtTokens,
+      })
+      text = trimToLastSentence(text)
+    }
 
-    return Response.json({ text }, { headers: { 'Cache-Control': 'private, no-store' } })
+    // ── Log token usage (thinking tokens are billed as output) ────────────
+    await logTokenUsage(
+      userId, 'analyze-rep', 'gemini-2.5-flash',
+      reply.inputTokens, reply.outputTokens + reply.thoughtTokens,
+    )
+
+    return Response.json(
+      { text, truncated: reply.truncated },
+      { headers: { 'Cache-Control': 'private, no-store' } }
+    )
 
   } catch (err) {
     console.error('AI API error:', err.message)
