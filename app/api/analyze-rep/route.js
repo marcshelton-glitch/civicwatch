@@ -257,10 +257,15 @@ Peer comparison: ${peerData}
 Committee peers: ${rep.peers.join(', ') || 'unknown'}`
 
   // ── Call AI API ───────────────────────────────────────────────────────────
+  // Model is env-driven so a swap (or a retired model) needs no code change.
+  const model = (mode === 'preview'
+    ? process.env.GEMINI_MODEL_PREVIEW
+    : process.env.GEMINI_MODEL_FULL) || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
+
   try {
     // The key goes in a header, not the URL, so it never lands in a logged URL.
     const callGemini = () => fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
         method: 'POST',
         headers: {
@@ -276,7 +281,9 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
             // and the cap sits well above a full five-paragraph report.
             maxOutputTokens: mode === 'preview' ? 400 : 2500,
             temperature: 0.4,
-            thinkingConfig: { thinkingBudget: 0 },
+            // thinkingBudget is a 2.5-family setting; Gemini 3.x models reject it
+            // (HTTP 400). Flash-Lite 3.x doesn't think by default.
+            ...(model.startsWith('gemini-2.5') ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
           },
           safetySettings: [
             { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_LOW_AND_ABOVE' },
@@ -302,7 +309,10 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
 
     if (!res.ok) {
       console.error('AI API HTTP error:', res.status)
-      if (isTransientStatus(res.status) || res.status === 429) {
+      // 402 = prepaid Gemini credits depleted. Users get the same "busy" message,
+      // but the log line names the real cause.
+      if (res.status === 402) console.error('AI API: Gemini prepay credits depleted — top up or switch key in AI Studio')
+      if (isTransientStatus(res.status) || res.status === 429 || res.status === 402) {
         return Response.json(
           { error: 'AI analysis is busy right now. Please try again in a minute.' },
           { status: 503, headers: { 'Retry-After': '60' } }
@@ -334,7 +344,7 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
 
     // ── Log token usage (thinking tokens are billed as output) ────────────
     await logTokenUsage(
-      userId, 'analyze-rep', 'gemini-2.5-flash',
+      userId, 'analyze-rep', model,
       reply.inputTokens, reply.outputTokens + reply.thoughtTokens,
     )
 
