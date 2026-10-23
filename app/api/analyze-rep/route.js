@@ -252,9 +252,14 @@ Peer comparison: ${peerData}
 Committee peers: ${rep.peers.join(', ') || 'unknown'}`
 
   // ── Call AI API ───────────────────────────────────────────────────────────
+  // Model IDs are env-driven so a swap needs no deploy of code changes.
+  const model = (mode === 'preview'
+    ? process.env.GEMINI_MODEL_PREVIEW
+    : process.env.GEMINI_MODEL_FULL) || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
+
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GOOGLE_AI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -277,7 +282,10 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
       console.error('AI API HTTP error:', res.status, errData?.error?.status)
       // Google's project-wide quota is exhausted (free tier, or a traffic spike).
       // Not the user's fault and not their per-user cap, so say so plainly.
-      if (res.status === 429) {
+      // 402 = prepaid credits depleted. Same user-facing message, but log it
+      // loudly so the cause is obvious in Vercel logs.
+      if (res.status === 402) console.error('AI API: Gemini prepay credits depleted — top up in AI Studio')
+      if (res.status === 429 || res.status === 402) {
         return Response.json(
           { error: 'AI analysis is busy right now. Please try again in a few minutes.' },
           { status: 503, headers: { 'Retry-After': '300' } }
@@ -297,7 +305,7 @@ Committee peers: ${rep.peers.join(', ') || 'unknown'}`
     // ── Log token usage ───────────────────────────────────────────────────
     const inputTokens = data.usageMetadata?.promptTokenCount ?? 0
     const outputTokens = data.usageMetadata?.candidatesTokenCount ?? 0
-    await logTokenUsage(userId, 'analyze-rep', 'gemini-2.5-flash', inputTokens, outputTokens)
+    await logTokenUsage(userId, 'analyze-rep', model, inputTokens, outputTokens)
 
     return Response.json({ text }, { headers: { 'Cache-Control': 'private, no-store' } })
 
