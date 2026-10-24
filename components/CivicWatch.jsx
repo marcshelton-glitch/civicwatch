@@ -726,7 +726,10 @@ const markAllRead = () => {
           : m.name || ''
         const nameSlug = displayName.toLowerCase()
           .replace(/[^a-z\s]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
-        const termItems = m.terms?.item || []
+        // The member-detail endpoint returns terms as an array; the list endpoint
+        // wraps them as { item: [...] }. Reading only .item made every sitting
+        // member opened by direct link show as "Former Member of Congress".
+        const termItems = Array.isArray(m.terms) ? m.terms : (m.terms?.item || [])
         const latestTerm = termItems[termItems.length - 1] || {}
         const termDistrict = latestTerm.district
         const computedDistrict = isSen
@@ -2479,6 +2482,7 @@ useEffect(() => {
 
 function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollVotes, handlePollVote, handleSubscribe, handleBillingPortal, isPro: isProProp, S }) {
   const [liveVotes, setLiveVotes] = useState(null)
+  const [votesSource, setVotesSource] = useState(null)
   const [liveTrades, setLiveTrades] = useState(null)
   const [tradesMeta, setTradesMeta] = useState(null)
   const [liveBio, setLiveBio] = useState(null)
@@ -2546,7 +2550,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   // Reset all live data when the rep changes so stale data from the
   // previous rep never briefly flashes for the newly selected rep
   useEffect(() => {
-    setLiveVotes(null); setLiveTrades(null); setTradesMeta(null)
+    setLiveVotes(null); setVotesSource(null); setLiveTrades(null); setTradesMeta(null)
     setLiveBio(null); setLiveSponsored(null); setLiveCommittees(null)
     setLiveDocket(null); setLiveDocketSource(null)
     setLiveTownHall(null); setLiveTownHallMeta(null)
@@ -2568,7 +2572,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
       setLoadingVotes(true)
       fetch(`/api/congress?type=votes&bioguideId=${rep.id}`)
         .then(r => r.json())
-        .then(d => { setLiveVotes(d.votes || []); setLoadingVotes(false) })
+        .then(d => { setLiveVotes(d.votes || []); setVotesSource(d.source || null); setLoadingVotes(false) })
         .catch(() => { setLiveVotes([]); setLoadingVotes(false) })
     }
   }, [repTab, rep.id])
@@ -3286,7 +3290,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ fontSize: 11, letterSpacing: 2, color: S.gray, textTransform: 'uppercase' }}>Recent Votes — {votes.length} records</div>
-                <div style={{ fontSize: 11, color: S.gray }}>via GovTrack</div>
+                <div style={{ fontSize: 11, color: S.gray }}>{votesSource === 'govtrack' ? 'via GovTrack' : 'via House Clerk'}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {votes.map((v, i) => {
