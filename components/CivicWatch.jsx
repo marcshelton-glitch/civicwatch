@@ -2590,7 +2590,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
         .then(r => r.json())
         .then(d => {
           setLiveTrades(d.trades || [])
-          setTradesMeta({ buys: d.buys || 0, sells: d.sells || 0, topTickers: d.topTickers || [], disclosureUrl: d.disclosureUrl || null, source: d.source })
+          setTradesMeta({ buys: d.buys || 0, sells: d.sells || 0, topTickers: d.topTickers || [], disclosureUrl: d.disclosureUrl || null, source: d.source, filingsCount: d.filingsCount || 0 })
           if (d.netWorthHistory?.length > 0) setNetWorthHistory(d.netWorthHistory)
           setLoadingTrades(false)
         })
@@ -2613,7 +2613,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [repTab, rep.id])
 
   useEffect(() => {
-    if (repTab !== 'wealth' || rep.source === 'openstates') return
+    if ((repTab !== 'wealth' && repTab !== 'ai') || rep.source === 'openstates') return
     setFdNetWorth(null)
     setFdNetWorthMeta(null)
     setNwHoverIdx(null)
@@ -2656,7 +2656,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
   }, [rep.id, fdNetWorth])
 
   useEffect(() => {
-    if ((repTab === 'bio' || compareMode) && isLive && !liveBio && !loadingBio) {
+    if ((repTab === 'bio' || repTab === 'ai' || compareMode) && isLive && !liveBio && !loadingBio) {
       setLoadingBio(true)
       Promise.all([
         fetch(`/api/congress?type=member&bioguideId=${rep.id}`).then(r => r.json()),
@@ -2752,6 +2752,31 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
 
   const votes = isLive ? (liveVotes || rep.votes) : rep.votes
   const trades = isLive ? (liveTrades || rep.trades) : rep.trades
+
+  // What the AI report is given. Live reps start with net worth, tenure and
+  // filing counts empty and fill them per tab, so merge whatever has loaded.
+  const aiRep = (() => {
+    const out = { ...rep, votes, trades }
+    if (fdNetWorth?.length) {
+      const mid = d => (d.min_value + d.max_value) / 2
+      const meta = fdNetWorthMeta || {}
+      out.netWorthBefore = meta.entry_worth ?? mid(fdNetWorth[0])
+      out.netWorthCurrent = meta.current_worth ?? mid(fdNetWorth[fdNetWorth.length - 1])
+      out.netWorthEntryYear = meta.entry_year ?? fdNetWorth[0]?.year ?? null
+      out.netWorthCurrentYear = meta.current_year ?? fdNetWorth[fdNetWorth.length - 1]?.year ?? null
+    }
+    const terms = liveBio?.terms || []
+    if (terms.length) {
+      const first = [...terms].sort((a, b) => (a.congress || 0) - (b.congress || 0))[0]
+      const start = first.startYear || congressToYear(first.congress)
+      if (start) out.yearsInOffice = Math.max(0, new Date().getFullYear() - start)
+    }
+    out.filingsCount = Math.max(
+      tradesMeta?.filingsCount || 0,
+      (disclosures?.ptrCount || 0) + (disclosures?.annualCount || 0),
+    )
+    return out
+  })()
   const enr = enrichment(rep.netWorthBefore, rep.netWorthCurrent)
   const isTracked = tracked.includes(rep.id)
 
@@ -4591,7 +4616,7 @@ Sincerely,
       )}
 
       {repTab === "ai" && (
-        <AIAnalysisTab rep={{ ...rep, votes, trades }} dataLoading={isLive && (loadingVotes || loadingTrades)} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
+        <AIAnalysisTab rep={aiRep} dataLoading={isLive && (loadingVotes || loadingTrades || loadingFdNetWorth || loadingBio)} S={S} handleSubscribe={handleSubscribe} handleBillingPortal={handleBillingPortal} isProProp={isProProp} />
       )}
     </div>
   )
@@ -4605,6 +4630,7 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
   const [preview, setPreview] = useState('')
   const [fullReport, setFullReport] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [insufficientMsg, setInsufficientMsg] = useState('')
   const [previewsUsed, setPreviewsUsed] = useState(0)
 
   // Prefer prop (from parent) so both stay in sync; fall back to local user read
@@ -4628,6 +4654,12 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
           ? 'Preview limit reached — upgrade to Pro for unlimited access.'
           : (data.error || 'Analysis failed.'))
         setStatus('error')
+        return
+      }
+
+      if (data.insufficient) {
+        setInsufficientMsg(data.message || 'Not enough data yet to analyse this member.')
+        setStatus('insufficient')
         return
       }
 
@@ -4718,7 +4750,7 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           {[
             { icon: '⚖️', label: 'Voting Patterns' },
-            { icon: '💰', label: 'Trade Conflicts' },
+            { icon: '💰', label: 'Trade Activity' },
             { icon: '📈', label: 'Wealth Growth' },
             { icon: '🔍', label: 'Peer Comparison' },
           ].map((item) => (
@@ -4732,6 +4764,22 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
           disabled={dataLoading}
           style={{ padding: '13px 32px', background: dataLoading ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${S.red}, ${S.navyLight})`, border: 'none', borderRadius: 10, color: dataLoading ? S.gray : 'white', fontFamily: 'inherit', fontWeight: 700, fontSize: 14, cursor: dataLoading ? 'default' : 'pointer', letterSpacing: 0.5, boxShadow: dataLoading ? 'none' : `0 4px 20px rgba(178,34,52,0.35)` }}>
           {dataLoading ? 'Loading voting & trade data…' : 'Generate Analysis →'}
+        </button>
+      </div>
+    )
+  }
+
+  // ── NOT ENOUGH DATA ────────────────────────────────────────────────────────
+  if (status === 'insufficient') {
+    return (
+      <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 24px', gap: 16, textAlign: 'center' }}>
+        <div style={{ fontSize: 44 }}>📭</div>
+        <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 20 }}>Not enough data yet</div>
+        <p style={{ fontSize: 14, color: S.gray, lineHeight: 1.8, maxWidth: 420, margin: 0 }}>{insufficientMsg}</p>
+        <button
+          onClick={() => setStatus('idle')}
+          style={{ padding: '11px 26px', background: 'rgba(255,255,255,0.06)', border: `1px solid ${S.border}`, borderRadius: 10, color: S.offWhite, fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          Back
         </button>
       </div>
     )
@@ -4808,7 +4856,7 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
           </div>
           <p style={{ fontSize: 14, color: S.offWhite, lineHeight: 1.85, margin: 0 }}>{preview}</p>
           <div style={{ fontSize: 11, color: '#6b7280', marginTop: 12, borderTop: '1px solid #1f2937', paddingTop: 8 }}>
-            Analysis generated by Google Gemini 2.5 Flash · For informational purposes only
+            Analysis generated by Google Gemini · For informational purposes only
           </div>
         </div>
 
@@ -4816,13 +4864,12 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
         <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
           <div className="ai-blur" style={{ padding: 20, background: S.cardBg, border: `1px solid ${S.border}`, borderRadius: 12 }}>
             <p style={{ fontSize: 14, color: S.offWhite, lineHeight: 1.85, margin: 0 }}>
-              Regarding stock trades, {rep.name.split(' ').pop()} disclosed {rep.trades.length} transactions totaling significant activity in sectors directly related to their committee assignments. The timing of several purchases raises questions about information asymmetry that warrant closer examination by oversight bodies.
+              {/* Placeholder only. Blurred text is still in the page for screen
+                  readers and crawlers, so it must never make claims about the member. */}
+              The full report walks through the member&apos;s recent recorded votes, each disclosed stock trade with its date and size, the change in disclosed net worth over time, and how their positions compare with peers.
             </p>
             <p style={{ fontSize: 14, color: S.offWhite, lineHeight: 1.85, margin: '12px 0 0' }}>
-              {rep.netWorthBefore && rep.netWorthCurrent
-                ? `On wealth accumulation, a ${(((rep.netWorthCurrent - rep.netWorthBefore) / rep.netWorthBefore) * 100).toFixed(0)}% increase over ${rep.yearsInOffice} years in office significantly outpaces typical congressional wealth growth.`
-                : 'Wealth trajectory analysis covers net worth growth relative to years in office and peer norms.'}
-              {' '}Peer comparison data reveals their issue positioning as notably divergent in key areas.
+              It closes with an overall activity level based only on the public records available for this member.
             </p>
           </div>
           {/* Lock overlay */}
@@ -4830,7 +4877,7 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
             <div style={{ fontSize: 28 }}>🔒</div>
             <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Full Report · Pro Members Only</div>
             <p style={{ fontSize: 12, color: S.gray, textAlign: 'center', maxWidth: 280, margin: 0 }}>
-              Unlock trade conflict analysis, wealth trajectory deep-dive, peer standing breakdown, and overall accountability rating.
+              Unlock the full trade review, wealth trajectory, peer standing breakdown, and overall activity level.
             </p>
             {isPro ? (
               <button
@@ -4860,9 +4907,13 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
     const sectionIcons = ['⚖️', '💰', '📈', '🔍', '📋']
     const sectionLabels = ['Voting Record', 'Financial Activity', 'Wealth Trajectory', 'Peer Standing', 'Summary']
     const lastPara = paragraphs[paragraphs.length - 1] || ''
-    const ratingMatch = lastPara.match(/\b(Low|Medium|High|Very High)\b/i)
-    const rating = ratingMatch ? ratingMatch[1] : null
-    const ratingColor = { Low: '#4CAF50', Medium: S.gold, High: '#FF9800', 'Very High': S.red }[rating] || S.gray
+    // Prompt ends with "Overall activity level: <level> — <reason>". It describes
+    // how much disclosed activity there is, not a judgment of the member, so no
+    // red and no warning sign.
+    const ratingMatch = lastPara.match(/Overall activity level:\s*(Low|Moderate|Notable|Extensive|Insufficient data)/i)
+    const RATINGS = { 'low': 'Low', 'moderate': 'Moderate', 'notable': 'Notable', 'extensive': 'Extensive', 'insufficient data': 'Insufficient data' }
+    const rating = ratingMatch ? (RATINGS[ratingMatch[1].toLowerCase()] || null) : null
+    const ratingColor = { Low: '#4CAF50', Moderate: S.gold, Notable: '#FF9800', Extensive: '#FF9800' }[rating] || S.gray
 
     return (
       <div className="slide-in" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -4874,7 +4925,7 @@ function AIAnalysisTab({ rep, dataLoading, S, handleSubscribe, handleBillingPort
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {rating && (
               <div style={{ padding: '6px 14px', background: `${ratingColor}22`, border: `1px solid ${ratingColor}55`, borderRadius: 20, fontSize: 12, color: ratingColor, fontWeight: 700 }}>
-                ⚠️ {rating} Concern
+                {rating === 'Insufficient data' ? 'Insufficient data' : `Activity: ${rating}`}
               </div>
             )}
             <div style={{ padding: '4px 12px', background: 'rgba(212,175,55,0.12)', border: `1px solid ${S.gold}`, borderRadius: 20, fontSize: 11, color: S.gold, fontWeight: 600 }}>
