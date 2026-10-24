@@ -3718,7 +3718,11 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                           </div>
                         )}
 
-                        {/* ── Vote/Committee-Trade Conflict Score ──
+                        {/* ── Committee Overlap (API: /api/conflict-score) ──
+                            Neutral by design: a count of trades in sectors a
+                            member's committee oversees, never a red flag, a
+                            tier adjective or a "conflict" label (D-004).
+                            States:
                             Three distinct states, shown honestly rather than
                             collapsed into one another:
                               1. No trade data on file — a coverage gap, not a
@@ -3727,14 +3731,14 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                  just an admission the check couldn't run.
                               2. None flagged — data exists, checked, nothing
                                  found. Also shown plainly for the same reason.
-                              3. Flagged (Low/Medium/High) — the existing
+                              3. Overlap found — the existing
                                  locked-preview-for-free / full-for-Pro card. */}
                         {conflictScore && conflictScore.tier === 'No trade data on file' && (
                           <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: `1px solid ${S.border}`, background: 'rgba(255,255,255,0.03)' }}>
                             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                               <span style={{ fontSize: 18 }}>◌</span>
                               <div>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>Committee Conflict Score: No trade data on file</div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>Committee Overlap: no trade data on file</div>
                                 <div style={{ fontSize: 10.5, color: S.gray, marginTop: 1 }}>{conflictScore.methodology}</div>
                               </div>
                             </div>
@@ -3746,7 +3750,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                               <span style={{ fontSize: 18 }}>✓</span>
                               <div>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>Committee Conflict Score: None flagged</div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>Committee Overlap: none found</div>
                                 <div style={{ fontSize: 10.5, color: S.gray, marginTop: 1 }}>
                                   Checked {conflictScore.totalTradesReviewed} trade{conflictScore.totalTradesReviewed === 1 ? '' : 's'} on file against this member's committee assignments — no sector overlap found.
                                 </div>
@@ -3756,19 +3760,19 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                         )}
 
                         {conflictScore && conflictScore.score > 0 && (
-                          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: `1px solid ${conflictScore.tier === 'High' ? 'rgba(248,113,113,0.4)' : 'rgba(212,175,55,0.3)'}` }}>
+                          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(212,175,55,0.3)' }}>
                             <div style={{
                               padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
-                              background: conflictScore.tier === 'High' ? 'rgba(248,113,113,0.1)' : 'rgba(212,175,55,0.08)',
+                              background: 'rgba(212,175,55,0.08)',
                             }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ fontSize: 18 }}>{conflictScore.tier === 'High' ? '🚩' : '⚑'}</span>
+                                <span style={{ fontSize: 18 }}>◆</span>
                                 <div>
                                   <div style={{ fontSize: 13, fontWeight: 700, color: S.offWhite }}>
-                                    Committee Conflict Score: {conflictScore.tier} ({conflictScore.score} flagged)
+                                    Committee Overlap: {conflictScore.score} trade{conflictScore.score === 1 ? '' : 's'}
                                   </div>
                                   <div style={{ fontSize: 10.5, color: S.gray, marginTop: 1 }}>
-                                    Trades in a sector overseen by a committee this member served on at the time
+                                    Trades in a sector overseen by a committee this member sat on at the time. Overlap is not evidence of wrongdoing.
                                   </div>
                                 </div>
                               </div>
@@ -3793,7 +3797,7 @@ function RepDetail({ rep, onBack, tracked, toggleTrack, repTab, setRepTab, pollV
                                   <button
                                     onClick={() => handleSubscribe('conflict_score_lock')}
                                     style={{ padding: '8px 18px', background: `linear-gradient(135deg, ${S.gold}, #B8960C)`, border: 'none', borderRadius: 8, color: S.navy, fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-                                    🔒 Unlock flagged trades · Pro
+                                    🔒 See which trades · Pro
                                   </button>
                                 </div>
                               </div>

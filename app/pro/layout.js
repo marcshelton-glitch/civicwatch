@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Go Pro — CivicWatch',
-  description: 'Unlock full AI accountability reports, trade conflict analysis, and wealth trajectories with CivicWatch Pro for $9.99/month. Tracking, alerts, and local rep lookup stay free.',
+  description: 'Unlock full AI accountability reports, committee–trade overlap, and wealth trajectories with CivicWatch Pro for $9.99/month. Tracking, alerts, and local rep lookup stay free.',
   openGraph: {
     title: 'Go Pro — CivicWatch',
     description: 'Every disclosed congressional stock trade, checked against the committees the member sat on. Full AI accountability reports and wealth trajectories.',

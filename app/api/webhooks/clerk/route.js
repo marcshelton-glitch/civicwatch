@@ -44,7 +44,7 @@ async function sendFreeWelcomeEmail(email, firstName) {
             </a>
           </div>
           <p style="color:#CDD2E0;font-size:13px;text-align:center;line-height:1.8;margin:0 0 16px;">
-            Want AI conflict scoring, full trade history, and real-time alerts?<br>
+            Want full AI reports, complete trade history, and real-time alerts?<br>
             <a href="https://www.civicwatch.app/pro" style="color:#D4AF37;text-decoration:none;font-weight:700;">Upgrade to Pro</a> — cancel anytime.
           </p>
           <p style="color:#8892A4;font-size:12px;text-align:center;margin:0;">
