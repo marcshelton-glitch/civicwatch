@@ -1,18 +1,88 @@
-## ⚡ 2026-10-08 — Bioguide Coverage Confirmed (Automated Daily Check)
+## ⚡ 2026-10-24 — Data Integrity & Transparency Refactor
 
-**Status: Launch on track — bioguide backfill audit confirmed 95.7% coverage, no degradation**
+**Status: Major refactor completed — improving data honesty and compliance**
 
-### Daily Work (2026-10-08)
-- **Bioguide backfill maintenance check (automated):** Reconfirmed 95.7% coverage (5,034 of 5,259 trades resolved)
-  - Coverage stable since Oct 1 analysis
-  - 28 high-confidence match proposals remain valid (see Oct 1 entry)
-  - 2 existing-ID corrections still flagged: Moskowitz (M001219→M001217), Max Miller (M001225→M001222)
-  - Root cause confirmed: ingest pipeline not assigning IDs to recent House filings (rows created after 2026-08-27)
-  - **Status:** Awaiting human approval to apply fixes; no database writes executed
+**Daily Work (Oct 23 PT = Oct 24 UTC early morning):**
+
+This session involved a comprehensive refactor of CivicWatch's messaging and data sourcing, focused on regulatory compliance, transparency, and data quality:
+
+- **Rename 'Conflict Score' → 'Committee Overlap'** (commit 382b25b) — removed red-flag language ("High", "flagged" in red), stopped emailing a made-up "conflict of interest" report (Day-7 email showed invented figures like "7.4/10 score"), renamed across API (`conflict-score/route.js`), Pro page, email sequences, settings, FAQ, page metadata, JSON-LD. Now displays as neutral gold tag with "Committee Overlap is not evidence of wrongdoing."
+- **Fix deep links + vote labels** (PRs #8, #7) — 'Former Member of Congress' label now correct on direct links; vote source correctly labeled (Clerk XML vs GovTrack). Merged pull requests to main.
+- **Reword AI rating as activity level** (commit 7b706f2) — remove prediction-based scoring claims from teaser (was implying predictive analysis; now says activity-based), base rating on actual data count, remove claims from locked teaser
+- **House votes: read Clerk's XML directly** (commit 0cb0efd) — GovTrack is bot-walled; now parsing official House Clerk roll-call XML as authoritative source
+- **Fix garbled names** (commit d5d0432) — data count-driven rating replaces prediction tier; gentler Clerk API access to avoid 429 errors
+- **AI report truthfulness** (commit 8668285) — say 'insufficient data' honestly instead of generating spurious analysis when data is thin
+- **Gemini model env-driven + 402 handling** (commits 06ce2b3, d656a77) — make Gemini model configurable via environment, treat HTTP 402 (quota exceeded) as 'busy' not 'failed'
+
+**Why this matters:**
+- Removes misleading language that could expose CivicWatch to regulatory/FTC scrutiny (no more "conflict" language without data)
+- Fixes data quality issues (garbled member names, incorrect vote sources)
+- Moves vote sourcing to official Clerk records (more reliable, authoritative, compliant)
+- Makes AI rating transparent and data-grounded (activity-based count, not prediction-based scoring)
+- Honest messaging in emails (no invented reports, no false figures)
+
+**Files changed:** 12 files across API routes, email sequences, Pro page, settings, metadata, JSON-LD
+
+**Commits pushed to main:**
+- 382b25b Rename 'Conflict Score' to 'Committee Overlap'; stop emailing an invented report
+- 0939b3c Merge pull request #8 from marcshelton-glitch/fix/deeplink-title-votes-label
+- 840d87b Fix 'Former Member of Congress' on direct links; label votes by real source
+- 71d7e88 Merge pull request #7 from marcshelton-glitch/fix/house-votes
+- 7b706f2 Reword the AI rating as an activity level; remove claims from the locked teaser
+- d5d0432 Rating decided by data count; fix garbled names; gentler Clerk access
+- 0cb0efd Votes: read House roll calls from the Clerk's XML (GovTrack is bot-walled)
+- 8668285 AI report: give it the data the page already has; say 'insufficient data' honestly
+- 2bb3cf2 Merge pull request #6 from marcshelton-glitch/fix/gemini-model-env
+
+**Next Steps — Verification Required:**
+- [ ] Verify emails reflect new copy (committee overlap, no invented reports)
+- [ ] Confirm vote labels show Clerk XML source on live site
+- [ ] Check AI rating displays activity level (data count) not prediction score
+- [ ] Monitor production to ensure 382b25b deployed successfully
 
 ### 📋 Open Items
+- [ ] **URGENT: Apply 2 existing-ID corrections** (Moskowitz 17 trades, Max Miller 29 trades) — fixes Trade Conflict Analysis reporting
+- [ ] **Verify John D. Dingell correction** — check trade year(s) to confirm if should be D000355 before applying
 - [ ] Apply 28 proposed bioguide UPDATEs to `fd_trades` (new rows with NULL IDs) — see Oct 1 for full list
-- [ ] Apply 2 existing-ID corrections: Moskowitz (affects 17 trades), Max Miller (affects 29 trades)
+- [ ] Fix ingest pipeline to assign bioguide_id to recent House trade rows (prevents monthly recurrence)
+- [ ] Monitor next ingest run to confirm ingest fix is deployed
+- [ ] Complete #47: Publish Meta ad pilot & record political-ad classification (scheduled Oct 7-8)
+- **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, submissions can proceed**
+- **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
+- **#48** (Oct 1): Lock AI presenter reference image for organic content
+
+### 🚀 Feature Status
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ⏳ Meta ad account setup (payment method pending)
+- ⏳ Directory submissions (gate: Sep 28, now active)
+- 🔄 Bioguide backfill (28 matches + 3 corrections identified; awaiting human approval + ingest fix deployment)
+
+---
+
+## ⚡ 2026-10-23 — Status Check (No Development Sessions Captured)
+
+**Status: Launch on track — automated daily check, no development work sessions captured**
+
+### Daily Work (2026-10-23)
+- **Daily reference update:** No CivicWatch development sessions found for October 23.
+  - Scheduled daily update ran to confirm status
+  - All features remain stable per Oct 22 audit
+  - Pending items unchanged from Oct 22
+
+### 📋 Open Items
+- [ ] **URGENT: Apply 2 existing-ID corrections** (Moskowitz 17 trades, Max Miller 29 trades) — fixes Trade Conflict Analysis reporting
+- [ ] **Verify John D. Dingell correction** — check trade year(s) to confirm if should be D000355 before applying
+- [ ] Apply 28 proposed bioguide UPDATEs to `fd_trades` (new rows with NULL IDs) — see Oct 1 for full list
 - [ ] Fix ingest pipeline to assign bioguide_id to recent House trade rows (prevents monthly recurrence)
 - [ ] Monitor next ingest run to confirm ingest fix is deployed
 - [ ] Complete #47: Publish Meta ad pilot & record political-ad classification (scheduled Oct 7-8)
@@ -31,24 +101,27 @@
 - ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
 - ⏳ Meta ad account setup (payment method pending)
 - ⏳ Directory submissions (gate: Sep 28, now active)
-- 🔄 Bioguide backfill (28 matches + 2 corrections proposed, awaiting human approval; ingest-level fix pending)
+- 🔄 Bioguide backfill (28 matches + 3 corrections identified; awaiting human approval + ingest fix deployment)
 
 ---
 
-## ⚡ 2026-10-07 — Meta Ad Pilot (scheduled)
+## ⚡ 2026-10-22 — Status Check (No Development Sessions Captured)
 
-**Status: Launch on track — Meta ad pilot #47 scheduled for today**
+**Status: Launch on track — automated daily check, no development work sessions captured**
 
-### Daily Work (2026-10-07)
-- **Meta ad pilot launch:** #47 scheduled for today (Oct 7-8) — publish pilot ad & record political-ad classification on Meta platform
-- **No other CivicWatch development sessions captured for today** in automated session logs
+### Daily Work (2026-10-22)
+- **Daily reference update:** No CivicWatch development sessions found for October 22.
+  - Scheduled daily update ran to confirm status
+  - All features remain stable per Oct 20 audit
+  - Pending items unchanged from Oct 20
 
 ### 📋 Open Items
-- [ ] Complete #47: Publish pilot ad to Meta (Oct 7-8)
-- [ ] Record Meta's political-ad classification for the pilot
-- [ ] Review 28 proposed bioguide new-row matches and 3 existing-ID corrections in `docs/bioguide-backfill-check-2026-10-01.md` (pending since Oct 1)
-- [ ] Apply approved UPDATEs to `fd_trades.bioguide_id` (with human confirmation for the 3 corrections)
-- [ ] Monitor upcoming ingest runs to confirm recent-row issue is fixed at source (otherwise repeats monthly)
+- [ ] **URGENT: Apply 2 existing-ID corrections** (Moskowitz 17 trades, Max Miller 29 trades) — fixes Trade Conflict Analysis reporting
+- [ ] **Verify John D. Dingell correction** — check trade year(s) to confirm if should be D000355 before applying
+- [ ] Apply 28 proposed bioguide UPDATEs to `fd_trades` (new rows with NULL IDs) — see Oct 1 for full list
+- [ ] Fix ingest pipeline to assign bioguide_id to recent House trade rows (prevents monthly recurrence)
+- [ ] Monitor next ingest run to confirm ingest fix is deployed
+- [ ] Complete #47: Publish Meta ad pilot & record political-ad classification (scheduled Oct 7-8)
 - **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, submissions can proceed**
 - **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
 - **#48** (Oct 1): Lock AI presenter reference image for organic content
@@ -64,78 +137,11 @@
 - ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
 - ⏳ Meta ad account setup (payment method pending)
 - ⏳ Directory submissions (gate: Sep 28, now active)
-- 🔄 Bioguide backfill (analysis complete, awaiting human approval + ingest fix verification)
+- 🔄 Bioguide backfill (28 matches + 3 corrections identified; awaiting human approval + ingest fix deployment)
 
 ---
 
-## ⚡ 2026-10-06 — Status Check (bioguide backfill analysis reviewed)
-
-**Status: Bioguide backfill proposals remain pending human review; launch on track**
-
-### Daily Work (2026-10-06)
-- **Bioguide backfill review:** Session confirmed prior analysis — 95.7% coverage maintained, 28 high-confidence match proposals + 2 wrong-ID corrections in `docs/bioguide-backfill-check-2026-10-01.md`
-  - No new trade data changes; analysis stands as documented Oct 1
-  - **Next step:** Await human approval to apply fixes to database
-
----
-
-## ⚡ 2026-10-01 — Bioguide Backfill Analysis: 95.7% Coverage, 28 High-Confidence Matches Proposed
-
-**Status: Bioguide data-quality audit complete — 225 unresolved trades analyzed, 28 matches + 2 ID corrections proposed**
-
-### Daily Work (2026-10-01)
-
-**Bioguide Trade ID Backfill Analysis**
-- **Coverage achieved:** 95.7% (5,034 of 5,259 trades have `bioguide_id`) — 225 unresolved remain
-- **Unresolved trades root cause:** All unresolved rows created on/after 2026-08-27 (ingest pipeline not assigning IDs to recent House filings; older rows already have IDs)
-  - **Recommendation:** Fix at ingest level to prevent this list recurring monthly
-- **Matching method:** Congress.gov API unreachable (fetch refused), so used three fallback checks:
-  1. **Earlier rows:** ID already assigned to same surname + state in older rows
-  2. **Committee data:** Cross-check against `committee_memberships` (Congress.gov source), party match required
-  3. **Congress.gov search:** Web lookup where first two disagreed
-- **Result:** 100% of 124 high-priority trades matched (28 names with 3+ unresolved trades each)
-
-**Proposed Updates (28 high-confidence matches, all new rows with NULL bioguide_id):**
-- Taylor | OH | T000490 | 8 trades
-- Hern | OK | H001082 | 7 trades
-- Allen | GA | A000372 | 6 trades
-- DelBene | WA | D000617 | 6 trades
-- Kelly | PA | K000376 | 6 trades
-- Cohen | TN | C001068 | 5 trades
-- Peters | CA | P000608 | 5 trades
-- Fields | LA | F000110 | 5 trades
-- Gottheimer | NJ | G000583 | 5 trades
-- Salazar | FL | S000168 | 5 trades
-- Doggett | TX | D000399 | 5 trades
-- Cisneros | CA | C001123 | 5 trades
-- Kean | NJ | K000398 | 5 trades
-- Delaney | MD | M001232 | 5 trades
-- McGuire | VA | M001239 | 5 trades
-- Moore | NC | M001236 | 4 trades
-- Morrison | MN | M001234 | 4 trades
-- Moskowitz | FL | M001217 | 4 trades
-- Dingell (Debbie) | MI | D000624 | 3 trades
-- Donalds | FL | D000032 | 3 trades
-- McCormick | GA | M001218 | 3 trades
-- Miller (Max) | OH | M001222 | 3 trades
-- Timmons | SC | T000480 | 3 trades
-- Keating | MA | K000375 | 3 trades
-- Beyer | VA | B001292 | 3 trades
-- Biggs | SC | B001325 | 3 trades
-- Roy | TX | R000614 | 3 trades
-- Sessions | TX | S000250 | 3 trades
-
-**Existing Wrong IDs Flagged (need human review before correction):**
-- **Moskowitz, FL-23:** Currently `M001219`, should be `M001217` (Jared Moskowitz) — affects 17 trades
-- **Max Miller, OH-07:** Currently `M001225`, should be `M001222` — affects 29 trades
-- **John D. Dingell, MI-12:** 1 row currently listed with Debbie Dingell's `D000624`; check if should be `D000355` (John Dingell Jr.) before updating
-
-**Report Generated**
-- File: `docs/bioguide-backfill-check-2026-10-01.md`
-- Contains: full matching logic, example UPDATE statements (scoped by first name to avoid family mix-ups), coverage stats
-- Status: **Proposals only — no writes to Supabase yet** (awaiting human review + approval)
-
-### Tech Stack
+## Tech Stack
 - **Next.js 14** (frontend + API routes)
 - **Supabase** (PostgreSQL + realtime + auth helpers)
 - **Stripe** (billing + subscription management)
