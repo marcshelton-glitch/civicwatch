@@ -2,6 +2,7 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { validateAIRequest, checkSpendCap, logTokenUsage } from '@/lib/ai-gateway'
 import { getUserTier } from '@/lib/tier-utils'
+import { buildPrompt, hasAnyData, INSUFFICIENT_DATA_MESSAGE } from '@/lib/analyze-rep-prompt'
 import {
   readGeminiResponse, trimToLastSentence, isTransientStatus, RETRY_DELAYS_MS,
 } from '@/lib/gemini-response'
@@ -57,6 +58,10 @@ function sanitizeString(val, maxLen = 500) {
 }
 
 // ── Validate and sanitize rep payload from client ─────────────────────────────
+function sanitizeYear(v) {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1900 && v <= 2100 ? v : null
+}
+
 function sanitizeRep(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     throw new Error('Invalid rep data')
@@ -77,6 +82,11 @@ function sanitizeRep(raw) {
     netWorthCurrent: typeof raw.netWorthCurrent === 'number' && isFinite(raw.netWorthCurrent)
       ? raw.netWorthCurrent
       : null,
+    netWorthEntryYear: sanitizeYear(raw.netWorthEntryYear),
+    netWorthCurrentYear: sanitizeYear(raw.netWorthCurrentYear),
+    filingsCount: typeof raw.filingsCount === 'number' && isFinite(raw.filingsCount)
+      ? Math.max(0, Math.min(500, Math.floor(raw.filingsCount)))
+      : 0,
   }
 
   // Trades
@@ -86,6 +96,7 @@ function sanitizeRep(raw) {
     type: ['BUY', 'SELL'].includes((t?.type || '').toUpperCase())
       ? t.type.toUpperCase() : 'UNKNOWN',
     asset: sanitizeString(t?.asset, 80),
+    ticker: sanitizeString(t?.ticker, 12),
     amount: typeof t?.amount === 'number' && isFinite(t.amount)
       ? t.amount
       : sanitizeString(String(t?.amount || ''), 30),
@@ -128,13 +139,6 @@ function sanitizeRep(raw) {
   return sanitized
 }
 
-const fmt = (n) => {
-  if (n == null || isNaN(n)) return 'N/A'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1,
-  }).format(n)
-}
-
 export async function POST(request) {
   // ── Content-Type check ────────────────────────────────────────────────────
   const contentType = request.headers.get('content-type') || ''
@@ -174,6 +178,26 @@ export async function POST(request) {
     return Response.json({ error: 'Pro subscription required' }, { status: 403 })
   }
 
+  // ── Sanitize client-supplied rep data ─────────────────────────────────────
+  let rep
+  try {
+    rep = sanitizeRep(rawRep)
+  } catch {
+    return Response.json({ error: 'Invalid representative data' }, { status: 400 })
+  }
+
+  if (!rep.name) {
+    return Response.json({ error: 'Representative name is required' }, { status: 400 })
+  }
+
+  // Nothing to analyse: answer without a Gemini call, a rate-limit slot or tokens.
+  if (!hasAnyData(rep)) {
+    return Response.json(
+      { text: '', insufficient: true, message: INSUFFICIENT_DATA_MESSAGE },
+      { headers: { 'Cache-Control': 'private, no-store' } }
+    )
+  }
+
   // ── Rate limiting ─────────────────────────────────────────────────────────
   const allowed = await checkRateLimit(userId, mode)
   if (!allowed) {
@@ -195,66 +219,8 @@ export async function POST(request) {
     )
   }
 
-  // ── Sanitize client-supplied rep data ─────────────────────────────────────
-  let rep
-  try {
-    rep = sanitizeRep(rawRep)
-  } catch {
-    return Response.json({ error: 'Invalid representative data' }, { status: 400 })
-  }
-
-  if (!rep.name) {
-    return Response.json({ error: 'Representative name is required' }, { status: 400 })
-  }
-
   // ── Build prompt from sanitized data ──────────────────────────────────────
-  const enrichPct = rep.netWorthBefore && rep.netWorthCurrent && rep.netWorthBefore > 0
-    ? (((rep.netWorthCurrent - rep.netWorthBefore) / rep.netWorthBefore) * 100).toFixed(0)
-    : 'unknown'
-
-  const tradeList = rep.trades.length > 0
-    ? rep.trades.map(t => `${t.date}: ${t.type} ${t.asset} (${fmt(t.amount)}, ${t.sector})`).join('; ')
-    : 'No trades disclosed'
-
-  const voteList = rep.votes.length > 0
-    ? rep.votes.map(v => `${v.bill} — ${v.vote} — ${v.outcome}`).join('; ')
-    : 'No votes on record'
-
-  const peerData = Object.keys(rep.peerComparison).length > 0
-    ? Object.entries(rep.peerComparison)
-        .map(([issue, v]) => `${issue}: this rep ${v.self}% vs peers ${v.peers}%`)
-        .join('; ')
-    : 'No peer data available'
-
-  const prompt = mode === 'preview'
-    ? `You are a civic accountability analyst. In 2-3 sentences only, write a sharp, factual preview summary of this elected official for a civic watchdog platform. Be specific about one notable pattern. Do NOT use markdown, headers, or bullet points. Write in plain prose.
-
-Representative: ${rep.name}, ${rep.title}, ${rep.party}, ${rep.state}
-Net worth change in office: ${fmt(rep.netWorthBefore)} → ${fmt(rep.netWorthCurrent)} (+${enrichPct}% over ${rep.yearsInOffice ?? 'unknown'} years)
-Recent trades: ${tradeList}
-Recent votes: ${voteList}`
-    : `You are a nonpartisan civic accountability analyst. Write a thorough, factual accountability report for a civic watchdog platform. Use plain prose only — no markdown headers, no bullet points, no asterisks. Write in flowing paragraphs. Be specific, factual, and objective.
-
-Write exactly five paragraphs separated by one blank line: the four areas below in order, then the single rating sentence as the fifth. Finish every sentence; never stop mid-thought.
-
-Cover these four areas in order, each as its own paragraph:
-
-1. VOTING RECORD: Analyze their votes and what they reveal about priorities.
-2. FINANCIAL ACTIVITY: Examine stock trades in context of their committee roles and votes. Note any timing patterns.
-3. WEALTH TRAJECTORY: Assess net worth growth in office relative to their years served and peer norms.
-4. PEER STANDING: Compare their issue scores vs peers and what that says about their positioning.
-
-End with one sentence: an overall accountability rating as "Low / Medium / High / Very High" concern, with a one-line reason.
-
-Representative: ${rep.name}, ${rep.title}, ${rep.party}, ${rep.state}
-Bio: ${rep.bio}
-Years in office: ${rep.yearsInOffice ?? 'unknown'}
-Net worth before office: ${fmt(rep.netWorthBefore)}
-Current net worth: ${fmt(rep.netWorthCurrent)} (+${enrichPct}%)
-Trades: ${tradeList}
-Votes: ${voteList}
-Peer comparison: ${peerData}
-Committee peers: ${rep.peers.join(', ') || 'unknown'}`
+  const prompt = buildPrompt(rep, mode)
 
   // ── Call AI API ───────────────────────────────────────────────────────────
   // Model is env-driven so a swap (or a retired model) needs no code change.
