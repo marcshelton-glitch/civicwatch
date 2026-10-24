@@ -7,6 +7,7 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { enrichTradesWithReturns } from '../../../lib/stockPrice'
 import { currentCongress } from '../../../lib/congressSession'
+import { getHouseVotes } from '@/lib/house-votes'
 import { isRateLimitedDurable } from '../../../lib/rateLimit'
 
 // ── Supabase client factory (server-only) ─────────────────────────────────────
@@ -330,11 +331,31 @@ export async function GET(request) {
       // GovTrack — free, no key, rich vote detail including chamber totals
       // person.id field does not exist in GovTrack API; extract numeric ID from person.link
       let searchName = bioguideId
+      let chamberHint = ''
       try {
         const mData = await cFetch(`/member/${bioguideId}`)
         const rawName = mData.member?.directOrderName || ''
         searchName = rawName.split(',')[0].trim().replace(/\s+(jr|sr|ii|iii|iv)\.?$/i, '') || bioguideId
+        const t = mData.member?.terms
+        const terms = Array.isArray(t) ? t : (t?.item || [])
+        chamberHint = String(terms[terms.length - 1]?.chamber || '')
       } catch { /* keep bioguideId as query */ }
+
+      // House members: the Clerk's roll-call XML (free, no key). GovTrack, the
+      // previous source, now answers server requests with a Cloudflare
+      // challenge page, which left every member with an empty vote history.
+      if (!/senate/i.test(chamberHint)) {
+        try {
+          const houseVotes = await getHouseVotes(bioguideId)
+          if (houseVotes.length > 0) {
+            return NextResponse.json({ votes: houseVotes, source: 'house-clerk', memberName: searchName }, {
+              headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=60' },
+            })
+          }
+        } catch (e) {
+          console.warn('House Clerk votes unavailable, falling back:', e.message)
+        }
+      }
 
       // GovTrack person ID resolution, most reliable strategy first.
       //
