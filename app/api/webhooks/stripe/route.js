@@ -41,7 +41,7 @@ async function sendProWelcomeEmail(email, firstName) {
               Your subscription is active. You now have full access to:
             </p>
             <ul style="color:#CDD2E0;font-size:14px;line-height:2;padding-left:20px;margin:0 0 20px;">
-              <li>🤖 <strong style="color:#F8F9FF;">AI Analysis</strong> — Conflict scoring, wealth trajectories & peer comparisons</li>
+              <li>🤖 <strong style="color:#F8F9FF;">AI Analysis</strong> — Committee–trade overlap, wealth trajectories & peer comparisons</li>
               <li>📊 <strong style="color:#F8F9FF;">Full Trade History</strong> — Every STOCK Act filing, cross-referenced</li>
               <li>🔔 <strong style="color:#F8F9FF;">Alerts</strong> — Real-time votes and trades for tracked reps</li>
               <li>🏛️ <strong style="color:#F8F9FF;">All Representatives</strong> — Federal, state, and local officials</li>

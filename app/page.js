@@ -1034,7 +1034,7 @@ and got <span className="red">rich.</span>
             <ul className="pricing-features">
               <li>Everything in Free</li>
               <li>Full AI accountability reports</li>
-              <li>Trade conflict analysis</li>
+              <li>Committee–trade overlap</li>
               <li>Wealth trajectory deep-dive</li>
               <li>Peer standing breakdown</li>
               <li>Track My Rep™ alerts</li>

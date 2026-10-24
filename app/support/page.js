@@ -27,7 +27,7 @@ const P  = { fontSize: 14, color: S.grayLight, lineHeight: 1.85, margin: '0 0 10
 const FAQS = [
   {
     q: 'What is CivicWatch?',
-    a: 'CivicWatch is an independent accountability platform that tracks what your elected representatives actually do — how they vote, what stocks they disclose trading, what their financial disclosures show, and how that compares to the committees they sit on. Look up your representatives by address for free; CivicWatch Pro adds full AI accountability reports and trade-vs-committee conflict analysis.',
+    a: 'CivicWatch is an independent accountability platform that tracks what your elected representatives actually do — how they vote, what stocks they disclose trading, what their financial disclosures show, and how that compares to the committees they sit on. Look up your representatives by address for free; CivicWatch Pro adds full AI accountability reports and committee–trade overlap.',
   },
   {
     q: 'Is CivicWatch affiliated with the government, Congress, or a political party?',
@@ -42,8 +42,8 @@ const FAQS = [
     a: 'Yes. Every representative is scored and analyzed the same way, using the same public records, regardless of party. Pro’s AI Analysis is explicitly prompted for nonpartisan framing and covers members of both parties equally.',
   },
   {
-    q: 'Is the AI analysis or conflict score financial or legal advice?',
-    a: 'No. AI reports, conflict scores, and wealth trajectories are for informational and civic-accountability purposes only — not financial, investment, tax, or legal advice, and shouldn’t be the basis for an investment decision. Where we can’t match a trade to a member with enough confidence, we say so rather than showing a false "all clear."',
+    q: 'Is the AI analysis or committee overlap check financial or legal advice?',
+    a: 'No. AI reports, committee overlap checks, and wealth trajectories are for informational and civic-accountability purposes only — not financial, investment, tax, or legal advice, and shouldn’t be the basis for an investment decision. Where we can’t match a trade to a member with enough confidence, we say so rather than showing a false "all clear."',
   },
   {
     q: 'How do I track a representative and get alerts?',

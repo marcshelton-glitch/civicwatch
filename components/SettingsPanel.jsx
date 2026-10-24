@@ -109,7 +109,7 @@ export default function SettingsPanel({ isOpen, onClose, trackedReps, onUntrack,
                 '📊 Net worth & financial disclosures',
                 '🔔 Real-time alerts for tracked reps',
                 '🤖 Full AI accountability reports',
-                '📈 Stock trade conflict analysis',
+                '📈 Committee–trade overlap',
                 '⭐ Track any representative',
               ].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b0bac8' }}>

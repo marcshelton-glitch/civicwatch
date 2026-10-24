@@ -192,7 +192,7 @@ export async function GET(request) {
           `coverage gap, not a clean bill of health. Check back as ingestion catches up, or see the ` +
           `member's raw filings if any are listed above.`
         :
-        `Flags a trade when its ticker falls in a sector overseen by a committee the member sat on, ` +
+        `Lists a trade when its ticker falls in a sector overseen by a committee the member sat on, ` +
         `and the trade was made during the ${congress}th Congress (${windowStartYear}–${windowStartYear + 1}). ` +
         `Committee rosters come from the unitedstates/congress-legislators dataset, which records current ` +
         `assignments only — so trades from earlier Congresses are shown under "on file" but deliberately ` +

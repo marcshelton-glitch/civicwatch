@@ -539,7 +539,7 @@ async function sendCommitteeAlertEmail(email, firstName, assignments) {
         <div style="margin-bottom:24px;">
           <h2 style="color:#D4AF37;font-size:18px;margin:0 0 6px;">Committee Updates${greeting}</h2>
           <p style="color:#CDD2E0;font-size:13px;line-height:1.7;margin:0;">
-            ${repCount === 1 ? '1 representative' : `${repCount} representatives`} you track joined a new committee — new jurisdiction can mean new trade conflict exposure worth watching.
+            ${repCount === 1 ? '1 representative' : `${repCount} representatives`} you track joined a new committee. CivicWatch will show any of their disclosed trades in sectors that committee oversees.
           </p>
         </div>
         ${rows}
