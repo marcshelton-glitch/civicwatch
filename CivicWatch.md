@@ -1,3 +1,87 @@
+## ⚡ 2026-10-28 — Schedule Rebaseline & GTM Milestone
+
+**Status: Launch rebaselined to Nov 10 · GTM submissions phase approaching**
+
+### Daily Work (2026-10-27 to 2026-10-28)
+
+Schedule work performed on Oct 27 at 13:30 UTC (auto-exported from project dashboard):
+- **Rebaselined launch date:** Oct 27 → Nov 10, 2026 (14-day slip from original planned date)
+  - Reason: Schedule recovery after pre-launch compliance & data integrity work (Oct 24 refactor)
+  - Wave 1 now 48/53 tasks done (91%), 5 remaining
+- **Confirmed Gemini API billing (#53):** Completed Oct 12 — key verified on Eminence Enterprises billed account (Postpay Tier 1)
+- **GTM task rescheduling:** Show HN (Oct 29–30), Product Hunt (Nov 2–3), video ads (Nov 6–10) — all aligned with new launch baseline
+- **Milestone: Civic Tech Field Guide listing live** — confirmed active as of Oct 9, tagged "Advocacy tech", listing URL recorded in media plan
+
+### 📋 Open Items (5 remaining for launch)
+- [ ] **#41** Submit Show HN post (scheduled Oct 29–30)
+- [ ] **#50** Launch on Product Hunt (scheduled Nov 2–3)
+- [ ] **#51** Publish Indie Hackers post (scheduled Nov 4–5)
+- [ ] **#52** Produce video ad concepts (scheduled Nov 6–10)
+- [ ] **D-005** Decide: Cache AI reports per rep in Supabase (decision pending Marc; implementation post-launch)
+
+### 🚀 Feature Status
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post (pending submission Oct 29–30)
+- ⏳ Product Hunt launch (pending Nov 2–3)
+- ⏳ Indie Hackers post (pending Nov 4–5)
+- ⏳ Video ad production (pending Nov 6–10)
+
+### 📝 Notes
+- **Pending decisions:** D-004 (CivicWatch LLC business entity) and D-005 option A (AI report caching) both awaiting Marc
+- **Outstanding data integrity items:** 2 trade ID corrections, 28 bioguide backfill updates (see Oct 1 & Oct 24)
+- **Next verification:** Monitor Oct 29 Show HN submission to confirm compliance messaging carries through live launch
+
+---
+## ⚡ 2026-10-25 — Status Check (No Development Sessions Captured)
+
+**Status: Launch on track — automated daily check, no development work sessions captured**
+
+### Daily Work (2026-10-25)
+- **Daily reference update:** No CivicWatch development sessions found for October 25.
+  - Scheduled daily update ran to confirm status
+  - All features remain stable per Oct 24 audit
+  - Pending items unchanged from Oct 24
+
+### 📋 Open Items
+- [ ] **URGENT: Apply 2 existing-ID corrections** (Moskowitz 17 trades, Max Miller 29 trades) — fixes Trade Conflict Analysis reporting
+- [ ] **Verify John D. Dingell correction** — check trade year(s) to confirm if should be D000355 before applying
+- [ ] Apply 28 proposed bioguide UPDATEs to `fd_trades` (new rows with NULL IDs) — see Oct 1 for full list
+- [ ] Fix ingest pipeline to assign bioguide_id to recent House trade rows (prevents monthly recurrence)
+- [ ] Monitor next ingest run to confirm ingest fix is deployed
+- [ ] Complete #47: Publish Meta ad pilot & record political-ad classification (scheduled Oct 7-8)
+- **#41** (Sep 28-30): Submit to Product Hunt, Hacker News, niche directories — **READY, submissions can proceed**
+- **#46** (Oct 5-6): Add payment method & verify phone on Meta ad account
+- **#48** (Oct 1): Lock AI presenter reference image for organic content
+
+### 🚀 Feature Status (stable)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ⏳ Meta ad account setup (payment method pending)
+- ⏳ Directory submissions (gate: Sep 28, now active)
+- 🔄 Bioguide backfill (28 matches + 3 corrections identified; awaiting human approval + ingest fix deployment)
+
+---
 ## ⚡ 2026-10-24 — Data Integrity & Transparency Refactor
 
 **Status: Major refactor completed — improving data honesty and compliance**
