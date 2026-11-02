@@ -1,3 +1,166 @@
+## ⚡ 2026-11-02 — GTM Launch Submissions Prep (Show HN & Product Hunt)
+
+**Status: Launch rebaselined to Nov 13 · 3 days until Election Day (Nov 5) · GTM submissions drafts ready for review**
+
+### Daily Work (2026-11-02)
+- **Launch submissions drafting:** Completed core GTM collateral for gantt tasks #41 (Show HN + directories) and #51 (Indie Hackers)
+  - **Indie Hackers post** (gantt #51): Drafted full post ("I built a tracker for congressional stock trades. Here's what broke") — ready for Marc to review. Post targets indie developer audience, highlights data engineering challenges (Senate filing system blocking, 103 name-to-ID mappings, matching accuracy 98%), explains pricing model (free browsing vs $9.99/mo Pro for AI reports and flagged-trade lists). Awaiting Marc approval for publication (scheduled Nov 4–5).
+  - **Launch submissions draft** (gantt #41): Updated planning document covering Show HN, Product Hunt, and niche directory targets. Shows HN waiting for exec copy finalization. Product Hunt launch still pending Nov 5–6 window per rebaseline.
+  - **Media plan refinements:** Updated 40-gtm/media-plan.md with latest timelines aligned to Nov 13 launch baseline (Show HN Nov 2–3, Product Hunt Nov 5–6, video ad production Nov 6–10).
+- **Infrastructure & telemetry:** Sentry error tracking configs updated (sentry.edge.config.js, sentry.server.config.js) for production monitoring during launch phase.
+- **Project status snapshot:** AGENT-BRIEF regenerated (Oct 30 13:30 UTC export) confirms 48/53 tasks complete (91%), 5 remaining, all features ready for launch.
+- **Decisions clarified:** D-005 Step 0 marked complete (Oct 12) — Gemini API billing confirmed on Eminence Enterprises billed account; option A (per-rep cache) remains pending Marc's decision post-launch.
+
+### 📋 Open Items (5 remaining for launch)
+- [ ] **#41** Submit Show HN post & directory submissions (scheduled Nov 2–3, now tracking to Nov 5–6 per Nov 13 rebaseline)
+- [ ] **#50** Launch on Product Hunt (scheduled Nov 5–6 per Nov 13 rebaseline)
+- [ ] **#51** Publish Indie Hackers post — *drafting complete, awaiting Marc review* (scheduled Nov 4–5)
+- [ ] **#52** Produce video ad concepts (scheduled Nov 6–10)
+- [ ] **D-005 Option A** Decide: Cache AI reports per rep in Supabase (decision pending Marc; implementation post-launch)
+
+### 🚀 Feature Status (all complete for launch)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post (pending submission Nov 5–6 per Nov 13 launch baseline)
+- ⏳ Product Hunt launch (pending Nov 5–6 per Nov 13 launch baseline)
+- ⏳ Indie Hackers post (drafting complete, pending Marc approval)
+- ⏳ Video ad production (pending Nov 6–10)
+
+---
+
+## ⚡ 2026-11-01 — Automated Status Check (Weekend, No Development Sessions)
+
+**Status: Launch rebaselined to Nov 10 · 4 days until Election Day (Nov 5) target**
+
+### Daily Work (2026-11-01)
+- **Automated daily reference update:** No CivicWatch development sessions captured for November 1.
+  - Scheduled end-of-day update confirms all systems stable
+  - Previous day's schedule targets and feature status remain unchanged from Oct 31
+  - Next milestone: Show HN submission (Nov 2–3) & Product Hunt launch (Nov 5–6)
+
+---
+## ⚡ 2026-10-31 — Automated Status Check (No Development Sessions)
+
+**Status: Launch rebaselined to Nov 10 · GTM submissions phase on track**
+
+### Daily Work (2026-10-31)
+- **Automated daily reference update:** No CivicWatch development sessions captured for October 31.
+  - Scheduled end-of-day update confirms all systems stable
+  - Previous day's schedule targets and feature status remain unchanged from Oct 30
+  - Next milestone: Show HN submission & Product Hunt launch (scheduled Nov 2–3)
+
+### 📋 Open Items (5 remaining for launch)
+- [ ] **#41** Submit Show HN post (scheduled Nov 2–3)
+- [ ] **#50** Launch on Product Hunt (scheduled Nov 5–6)
+- [ ] **#51** Publish Indie Hackers post (scheduled Nov 4–5)
+- [ ] **#52** Produce video ad concepts (scheduled Nov 6–10)
+- [ ] **D-005** Decide: Cache AI reports per rep in Supabase (decision pending Marc; implementation post-launch)
+
+### 🚀 Feature Status (all complete for launch)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post (pending submission Nov 2–3)
+- ⏳ Product Hunt launch (pending Nov 5–6)
+- ⏳ Indie Hackers post (pending Nov 4–5)
+- ⏳ Video ad production (pending Nov 6–10)
+
+---
+## ⚡ 2026-10-30 — Automated Status Check (No Development Sessions)
+
+**Status: Launch rebaselined to Nov 10 · GTM submissions phase on track**
+
+### Daily Work (2026-10-30)
+- **Automated daily reference update:** No CivicWatch development sessions captured for October 30.
+  - Scheduled end-of-day update confirms all systems stable
+  - Previous day's schedule targets and feature status remain unchanged from Oct 29
+  - Next milestone: Show HN submission & Product Hunt launch (scheduled Nov 2–3)
+
+### 📋 Open Items (5 remaining for launch)
+- [ ] **#41** Submit Show HN post (scheduled Oct 29–30)
+- [ ] **#50** Launch on Product Hunt (scheduled Nov 2–3)
+- [ ] **#51** Publish Indie Hackers post (scheduled Nov 4–5)
+- [ ] **#52** Produce video ad concepts (scheduled Nov 6–10)
+- [ ] **D-005** Decide: Cache AI reports per rep in Supabase (decision pending Marc; implementation post-launch)
+
+### 🚀 Feature Status (all complete for launch)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post (pending submission Oct 29–30)
+- ⏳ Product Hunt launch (pending Nov 2–3)
+- ⏳ Indie Hackers post (pending Nov 4–5)
+- ⏳ Video ad production (pending Nov 6–10)
+
+---
+## ⚡ 2026-10-29 — Automated Status Check (No Development Sessions)
+
+**Status: Launch rebaselined to Nov 10 · GTM submissions phase on track**
+
+### Daily Work (2026-10-29)
+- **Automated daily reference update:** No CivicWatch development sessions captured for October 29.
+  - Scheduled end-of-day update confirms all systems stable
+  - Previous day's schedule targets and feature status remain unchanged from Oct 28
+  - Next milestone: Show HN submission (scheduled Oct 29–30)
+
+### 📋 Open Items (5 remaining for launch)
+- [ ] **#41** Submit Show HN post (scheduled Oct 29–30)
+- [ ] **#50** Launch on Product Hunt (scheduled Nov 2–3)
+- [ ] **#51** Publish Indie Hackers post (scheduled Nov 4–5)
+- [ ] **#52** Produce video ad concepts (scheduled Nov 6–10)
+- [ ] **D-005** Decide: Cache AI reports per rep in Supabase (decision pending Marc; implementation post-launch)
+
+### 🚀 Feature Status (all complete for launch)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post (pending submission Oct 29–30)
+- ⏳ Product Hunt launch (pending Nov 2–3)
+- ⏳ Indie Hackers post (pending Nov 4–5)
+- ⏳ Video ad production (pending Nov 6–10)
+
+---
 ## ⚡ 2026-10-28 — Schedule Rebaseline & GTM Milestone
 
 **Status: Launch rebaselined to Nov 10 · GTM submissions phase approaching**
