@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { SERVER_IGNORE_ERRORS } from "./lib/sentryIgnore";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -15,4 +16,7 @@ Sentry.init({
 
   // Do not send PII (IP addresses, cookies, request bodies) to Sentry
   sendDefaultPii: false,
+
+  // Bot probes and transient upstream socket drops; see lib/sentryIgnore.js
+  ignoreErrors: SERVER_IGNORE_ERRORS,
 });

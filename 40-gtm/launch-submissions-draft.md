@@ -192,3 +192,11 @@ this.
 - [ ] Someone lined up to leave a genuine early comment on PH
 - [ ] Marc is free to reply to comments in real time for the first few hours
       on whichever day this actually launches
+
+## Submission log (what has actually gone out)
+
+| Date | Where | What was sent | Status |
+|---|---|---|---|
+| 2026-10-05 | Civic Tech Field Guide (app.civictech.guide/add) | URL https://www.civicwatch.app, "This is my project" checked, contact support@civicwatch.app. The short form takes no category or description; the guide reads them from the site. | Submitted, in their review queue. Not yet live. Check for a listing at civictech.guide in a few days; the "full add project form" is available if a fuller entry is wanted. |
+| 2026-10-05 | "Awesome" GitHub lists (awesome-civic-tech etc.) | Nothing. Skipped by decision. | Not a fit: no canonical awesome-government/awesome-opendata repo exists; the one civic list (brandonhimpfen/awesome-civic-tech) takes open-source projects and declines self-promotion and early-stage projects; this repo has no LICENSE and a default Next.js README. awesome-public-datasets lists datasets, not apps. Revisit only if the repo is licensed and given a real README. |
+| 2026-10-05 | Indie Hackers profile (indiehackers.com/marcshelton) | Profile with photo, bio, X handle @CivicWatchAlert, and a CivicWatch product section ("See what Congress is buying" + description) linking to civicwatch.app. | Live: profile + product section + backlink. Launch POST not sent: IH says "You can't create posts yet" on new accounts (unpublished rule: some account age + authentic participation). Draft is ready in `indiehackers-post.md`. Retry after a few days of genuine comments on other founders' posts. |

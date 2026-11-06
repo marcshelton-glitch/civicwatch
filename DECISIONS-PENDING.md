@@ -16,6 +16,7 @@ Everything here is blocked on Marc. Agents may open, research, and recommend.
   - **B — Leave as is.** The per-user 50k tokens/day cap already bounds a Pro user at ~$2/mo. Revisit once `token_usage` shows real volume.
   - **C — Self-host a model.** Not recommended; needs ~$500/mo of sustained spend first. See `~/Projects/projects-dashboard/inference-hosting-analysis.md`.
 - **Recommendation:** Check the billing status of the key before 10-23 (five minutes in Google AI Studio), then do A in the two weeks after launch when real token counts exist.
+- **Step 0 done 2026-10-12 (Gantt #53):** key check confirmed by Marc in AI Studio. The Default Gemini Project (`gen-lang-client-0341491647`) is on billing account Eminence Enterprises, shown as Tier 1 · Postpay. CivicWatch keys `...dOcA` and `...J1ns` are on it. Option A (the per-rep cache) is still undecided.
 - **Decision:** _(awaiting Marc)_
 
 ## D-004 · The live Terms name "CivicWatch LLC" — does it exist, and if not, whose name goes on them?

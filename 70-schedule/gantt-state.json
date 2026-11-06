@@ -1,18 +1,18 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-10-09T21:53:07.935414+00:00",
-  "today": "2026-10-09",
+  "exportedAt": "2026-11-05T14:30:00.368665+00:00",
+  "today": "2026-11-05",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 53,
-    "done": 47,
-    "remaining": 6,
-    "pctDone": 89
+    "done": 48,
+    "remaining": 5,
+    "pctDone": 91
   },
   "launch": {
-    "planned": "2026-10-27",
-    "projected": "2026-10-27",
+    "planned": "2026-11-19",
+    "projected": "2026-11-19",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -84,15 +84,15 @@
       "name": "Confirm the Gemini API key is on a billed Google AI Studio project, before Show HN and Product Hunt traffic",
       "phase": "P0 Launch Blockers",
       "planned": {
-        "start": "2026-10-09",
-        "end": "2026-10-12"
+        "start": "2026-10-13",
+        "end": "2026-10-14"
       },
       "scheduled": {
-        "start": "2026-10-09",
+        "start": "2026-10-12",
         "end": "2026-10-12"
       },
-      "status": "pending",
-      "actualCompletionDate": null,
+      "status": "done",
+      "actualCompletionDate": "2026-10-12",
       "varianceDays": 0,
       "needsAttention": false,
       "attentionReason": null,
@@ -750,12 +750,12 @@
       "name": "Submit to Product Hunt, Hacker News, niche directories",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-10-13",
-        "end": "2026-10-14"
+        "start": "2026-11-05",
+        "end": "2026-11-06"
       },
       "scheduled": {
-        "start": "2026-10-13",
-        "end": "2026-10-14"
+        "start": "2026-11-05",
+        "end": "2026-11-06"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -776,12 +776,12 @@
       "name": "Submit the Show HN post",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-10-15",
-        "end": "2026-10-16"
+        "start": "2026-11-09",
+        "end": "2026-11-10"
       },
       "scheduled": {
-        "start": "2026-10-15",
-        "end": "2026-10-16"
+        "start": "2026-11-09",
+        "end": "2026-11-10"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -800,12 +800,12 @@
       "name": "Launch on Product Hunt",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-10-19",
-        "end": "2026-10-20"
+        "start": "2026-11-11",
+        "end": "2026-11-12"
       },
       "scheduled": {
-        "start": "2026-10-19",
-        "end": "2026-10-20"
+        "start": "2026-11-11",
+        "end": "2026-11-12"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -824,12 +824,12 @@
       "name": "Publish the Indie Hackers launch post once posting unlocks",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-10-21",
-        "end": "2026-10-22"
+        "start": "2026-11-13",
+        "end": "2026-11-16"
       },
       "scheduled": {
-        "start": "2026-10-21",
-        "end": "2026-10-22"
+        "start": "2026-11-13",
+        "end": "2026-11-16"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -846,12 +846,12 @@
       "name": "Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-10-23",
-        "end": "2026-10-27"
+        "start": "2026-11-17",
+        "end": "2026-11-19"
       },
       "scheduled": {
-        "start": "2026-10-23",
-        "end": "2026-10-27"
+        "start": "2026-11-17",
+        "end": "2026-11-19"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -1529,6 +1529,215 @@
         "varianceDays": 0
       },
       "tasksRebaselined": 6
+    },
+    {
+      "resetOn": "2026-10-12",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-27",
+        "projected": "2026-10-27",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 6
+    },
+    {
+      "resetOn": "2026-10-13",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-28",
+        "projected": "2026-10-28",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 6
+    },
+    {
+      "resetOn": "2026-10-14",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-29",
+        "projected": "2026-10-29",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-15",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-28",
+        "projected": "2026-10-28",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-16",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-29",
+        "projected": "2026-10-29",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-19",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-10-30",
+        "projected": "2026-10-30",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-20",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-02",
+        "projected": "2026-11-02",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-21",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-03",
+        "projected": "2026-11-03",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-22",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-04",
+        "projected": "2026-11-04",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-23",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-05",
+        "projected": "2026-11-05",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-26",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-06",
+        "projected": "2026-11-06",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-27",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-09",
+        "projected": "2026-11-09",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-28",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-10",
+        "projected": "2026-11-10",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-29",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-11",
+        "projected": "2026-11-11",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-10-30",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-12",
+        "projected": "2026-11-12",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-02",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-13",
+        "projected": "2026-11-13",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-03",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-16",
+        "projected": "2026-11-16",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-04",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-17",
+        "projected": "2026-11-17",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-05",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-18",
+        "projected": "2026-11-18",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
     }
   ]
 }

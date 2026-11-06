@@ -48,7 +48,7 @@ Tracking status (from `docs/conversion-tracking-audit-2026-08-29.md`):
 |---|---|---|---|
 | Product Hunt | ☐ planned Oct 15 (#50), chosen by Marc 2026-10-08 to avoid the Oct 14 Cloud Run hackathon crowd. Maker account created 2026-10-07; launch draft complete, not yet scheduled | ☐ | |
 | Hacker News | ☐ planned Oct 13, 8:00 AM PT (#49) | ☐ | |
-| Civic Tech Field Guide | ☑ 2026-10-05, in review | ☐ | |
+| Civic Tech Field Guide | ☑ 2026-10-05 | ☑ live, confirmed 2026-10-09 (listed Active; tags include Advocacy tech) | ☑ https://app.civictech.guide/?search=civicwatch |
 | Indie Hackers | ☑ profile + product section live 2026-10-05; launch post blocked by new-account limit (#51) | ☐ post | ☑ profile link |
 | "Awesome" GitHub lists | Skipped 2026-10-05 (no fit; repo has no LICENSE or real README). Revisit only if that changes | n/a | n/a |
 | G2 / Capterra / AI-tool directories | Skipped by design (see `launch-submissions-draft.md`) | n/a | n/a |

@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-10-09 15:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-11-05 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -8,10 +8,24 @@ and why, so you do not repeat it or undo it. The task notes below are the
 real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
-- **Progress:** 47/53 done · 6 open
-- **Projected launch:** 2026-10-27
+- **Progress:** 48/53 done · 5 open
+- **Projected launch:** 2026-11-19
 
 ## Already done — do not redo
+
+### #53 Confirm the Gemini API key is on a billed Google AI Studio project, before Show HN and Product Hunt traffic
+*Completed 2026-10-12.*
+
+Added 2026-10-09 from DECISIONS-PENDING D-005 (step 0). About five minutes. In
+Google AI Studio, open the project behind GOOGLE_AI_API_KEY and check it has
+billing enabled. A free-tier key shares one ~1,500 requests/day pool across
+the whole app, so an HN or Product Hunt spike would make paying Pro users see
+'AI analysis failed'. Paid-tier cost is pennies: a full report is about $0.003
+and the per-user 50k tokens/day cap bounds a maxed-out Pro user at about
+$2/mo. Does NOT include the per-rep cache (D-005 option A), which is post-
+launch. Marc adds the card himself; Claude does not handle payment details.
+Ordered first in waves.json so it lands before #49 (Show HN, 10-13); once
+ticked done, rebaseline gives the two workdays back.
 
 ### #47 Publish the pilot ad and record whether Meta flags it as political
 *Completed 2026-10-06.*
@@ -151,35 +165,9 @@ Page — not a new Page, and deliberately not Marc's unrelated personal ad
 account (440418995978843). Meta commercial terms + non-discrimination policy
 accepted. Free.
 
-### #43 Check Meta's political-ad rules against real precedent in the Ad Library
-*Completed 2026-09-17.*
-
-Answered the 'will Meta call this a political ad' question for $0 using the
-public Ad Library instead of waiting on ad spend. Finding: 'Autopilot — copy
-politicians' trades' ran at $6K–$7K / 700K–800K impressions with copy
-explicitly pushing 'a ban on congressional stock trading' and carried NO
-elections/social-issue disclaimer, while real candidate ads in the same
-results were removed specifically for a bad social-issue disclaimer. A
-directly comparable product cleared as an ordinary commercial ad. Caveat: one
-advertiser is precedent, not proof. Full write-up in ~/tools/ad-
-pipeline/campaigns/civicwatch-meta-pilot.json.
-
 ## Next up
 
-- **#53 Confirm the Gemini API key is on a billed Google AI Studio project, before Show HN and Product Hunt traffic** — 2026-10-09 → 2026-10-12 · P0 Launch Blockers
-
-  Added 2026-10-09 from DECISIONS-PENDING D-005 (step 0). About five minutes.
-  In Google AI Studio, open the project behind GOOGLE_AI_API_KEY and check it
-  has billing enabled. A free-tier key shares one ~1,500 requests/day pool
-  across the whole app, so an HN or Product Hunt spike would make paying Pro
-  users see 'AI analysis failed'. Paid-tier cost is pennies: a full report is
-  about $0.003 and the per-user 50k tokens/day cap bounds a maxed-out Pro user
-  at about $2/mo. Does NOT include the per-rep cache (D-005 option A), which
-  is post-launch. Marc adds the card himself; Claude does not handle payment
-  details. Ordered first in waves.json so it lands before #49 (Show HN,
-  10-13); once ticked done, rebaseline gives the two workdays back.
-
-- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-10-13 → 2026-10-14 · GTM — First Customers
+- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-11-05 → 2026-11-06 · GTM — First Customers
 
   Close-out: done when Show HN and Product Hunt are live and the Civic Tech
   Field Guide listing is confirmed, with links recorded. Civic Tech Field
@@ -192,7 +180,7 @@ pipeline/campaigns/civicwatch-meta-pilot.json.
   ticked. Remaining: Show HN live (#49, Oct 13) and Product Hunt live (#50,
   Oct 15), then record links and close.
 
-- **#49 Submit the Show HN post** — 2026-10-15 → 2026-10-16 · GTM — First Customers
+- **#49 Submit the Show HN post** — 2026-11-09 → 2026-11-10 · GTM — First Customers
 
   Scheduled prep task opens the prefilled HN submit page Oct 13 8:00 AM PT;
   Marc presses Submit and posts the first comment. Done = live HN link
@@ -200,7 +188,7 @@ pipeline/campaigns/civicwatch-meta-pilot.json.
   was Oct 9-12, but the submit-prep scheduled task fires Oct 13 8:00 AM PT, so
   Oct 13 is the real date.
 
-- **#50 Launch on Product Hunt** — 2026-10-19 → 2026-10-20 · GTM — First Customers
+- **#50 Launch on Product Hunt** — 2026-11-11 → 2026-11-12 · GTM — First Customers
 
   Day after Show HN. Needs maker account, Upcoming page, early commenter,
   gallery in 40-gtm/producthunt/. Marc present for the first hours. Done =
@@ -214,13 +202,13 @@ pipeline/campaigns/civicwatch-meta-pilot.json.
   Oct 14 Google Cloud Run hackathon crowd). Launch draft complete through
   Launch checklist (required 100%); not yet scheduled.
 
-- **#51 Publish the Indie Hackers launch post once posting unlocks** — 2026-10-21 → 2026-10-22 · GTM — First Customers
+- **#51 Publish the Indie Hackers launch post once posting unlocks** — 2026-11-13 → 2026-11-16 · GTM — First Customers
 
   Blocked by Indie Hackers new-account posting limit; the daily comment-
   prompts task works toward unlocking it. Draft: 40-gtm/indiehackers-post.md.
   Does not gate #41. No hard date.
 
-- **#52 Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)** — 2026-10-23 → 2026-10-27 · GTM — First Customers
+- **#52 Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)** — 2026-11-17 → 2026-11-19 · GTM — First Customers
 
   Added 2026-10-08. See '## Video ad concepts' in 40-gtm/media-plan.md. $0,
   organic channels only; anything paid needs the exact cost told to Marc
@@ -250,14 +238,14 @@ recommend; Marc decides.
 ## Recent commits
 
 ```
-7f954ef Fix accusatory social and media-card copy; re-export kit with the shield
-f841e84 Add privacy/terms gap review and open D-004 (does CivicWatch LLC exist)
-6dcd76b Align privacy policy and terms with what the code does
-d8eed97 docs: daily CivicWatch.md update — Oct 8 bioguide backfill confirmation
-c7a85a8 chore: commit video ad concept renders, ad source assets and regenerated schedule/briefs
-a801235 feat(gtm): add video ad concepts to media plan; add Gantt #52
-250e1b1 fix(auth): make /support public so signed-out visitors can reach it
-e30f636 chore(schedule): regenerate brief and gantt after #48 completion (45/48)
+da078ed docs: daily CivicWatch.md update — 2026-11-02 GTM submissions prep
+55dbfdd docs: daily CivicWatch.md update — 2026-10-28 schedule rebaseline & GTM milestone
+1899d1b docs: daily CivicWatch.md update — Oct 24 data integrity & transparency refactor
+d656a77 Make Gemini model env-driven; treat 402 as busy
+51f4ec0 Merge main into fix/support-public-route (keep Oct 8 daily entry)
+35acb2b Open D-005 (AI report caching, billed Gemini key) and schedule the key check as #53
+2e3e22e Show a clear message when Gemini quota runs out; stop upselling Pro users
+e1a48e8 Fix accusatory social and media-card copy; re-export kit with the shield
 ```
 
 ---
