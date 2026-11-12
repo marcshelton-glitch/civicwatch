@@ -1,8 +1,8 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-11-05T14:30:00.368665+00:00",
-  "today": "2026-11-05",
+  "exportedAt": "2026-11-06T14:30:00.235489+00:00",
+  "today": "2026-11-06",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 53,
@@ -11,8 +11,8 @@
     "pctDone": 91
   },
   "launch": {
-    "planned": "2026-11-19",
-    "projected": "2026-11-19",
+    "planned": "2026-11-20",
+    "projected": "2026-11-20",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -750,12 +750,12 @@
       "name": "Submit to Product Hunt, Hacker News, niche directories",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-05",
-        "end": "2026-11-06"
+        "start": "2026-11-06",
+        "end": "2026-11-09"
       },
       "scheduled": {
-        "start": "2026-11-05",
-        "end": "2026-11-06"
+        "start": "2026-11-06",
+        "end": "2026-11-09"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -776,12 +776,12 @@
       "name": "Submit the Show HN post",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-09",
-        "end": "2026-11-10"
+        "start": "2026-11-10",
+        "end": "2026-11-11"
       },
       "scheduled": {
-        "start": "2026-11-09",
-        "end": "2026-11-10"
+        "start": "2026-11-10",
+        "end": "2026-11-11"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -800,12 +800,12 @@
       "name": "Launch on Product Hunt",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-11",
-        "end": "2026-11-12"
+        "start": "2026-11-12",
+        "end": "2026-11-13"
       },
       "scheduled": {
-        "start": "2026-11-11",
-        "end": "2026-11-12"
+        "start": "2026-11-12",
+        "end": "2026-11-13"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -824,12 +824,12 @@
       "name": "Publish the Indie Hackers launch post once posting unlocks",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-13",
-        "end": "2026-11-16"
+        "start": "2026-11-16",
+        "end": "2026-11-17"
       },
       "scheduled": {
-        "start": "2026-11-13",
-        "end": "2026-11-16"
+        "start": "2026-11-16",
+        "end": "2026-11-17"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -846,12 +846,12 @@
       "name": "Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-17",
-        "end": "2026-11-19"
+        "start": "2026-11-18",
+        "end": "2026-11-20"
       },
       "scheduled": {
-        "start": "2026-11-17",
-        "end": "2026-11-19"
+        "start": "2026-11-18",
+        "end": "2026-11-20"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -1735,6 +1735,17 @@
       "priorLaunch": {
         "planned": "2026-11-18",
         "projected": "2026-11-18",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-06",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-19",
+        "projected": "2026-11-19",
         "varianceDays": 0
       },
       "tasksRebaselined": 5
