@@ -1,4 +1,66 @@
-## ⚠️ RATE LIMIT SNAPSHOT — 2026-11-20 22:31 UTC
+## ⚡ 2026-11-20 — GTM Execution (Schedule Rebaseline · T-14 Days to New Target)
+
+**Status: SCHEDULE REBASELINE · Launch target moved to 2026-12-04 (from Nov 20) · 5 open items on track · All systems stable**
+
+### Daily Work (2026-11-20)
+- **Schedule rebaseline executed:** End-of-day systematic review and schedule adjustment following extended launch preparation phase
+  - **LAUNCH DATE REBASELINE:** Projected launch date moved to **2026-12-04** (from Nov 20) per comprehensive GTM timeline review
+  - **Task window adjustments:** All 5 open GTM items and feature development tasks shifted forward by 14 days:
+    - #41 Submit (niche directories & Show HN): 2026-11-17–18 → 2026-12-01–02
+    - #49 Show HN post: 2026-11-19–20 → 2026-12-03–04
+    - #50 Product Hunt: 2026-11-23–24 → 2026-12-07–08 (post-launch execution)
+    - #51 Indie Hackers post: 2026-11-25–26 → 2026-12-09–10 (draft ready, awaiting Marc approval)
+    - #52 Video ad production: 2026-11-27 – 2026-12-01 → 2026-12-11–15 (14 days extended window)
+  - Rationale: Extended preparation cycle enables higher-fidelity GTM execution and feature refinement before launch push
+  - Wave 1 feature set remains stable and production-ready (48/53 tasks complete, 91%)
+- **GTM status:** All infrastructure systems operational; Sentry telemetry, push notifications, conversion pixels confirmed live; election-cycle data exports active
+- **Infrastructure:** Production systems all stable; Gemini API quota monitored (key confirmed on billed project); all telemetry streams active
+- **Files updated:** AGENT-BRIEF.md (schedule snapshot: 2026-11-20 rebaseline), 70-schedule/gantt.html, 70-schedule/gantt-state.json (project schedule snapshot), Civicwatch Markdown files/CivicWatch.md (iCloud sync backup)
+
+### 📋 Open Items (5 remaining — on track for 2026-12-04 target)
+- [ ] **#41** Submit Show HN post & directory submissions — **WINDOW: 2026-12-01–02**
+- [ ] **#49** Submit the Show HN post — **SCHEDULED: 2026-12-03–04**
+- [ ] **#50** Launch on Product Hunt — **WINDOW: 2026-12-07–08 (post-launch execution)**
+- [ ] **#51** Publish Indie Hackers post — *draft ready (40-gtm/indiehackers-post.md), awaiting Marc approval* — **SCHEDULED: 2026-12-09–10**
+- [ ] **#52** Produce video ad concepts (Concept 2 first) — **SCHEDULED: 2026-12-11–15**
+- [ ] **D-005 Option A** Decide: Cache AI reports per rep in Supabase — **DECISION PENDING Marc; post-launch implementation**
+
+### 🚀 Feature Status (all complete for launch · Wave 1 LIVE)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post — **EXECUTION WINDOW: Dec 3–4**
+- ⏳ Product Hunt launch — **EXECUTION WINDOW: Dec 7–8 (post-Show HN)**
+- ⏳ Indie Hackers post (draft ready, pending Marc approval)
+- ⏳ Video ad production (scheduled Dec 11–15 · 11 days remaining from original Dec 1 deadline, now extended)
+
+
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ⏳ Show HN post — **EXECUTION WINDOW: Dec 3–4**
+- ⏳ Product Hunt launch — **EXECUTION WINDOW: Dec 7–8 (post-Show HN)**
+- ⏳ Indie Hackers post (draft ready, pending Marc approval)
+- ⏳ Video ad production (scheduled Dec 11–15 · 11 days remaining from original Dec 1 deadline, now extended)
+
 **Session interrupted. All context preserved. Pick up here.**
 
 ### Was in progress:

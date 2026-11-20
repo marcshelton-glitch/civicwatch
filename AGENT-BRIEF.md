@@ -1,6 +1,6 @@
 # civicwatch — agent brief
 
-> **Auto-generated 2026-11-06 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
+> **Auto-generated 2026-11-20 07:00 by `projects-dashboard/build-briefs.sh`. Do not edit.**
 > Regenerate with the **Project Schedule** shortcut on the Desktop.
 
 **Read this before starting work.** It records what has already been done
@@ -9,7 +9,7 @@ real content — several record approaches that were tried and failed.
 
 - **Status:** LIVE (wave 1)
 - **Progress:** 48/53 done · 5 open
-- **Projected launch:** 2026-11-20
+- **Projected launch:** 2026-12-04
 
 ## Already done — do not redo
 
@@ -167,7 +167,7 @@ accepted. Free.
 
 ## Next up
 
-- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-11-06 → 2026-11-09 · GTM — First Customers
+- **#41 Submit to Product Hunt, Hacker News, niche directories** — 2026-11-20 → 2026-11-23 · GTM — First Customers
 
   Close-out: done when Show HN and Product Hunt are live and the Civic Tech
   Field Guide listing is confirmed, with links recorded. Civic Tech Field
@@ -180,7 +180,7 @@ accepted. Free.
   ticked. Remaining: Show HN live (#49, Oct 13) and Product Hunt live (#50,
   Oct 15), then record links and close.
 
-- **#49 Submit the Show HN post** — 2026-11-10 → 2026-11-11 · GTM — First Customers
+- **#49 Submit the Show HN post** — 2026-11-24 → 2026-11-25 · GTM — First Customers
 
   Scheduled prep task opens the prefilled HN submit page Oct 13 8:00 AM PT;
   Marc presses Submit and posts the first comment. Done = live HN link
@@ -188,7 +188,7 @@ accepted. Free.
   was Oct 9-12, but the submit-prep scheduled task fires Oct 13 8:00 AM PT, so
   Oct 13 is the real date.
 
-- **#50 Launch on Product Hunt** — 2026-11-12 → 2026-11-13 · GTM — First Customers
+- **#50 Launch on Product Hunt** — 2026-11-26 → 2026-11-27 · GTM — First Customers
 
   Day after Show HN. Needs maker account, Upcoming page, early commenter,
   gallery in 40-gtm/producthunt/. Marc present for the first hours. Done =
@@ -202,13 +202,13 @@ accepted. Free.
   Oct 14 Google Cloud Run hackathon crowd). Launch draft complete through
   Launch checklist (required 100%); not yet scheduled.
 
-- **#51 Publish the Indie Hackers launch post once posting unlocks** — 2026-11-16 → 2026-11-17 · GTM — First Customers
+- **#51 Publish the Indie Hackers launch post once posting unlocks** — 2026-11-30 → 2026-12-01 · GTM — First Customers
 
   Blocked by Indie Hackers new-account posting limit; the daily comment-
   prompts task works toward unlocking it. Draft: 40-gtm/indiehackers-post.md.
   Does not gate #41. No hard date.
 
-- **#52 Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)** — 2026-11-18 → 2026-11-20 · GTM — First Customers
+- **#52 Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)** — 2026-12-02 → 2026-12-04 · GTM — First Customers
 
   Added 2026-10-08. See '## Video ad concepts' in 40-gtm/media-plan.md. $0,
   organic channels only; anything paid needs the exact cost told to Marc
@@ -238,14 +238,14 @@ recommend; Marc decides.
 ## Recent commits
 
 ```
+87b56b6 docs: daily CivicWatch.md update — 2026-11-17 GTM execution (T-3 days)
+d25eb07 docs: daily CivicWatch.md update — Nov 12 Product Hunt launch window
 efedbbc docs: daily CivicWatch.md update — 2026-11-06 post-Election Day launch window
 da078ed docs: daily CivicWatch.md update — 2026-11-02 GTM submissions prep
 55dbfdd docs: daily CivicWatch.md update — 2026-10-28 schedule rebaseline & GTM milestone
 1899d1b docs: daily CivicWatch.md update — Oct 24 data integrity & transparency refactor
 d656a77 Make Gemini model env-driven; treat 402 as busy
 51f4ec0 Merge main into fix/support-public-route (keep Oct 8 daily entry)
-35acb2b Open D-005 (AI report caching, billed Gemini key) and schedule the key check as #53
-2e3e22e Show a clear message when Gemini quota runs out; stop upselling Pro users
 ```
 
 ---

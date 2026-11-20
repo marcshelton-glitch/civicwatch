@@ -1,8 +1,8 @@
 {
   "project": "civicwatch",
   "standardVersion": "1.0.0",
-  "exportedAt": "2026-11-06T14:30:00.235489+00:00",
-  "today": "2026-11-06",
+  "exportedAt": "2026-11-20T14:30:00.235434+00:00",
+  "today": "2026-11-20",
   "provenance": "Built 2026-08-06 from Calendar Tasks/civicwatch-phase1.ics (14 Phase 1 tasks, Jun 30-Jul 14) and docs/prelaunch-audit-2026-08-03.md. Phase 1 status was set ONLY where the repo contains file evidence; those actualCompletionDates are inferred from planned end dates because none were recorded at the time. Anything without evidence is left pending rather than assumed done. Corrected 2026-08-11: originally built against a stale sandbox clock reading 2026-08-06, so all forward-looking tasks were dated five days early. Historical Phase 1 dates from the .ics are unchanged.",
   "totals": {
     "total": 53,
@@ -11,8 +11,8 @@
     "pctDone": 91
   },
   "launch": {
-    "planned": "2026-11-20",
-    "projected": "2026-11-20",
+    "planned": "2026-12-04",
+    "projected": "2026-12-04",
     "varianceDays": 0
   },
   "needsAttentionCount": 0,
@@ -750,12 +750,12 @@
       "name": "Submit to Product Hunt, Hacker News, niche directories",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-06",
-        "end": "2026-11-09"
+        "start": "2026-11-20",
+        "end": "2026-11-23"
       },
       "scheduled": {
-        "start": "2026-11-06",
-        "end": "2026-11-09"
+        "start": "2026-11-20",
+        "end": "2026-11-23"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -776,12 +776,12 @@
       "name": "Submit the Show HN post",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-10",
-        "end": "2026-11-11"
+        "start": "2026-11-24",
+        "end": "2026-11-25"
       },
       "scheduled": {
-        "start": "2026-11-10",
-        "end": "2026-11-11"
+        "start": "2026-11-24",
+        "end": "2026-11-25"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -800,12 +800,12 @@
       "name": "Launch on Product Hunt",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-12",
-        "end": "2026-11-13"
+        "start": "2026-11-26",
+        "end": "2026-11-27"
       },
       "scheduled": {
-        "start": "2026-11-12",
-        "end": "2026-11-13"
+        "start": "2026-11-26",
+        "end": "2026-11-27"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -824,12 +824,12 @@
       "name": "Publish the Indie Hackers launch post once posting unlocks",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-16",
-        "end": "2026-11-17"
+        "start": "2026-11-30",
+        "end": "2026-12-01"
       },
       "scheduled": {
-        "start": "2026-11-16",
-        "end": "2026-11-17"
+        "start": "2026-11-30",
+        "end": "2026-12-01"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -846,12 +846,12 @@
       "name": "Produce the video ad concepts for organic launch week (Concept 2 first, labeled presenter cut second)",
       "phase": "GTM — First Customers",
       "planned": {
-        "start": "2026-11-18",
-        "end": "2026-11-20"
+        "start": "2026-12-02",
+        "end": "2026-12-04"
       },
       "scheduled": {
-        "start": "2026-11-18",
-        "end": "2026-11-20"
+        "start": "2026-12-02",
+        "end": "2026-12-04"
       },
       "status": "pending",
       "actualCompletionDate": null,
@@ -1746,6 +1746,116 @@
       "priorLaunch": {
         "planned": "2026-11-19",
         "projected": "2026-11-19",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-09",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-20",
+        "projected": "2026-11-20",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-10",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-23",
+        "projected": "2026-11-23",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-11",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-24",
+        "projected": "2026-11-24",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-12",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-25",
+        "projected": "2026-11-25",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-13",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-26",
+        "projected": "2026-11-26",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-16",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-27",
+        "projected": "2026-11-27",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-17",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-11-30",
+        "projected": "2026-11-30",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-18",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-12-01",
+        "projected": "2026-12-01",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-19",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-12-02",
+        "projected": "2026-12-02",
+        "varianceDays": 0
+      },
+      "tasksRebaselined": 5
+    },
+    {
+      "resetOn": "2026-11-20",
+      "newBaselineStart": "2026-09-01",
+      "wave": 1,
+      "priorLaunch": {
+        "planned": "2026-12-03",
+        "projected": "2026-12-03",
         "varianceDays": 0
       },
       "tasksRebaselined": 5
