@@ -1,3 +1,76 @@
+## ⚠️ RATE LIMIT SNAPSHOT — 2026-11-20 22:31 UTC
+**Session interrupted. All context preserved. Pick up here.**
+
+### Was in progress:
+- Automated daily reference & status check cycle
+- GTM execution phase tracking (11 days to 2026-12-01 launch target)
+- Monitoring 5 open items (Show HN, Product Hunt, Indie Hackers, video ads, D-005 decision)
+
+### Completed this session:
+- Nov 18 schedule rebaseline: moved launch from 2026-11-20 → 2026-12-01
+- Updated task windows for Indie Hackers (#51: Nov 25–26) and video ad production (#52: Nov 27 – Dec 1)
+- All Wave 1 features remain production-ready (48/53 tasks, 91% complete)
+- Production systems confirmed stable (Sentry, push notifications, conversion pixels operational)
+
+### NOT YET DONE (resume here):
+- [ ] Submit Show HN post (window: Nov 17–18, status TBD)
+- [ ] Product Hunt post (Nov 23–24, post-launch execution)
+- [ ] Indie Hackers post (Nov 25–26, draft ready, awaiting Marc approval)
+- [ ] Video ad production (Nov 27 – Dec 1, 11 days remaining)
+- [ ] D-005 decision: Cache AI reports per rep in Supabase (post-launch implementation)
+
+### Files modified but not pushed:
+- None — all recent changes were snapshot updates only. Last git state: stable production main.
+
+---
+
+## ⚡ 2026-11-18 — GTM Execution (Schedule Rebaseline · T-13 Days to New Target)
+
+**Status: SCHEDULE REBASELINE · Launch target moved to 2026-12-01 (from Nov 20) · 5 open items on track · All systems stable**
+
+### Daily Work (2026-11-18)
+- **Automated daily reference update:** End-of-day status check for CivicWatch project following schedule rebaseline.
+  - No new CivicWatch development sessions captured for Nov 18 (GTM execution phase)
+  - **SCHEDULE REBASELINE:** Projected launch date moved to **2026-12-01** (from Nov 20) per AGENT-BRIEF.md update
+  - All task windows shifted accordingly:
+    - #41 Submit (niche directories): 2026-11-17 → 2026-11-18
+    - #49 Show HN post: 2026-11-19 → 2026-11-20
+    - #50 Product Hunt: 2026-11-23 → 2026-11-24
+    - #51 Indie Hackers post: 2026-11-25 → 2026-11-26
+    - #52 Video ad production: 2026-11-27 → 2026-12-01
+  - Wave 1 feature set remains stable and production-ready (48/53 tasks complete, 91%)
+- **GTM status:** Schedule extended post-Product Hunt (Nov 12–13 completed); extended window for submissions and video ad production
+- **Infrastructure:** All production systems stable; Sentry telemetry, push notifications, conversion pixels confirmed operational; data exports live
+- **Files updated:** AGENT-BRIEF.md, 70-schedule/gantt.html, 70-schedule/gantt-state.json (project schedule snapshot)
+
+### 📋 Open Items (5 remaining — on track for 2026-12-01 target)
+- [ ] **#41** Submit Show HN post & directory submissions — **WINDOW: 2026-11-17–18 (IN PROGRESS)**
+- [ ] **#49** Submit the Show HN post — **SCHEDULED: 2026-11-19–20**
+- [ ] **#50** Launch on Product Hunt — **WINDOW: 2026-11-23–24**
+- [ ] **#51** Publish Indie Hackers post — *draft ready (40-gtm/indiehackers-post.md), awaiting Marc approval* — **SCHEDULED: 2026-11-25–26**
+- [ ] **#52** Produce video ad concepts (Concept 2 first) — **SCHEDULED: 2026-11-27–12-01**
+- [ ] **D-005 Option A** Decide: Cache AI reports per rep in Supabase — **DECISION PENDING Marc; post-launch implementation**
+
+### 🚀 Feature Status (all complete for launch · Wave 1 LIVE)
+- ✅ Privacy & consent (GDPR Art. 20 data export, tracker gating)
+- ✅ Accessibility (full AA compliance pass)
+- ✅ Push notifications (Chrome + Safari end-to-end tested)
+- ✅ Social profiles claimed (X, YouTube, Instagram, Facebook)
+- ✅ Launch post published (@CivicWatchAlert, Sep 22)
+- ✅ ProductHunt assets finalized
+- ✅ Conversion pixel tracking (deployed & verified live)
+- ✅ Senate disclosure ingest pipeline (Playwright workflow ready)
+- ✅ Vote sourcing via official Clerk XML (GovTrack bot-walled)
+- ✅ AI rating: activity-based, data-grounded (no prediction claims)
+- ✅ Committee Overlap messaging: transparent, compliant
+- ✅ Civic Tech Field Guide listing (live as of Oct 9)
+- ✅ Gemini API key confirmed on billed project (Oct 12)
+- ✅ Product Hunt launch — **COMPLETED (Nov 12–13)**
+- ⏳ Show HN post — **WINDOW: Nov 17–18**
+- ⏳ Indie Hackers post (draft ready, pending Marc approval)
+- ⏳ Video ad production (scheduled Nov 27 – Dec 1 · 13 days remaining)
+
+---
 ## ⚡ 2026-11-17 — GTM Execution (Extended Window · T-3 Days to Launch)
 
 **Status: GTM EXECUTION ONGOING · T-3 days to Nov 20 launch · 5 open items on track · All systems stable**
